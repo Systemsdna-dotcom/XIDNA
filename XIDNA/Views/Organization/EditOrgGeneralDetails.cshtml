@@ -1,0 +1,398 @@
+﻿@model XIDNA.ViewModels.VMOrganization
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+}
+<script src="~/Scripts/ajaxfileupload.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#OrgEdittabs').tabs();
+        $("#EditContact").hide();
+        $("#NewImage").hide();
+        $("#ViewGeneral").hide();
+        $("#ViewContact").hide();
+        $('#EditClasses').hide();
+        $('#ViewClasses').hide();
+        $('#EditLocations').hide();
+        $('.orgCancel').click(function () {
+            window.close();
+        });
+        $("#backcon").click(function () {
+            $('#ViewContact').hide();
+            $('#EditContact').show();
+            @*var id = parseInt('@Model.ID');
+            $.ajax({
+                url: '@Url.Action("GetOrganizationDetails", "Organization")',
+                type: 'GET',
+                datatype: 'JSON',
+                data: { orgid: id },
+                success: function (data) {
+                    $("#EditContact").show();
+                    $("#EditGeneral").hide();
+                    $("#AddEmpForm").hide();
+                    $("#backcon").hide();
+                    $('li#generaldetails').removeClass('disabled');
+                    $('li#orgclass').removeClass('disabled');
+                },
+                error: function (data) {
+                },
+            });*@
+        })
+        $("#backgen").click(function () {
+            $('#ViewGeneral').hide();
+            $('#EditGeneral').show();
+            @*var id = parseInt('@Model.ID');
+            $.ajax({
+                url: '@Url.Action("GetOrganizationDetails", "Organization")',
+                type: 'GET',
+                datatype: 'JSON',
+                data: { orgid: id },
+                success: function (data) {
+                    $("#EditContact").hide();
+                    $("#EditGeneral").show();
+                    $("#ViewGeneral").hide();
+                    $("#backgen").hide();
+                    $('li#contactdetails').removeClass('disabled');
+                    $('li#orgclass').removeClass('disabled');
+                },
+                error: function (data) {
+                },
+            });*@
+        })
+        $('#backclass').click(function () {
+            $('#ViewClasses').hide();
+            $('#EditClasses').show();
+        });
+        $("#upload").click(function () {
+            $("#NewImage").show();
+            $("#dvPreview").hide();
+        })
+        $("#viewgen").click(function () {
+            var id = parseInt('@Model.ID');
+            $.ajax({
+                url: '@Url.Action("GetOrgEditUpdatedData", "Organization")',
+                type: 'GET',
+                datatype: 'html',
+                data: { OrgID: id },
+                cache: false,
+                success: function (data) {
+                    var GenView = $(data).find('.ViewGenForm');
+                    $('.ViewGenForm').html(GenView.html());
+                    $('#EditGeneral').hide();
+                    $('#EditContact').hide();
+                    $('#EditClasses').hide();
+                    $('#ViewGeneral').show();
+
+                },
+                error: function (data) {
+                },
+            });
+        })
+
+
+        $("#viewcon").click(function () {
+            var id = parseInt('@Model.ConOrganizationID');
+            $.ajax({
+                url: '@Url.Action("GetOrgEditUpdatedData", "Organization")',
+                type: 'GET',
+                datatype: 'html',
+                data: { OrgID: id },
+                cache: false,
+                success: function (data) {
+                    $("#EditGeneral").hide();
+                    $("#EditContact").hide();
+                    $('#OrgClasses').hide();
+                    $("#ViewContact").show();
+                    var ConView = $(data).find('.ViewConForm');
+                    $('.ViewConForm').html(ConView.html());
+                },
+                error: function (data) {
+                },
+            });
+        })
+        $("#viewclassesbtn").click(function () {
+            var id = parseInt('@Model.OrganizationID');
+            $.ajax({
+                url: '@Url.Action("GetOrgEditUpdatedData", "Organization")',
+                type: 'GET',
+                datatype: 'html',
+                data: { OrgID: id },
+                cache: false,
+                success: function (data) {
+                    $('#EditClasses').hide();
+                    $("#EditGeneral").hide();
+                    $("#EditContact").hide();
+                    $('#ViewClasses').show();
+                    var ClassView = $(data).find('#OrgClassesList');
+                    $('#OrgClassesList').html(ClassView.html());
+                    $("#AddEmpForm").show();
+                    $("#backcon").show();
+                },
+                error: function (data) {
+                },
+            });
+        })
+        $('#backclass').click(function () {
+            $('#EditClasses').show();
+            $('#ViewClasses').hide();
+        });
+        $('#contactdetails').click(function () {
+            $('#EditGeneral').hide();
+            $('#ViewGeneral').hide();
+            $('#EditClasses').hide();
+            $('#ViewClasses').hide();
+            $("#ViewContact").hide();
+            $('#EditLocations').hide();
+            $('#EditContact').show();
+            $('#generaldetails').removeClass('active');
+            $('#orgclass').removeClass('active');
+            $('#contactdetails').addClass('active');
+            $('#locdetails').removeClass('active');
+
+        });
+        $('#generaldetails').click(function () {
+            $('#EditContact').hide();
+            $('#ViewContact').hide();
+            $('#EditClasses').hide();
+            $('#ViewClasses').hide();
+            $('#EditGeneral').show();
+            $('#EditLocations').hide();
+            $('#ViewGeneral').hide();
+            $('#contactdetails').removeClass('active');
+            $('#orgclass').removeClass('active');
+            $('#generaldetails').addClass('active');
+            $('#locdetails').removeClass('active');
+        });
+        $('#orgclass').click(function () {
+            $('#EditContact').hide();
+            $('#EditGeneral').hide();
+            $('#ViewGeneral').hide();
+            $('#ViewContact').hide();
+            $('#ViewClasses').hide();
+            $('#EditLocations').hide();
+            $('#EditClasses').show();
+            $('#contactdetails').removeClass('active');
+            $('#generaldetails').removeClass('active');
+            $('#orgclass').addClass('active');
+            $('#locdetails').removeClass('active');
+        });
+        $('#locdetails').click(function () {
+            $('#EditContact').hide();
+            $('#EditGeneral').hide();
+            $('#ViewGeneral').hide();
+            $('#ViewContact').hide();
+            $('#ViewClasses').hide();
+            $('#EditClasses').hide();
+            $('#EditLocations').show();
+            $('#contactdetails').removeClass('active');
+            $('#generaldetails').removeClass('active');
+            $('#orgclass').removeClass('active');
+            $('#locdetails').addClass('active');
+        });
+    })
+
+    $(function () {
+
+        $("#UploadImage").change(function () {
+            $("#dvPreview").html("");
+            if (typeof (FileReader) != "undefined") {
+                $("#dvPreview").show();
+                $("#dvPreview").append("<img />");
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#dvPreview img").attr("src", e.target.result);
+                }
+                reader.readAsDataURL($(this)[0].files[0]);
+            }
+        });
+
+    })
+
+</script>
+<style>
+    .orgerrormsg {
+        margin-top: 28px;
+    }
+
+    p.orgclassname {
+        margin-bottom: 5px;
+    }
+
+    #dvPreview {
+        margin-top: 20px;
+    }
+
+    .disabled a {
+        color: #777 !important;
+    }
+
+    .Textvalue {
+        margin-top: 7px;
+    }
+
+    .orgerrormsg {
+        margin-top: 28px;
+    }
+
+    .danger {
+        color: red;
+    }
+
+    div#Loading {
+        display: none;
+    }
+
+    #NewImage {
+        margin-top: 10px;
+    }
+</style>
+
+
+@Html.AntiForgeryToken()
+@*<hr />*@
+<section class="content-header hedr">
+    <h1> Edit Organization </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Organization Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="box" id="OrgEdittabs">
+    <div class="box-header bg-grey-darker no-padding">
+        <ul class="bg-transparent">
+            <li id="generaldetails" class="active"><a href="#EditGeneral">General Details</a></li>
+            <li id="contactdetails"><a href="#EditContact">Contact Details</a></li>
+            <li id="orgclass"><a href="#EditClasses">Class Details</a></li>
+            <li id="locdetails"><a href="#EditLocations">Location Details</a></li>
+        </ul>
+    </div>
+    <div class="box-body">
+        <div class="innerborder">
+            @{
+                Html.RenderAction("GetOrgEditDetails", "Organization", new { model = @Model });
+            }
+        </div>
+    </div>
+</div>
+<div class="dialog-box EditOrgDlg" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    //function OnComplete(data) {
+    //    $('#generaldetails').removeClass('active');
+    //    $('#contactdetails').addClass('active');
+
+    //}
+    function OnComplete(response) {
+        var data = response;
+        if ($("#UploadImage").val() != "") {
+            $.ajaxFileUpload({
+                url: '@Url.Action("SaveLogo", "Organization")',
+                secureuri: false,
+                type: 'POST',
+                fileElementId: "UploadImage",
+                dataType: 'json',
+                data: {
+                    id: data
+                },
+                success: function (data1) {
+                    $.unblockUI();
+                    $(".EditOrgDlg").html('Organization General Details Updated Successfully!');
+                    $(".EditOrgDlg").dialog({
+                        title: "Organization",
+                        modal: true,
+                        buttons: [
+                        {
+                            text: "Ok",
+                            click: function () {
+                                opener.location.reload();
+                                $('#generaldetails').removeClass('ui-tabs-active ui-state-active');
+                                $('#contactdetails').addClass('ui-tabs-active ui-state-active');
+                                $("#ConOrganizationID").val(data);
+                                $("#EditGeneral").hide();
+                                $("#EditContact").show();
+                                $('#EditClasses').hide();
+                                $(".EditOrgDlg").dialog('close');
+                            }
+                        }
+                        ]
+                    });
+                },
+                error: function (data, status, e) {
+
+                    return alert(response);
+                }
+            })
+
+        }
+        else {
+            $.unblockUI();
+            $(".EditOrgDlg").html('Organization General Details Updated Successfully!');
+            $(".EditOrgDlg").dialog({
+                title: "Organization",
+                modal: true,
+                buttons: [
+                {
+                    text: "Ok",
+                    click: function () {
+                        $('#generaldetails').removeClass('ui-tabs-active ui-state-active');
+                        $('#contactdetails').addClass('ui-tabs-active ui-state-active');
+                        $("#ConOrganizationID").val(data);
+                        $("#EditGeneral").hide();
+                        $("#EditContact").show();
+                        $('#EditClasses').hide();
+                        $(".EditOrgDlg").dialog('close');
+                    }
+                }
+                ]
+            });
+
+        }
+    }
+    function OnConSuccess(e) {
+        $.unblockUI();
+        $(".EditOrgDlg").html('Organization Contact Details Updated Successfully!');
+        $(".EditOrgDlg").dialog({
+            title: "Organization",
+            modal: true,
+            buttons: [
+            {
+                text: "Ok",
+                click: function () {
+                    $("#EditGeneral").hide();
+                    $("#EditContact").hide();
+                    $("#EditClasses").show();
+                    $('#contactdetails').removeClass('ui-tabs-active ui-state-active');
+                    $("#orgclass").addClass('ui-tabs-active ui-state-active');
+                    $("#OrganizationID").val(e);
+                    $(".EditOrgDlg").dialog('close');
+                }
+            }
+            ]
+        });
+
+    }
+    function OnClassSuccess() {
+        $.unblockUI();
+        $(".EditOrgDlg").html('Organization Class Details Updated Successfully!');
+        $(".EditOrgDlg").dialog({
+            title: "Organization",
+            modal: true,
+            buttons: [
+            {
+                text: "Ok",
+                click: function () {
+                    $('#EditClasses').hide();
+                    $('#EditLocations').show();
+                    $('#orgclass').removeClass('ui-tabs-active ui-state-active');
+                    $("#locdetails").addClass('ui-tabs-active ui-state-active');
+                    $(".EditOrgDlg").dialog('close');
+                }
+            }
+            ]
+        });
+    }
+    function OnBegin() {
+        $.blockUI({ message: '<h3><img src="@PhysicalPath/Scripts/ckfinder/plugins/gallery/colorbox/images/loading.gif" width="50px" /> Please wait while saving details...</h3>' });
+    }
+</script>

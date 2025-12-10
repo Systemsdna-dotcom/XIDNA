@@ -1,0 +1,22 @@
+﻿@model XIDNA.ViewModels.VMPopupLayout
+
+<script>
+    $(document).ready(function () {
+        var iID = '@Model.sNewGUID';
+        var Details = @Html.Raw(Json.Encode(Model));
+        ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+        DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+        PopupURL = '@Url.Action("GetPopupDetails", "XiLink")';
+        PopupORDialogURL = '@Url.Action("GetPopupORDialog", "XiLink")';
+        DialogURL = '@Url.Action("GetDialog", "XiLink")';
+        SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+        SemanticURL = '@Url.Action("GetSemanticDetails", "XiLink")';
+        ComponentURL = '@Url.Action("LoadComponentByID", "XIComponents")';
+        StepURL = '@Url.Action("GetStepContent", "XiLink")';
+        ShowContentInDialogOrPopup(Details, iID);
+    });
+</script>
+<div class="LayoutCode_@Model.sNewGUID" data-name="LayoutGUID" data-guid="@Model.sNewGUID" data-context="@Model.sContext">
+    @Html.Raw(Model.LayoutCode)
+</div>
+

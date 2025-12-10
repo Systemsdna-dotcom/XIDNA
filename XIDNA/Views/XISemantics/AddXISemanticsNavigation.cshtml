@@ -1,0 +1,195 @@
+﻿@model XIDNA.Models.cQSNavigations
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<section class="content-header hedr">
+    @if (Model.ID == 0)
+    {
+        <h1> Add XISematics Navigations </h1>
+    }
+    else
+    {
+        <h1> Edit XISematics Navigations </h1>
+    }
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> XISematics Navigation</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="innerborder">
+                    @* SaveBO *@
+                    @using (Ajax.BeginForm("CreateXISemanticsNavigation", "XISematics", new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "XINavsForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.ID)
+                        <div id="clear-text">
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.sName, new { @placeholder = "Enter Name Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sName, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Step<span class="danger">*</span></label>
+                                    @Html.DropDownListFor(m => m.FKiStepDefinitionID, new SelectList(Model.SematicSteps, "Value", "text"), "--Select--", new { @class = "form-control" })
+                                </div>
+                                <div class="col-sm-7 fielderror">
+                                    @Html.ValidationMessageFor(m => m.FKiStepDefinitionID, "", new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Type<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.iType, new SelectList(new List<Object>{
+                                     new { key= 0 , value = "--Select--" },
+                                               new { key= 10 , value = "Navigate To" },
+                       new { key= 20 , value = "End" }
+                    }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.iType, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div id="NextStepDiv">
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Next Step<span class="danger">*</span></label>
+                                        @Html.DropDownListFor(m => m.iNextStepID, new SelectList(Model.SematicSteps, "Value", "text"), "--Select--", new { @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-7 fielderror">
+                                        @Html.ValidationMessageFor(m => m.iNextStepID, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Order<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.iOrder, new { @placeholder = "Enter Order Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.iOrder, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Function<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.sFunction, new { @placeholder = "Enter Order Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sFunction, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Field<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.sField, new { @placeholder = "Enter Field Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sField, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Operator<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.sOperator, new { @placeholder = "Enter Operator Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sOperator, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Value<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.sValue, new { @placeholder = "Enter Value Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sValue, null, new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="submit" class="btn btn-theme" value="Save" />
+                                    <button type="button" class="btn btn-theme decline" id="CancelBO">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#NextStepDiv').hide();
+        if(@Model.ID > 0)
+        {
+            if(@Model.iType == 20)
+            {
+                $('#NextStepDiv').hide();
+            }
+            else
+            {
+                $('#NextStepDiv').show();
+            }
+        }
+        $('#CancelBO').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#XINavsForm')[0].reset();
+            $('#XINavsForm .taberrormsg').find('span').html('');
+        });
+
+        $('#iType').change(function () {
+            if ($(this).val() == 10) {
+                $('#NextStepDiv').show();
+            }
+            else {
+                $("#iNextStepID")[0].selectedIndex = 0;
+                $('#NextStepDiv').hide();
+            }
+        });
+    })
+
+    function OnFormBegin() {
+        $('#XINavsForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+
+    function OnComplete(e) {
+        $('#XINavsForm').unblock();
+        $('#XINavsForm')[0].reset();
+        CustomMessage(e.ResponseMessage, e.Status);
+    }
+</script>

@@ -1,0 +1,431 @@
+﻿@model XIDNA.ViewModels.VMContentEditors
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script src="~/Scripts/JQuery/jQuery-2.1.4.min.js"></script>
+<script src="~/Scripts/JQuery/jquery-ui.js"></script>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+@*<script src="~/Scripts/jquery-ui-1.11.4.min.js"></script>*@
+@*<script src="~/Scripts/jquery.validate.min.js"></script>*@
+<script src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+<script src="~/Scripts/ajaxfileupload.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#UploadFile").change(function () {
+            $("#dvPreview").html("");
+            if (typeof (FileReader) != "undefined") {
+                $("#dvPreview").show();
+                $("#dvPreview").append("<img />");
+                var reader = new FileReader();
+                //reader.onload = function (e) {
+                //    $("#dvPreview img").attr("src", e.target.result);
+                //}
+                reader.readAsDataURL($(this)[0].files[0]);
+            }
+        });
+    })
+    $(document).ready(function () {
+        //$('Preview').attr("disabled", true);
+        $('#Preview').on('change', 'input:checkbox', function () {
+            if ($(this).prop("checked") == true) {
+                var id = $(this).attr("data-id");
+                $('#' + id).attr("disabled", false);
+            }
+            else {
+                var id = $(this).attr("value");
+                $('#' + id).attr("disabled", true);
+            }
+        });
+
+
+
+        $("#Template").change(function () {
+            var value = $('#Template').val();
+            $.ajax({
+                url: '@Url.Action("Contentdropdown", "Content")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { Category: value },
+                success: function (data) {
+                    //if (value == 1) {
+                    //    $("#box-body").show();
+                    //}
+                    //else {
+                    //    $("#box-body").hide();
+                    //}
+                    //$("#box-body").hide();
+                    $("#content").empty();
+                    if (data.length > 0) {
+                        for (i = 0; i < data.length; i++) {
+                            $("#content").append(
+                            $('<option value="' + data[i].Value + '">' + data[i].text + '</option>'));
+                        }
+                    }
+                },
+                error: function (data) {
+                }
+            });
+        });
+        $(function () {
+            $('select#content').change(function () {
+                var selectedcontentid = $(this).val();
+                $("#target").load('@Url.Action("GetUsersList", "Content")', { id: selectedcontentid })
+                $("#target").show();
+            })
+        })
+        var rows_selected = [];
+        var editor;
+        var table = $('#Preview').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+        })
+        var Ids = "";
+        $('#Preview').on('change', 'input.case', function () {
+            if ($(this).prop('checked') == true) {
+                var id = $(this).attr('data-id');
+                Ids = Ids + id + ",";
+            }
+            else {
+                var id = $(this).attr('data-id') + ",";
+                Ids = Ids.replace(id);
+                if (Ids == 'undefined') {
+                    Ids = "";
+                }
+            }
+        });
+        $('#Preview').on('click', 'input.preview', function (e) {
+            var id = $(this).attr('id');
+            var checkedusers = [];
+            var myArray = [];
+            Ids = Ids.substr(0, Ids.length - 1);
+            var Leadids = Ids.split(',');
+            for (i = 0; i < Leadids.length ; i++) {
+                checkedusers.push({ ID: Leadids[i] });
+            }
+            var selectedcontentid = $("#content").val();
+            if (id != 0 && selectedcontentid != 0) {
+                $.ajax({
+                    type: 'GET',
+                    datatype: "JSON",
+                    cache: false,
+                    contentType: 'application/json; charset=utf-8',
+                    url: '@Url.Action("GetContentPreview", "Content")',
+                    data: ({ LeadID: id, ContentID: selectedcontentid, Users: id }),
+                    success: function (data) {
+                        //var d = new Date();
+                        //var yyyy = d.getFullYear().toString();
+                        //var mm = (d.getMonth() + 1).toString(); // getMonth() is zero-based
+                        //var dd = d.getDate().toString();
+                        //var tomdate = (d.getDate() + 1).toString();
+                        //var yesdate = (d.getDate() - 1).toString();
+                        //var Today = (dd[1] ? dd : "0" + dd[0]) + "/" + (mm[1] ? mm : "0" + mm[0]) + "/" + yyyy;
+                        //var Tomorrow = (tomdate[1] ? tomdate : "0" + tomdate[0]) + "/" + (mm[1] ? mm : "0" + mm[0]) + "/" + yyyy;
+                        //var Yesterday = (yesdate[1] ? yesdate : "0" + yesdate[0]) + "/" + (mm[1] ? mm : "0" + mm[0]) + "/" + yyyy;
+                        for (i = 0; i < data.length; i++) {
+                            var sData = data[i].Data;
+                            var Columns = data[i].Columns;
+                            var Content = data[i].Content;
+                            var sResUpdated;
+                            var sFinalRes = "";
+                            for (j = 0; j < sData.length; j++) {
+
+                                if (sData != null) {
+                                    if (j == 0) {
+                                        sFinalRes = Content.replace("{{" + Columns[j] + "}}", sData[j]);
+                                        sResUpdated = sFinalRes;
+                                    }
+                                    else {
+                                        sFinalRes = sResUpdated.replace("{{" + Columns[j] + "}}", sData[j]);
+                                        sResUpdated = sFinalRes;
+                                    }
+                                }
+                            }
+                            //res = res.replace("((Today))", Today).replace("((Tomorrow))", Tomorrow).replace("((Yesterday))", Yesterday);
+                        }
+                        $("#dialog").html(sFinalRes);
+                        $("#dialog").dialog({
+                            autoOpen: true,
+                            modal: true,
+                            title: 'Mail Preview',
+                            width: 850, height: 500,
+                        });
+                    },
+                    error: function (data) {
+
+                    },
+                });
+            }
+            else {
+                $("#dialog").html('Please Select Template!');
+                $("#dialog").dialog("open");
+            }
+        });
+        $('#Save').on('click', function (e) {
+            var checkedusers = [];
+            var myArray = [];
+            var id = "";
+            Ids = Ids.substr(0, Ids.length - 1);
+            var value = $('#Template').val();
+            var Cc = $("#Cc").val();
+            var selectedcontentid = $("#content").val();
+            var Leadids = Ids.split(',');
+            for (i = 0; i < Leadids.length ; i++) {
+                checkedusers.push({ ID: Leadids[i] });
+            }
+            var usersdata = "";
+            for (var i = 0; i < checkedusers.length; i++) {
+                usersdata = usersdata + checkedusers[i].ID + ",";
+            }
+            usersdata = usersdata.replace(/,\s*$/, '');
+            if (usersdata != "" && selectedcontentid != 0) {
+                $.ajaxFileUpload({
+                    url: '@Url.Action("Save", "Content")',
+                    secureuri: false,
+                    type: 'POST',
+                    fileElementId: 'UploadFile',
+                    dataType: 'json',
+                    data: { Users: usersdata, ID: selectedcontentid, Cc: Cc, Type: value },
+                    success: function (data, response) {
+                        $("#AddLeadDlg").html('Lead Added Successfully');
+                        $("#AddLeadDlg").dialog({
+                            title: "Mail Management",
+                            modal: true,
+                            buttons: [
+                               {
+                                   text: "OK",
+                                   click: function () {
+                                       opener.location.reload();
+                                       window.close();
+                                   }
+                               },
+                            ]
+                        });
+                    },
+                    error: function (data, status, e) {
+                        return alert(response);
+                    }
+                })
+            }
+            else {
+                opener.location.reload();
+                $("#AddLeadDlg").html('Please Select Lead & Template!');
+                $("#AddLeadDlg").dialog({
+                    title: "Mail Management",
+                    modal: true,
+                    buttons: [
+                    {
+                        text: "Ok",
+                        click: function () {
+                            $("#AddLeadDlg").dialog("close");
+                        }
+                    }
+                    ]
+                });
+            }
+        });
+        $('#Cancel').click(function () {
+            opener.location.reload();
+            window.close();
+        });
+    })
+    $(function () {
+        $("#dialog").dialog({
+            autoOpen: false,
+            modal: true,
+            title: "Mail Management",
+            buttons: {
+                Close: function () {
+                    $(this).dialog('close');
+                }
+            }
+        });
+    })
+</script>
+<style>
+    #dialog {
+        height: 350px;
+        overflow: auto;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Send Email/SMS </h1>
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i>Template Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div id="Mail-Management">
+                    <div id="clear-text">
+                        @*<form class="form-horizontal">*@
+                        @using (Ajax.BeginForm("", "", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Result", OnSuccess = "OnComplete" }, new { @class = "form-horizontal", @target = "_blank", @id = "UsersList" }))
+                                        {
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">Select Category<span class="danger">*</span></label>
+                                    @Html.DropDownListFor(model => model.Category, new SelectList(new List<Object>{
+                                               new { key= 1 , value = "Email" },
+                                               new { key= 2 , value = "SMS" },
+                                               }, "key", "Value"), "--Select--", new { @class = "form-control", @id = "Template" })
+                                </div>
+                                <div class="col-sm-2">
+                                    <span class="error_label"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <label class="inputEmail">Select Template<span class="danger">*</span></label>
+                                    @Html.DropDownListFor(model => model.SID, new SelectList(new List<Object>
+                                       {
+                                       }, "key", "Value"), "--Select--", new { @class = "form-control", @id = "content" })
+                                </div>
+                                <div class="col-sm-2">
+                                    <span class="error_label"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-7">
+                                    <label for="inputName" class="gn">Select Mail Attachment</label>
+                                    <input type="file" id="UploadFile" name="UploadFile" />
+                                    @*<div class=form-group id="dvPreview">
+                                        </div>*@
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <label class="inputEmail">CC<span class="danger">*</span></label>
+                                    <input type="text" id="Cc" name="Cc" class="form-control" />
+                                </div>
+                                <div class="col-sm-2">
+                                    <span class="error_label"></span>
+                                </div>
+                            </div>
+                        }
+                        @*</form>*@
+                    </div>
+                </div>
+                <div class="table-clean">
+                    <table id="Preview" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Select Lead</th>
+                                <th style="display:none;">
+                                    ID
+                                </th>
+
+                                <th>
+                                    First Name
+                                </th>
+                                <th style="display:none;">
+                                    Last Name
+                                </th>
+                                <th>
+                                    Phone Number
+                                </th>
+                                <th>
+                                    Email
+                                </th>
+                                <th style="display:none;">
+                                    Class
+                                </th>
+                                <th>
+                                    Preview
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{int i = 1;}
+                            @foreach (var item in Model.Data)
+                                {
+
+
+                                <tr>
+                                    <td>@i</td>
+                                    <td><input type="checkbox" class="case" name="case[]" value=@item.ID data-id="@item.ID" /></td>
+                                    <td style="display:none;">
+                                        @Html.DisplayFor(modelItem => item.ID)
+                                    </td>
+
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.FirstName)
+                                    </td>
+                                    <td style="display:none;">
+                                        @Html.DisplayFor(modelItem => item.LastName)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Mobile)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Email)
+                                    </td>
+                                    <td style="display:none;">
+                                        @Html.DisplayFor(modelItem => item.Class)
+                                    </td>
+                                    <td>
+                                        <input type="button" id=@item.ID value="Preview" class="btn btn-large btn-warning btn-xs visible-desktop preview" disabled>
+                                    </td>
+                                </tr>
+
+                                    i++;
+                                }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+            <div class="col-xs-12">
+                <input type="submit" id="Save" value="Send" class="btn btn-large btn-theme visible-desktop">
+                <input type="button" id="Cancel" value="Cancel" class="btn btn-large btn-theme decline visible-desktop">
+            </div>
+        </div>
+    </div>
+</section>
+<div id="AddLeadDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<div id="dialog" style="display: none">
+</div>
+<script>
+    $(document).ready(function () {
+        jQuery(function ($) {
+            $('#UsersList').validate({
+                debug: true,
+                rules: {
+                    Type: {
+                        required: true,
+                    },
+                    SID: {
+                        required: true,
+                    },
+                },
+                messages: {
+                    Type: {
+                        required: " Please Select Type",
+                    },
+                    SID: {
+                        required: " Please Select Template",
+                    },
+                },
+                errorPlacement: function (error, element) {
+                    $(element).closest('div').next('div').find('.error_label').html(error);
+                }
+            });
+        });
+    });
+    function OnComplete() {
+        window.close();
+        opener.location.reload();
+    }
+
+</script>
+<div id="target">
+</div>
+

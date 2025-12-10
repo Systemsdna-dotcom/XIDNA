@@ -1,0 +1,53 @@
+﻿
+<link rel="stylesheet" href="~/Scripts/CodeMirror/lib/codemirror.css">
+<link rel="stylesheet" href="~/Scripts/CodeMirror/addon/hint/show-hint.css">
+<link rel="stylesheet" href="~/Scripts/CodeMirror/theme/3024-night.css">
+<script src="~/Scripts/CodeMirror/lib/codemirror.js"></script>
+<script src="~/Scripts/CodeMirror/addon/edit/matchbrackets.js"></script>
+<script src="~/Scripts/CodeMirror/addon/edit/closebrackets.js"></script>
+<script src="~/Scripts/CodeMirror/addon/JumpToLine/jump-to-line.js"></script> <!--ALT+G-->
+<script src="~/Scripts/CodeMirror/comment/continuecomment.js"></script>
+<script src="~/Scripts/CodeMirror/addon/hint/anyword-hint.js"></script>
+<script src="~/Scripts/CodeMirror/addon/hint/show-hint.js"></script>
+<script src="~/Scripts/CodeMirror/mode/javascript.js"></script>
+<script src="~/Scripts/CodeMirror/mode/clike.js"></script>
+<script src="~/Scripts/CodeMirror/display/placeholder.js"></script>
+<script src="~/Scripts/CodeMirror/mode/sql.js"></script>
+<script>
+
+    $(function() {
+        CodeMirror.commands.autocomplete = function(cm) {
+            cm.showHint({ hint: CodeMirror.hint.anyword });
+        }
+        window.editor = CodeMirror.fromTextArea(document.getElementById('txtArea_Schema'), {
+            mode: "text/x-sql",
+            lineNumbers: 10,
+            //theme: '3024-night',
+            indentWithTabs: true,
+            smartIndent: true,
+            indentUnit: 4,
+            matchBrackets: true,
+            autoCloseBrackets: true,
+            lineWrapping: false,
+            continueLineComment: true,
+            draganddrop: true,
+            showCursorWhenSelecting: true,
+            contenteditable:false,
+            hintOptions: {
+                tables: {
+                    users: ["name", "score", "birthDate"],
+                    countries: ["name", "population", "size"]
+                }
+            },
+            extraKeys: { "Ctrl-Space": "autocomplete" }
+        });
+    })
+
+</script>
+<textarea id="txtArea_Schema" name="Schema" cols="100" rows="1000" contenteditable="false">@Model</textarea>
+<style>
+    .CodeMirror {
+        border: 1px solid #eee;
+        height: auto;
+    }
+</style>

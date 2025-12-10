@@ -1,0 +1,1476 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+
+@{
+    XIDBO oBOD = new XIDBO();
+    XID1Click o1ClickD = new XID1Click();
+    if (Model.oContent.ContainsKey(XIConstant.GridComponent))
+    {
+        o1ClickD = (XID1Click)Model.oContent[XIConstant.GridComponent];
+        if (o1ClickD == null)
+        {
+            o1ClickD = new XID1Click();
+        }
+        XIInfraCache oCache = new XIInfraCache();
+        oBOD = (XIDBO)oCache.GetObjectFromCache(XIConstant.CacheBO_All, null, o1ClickD.BOID.ToString());
+    }
+    var sBOName = string.Empty;
+    var iBODID = 0;
+    if (o1ClickD != null)
+    {
+        sBOName = o1ClickD.sBOName;
+        iBODID = o1ClickD.BOID;
+    }
+    string sAutoSave = "no";
+    var sShowID = "yes";
+    var sIsShowButton = "yes";
+    var sIsSave = "yes";
+    var sShowHeading = "yes";
+    var sPagination = "no";
+    var sRowDelete = "no";
+    //var oVisualisations = Model.oVisualisation;
+    //IDE
+    var oVisualisations = new List<XIVisualisation>();
+    var oCompVisualisations = Model.oVisualisation;
+    var o1ClickVisual = o1ClickD.oVisualisation;
+    if (oCompVisualisations != null && oCompVisualisations.FirstOrDefault() != null && oCompVisualisations.FirstOrDefault().XiVisualisationNVs != null)
+    {
+        oVisualisations.AddRange(oCompVisualisations);
+    }
+    if (o1ClickVisual != null && o1ClickVisual.FirstOrDefault() != null && o1ClickVisual.FirstOrDefault().XiVisualisationNVs != null)
+    {
+        if (oVisualisations.Count() == 0)
+        {
+            oVisualisations.AddRange(o1ClickVisual);
+        }
+        else
+        {
+            oVisualisations.FirstOrDefault().XiVisualisationNVs.AddRange(o1ClickVisual.FirstOrDefault().XiVisualisationNVs);
+        }
+
+    }
+    var SortColumns = o1ClickD.TableColumns;
+    var sTabColumns = SortColumns == null ? null : string.Join(",", SortColumns);
+    List<XIVisualisationNV> oVNVs = new List<XIVisualisationNV>();
+    if (oVisualisations != null)
+    {
+        var oVisual = oVisualisations.FirstOrDefault();
+        if (oVisual != null && oVisual.XiVisualisationNVs != null && oVisual.XiVisualisationNVs.Count() > 0)
+        {
+            oVNVs = oVisual.XiVisualisationNVs;
+            var ShowID = oVNVs.Where(m => m.sName.ToLower() == "DisplayID".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(ShowID))
+            {
+                sShowID = ShowID;
+            }
+            var ShowButton = oVNVs.Where(m => m.sName.ToLower() == "IsShowButton".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(ShowButton))
+            {
+                sIsShowButton = ShowButton;
+            }
+            var SaveButton = oVNVs.Where(m => m.sName.ToLower() == "Save".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(SaveButton))
+            {
+                sIsSave = SaveButton;
+            }
+            var ShowHead = oVNVs.Where(m => m.sName.ToLower() == "Heading".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(ShowHead))
+            {
+                sShowHeading = ShowHead;
+            }
+            var Pagination = oVNVs.Where(m => m.sName.ToLower() == "Pagination".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(Pagination))
+            {
+                sPagination = Pagination;
+            }
+            var RowDelete = oVNVs.Where(m => m.sName.ToLower() == "RowDelete".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(RowDelete))
+            {
+                sRowDelete = RowDelete;
+            }
+        }
+        if (sIsShowButton == "no")
+        {
+            sAutoSave = "yes";
+        }
+    }
+    var sTabGUID = Guid.NewGuid().ToString();
+    var sSrchType = string.Empty;
+    if (o1ClickD.IsNaturalSearch)
+    {
+        sSrchType = "NaturalSearch";
+    }
+    else if (o1ClickD.IsFilterSearch)
+    {
+        sSrchType = "FilterSearch";
+    }
+    var iTotalRecords = o1ClickD.iTotalRecords;
+    bool bDisableNextBtn = true;
+    bool bDisablePrevBtn = false;
+    var DisplayedRecords = (o1ClickD.iTotaldisplayRecords + 1) * o1ClickD.iPaginationCount;
+    if (DisplayedRecords <= iTotalRecords)
+    {
+        bDisableNextBtn = false;
+    }
+    if (o1ClickD.iTotaldisplayRecords == 0)
+    {
+        bDisablePrevBtn = true;
+    }
+    var sLockGroup = string.Empty;
+    var oDef = (XIDComponent)Model.oDefintion;
+    if (oDef != null)
+    {
+        var Params = oDef.Params;
+        sLockGroup = Params.Where(m => m.sName.ToLower() == "lockgroup").Select(m => m.sValue).FirstOrDefault();
+    }
+
+}
+<script>
+    const content_height = $(window).height() - $('#HomeHeader').height() - 10;
+    //$('.scroll_vh_100').slimScroll({
+    //    height: content_height,
+    //});
+</script>
+@{ var s1ClickClass = "one-1q one-1q-id-" + @o1ClickD.ID + " one-1q-" + o1ClickD.Name.ToLower().Replace(" ", "_") + "" + (@o1ClickD.sCssClass != null ? (@o1ClickD.sCssClass.Length > 0 ? (" " + @o1ClickD.sCssClass) : "") : "");}
+<div class="p5 @s1ClickClass" data-def="@o1ClickD.XIGUID">
+    <div class="scroll_vh_100 form-container">
+        <div id="GridComponent" data-name="Grid-@sTabGUID">
+            <div id="DynamicForm">
+                @if (o1ClickD.SearchType == "FilterSearch" || o1ClickD.IsFilterSearch)
+                {
+                    if (o1ClickD.Fields == null || o1ClickD.Optrs == null || o1ClickD.Values == null)
+                    {
+                        Html.RenderAction("QueryDynamicForm", "Inbox", new { OneClickID = o1ClickD.ID, BOID = o1ClickD.BOID, sGUID = sTabGUID, sTabCols = sTabColumns });
+                    }
+                }
+            </div>
+            @if (o1ClickD.SearchType == "NaturalSearch" || o1ClickD.IsNaturalSearch)
+            {
+                if (string.IsNullOrEmpty(o1ClickD.SearchText) && o1ClickD.SearchText != "")
+                {
+                    <div class="table-search-input">
+                        <input type="text" class="input-sm form-control" name="QuickSearch" id="QuickSearchTBox" placeholder="Search Here">
+                    </div>
+                }
+            }
+            <div id="Grid-@o1ClickD.ID" data-type="datagrid">
+                @if (sShowHeading == "yes")
+                {
+                    <div class="clearfix flex-head">
+                        <h3 class="maintitle">@o1ClickD.Title</h3>
+                    </div>
+                }
+                @if (o1ClickD.IsCreate)
+                {
+                    <button type="button" class="btn btn-theme btnQuote" onclick="fncGridcreate('@o1ClickD.XIGUID', '@o1ClickD.CreateGroupIDXIGUID', '@o1ClickD.BOIDXIGUID', '@o1ClickD.iCreateXILinkIDXIGUID', '', this, '@sTabGUID','@o1ClickD.FKiVisualisationIDXIGUID','@o1ClickD.sParentWhere', '@o1ClickD.sGUID')">Add</button>
+                }
+                <div id="InlineTop_@sTabGUID" class="InLineTop-@o1ClickD.BOID"></div>
+                <form class="CreateForm form-h form-hd fullwidth" id="Create_@iBODID" data-type="form" data-savetype="@sAutoSave" data-sbo="@sBOName">
+                    <div class="table-clean table-responsive m-b-5" id="trCount-@o1ClickD.XIGUID">
+                        <!-- <table class="table tableset" id="OneClickResult-@o1ClickD.ID"> -->
+                        <table class="table table-striped custom-table dark-head dark-head2 table-condensed table-hover dataTable no-footer" id="OneClickResult-@o1ClickD.XIGUID">
+                            <thead>
+                                <tr>
+                                    @if (o1ClickD.Headings != null && o1ClickD.Headings.Count() > 0)
+                                    {
+                                        for (int k = 0; k < o1ClickD.Headings.Count(); k++)
+                                        {
+                                            if (oVNVs != null && oVNVs.Count() > 0)
+                                            {
+                                                var isHidden = oVNVs.Where(x => x.sName.ToLower() == o1ClickD.Headings[k].ToLower()).Select(x => x.sValue).FirstOrDefault();
+                                                if (!string.IsNullOrEmpty(isHidden) && isHidden.ToLower() == "Yes".ToLower())
+                                                {
+                                                    if (!string.IsNullOrEmpty(o1ClickD.Headings[k]))
+                                                    {
+                                                        <th hidden="hidden">@o1ClickD.Headings[k]</th>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (@o1ClickD.Headings[k].ToLower() == "select" && @o1ClickD.bIsSelectAll == true)
+                                                    {
+                                                        <th style="width:1%">
+                                                            <input type='checkbox' class='chkReconcilliationAll' onclick='fncCheckboxOnchangeAll(this,@o1ClickD.XIGUID,@o1ClickD.CreateGroupIDXIGUID,@o1ClickD.BOIDXIGUID,@o1ClickD.iCreateXILinkIDXIGUID)' />
+                                                        </th>
+                                                    }
+                                                    else
+                                                    {
+                                                        <th>@Html.Raw(@o1ClickD.Headings[k])</th>
+                                                    }
+                                                    @*<th>@o1ClickD.Headings[k]</th>*@
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (!string.IsNullOrEmpty(o1ClickD.Headings[k].Trim()))
+                                                {
+                                                    if (o1ClickD.Headings[k].ToLower() == "id")
+                                                    {
+                                                        <th style="display:none">@o1ClickD.Headings[k]</th>
+                                                    }
+                                                    else
+                                                    {
+                                                        <th>@o1ClickD.Headings[k]</th>
+                                                    }
+
+                                                }
+                                            }
+                                        }
+                                        if (!string.IsNullOrEmpty(sRowDelete) && sRowDelete.ToLower() == "yes")
+                                        {
+                                            <th>Actions</th>
+                                        }
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody class="gridtbody">
+                                @if (o1ClickD.oDataSet.Values.Count() > 0)
+                                {
+                                    if (o1ClickD.oDataSet.Values.Count() > 0)
+                                    {
+                                        o1ClickD.oDataSet.Values.FirstOrDefault().BOD = oBOD;
+                                    }
+                                    o1ClickD.oDataSet.Values.FirstOrDefault().sShowID = sShowID;
+                                    Html.RenderPartial("~/views/xicomponents/_gridresult.cshtml", Model);
+                                }
+                                @*else
+                                    {
+                                    <tr><td align="center" colspan="7">No data Available In This Table.</td></tr>
+                                    }*@
+                            </tbody>
+                        </table>
+                        @*<table class="table tableset"><tbody class="gridtbody InlineBottom-@o1ClickD.ID"></tbody></table>*@
+                    </div>
+                    @if (sIsShowButton.ToLower() == "yes".ToLower() && sIsSave.ToLower() == "yes")
+                    {
+                        <button type="button" class="SubmitBtn btn btn-theme" onclick="SaveGridData(this, null, '@sBOName')"><i class="fa fa-edit"></i> Update</button>
+                    }
+                    @*@if (o1ClickD.oDataSet.Values.Count() > 0)
+                        {
+                            if (sIsShowButton.ToLower() == "yes".ToLower())
+                            {
+                                <button type="button" class="SubmitBtn btn btn-theme" onclick="SaveGridData(this, null, '@sBOName')"><i class="fa fa-edit"></i> Update</button>
+                            }
+                        }*@
+                </form>
+            </div>
+            @if (!string.IsNullOrEmpty(sPagination) && sPagination.ToLower() == "yes")
+            {
+                <div class="form-group">
+                    @if (bDisablePrevBtn)
+                    {
+                        <button type="button" disabled class="SubmitBtn btn btn-theme GridPrevBtn" onclick="fncGridPrevData(this, @o1ClickD.XIGUID, '@sTabColumns', '@sTabGUID','Grid', '@sSrchType')" data-count="@o1ClickD.iTotaldisplayRecords"><i class="fa fa-edit"></i> Prev</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="SubmitBtn btn btn-theme GridPrevBtn" onclick="fncGridPrevData(this, @o1ClickD.XIGUID, '@sTabColumns', '@sTabGUID','Grid', '@sSrchType')" data-count="@o1ClickD.iTotaldisplayRecords"><i class="fa fa-edit"></i> Prev</button>
+                    }
+                    @if (bDisableNextBtn)
+                    {
+                        <button type="button" disabled class="SubmitBtn btn btn-theme GridNextBtn" onclick="fncGridNextData(this, @o1ClickD.XIGUID, '@sTabColumns', '@sTabGUID','Grid', '@sSrchType')" data-count="@o1ClickD.iTotaldisplayRecords"><i class="fa fa-edit"></i> Next</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="SubmitBtn btn btn-theme GridNextBtn" onclick="fncGridNextData(this, @o1ClickD.XIGUID, '@sTabColumns', '@sTabGUID','Grid', '@sSrchType')" data-count="@o1ClickD.iTotaldisplayRecords"><i class="fa fa-edit"></i> Next</button>
+                    }
+                </div>
+            }
+            @if (o1ClickD.Code == "ACTION")
+            {
+                <div><input type="button" class="btn btn-theme btnQuote" value="Select & Next" id="btnAction" /></div>
+            }
+            @if (o1ClickD.bIsExport == true)
+            {
+                <div>
+                    <input type="button" name="@o1ClickD.ID" value="Export" id="btnExport" class="btn btn-theme btn-xs" />
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    var iTotalRecords = 0;
+    var DisplayedRecords=0;
+    var TotalDispaly = 0;
+    var sLockGroupName = '@o1ClickD.sLockGroup';
+    var VisualName = "";
+    var SearchText="";
+    var sSearchType = "";
+    Fields = "";
+    Optrs = "";
+    Values = "";
+    Type = 'Grid';
+    var sSearType = "";
+    var InputParams = [];
+    $(document).ready(function () {
+        var SelectedFields = new Array();
+        var FieldGroup = @Html.Raw(Json.Encode(o1ClickD.FilterGroup));
+        var availableTags;
+        if(FieldGroup){
+            availableTags = Object.keys(FieldGroup)
+        }
+        if ('@o1ClickD.IsNaturalSearch' == "True") {
+            sSearchType = "NaturalSearch";
+        } else if ('@o1ClickD.IsFilterSearch' == "True") {
+            sSearchType = "FilterSearch";
+        }
+        function extractLast( term ) {
+            return split( term ).pop();
+        }
+        $("#QuickSearchTBox")
+              // don't navigate away from the field on tab when selecting an item
+              .on("keydown", function (event) {
+                  if (event.keyCode === $.ui.keyCode.TAB &&
+                      $(this).autocomplete("instance").menu.active) {
+                      event.preventDefault();
+                  }
+              })
+              .autocomplete({
+                  minLength: 0,
+                  source: function (request, response) {
+                      // delegate back to autocomplete, but extract the last term
+                      response($.ui.autocomplete.filter(
+                        availableTags, extractLast(request.term)));
+                  },
+                  focus: function () {
+                      // prevent value inserted on focus
+                      return false;
+                  },
+                  select: function (event, ui) {
+                      var terms = split(this.value);
+                      // remove the current input
+                      terms.pop();
+                      // add the selected item
+                      terms.push(ui.item.value);
+                      // add placeholder to get the comma-and-space at the end
+                      terms.push("");
+                      this.value = terms.join(" ");
+                      SelectedFields.push(ui.item.value);
+                      return false;
+                  }
+              });
+        var changeTimer = false;
+        $('#QuickSearchTBox').on("keyup", function () {
+            $('#Grid-@o1ClickD.ID').block({
+                message: '<h4> Loading </h4>',
+                blockMsgClass: 'report-success',
+            });
+            if (changeTimer !== false) clearTimeout(changeTimer);
+            changeTimer = setTimeout(function () {
+                GetSearchResults();
+                changeTimer = false;
+            }, 300);
+        });
+        function GetSearchResults() {
+            SearchText = $('#QuickSearchTBox').val();
+            if (SearchText.length == 0) {
+                SelectedFields = [];
+            }
+            for (i = 0; i < SelectedFields.length; i++) {
+                var SearchField = FieldGroup[SelectedFields[i]];
+                if (SearchField) {
+                    SearchText = SearchText.replace(SelectedFields[i] + " ", SearchField + " ");
+                }
+            }
+            if ('@o1ClickD.ResultListDisplayType' == 0) {
+                SubmitClick = 1;
+                GetRecords(Fields, Optrs, Values, Type, SearchText);
+            }
+            else {
+                var iPageLength = 0;
+                if ('@o1ClickD.iPaginationCount' == 0) {
+                    iPageLength = 100;
+                }
+                else {
+                    iPageLength = '@o1ClickD.iPaginationCount';
+                }
+                var oVisualisation =@Html.Raw(Json.Encode(Model.oVisualisation));
+                if(oVisualisation)
+                {
+                    var oVisual = oVisualisation[0];
+                    if(oVisual)
+                    {
+                        VisualName=oVisual.Name;
+                    }
+                }
+                if('@o1ClickD.sLockGroup' != '' || '@o1ClickD.sLockGroup' != null)
+                {
+                    sLockGroup = sLockGroupName;
+                }
+            }
+            $.ajax({
+                url: '@Url.Action("GetGridClickResult", "XiLink")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                async: true,
+                cache: false,
+                data: JSON.stringify({ i1ClickID: '@o1ClickD.ID', sGUID: '@o1ClickD.sGUID', Fields: Fields, Optrs: Optrs, Values: Values, SearchType: Type, VisualName: VisualName, sSearType: sSearchType, SearchText:SearchText,sLockGroup:sLockGroup }),
+                success: function (data) {
+
+                    $('#Grid-@o1ClickD.ID').html(data);
+                },
+                error: function (data) {
+                    $('#Grid-@o1ClickD.ID').html("Error Occured");
+                }
+            })
+        }
+    });
+    $('.Gridrow').on('click', function (e) {
+        var Checked=$(this).find("input[type=checkbox]").prop("checked");
+        var ColIndex=e.target.parentNode.cellIndex;
+        var bIsLock='@o1ClickD.bIsRecordLock';
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+        @*var o1ClickDJ = @Html.Raw(Json.Encode(o1ClickD));*@
+        @*var oBODJ = @Html.Raw(Json.Encode(oBOD));*@
+        var oCompDJ = @Html.Raw(Json.Encode(Model.oDefintion));
+        var o1ClickDJ ={
+            oOneClickParameters :@Html.Raw(Json.Encode(o1ClickD.oOneClickParameters.Where(x => x.iType == 10 || x.iType == 30).ToList())),
+            ResultListDisplayType :'@o1ClickD.ResultListDisplayType',
+            ResultListDisplayType : '@o1ClickD.ResultListDisplayType',
+            DisplayAs : '@o1ClickD.DisplayAs',
+            Headings : @Html.Raw(Json.Encode(o1ClickD.Headings)),
+            TableColumns : @Html.Raw(Json.Encode(o1ClickD.TableColumns)),
+            IsRowClick : '@o1ClickD.IsRowClick',
+            RowXiLinkID : '@o1ClickD.RowXiLinkID',
+            sBOName : '@o1ClickD.sBOName',
+            BOID : '@o1ClickD.BOID',
+            bIsRecordLock : '@o1ClickD.bIsRecordLock',
+            sRowXiLinkType : '@o1ClickD.sRowXiLinkType',
+            oneClickID:'@o1ClickD.ID',
+            iCatID:'@o1ClickD.CategoryID',
+        }
+        var oBODJ = {
+            sPrimaryKey : '@oBOD.sPrimaryKey',
+            LabelName : '@oBOD.LabelName',
+            sAuditBOName : '@oBOD.sAuditBOName',
+            BOID : '@oBOD.BOID'}
+        if('@o1ClickD.IsRowClick'=="True" && '@o1ClickD.OnRowClickType'=="TD"){
+            if(Checked==false&&ColIndex>0){
+                funGridDrillIn(this, o1ClickDJ, oBODJ, sGUID, '@sTabGUID');
+                fncGridTrigger1Click(this, o1ClickDJ, oBODJ, oCompDJ, sGUID, '@sTabGUID');
+            }
+        }
+        else if('@o1ClickD.IsRowClick'=="True"){
+            if('@o1ClickD.RowXiLinkID' > 0){
+                if((Checked==false&&ColIndex>0)|| '@o1ClickD.sBOName' == 'CIF Document'){
+                    funGridDrillIn(this, o1ClickDJ, oBODJ, sGUID, '@sTabGUID');
+                }
+            }
+            else{
+                if('@o1ClickD.bIsCheckbox'=="True"){
+
+                }
+                else
+                {
+                    fncGridTrigger1Click(this, o1ClickDJ, oBODJ, oCompDJ, sGUID, '@sTabGUID');
+                }
+            }
+        }
+    });
+    function funGridDrillIn(_this, o1ClickDJ, oBODJ, sGUID, sTabGUID){
+        @*var oOneClickParameters=@Html.Raw(Json.Encode(o1ClickD.oOneClickParameters.Where(x=>x.iType==10).ToList()));*@
+        var oOneClickParameters=o1ClickDJ.oOneClickParameters;
+        var rt = $(_this).closest("tr");
+        var rt = $(rt).prop("checked");
+        if (rt == true) {
+            e.stopImmediatePropagation();
+        }
+        var RowData = [];
+        if(o1ClickDJ.ResultListDisplayType==1)
+        {
+            var tddata = [];
+            if(o1ClickDJ.DisplayAs == 50 )
+            {
+                tddata=$('#OneClickResult-'+sTabGUID).dataTable().fnGetData($(_this).closest('tr'));
+            }
+            else
+            {
+                $(_this).children('td').each(function(ii, vv){
+                    tddata[ii] = $(vv).find("input").val();
+                });
+            }
+            RowData = tddata;
+        }
+        else{
+            RowData = $(_this).children("td").map(function() {
+                return $(_this).text();
+            }).get();
+        }
+        //Keerthi--Rowxilinkid for simple1click result grid
+        if(o1ClickDJ.iCatID=="10")
+        {
+            $.ajax({
+                type: 'POST',
+                url: '/XiLink/GetRowXilinkID',
+                data: { OneClickID: o1ClickDJ.oneClickID},
+                cache: false,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    o1ClickDJ.RowXiLinkID=data;
+                }
+            });
+        }
+        var id;
+        if(RowData){
+            RowClickAttributeParams=[];
+            var sHiddenString="";
+            var sBOPK = oBODJ.sPrimaryKey;
+            for (var i = 0; i < o1ClickDJ.Headings.length; i++) {
+                if (o1ClickDJ.Headings[i].toLowerCase() == sBOPK.toLowerCase()) {
+                    id = RowData[i];
+                }
+                if (o1ClickDJ.Headings[i].toLowerCase() == "Override Type".toLowerCase()) {
+                    iOverrideType = RowData[i];
+                }
+                if (o1ClickDJ.Headings[i].toLowerCase() == "HiddenData".toLowerCase()) {
+                    sHiddenString = RowData[i];
+                }
+            }
+            if(sHiddenString!="")
+            {
+                var sHiddenAttrArray=sHiddenString.split(':');
+                for (var Attr = 0; Attr < sHiddenAttrArray.length; Attr++) {
+                    if(sHiddenAttrArray[Attr]!="")
+                    {
+                        var sAttrName=sHiddenAttrArray[Attr].split('__')[0];
+                        var sAttrValue=sHiddenAttrArray[Attr].split('__')[1];
+                        if(oOneClickParameters!=null&&oOneClickParameters.length>0)
+                        {
+                            for (var rAttr = 0; rAttr < oOneClickParameters.length; rAttr++) {
+                                if(oOneClickParameters[rAttr].sName.toLowerCase()==sAttrName.toLowerCase())
+                                {
+                                    var RCAparam1 = {};
+                                    RCAparam1["sName"] = oOneClickParameters[rAttr].sValue;
+                                    RCAparam1["sValue"] = sAttrValue;
+                                    RowClickAttributeParams.push(RCAparam1);
+                                    if(oOneClickParameters[rAttr].sName.toLowerCase() == sBOPK.toLowerCase()){
+                                        id = sAttrValue;
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if(oOneClickParameters!=null&&oOneClickParameters.length>0)
+                {
+                    for (var rAttr = 0; rAttr < oOneClickParameters.length; rAttr++) {
+                        for (var i = 0; i < o1ClickDJ.TableColumns.length; i++) {
+                            if (o1ClickDJ.TableColumns[i].toLowerCase() == oOneClickParameters[rAttr].sName.toLowerCase()) {
+                                var RCAparam1 = {};
+                                RCAparam1["sName"] = oOneClickParameters[rAttr].sValue;
+                                RCAparam1["sValue"] = RowData[i];
+                                RowClickAttributeParams.push(RCAparam1);
+                            }
+                        }
+                    }
+                }
+
+            }
+            var StaticParamsParams=o1ClickDJ.oOneClickParameters.filter(function (x) { return x.iType === 30});
+            for (var c = 0; c < StaticParamsParams.length; c++) {
+                var RCAparam1 = {};
+                RCAparam1["sName"] = StaticParamsParams[c].sName;
+                RCAparam1["sValue"] = StaticParamsParams[c].sValue;
+                RowClickAttributeParams.push(RCAparam1);
+            }
+            var iInstanceID = parseInt(id);
+            var InputParams = [];
+            if(iInstanceID>0){
+                if(o1ClickDJ.IsRowClick == 'True' && o1ClickDJ.RowXiLinkID > 0){
+                    var param1 = {};
+                    param1["sName"] = 'sBOName';
+                    param1["sValue"] = o1ClickDJ.sBOName;
+                    InputParams.push(param1);
+                    var param2 = {};
+                    param2["sName"] = 'iBOIID';
+                    param2["sValue"] = iInstanceID;
+                    InputParams.push(param2);
+                    var param3 = {};
+                    param3["sName"] = 'iBODID';
+                    param3["sValue"] = o1ClickDJ.BOID;
+                    InputParams.push(param3);
+                    var param4 = {};
+                    param4["sName"] = '{-iInstanceID}';
+                    param4["sValue"] = iInstanceID;
+                    InputParams.push(param4);
+                    var param5 = {};
+                    param5["sName"] = '{XIP|'+o1ClickDJ.sBOName+'.id}';
+                    param5["sValue"] = iInstanceID;
+                    InputParams.push(param5);
+                    var param6 = {};
+                    param6["sName"] = '{XIP|sBOName}';
+                    param6["sValue"] = o1ClickDJ.sBOName;
+                    InputParams.push(param6);
+                    var param7 = {};
+                    param7["sName"] = '{XIP|iInstanceID}';
+                    param7["sValue"] = iInstanceID;
+                    InputParams.push(param7);
+                    var param8 = {};
+                    param8["sName"] = '{XIP|ActiveBO}';
+                    param8["sValue"] = o1ClickDJ.sBOName;
+                    InputParams.push(param8);
+                    var param9 = {};
+                    param9["sName"] = 'sBOLabel';
+                    param9["sValue"] = oBODJ.LabelName;
+                    InputParams.push(param9);
+                    if(RowClickAttributeParams!=null && RowClickAttributeParams.length>0)
+                    {
+                        for(var b=0;b<RowClickAttributeParams.length;b++){
+
+                            var bExist = InputParams.filter(function (x) { return RowClickAttributeParams[b].sName == x.sName } ); //.Data = serialized[i].value;
+                            if(bExist && bExist.length > 0){
+                                for(var c=0;c<InputParams.length;c++){
+                                    if(InputParams[c].sName == RowClickAttributeParams[b].sName){
+                                        InputParams[c].sValue =RowClickAttributeParams[b].sValue;
+                                    }
+                                }
+                                //InputParams.filter(function (x) { return x.sName === RowClickAttributeParams[b].sName; }).sValue = RowClickAttributeParams[b].sValue;
+                            }
+                            else{
+                                InputParams.push(RowClickAttributeParams[b]);
+                            }
+                        }
+                        //var newArray = $.merge(InputParams, RowClickAttributeParams);
+                    }
+                    if(o1ClickDJ.bIsRecordLock && o1ClickDJ.bIsRecordLock=='True')
+                    {
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("SetbLock", "XiLink")',
+                            data: { iBODID: o1ClickDJ.BOID,sBOName:o1ClickDJ.sBOName,sInstanceID:iInstanceID},
+                            cache: false,
+                            async: false,
+                            dataType: 'json',
+                            success: function (data) {
+                                if(data!="")
+                                {
+                                    var param = {};
+                                    param["sName"] = 'bIsLock';
+                                    param["sValue"] = true;
+                                    InputParams.push(param);
+                                }
+                                else
+                                {
+                                    var param = {};
+                                    param["sName"] = 'bIsLock';
+                                    param["sValue"] = false;
+                                    InputParams.push(param);
+                                }
+                            }
+                        });
+                    }
+                    if(oBODJ.sAuditBOName&&oBODJ.sAuditBOName=="Audit_T")
+                    {
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("SaveAuditBO", "XiLink")',
+                            data: { iBODID: oBODJ.BOID, sAuditBOName: oBODJ.sAuditBOName, sBOName: o1ClickDJ.sBOName, sInstanceID: iInstanceID, sAuditContent: null, sGUID: sGUID },
+                            cache: false,
+                            async: true,
+                            dataType: 'json',
+                            success: function (data) {
+                            }
+                        });
+                    }
+                    if(o1ClickDJ.sRowXiLinkType == "run")
+                    {
+                        XIRun(null,o1ClickDJ.RowXiLinkID, parseInt(iInstanceID), sGUID, o1ClickDJ.sBOName, false,parseInt(o1ClickDJ.BOID),0,null,InputParams);
+                    }
+                    else
+                    {
+                        XILinkLoadJson(o1ClickDJ.RowXiLinkID, sGUID, InputParams);
+                    }
+                }
+            }
+            else
+            {
+                XILinkLoadJson(o1ClickDJ.RowXiLinkID, sGUID, InputParams);
+            }
+        }
+    };
+    SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+    $('#btnExport').click(function(){
+        var sTabGUID= '@sTabGUID';
+        Fields = "";
+        Optrs = "";
+        Values = "";
+        DValue ="";
+        var j= 0;
+        var SrchFlds = '@o1ClickD.SearchFields';
+        if(SrchFlds && SrchFlds!=null){
+            j = SrchFlds.split(", ").length;
+        }
+        for(i=0;i<j;i++){
+            var form = $('.DFSubmit1').parent().parent().parent().parent();
+            var Value = $(form).find('#'+sTabGUID+'-'+i+'-Value').val();
+            if(typeof Value === 'undefined' && Value != 0)
+            {
+                Value = $(form).find('#'+sTabGUID+'-'+i+'-Value').val();
+            }
+            var ddltext = $(form).find('#'+sTabGUID+'-'+i+'-Value :selected').text();
+            if(Value != -1){
+                if(ddltext.length > 0 && ddltext.toLowerCase() == "please select"){
+
+                }
+                else if(Value && Value !="" && Value.length>0){
+                    var Field =$(form).find('#'+sTabGUID+'-'+i+'-FieldName').val();
+                    var Optr = $(form).find('#'+sTabGUID+'-'+i+'-Operator').val();
+                    var DValue = $(form).find('#'+sTabGUID+'-'+i+'-Value2').val();
+                    if(Optr=="between"){
+                        Values = Values + Value+"_"+DValue+",";
+                    }
+                    else{
+                        Values = Values + Value+",";
+                    }
+                    Fields = Fields + Field+",";
+                    Optrs = Optrs + Optr+",";
+                }
+            }
+        }
+        Fields = Fields.substring(0, Fields.length-1);
+        Optrs = Optrs.substring(0, Optrs.length-1);
+        Values = Values.substring(0, Values.length-1);
+        Type = sSearchType;
+        var sFileExtension='@o1ClickD.sFileExtension';
+        var sGUID='@o1ClickD.sGUID';
+        var id= $(this).attr('name');
+        window.location.href = '@Url.Action("ToDataTable", "Inbox")?i1ClickID=' + id +'&Name=Report_'+id+'&FileFormat='+sFileExtension+'&Type='+Type+'&Fields='+Fields+'&Optrs='+Optrs+'&Values='+Values+'&sGUID='+sGUID;
+    })
+    if ('@o1ClickD.IsCreate' == 'True'){
+        SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+    }
+    else{
+        SaveEditBOURL = '@Url.Action("SaveGrid", "XiLink")';
+    }
+    SaveBOFormURL = '@Url.Action("SaveBO", "XiLink")';
+    SaveBOGridURL = '@Url.Action("SaveGrid", "XiLink")';
+    Date.prototype.toShortFormat = function () {
+
+        var month_names = ["Jan", "Feb", "Mar",
+                          "Apr", "May", "Jun",
+                          "Jul", "Aug", "Sep",
+                          "Oct", "Nov", "Dec"];
+
+        var day = this.getDate();
+        var month_index = this.getMonth();
+        var year = this.getFullYear();
+        if (day <= 9) {
+            day = "0" + day;
+        }
+        return "" + day + "-" + month_names[month_index] + "-" + year;
+    }
+    function ChaseRequirements(This, sBoName) {
+        //$.each($("input[name='checkbox']:checked"), function () {
+        //    favorite.push($(this).val());
+        //});
+        var i = 0;
+        $.each($("input[type='checkbox']:checked"), function () {
+            if (this.checked) {
+                var id = $(this).attr('id');
+                var iInstanceID = $(this).attr('data-id');
+                var sScript = "xi.s|{xi.a|" + sBoName + "," + iInstanceID + ",'refchasestatus','3',''}";
+                var sAttrID = "tr" + id + "_" + "refchasestatus" + "_" + "script";
+                $('#' + sAttrID).val(sScript);
+                var dDate = new Date();
+                sScript = "xi.s|{xi.a|" + sBoName + "," + iInstanceID + ",'dtlastprogress','" + dDate.toShortFormat() + "',''}";
+                sAttrID = "tr" + id + "_" + "dtlastprogress" + "_" + "script";
+                $('#' + sAttrID).val(sScript);
+                i++;
+            }
+        });
+        if (i > 0) {
+            var XiLinkID = 4669;
+            var GUID = fncGetGUIDFromHTMLTree('LayoutGUID', This);
+            XIRun(null,XiLinkID, 0, GUID, 'ACPolicy_T', false, 17);
+            //XIRun(XiLinkID, 0, GUID, 'ACPolicy_T', false, 17).done(SaveGridData(This, null, sBoName));
+            SaveGridData(This, null, sBoName);
+        }
+    }
+    function fncCheckboxOnchangeAll($this, ReportID, GroupID, BOID, CreateXILinkID) {
+        var tableID= $($this).closest('table').attr('id');
+        $('#'+tableID+' tbody>tr').each(function () {
+            SelectAll(tableID,$this,this, ReportID, GroupID, BOID, CreateXILinkID);
+        })
+    }
+    function fncCheckboxOnchange($this, ReportID, GroupID, BOID, CreateXILinkID) {
+        var tableID= $($this).closest('table').attr('id');
+        SelectOne(tableID,$this, ReportID, GroupID, BOID, CreateXILinkID);
+    }
+    function SelectOne(tableID,$this, ReportID, GroupID, BOID, CreateXILinkID)
+    {
+        var Headings =[];
+        $('#'+tableID+' thead>tr').children('th').each(function (i, v) {
+            Headings[i] =  $(v).text();
+        })
+        var rt = $($this).prop("checked");
+        var tr = $($this).closest('tr');
+        if(rt==true){
+            $(tr).addClass("trhighlighter");
+        }
+        else{
+            $(tr).removeClass("trhighlighter");
+        }
+        var RowData = [];
+        $(tr).children('td').each(function (ii, vv) {
+            RowData[ii] =  $(vv).find("input").val();
+        });
+        if(RowData){
+            for (var i = 0; i < Headings.length; i++) {
+                if (Headings[i].toLowerCase() == "ID".toLowerCase()) {
+                    param1 = {};
+                    param1["sName"] = "tr_FKiACTransactionID";
+                    param1["sValue"] = RowData[i];
+                    param1["bDirty"] =true;
+                    if(rt==true){
+                        InputParams.push(param1);
+                    }else
+                    {
+                        InputParams = $.grep(InputParams, function (element, index) {
+                            return element.sName != param1["sName"];
+                        });
+                    }
+                }
+            } //end for for loop
+        }
+    }
+    function SelectAll(tableID,thead,$this, ReportID, GroupID, BOID, CreateXILinkID)
+    {
+        var Headings =[];
+        $('#'+tableID+' thead>tr').children('th').each(function (i, v) {
+            Headings[i] =  $(v).text();
+        })
+        var rt = $(thead).prop("checked");
+        var tr = $($this).closest('tr');
+        if(rt==true){
+            $(tr).addClass("trhighlighter").removeClass('chkReconcilliation');
+            $(tr).find("input").prop('checked',true).removeClass('chkReconcilliation');
+            //$('td input:checkbox',tr).prop('checked',true);
+        }
+        else{
+            $(tr).removeClass("trhighlighter");
+            $('td input:checkbox',tr).prop('checked',false);
+        }
+        var RowData = [];
+        $(tr).children('td').each(function (ii, vv) {
+            RowData[ii] =  $(vv).find("input").val();
+        });
+        if(RowData){
+            for (var i = 0; i < Headings.length; i++) {
+                if (Headings[i].toLowerCase() == "ID".toLowerCase()) {
+                    param1 = {};
+                    param1["sName"] = "tr_FKiACTransactionID";
+                    param1["sValue"] = RowData[i];
+                    param1["bDirty"] =true;
+                    if(rt==true){
+                        InputParams.push(param1);
+                    }else
+                    {
+                        InputParams = $.grep(InputParams, function (element, index) {
+                            return element.sName != param1["sName"];
+                        });
+                    }
+                }
+            } //end for for loop
+
+        }
+    }
+    $("#btnAction").click(function() {
+        $('.chkReconcilliation:checkbox:checked').prop("disabled",true);
+        var sGUID = fncGetGUIDFromHTMLTree("LayoutGUID", this);
+        if('@o1ClickD.Code' == "ACTION") {
+            XIRun(null,@o1ClickD.iActionXILinkID,0,sGUID,null,false,@o1ClickD.BOID,0,null,InputParams);
+        }
+    });
+    function oneClickSearch(_this, id, sTabCols, sTabGUID, sSearchFields, sType) {
+        $('#Grid-@o1ClickD.ID').block({
+            message: '<h4> Processing ... </h4>',
+            blockMsgClass: 'report-success',
+        });
+        SubmitClick = 1;
+        pageIndex = 1;
+        Fields = "";
+        Optrs = "";
+        Values = "";
+        DValue = "";
+        var j = 0;
+        var SrchFlds = sSearchFields;
+        if (SrchFlds && SrchFlds != null) {
+            j = SrchFlds.split(", ").length;
+        }
+        for (i = 0; i < j; i++) {
+            var form = $(_this).parent().parent().parent().parent();
+            var Value = $(form).find('#' + sTabGUID + '-' + i + '-Value').attr('data-value');
+            if (typeof Value === 'undefined' && Value != 0) {
+                Value = $(form).find('#' + sTabGUID + '-' + i + '-Value').val();
+            }
+            var ddltext = $(form).find('#' + sTabGUID + '-' + i + '-Value :selected').text();
+            if (Value != -1) {
+                if (ddltext.length > 0 && ddltext.toLowerCase() == "please select") {
+
+                }
+                else if (Value && Value != "" && Value.length > 0) {
+                    var Field = $(form).find('#' + sTabGUID + '-' + i + '-FieldName').val();
+                    var Optr = $(form).find('#' + sTabGUID + '-' + i + '-Operator').val();
+                    var DValue = $(form).find('#' + sTabGUID + '-' + i + '-Value2').val();
+                    if (Optr == "between") {
+                        Values = Values + Value + "_" + DValue + ",";
+                    }
+                    else {
+                        Values = Values + Value + ",";
+                    }
+                    Fields = Fields + Field + ",";
+                    Optrs = Optrs + Optr + ",";
+                }
+            }
+        }
+        Fields = Fields.substring(0, Fields.length - 1);
+        Optrs = Optrs.substring(0, Optrs.length - 1);
+        Values = Values.substring(0, Values.length - 1);
+        if ('@o1ClickD.ResultListDisplayType' == 0) {
+            GetRecords(Fields, Optrs, Values, sSearchType);
+        }
+        else {
+            var iPageLength = 0;
+            if ('@o1ClickD.iPaginationCount' == 0) {
+                iPageLength = 100;
+            }
+            else {
+                iPageLength = '@o1ClickD.iPaginationCount';
+            }
+            var SortColumns = sTabCols.split(',');
+            var expColumns = new Array();
+            for (var i = 0; i < SortColumns.length; i++) {
+                var obj = new Object();
+                obj.sName = SortColumns[i];
+                obj.bSortable = true;
+                if (SortColumns[i].toLowerCase() == "hiddendata") {
+                    obj.visible = false;
+                }
+                expColumns.push(obj);
+            }
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+            var oVisualisation =@Html.Raw(Json.Encode(Model.oVisualisation));
+            if(oVisualisation)
+            {
+                var oVisual = oVisualisation[0];
+                if(oVisual)
+                {
+                    VisualName=oVisual.Name;
+                }
+            }
+            if('@o1ClickD.sLockGroup' != '' || '@o1ClickD.sLockGroup' != null)
+            {
+                sLockGroup = sLockGroupName;
+            }
+            if ('@o1ClickD.IsNaturalSearch' == "True") {
+                sSearType = "NaturalSearch";
+            } else if ('@o1ClickD.IsFilterSearch' == "True") {
+                sSearType = "FilterSearch";
+            }
+            if (sType == "Grid") {
+                $.ajax({
+                    url: '@Url.Action("GetGridClickResult", "XiLink")',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    async: true,
+                    cache: false,
+                    data: JSON.stringify({ i1ClickID: id, sGUID: sGUID, Fields: Fields, Optrs: Optrs, Values: Values, SearchType: Type, VisualName: VisualName, sSearType: sSearType,sLockGroup:sLockGroup }),
+                    success: function (data) {
+                        var New = $(data).find('#Grid-@o1ClickD.ID').html();
+                        $('#Grid-@o1ClickD.ID').unblock();
+                        $('#Grid-@o1ClickD.ID').html(New);
+                        var Total = iTotalRecords;
+                        var Dispaly = DisplayedRecords;
+                        $('.GridPrevBtn').attr('data-count', TotalDispaly);
+                        $('.GridNextBtn').attr('data-count', TotalDispaly);
+                        if(Dispaly <= Total){
+                            $('.GridNextBtn').prop('disabled', false);
+                        }
+                        else{
+                            $('.GridNextBtn').prop('disabled', true);
+                        }
+                        if(TotalDispaly == 0){
+                            $('.GridPrevBtn').prop('disabled', true);
+                        }
+                        else{
+                            $('.GridPrevBtn').prop('disabled', false);
+                        }
+                    },
+                    error: function (data) {
+                        $('#Grid-@o1ClickD.ID').html("Error Occured");
+                    }
+                })
+            }
+            else {
+                fncGetDTable(OneClickURL, id, expColumns, sGUID, '@o1ClickD.SearchText', iPageLength, sTabGUID);
+            }
+        }
+    }
+
+    function fncGridPrevData(_this, id, sTabCols, sTabGUID, sType) {
+        var Grd = $('div[data-name="Grid-@sTabGUID"]');
+        var form = $(Grd).find('#DynamicQueryForm');
+        var Fies =$(Grd).find('#DynamicQueryForm').find('.form-group');
+        var Fields = "";
+        var Optrs = "";
+        var Values = "";
+        for(var i=0;i<Fies.length;i++){
+            var Value = $(form).find('#' + sTabGUID + '-' + i + '-Value').attr('data-value');
+            if (typeof Value === 'undefined' && Value != 0) {
+                Value = $(form).find('#' + sTabGUID + '-' + i + '-Value').val();
+            }
+            var ddltext = $(form).find('#' + sTabGUID + '-' + i + '-Value :selected').text();
+            if (Value != -1) {
+                if (ddltext.length > 0 && ddltext.toLowerCase() == "please select") {
+
+                }
+                else if (Value && Value != "" && Value.length > 0) {
+                    var Field = $(form).find('#' + sTabGUID + '-' + i + '-FieldName').val();
+                    var Optr = $(form).find('#' + sTabGUID + '-' + i + '-Operator').val();
+                    var DValue = $(form).find('#' + sTabGUID + '-' + i + '-Value2').val();
+                    if (Optr == "between") {
+                        Values = Values + Value + "_" + DValue + ",";
+                    }
+                    else {
+                        Values = Values + Value + ",";
+                    }
+                    Fields = Fields + Field + ",";
+                    Optrs = Optrs + Optr + ",";
+                }
+            }
+        }
+        var myCount = $(_this).attr('data-count');
+        var iPageCount = parseInt(myCount) - 1 ;
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+        $('#Grid-@o1ClickD.ID').block({
+            message: '<h4> Processing ... </h4>',
+            blockMsgClass: 'report-success',
+        });
+        var oVisualisation =@Html.Raw(Json.Encode(Model.oVisualisation));
+        if(oVisualisation)
+        {
+            var oVisual = oVisualisation[0];
+            if(oVisual)
+            {
+                VisualName=oVisual.Name;
+            }
+        }
+        if('@o1ClickD.sLockGroup' != '' || '@o1ClickD.sLockGroup' != null)
+        {
+            sLockGroup = sLockGroupName;
+        }
+        if ('@o1ClickD.IsNaturalSearch' == "True") {
+            sSearType = "NaturalSearch";
+        } else if ('@o1ClickD.IsFilterSearch' == "True") {
+            sSearType = "FilterSearch";
+        }
+        $.ajax({
+            url: '@Url.Action("GetGridClickResult", "XiLink")',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            async: true,
+            cache: false,
+            data: JSON.stringify({ i1ClickID: id, sGUID: sGUID, Fields: Fields, Optrs: Optrs, Values: Values, SearchType: Type, VisualName: VisualName, sSearType: sSearType,sLockGroup:sLockGroup, iPageCount:iPageCount }),
+            success: function (data) {
+                var New = $(data).find('#Grid-@o1ClickD.ID').html();
+                $('#Grid-@o1ClickD.ID').unblock();
+                $('#Grid-@o1ClickD.ID').html(New);
+                var Total = iTotalRecords;
+                var Dispaly = DisplayedRecords;
+                $('.GridPrevBtn').attr('data-count', TotalDispaly);
+                $('.GridNextBtn').attr('data-count', TotalDispaly);
+                if(Dispaly <= Total){
+                    $('.GridNextBtn').prop('disabled', false);
+                }
+                else{
+                    $('.GridNextBtn').prop('disabled', true);
+                }
+                if(TotalDispaly == 0){
+                    $('.GridPrevBtn').prop('disabled', true);
+                }
+                else{
+                    $('.GridPrevBtn').prop('disabled', false);
+                }
+                if('@o1ClickD.bIsCheckbox'.toLowerCase()=='true'){
+                    for (var i = 0; i < InputParams.length; i++) {
+                        var tr= InputParams[i].sValue
+                        $('#Instance_'+tr).addClass("trhighlighter").removeClass('chkReconcilliation');
+                        $('#Instance_'+tr).find("input").prop('checked',true).removeClass('chkReconcilliation');
+                        $('#Instance_'+tr).closest('th').hasClass("chkReconcilliationAll").prop('checked',true)
+                        // $('.chkReconcilliationAll').closest('th').prop('checked',true)
+                    }
+                }
+            },
+            error: function (data) {
+                $('#Grid-@o1ClickD.ID').html("Error Occured");
+            }
+        })
+        //$('#Grid-@o1ClickD.ID').scrollTop(0);
+        // $('html, body').animate({scrollTop:$('#Grid-@o1ClickD.ID').position().top}, 'slow');
+        $('#Component_9112').animate({scrollTop:0}, '500', 'slow');
+    }
+    function fncGridNextData(_this, id, sTabCols, sTabGUID, sType) {
+        var Grd = $('div[data-name="Grid-@sTabGUID"]');
+        var form = $(Grd).find('#DynamicQueryForm');
+        var Fies =$(Grd).find('#DynamicQueryForm').find('.form-group');
+        var Fields = "";
+        var Optrs = "";
+        var Values = "";
+        for(var i=0;i<Fies.length;i++){
+            var Value = $(form).find('#' + sTabGUID + '-' + i + '-Value').attr('data-value');
+            if (typeof Value === 'undefined' && Value != 0) {
+                Value = $(form).find('#' + sTabGUID + '-' + i + '-Value').val();
+            }
+            var ddltext = $(form).find('#' + sTabGUID + '-' + i + '-Value :selected').text();
+            if (Value != -1) {
+                if (ddltext.length > 0 && ddltext.toLowerCase() == "please select") {
+
+                }
+                else if (Value && Value != "" && Value.length > 0) {
+                    var Field = $(form).find('#' + sTabGUID + '-' + i + '-FieldName').val();
+                    var Optr = $(form).find('#' + sTabGUID + '-' + i + '-Operator').val();
+                    var DValue = $(form).find('#' + sTabGUID + '-' + i + '-Value2').val();
+                    if (Optr == "between") {
+                        Values = Values + Value + "_" + DValue + ",";
+                    }
+                    else {
+                        Values = Values + Value + ",";
+                    }
+                    Fields = Fields + Field + ",";
+                    Optrs = Optrs + Optr + ",";
+                }
+            }
+        }
+        var myCount = $(_this).attr('data-count');
+        var iPageCount = parseInt(myCount) +1 ;
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+        $('#Grid-@o1ClickD.ID').block({
+            message: '<h4> Processing ... </h4>',
+            blockMsgClass: 'report-success',
+        });
+        var oVisualisation =@Html.Raw(Json.Encode(Model.oVisualisation));
+        if(oVisualisation)
+        {
+            var oVisual = oVisualisation[0];
+            if(oVisual)
+            {
+                VisualName=oVisual.Name;
+            }
+        }
+        if('@o1ClickD.sLockGroup' != '' || '@o1ClickD.sLockGroup' != null)
+        {
+            sLockGroup = sLockGroupName;
+        }
+        if ('@o1ClickD.IsNaturalSearch' == "True") {
+            sSearType = "NaturalSearch";
+        } else if ('@o1ClickD.IsFilterSearch' == "True") {
+            sSearType = "FilterSearch";
+        }
+        $.ajax({
+            url: '@Url.Action("GetGridClickResult", "XiLink")',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            async: true,
+            cache: false,
+            data: JSON.stringify({ i1ClickID: id, sGUID: sGUID, Fields: Fields, Optrs: Optrs, Values: Values, SearchType: Type, VisualName: VisualName, sSearType: sSearType,sLockGroup:sLockGroup, iPageCount:iPageCount }),
+            success: function (data) {
+                var New = $(data).find('#Grid-@o1ClickD.ID').html();
+
+                $('#Grid-@o1ClickD.ID').unblock();
+                $('#Grid-@o1ClickD.ID').html(New);
+                var Total = iTotalRecords;
+                var Dispaly = DisplayedRecords;
+                $('.GridNextBtn').attr('data-count', iPageCount);
+                $('.GridPrevBtn').attr('data-count', iPageCount);
+                if(Dispaly <= Total){
+                    $('.GridNextBtn').prop('disabled', false);
+                }
+                else{
+                    $('.GridNextBtn').prop('disabled', true);
+                }
+                if(TotalDispaly == 0){
+                    $('.GridPrevBtn').prop('disabled', true);
+                }
+                else{
+                    $('.GridPrevBtn').prop('disabled', false);
+                }
+                if('@o1ClickD.bIsCheckbox'.toLowerCase()=='true'){
+                    for (var i = 0; i < InputParams.length; i++) {
+                        var tr= InputParams[i].sValue
+                        $('#Instance_'+tr).addClass("trhighlighter").removeClass('chkReconcilliation');
+                        $('#Instance_'+tr).find("input").prop('checked',true).removeClass('chkReconcilliation');
+                        $('#Instance_'+tr).closest('th').hasClass("chkReconcilliationAll").prop('checked',true)
+                        //$('.chkReconcilliationAll').prop('checked',true)
+                    }
+                }
+            },
+            error: function (data) {
+                $('#Grid-@o1ClickD.ID').html("Error Occured");
+            }
+        })
+        //$('#Grid-@o1ClickD.ID').scrollTop(0);
+        //$('html, body').animate({scrollTop:$('#Grid-@o1ClickD.ID').position().top}, 'slow');
+        $('#Component_9112').animate({scrollTop:0}, '500', 'slow');
+    }
+
+
+    function oneClickReset(_this, id, sTabCols, sTabGUID, sType) {
+        debugger;
+        $('#Grid-@o1ClickD.ID').block({
+            message: '<h4> Processing ... </h4>',
+            blockMsgClass: 'report-success',
+        });
+        var form = $(_this).parent().parent().parent().parent();
+        $(form).find('input[type="text"]').val('');
+        $(form).find('.oprator').each(function (i, val) {
+            $(this).prop("selectedIndex", 0);
+        });
+        $(form).find('.optionvalue').each(function (i, val) {
+            $(this).prop("selectedIndex", 0);
+        });
+        $(form).find('.autocomplete').each(function (i, val) {
+            $(this).attr("data-value", -1);
+        });
+        $(form).find('.dBtnDatesRes').each(function () {
+            var elemID = $(this).prop("lastElementChild");
+            var dHideBet = elemID.id.valueOf("id");
+            $('#' + dHideBet).hide();
+        });
+        if ('@o1ClickD.ResultListDisplayType' == 0) {
+            SubmitClick = 1;
+            Fields = null;
+            Optrs = null;
+            Values = null;
+            GetRecords("", "", "", Type);
+        }
+        else {
+            var SortColumns = sTabCols.split(',');
+            var expColumns = new Array();
+            for (var i = 0; i < SortColumns.length; i++) {
+                var obj = new Object();
+                obj.sName = SortColumns[i];
+                obj.bSortable = true;
+                if (SortColumns[i].toLowerCase() == "hiddendata") {
+                    obj.visible = false;
+                }
+                expColumns.push(obj);
+            }
+            var iPageLength = 0;
+            if ('@o1ClickD.iPaginationCount' == 0) {
+                iPageLength = 100;
+            }
+            else {
+                iPageLength = '@o1ClickD.iPaginationCount';
+            }
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+            var oVisualisation =@Html.Raw(Json.Encode(Model.oVisualisation));
+            if(oVisualisation)
+            {
+                var oVisual = oVisualisation[0];
+                if(oVisual)
+                {
+                    VisualName=oVisual.Name;
+                }
+            }
+            if('@o1ClickD.sLockGroup' != '' || '@o1ClickD.sLockGroup' != null)
+            {
+                sLockGroup = sLockGroupName;
+            }
+            if ('@o1ClickD.IsNaturalSearch' == "True") {
+                sSearType = "NaturalSearch";
+            } else if ('@o1ClickD.IsFilterSearch' == "True") {
+                sSearType = "FilterSearch";
+            }
+            if (sType == "Grid") {
+                $.ajax({
+                    url: '@Url.Action("GetGridClickResult", "XiLink")',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    async: true,
+                    cache: false,
+                    data: JSON.stringify({ i1ClickID: id, sGUID: sGUID, Fields: "", Optrs: "", Values: "", SearchType: Type, VisualName: VisualName, sSearType: sSearType,sLockGroup:sLockGroup}),
+                    success: function (data) {
+                        var New = $(data).find('#Grid-@o1ClickD.ID').html();
+                        $('#Grid-@o1ClickD.ID').unblock();
+                        $('#Grid-@o1ClickD.ID').html(New);
+                        var Total = iTotalRecords;
+                        var Dispaly = DisplayedRecords;
+                        $('.GridNextBtn').attr('data-count', 0);
+                        $('.GridPrevBtn').attr('data-count', 0);
+                        if(Dispaly <= Total){
+                            $('.GridNextBtn').prop('disabled', false);
+                        }
+                        else{
+                            $('.GridNextBtn').prop('disabled', true);
+                        }
+                        if(TotalDispaly == 0){
+                            $('.GridPrevBtn').prop('disabled', true);
+                        }
+                        else{
+                            $('.GridPrevBtn').prop('disabled', false);
+                        }
+                    },
+                    error: function (data) {
+                        $('#Grid-@o1ClickD.ID').html("Error Occured");
+                    }
+                })
+            }
+            else {
+                fncGetDTable(OneClickURL, id, expColumns, '@o1ClickD.sGUID', '@o1ClickD.SearchText', iPageLength, sTabGUID, Fields, Optrs, Values);
+            }
+        }
+    }
+
+    function fncGridViewBO($this, ReportID, GroupID, BOID, CreateXILinkID, sBOName) {
+        if (CreateXILinkID && CreateXILinkID.length > 0)
+        {
+
+            var InputParams = [];
+            var tr = $($this).closest('tr');
+            //var RowData = $(tr).children("td").map(function() {
+            //    return $(this).text();
+            //}).get();
+            var sInstanceID=  $(tr).attr('id');var iInstanceID="";
+            if(sInstanceID)
+            {
+                iInstanceID=sInstanceID.split('_')[1];
+            }
+            var param1 = {};
+            param1["sName"] = '{XIP|ActiveBO}';
+            param1["sValue"] = sBOName;
+            InputParams.push(param1);
+            var param1 = {};
+            param1["sName"] = 'BO';
+            param1["sValue"] = sBOName;
+            InputParams.push(param1);
+            var param2 = {};
+            param2["sName"] = 'iBOIID';
+            param2["sValue"] = iInstanceID;
+            InputParams.push(param2);
+            var param3 = {};
+            param3["sName"] = '{-iInstanceID}';
+            param3["sValue"] = iInstanceID;
+            InputParams.push(param3);
+            var param4 = {};
+            param4["sName"] = '{XIP|'+sBOName+'.id}';
+            param4["sValue"] = iInstanceID;
+            InputParams.push(param4);
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', $this);
+            XILinkLoadJson(CreateXILinkID, sGUID, InputParams);
+            @*XIRun(CreateXILinkID, parseInt(iInstanceID), sGUID, '@sBOName', false,parseInt('@o1ClickD.BOID'),0);*@
+        }
+    }
+
+    if('@o1ClickD.ID' == '3212'){
+        function fncGridcreate(ReportID, GroupID, BOID, CreateXILinkID, InstanceID, $this,sNewGuid){
+            var Params = {
+                sBODID : BOID,
+                iGroupID : GroupID,
+                s1ClickID : ReportID,
+                iRecordCount: iRecordCount,
+                iInstanceID :InstanceID,
+                sGUID: '@o1ClickD.sGUID',
+                sMode: 'grid'
+            }
+            $.ajax({
+                url: '@Url.Action("OneClickInsert", "QueryGeneration")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                async: false,
+                data: JSON.stringify(Params),
+                success: function (BOForm) {
+                    //$('#InlineTop-'+ReportID).empty();
+                    var id=$($this).attr('id');
+                    var sFormID=$(BOForm).find('form').attr('id');
+                    if(sFormID)
+                    {
+                        var sAddformGUID=sFormID.split('_')[1];
+                        //$('#' + id).attr("id", "Add_" + sAddformGUID);
+                        $("#"+id).attr("disabled", true);
+                        //$("#Add_" + @o1ClickD.BOID).attr("disabled", "disabled");
+                    }
+                    $('#InlineTop_'+sNewGuid).prepend(BOForm);
+                },
+                error: function(err){
+                }
+            });
+
+        }
+    }
+    else{
+        function fncGridcreate(ReportID, GroupID, BOID, CreateXILinkID, InstanceID, $this, sNewGuid, FKiVisualisationID, sCondition, sGUID) {
+            debugger
+            var iRecordCount = $('#trCount-' + ReportID +' tr').length;
+            var Params = {
+                sBODID : BOID,
+                iGroupID : GroupID,
+                s1ClickID : ReportID,
+                iRecordCount: iRecordCount,
+                iInstanceID :InstanceID,
+                sGUID: sGUID,
+                FKiVisualisationID:FKiVisualisationID,
+                sCondition:sCondition,
+                sQuery:'@o1ClickD.Query',
+                sLockGroup: '@sLockGroup'
+            }
+            $.ajax({
+                url: '@Url.Action("GridInsert", "QueryGeneration")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                async: false,
+                data: JSON.stringify(Params),
+                success: function (BOForm) {
+                    //$('#InlineTop-'+ReportID).empty();
+                    var id=$($this).attr('id');
+                    var sFormID=$(BOForm).find('form').attr('id');
+                    if(sFormID)
+                    {
+                        var sAddformGUID=sFormID.split('_')[1];
+                        //$('#' + id).attr("id", "Add_" + sAddformGUID);
+                        $("#"+id).attr("disabled", true);
+                        //$("#Add_" + @o1ClickD.BOID).attr("disabled", "disabled");
+                    }
+                    $('#OneClickResult-' + ReportID).find('tbody.gridtbody').append(BOForm);
+                    var sCreateType = '@o1ClickD.sCreateType';
+                    @*if('@o1ClickD.DisplayAs' == 110){*@
+                    if(sCreateType && sCreateType!=null && sCreateType.length > 0){
+
+                        @*if(sCreateType.toLowerCase() == "inlinetop"){
+                        $('#InlineTop_'+sNewGuid).prepend(BOForm);
+                        //$("#1ClickResponse").height($('.ui-dialog').height() - $("#DynamicQueryForm").height() - 100);
+                    }
+                    else if(sCreateType.toLowerCase() == "inlinebottom"){
+                        $('.InlineBottom-'+'@o1ClickD.ID').append(BOForm);
+                    }*@
+                        //}
+                    }
+                    //$('#InlineTop_'+sNewGuid).prepend(BOForm);
+                },
+                error: function(err){
+                }
+            });
+
+        }
+    }
+</script>
+<style>
+    #QuickSearchTBox {
+        /*width: 300px;*/
+    }
+</style>

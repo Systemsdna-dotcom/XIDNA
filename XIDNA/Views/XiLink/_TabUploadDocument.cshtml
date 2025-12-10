@@ -1,0 +1,83 @@
+﻿@model int
+
+<script src="~/Scripts/ajaxfileupload.js"></script>
+<div class="form-horizontal">
+    <div class="form-group">
+        <div class="col-md-3">
+            <label for="inputEmail" class="gn">Document<span class="danger">*</span></label>
+            <input type="file" id="OrgDocUpload" name="Upload" />
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-3">
+            <label for="inputEmail" class="gn">Message<span class="danger">*</span></label>
+            <input type="text" id="OrgDocMessage" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-3">
+            <input type="button" class="btn btn-primary btn-xs" value="Save" id="SaveOrgDoc" />
+            <input type="button" class="btn btn-primary btn-xs" value="Cancel" />
+        </div>
+    </div>
+</div>
+<div id="UplodedDocsGrid">
+    @{
+        Html.RenderAction("UploadedDocsGrid", "Lead", new { LeadID=Model});
+    }
+</div>
+<div id="UploadOrgDocumentDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    $(document).ready(function () {
+        $('#SaveOrgDoc').on('click', function () {
+            if ($('#OrgDocUpload').val() != "" && $('#OrgDocMessage').val() != "") {
+                $.ajaxFileUpload({
+                    url: '@Url.Action("UploadOrgDocuments", "Lead")',
+                    secureuri: false,
+                    type: 'POST',
+                    data: { Message: $('#OrgDocMessage').val(), LeadID: '@Model' },
+                    fileElementId: 'OrgDocUpload',
+                    dataType: 'json',
+                    success: function (Res) {
+                        if (Res == "success") {
+                            $("#UploadOrgDocumentDlg").html('Document uploaded successfully!!!');
+                            $('#OrgDocUpload').val('');
+                            $('#OrgDocMessage').val('');
+                        }
+                        else {
+                            $("#UploadOrgDocumentDlg").html('Something went wrong!!!<br/> Please try again');
+                        }
+                        $("#UploadOrgDocumentDlg").dialog({
+                            title: "Upload Document",
+                            modal: true,
+                            buttons: [
+                               {
+                                   text: "Ok",
+                                   click: function () {
+                                       $("#UploadOrgDocumentDlg").dialog("close");
+                                   }
+                               }
+                            ]
+                        });
+                    },
+                    error: function (data, status, e) {
+                    }
+                })
+            } else {
+                $("#UploadOrgDocumentDlg").html('Please select document and enter message properly!!!');
+                $("#UploadOrgDocumentDlg").dialog({
+                    title: "Upload Document",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "Ok",
+                           click: function () {
+                               $("#UploadOrgDocumentDlg").dialog("close");
+                           }
+                       }
+                    ]
+                });
+            }
+        });
+    });
+</script>

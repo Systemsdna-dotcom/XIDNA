@@ -1,0 +1,161 @@
+﻿@model XIDNA.Models.EditUserViewModel
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script src="~/Scripts/JSTree/jstree.js"></script>
+<script src="~/Scripts/js/jquery.jstree.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#RoleID').val('@Model.RoleID');
+    });
+</script>
+<style>
+    .emperrormsg {
+        margin-top: 28px;
+    }
+
+    .danger {
+        color: red;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Edit User </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Employee Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+
+@*@using (Html.BeginForm())*@
+<div class="content">
+    <div class="row">
+        <div class="box padding10Tab">
+            <div class="innerborder">
+                <div class="box-body col-md-3" id="test2">
+                    <h5>Available Roles</h5>
+                    <div id="UserMainTree" class="tree">
+                        @foreach (var items in Model.Group)
+                            {
+                                items.ReportToID = Model.ReportTo;
+                                items.UserID = Model.Id;
+                            }
+                        @Html.Partial("~/Views/Users/GroupTree.cshtml", Model.Group)
+                    </div>
+                </div>
+                <div class="box-body col-md-9" id="addClass">
+                    <button class="btn toggleft visible-xs"> </button>
+                    <div class="condata">
+                        @using (Ajax.BeginForm("Edit", "Users", new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnSuccess" }, new { @id = "EmpForm", @class = "form-horizontal" }))
+                            {
+                            @Html.AntiForgeryToken()   @*<div class="form-horizontal">*@  @*<h4>Edit User Form</h4>*@
+                            @Html.ValidationSummary(true)
+                            @Html.HiddenFor(model => model.Id)
+                            @Html.HiddenFor(m => m.GroupID, new { @id = "GroupID" })
+                            <div class="form-group">
+                                <div class="col-md-5">
+                                    <label for="inputEmail" class="gn">First Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.FirstName, new { @placeholder = "Enter First Name", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-7 emperrormsg">
+                                    @Html.ValidationMessageFor(m => m.FirstName, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-5">
+                                    <label for="inputEmail" class="gn">Last Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.LastName, new { @placeholder = "Enter Last Name", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-7 emperrormsg">
+                                    @Html.ValidationMessageFor(m => m.LastName, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-5">
+                                    <label for="inputEmail" class="gn">Email<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.Email, new { @placeholder = "Enter Email", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-7 emperrormsg">
+                                    @Html.ValidationMessageFor(m => m.Email, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-5">
+                                    <label for="inputEmail" class="gn">Phone Number<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.PhoneNumber, new { @placeholder = "Enter Phone Number", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-7 emperrormsg">
+                                    @Html.ValidationMessageFor(m => m.PhoneNumber, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-5">
+                                    <label for="inputEmail" class="gn">Location<span class="danger">*</span></label>
+                                    @Html.ListBoxFor(model => model.Locs, new MultiSelectList(Model.DropDown, "Expression", "text"), new { size = 5, @class = "form-control selectList", required = "required" })
+                                </div>
+                                <div class="col-sm-7 emperrormsg">
+                                    @Html.ValidationMessageFor(m => m.Locs, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-5">
+                                    <label for="inputEmail" class="gn">Primary Role<span class="danger">*</span></label>
+                                    @Html.DropDownListFor(model => model.RoleID, new SelectList(new List<Object> { }, "key", "Value"), "--Select--", new { @class = "form-control", @id = "RoleID" })
+                                </div>
+                                <div class="col-sm-7 emperrormsg">
+                                    @Html.ValidationMessageFor(m => m.RoleID, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-5">
+                                    <label for="inputEmail" class="gn">Report To<span class="danger">*</span></label>
+                                    @Html.DropDownListFor(model => model.ReportTo, new SelectList(new List<Object> { }, "key", "Value"), "--Select--", new { @class = "form-control", @id = "ReportTo" })
+                                </div>
+                                <div class="col-sm-7 emperrormsg">
+                                    @Html.ValidationMessageFor(m => m.ReportTo, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-5">
+                                    <label for="inputEmail" class="gn">Status</label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<object>
+                                                    {
+                                                    new { key= "10" , value = "Active" },
+                                                    new { key= "20" , value = "Inactive" }
+                                                    }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <input type="hidden" name="GroupID" value="@Model.GroupID" id="GroupID" />
+                            <div class="form-group">
+                                <div class="col-sm-5">
+                                    <button type="submit" class="btn btn-theme" name="Todo" value="Save" id="save">Save</button>
+                                    @*<input type="submit" value="Save" class="btn btn-primary" />*@
+                                    <button type="button" class="btn btn-theme decline" id="Cancel">Cancel</button>
+                                </div>
+                            </div>
+                            }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="ConformationDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    function OnSuccess(data) {
+        CustomMessage(data.ResponseMessage, data.Status);
+    }
+    $('#Cancel').click(function () {
+        window.close();
+    });
+    $('#UserMainTree').jstree('select_node', '#@Model.GroupID')
+
+</script>
+<script>
+    $(".toggleft").click(function () {
+        $("#test2").toggleClass("leftzerozero");
+
+    });
+
+</script>

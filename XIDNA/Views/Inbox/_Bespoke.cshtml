@@ -1,0 +1,130 @@
+﻿@model IEnumerable<XIDNA.ViewModels.SectionsData>
+
+@*<script>
+    
+    @*$(document).ready(function () {
+        
+        $('#BespokeButtons').on('click', 'button#Bespokesave', function () {
+            var RefreshType = $('.bespokeframe').attr('data-type');
+            var src = $('.bespokeframe').attr('src');
+            var listItems = $("#PopupTabs li");
+            var id, tabid;
+            listItems.each(function (idx, li) {
+                var product = $(li);
+                if ($(li).hasClass('ui-tabs-active')) {
+                    tabname = $(li).attr('id');
+                    tabid = $(li).attr('aria-labelledby');
+                    //setCookie("TName", tabname, 5);
+                    //setCookie("TID", tabid, 5);
+                }
+            });
+
+            if (RefreshType == "Page") {
+                //location.reload();
+            }
+            else {
+                $('#Bespokeiframe').html('<iframe src=' + src + ' style="border:none;height:90px" data-type=' + RefreshType + ' class="bespokeframe"></iframe>');
+            }
+            var $inputs = $('#BespokeForm :input');
+            var values1 = $(this).serialize();
+            var values = {};
+            $inputs.each(function () {
+                values[this.name] = $(this).val();
+            });
+            $.ajax({
+                url: '@Url.Action("GetCallsContent", "Popup")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                async: false,
+                success: function (data) {
+                    $('#tabs-1').html(data);
+                },
+                error: function (data) {
+                }
+            });
+
+
+            //$('#PopupTabs li').each(function (i, li) {
+            //    $(this).removeClass('ui-tabs-active ui-state-active');
+            //});
+            //$("li#tab-1").removeClass("ui-tabs-active ui-state-active");
+            //$("div#tabs-1").css({ "display": "none" });
+            //$("li#tab-5").addClass("ui-tabs-active ui-state-active");
+            //$("div"+id).css({ "display": "block" });
+            //$("#tabs").tabs();
+            //var listItems1 = $("#PopupTabs li");
+            //listItems1.each(function (idx, li) {
+            //    var product1 = $(li);
+            //    if ($(li).hasClass('ui-tabs-active')) {
+            //        id = $(li).attr('id');
+            //    }
+            //    $(li).removeClass('ui-tabs-active');
+            //    $(li).removeClass('ui-state-active');
+            //});
+            //for (var i = 1; i <= 9; i++) {
+            //    $('#tabs-' + i).each(function (i, div) {
+            //        $(this).css({ "display": "none" });
+            //    });
+            //}
+            //$('#PopupTabs li').each(function (i, li) {
+            //    $(this).removeClass('ui-tabs-active ui-state-active');
+            //});
+
+            //$("li#tab-5").addClass("ui-tabs-active ui-state-active");
+            //$("div#tabs-5").css({ "display": "block" });
+        });
+    });
+    //function setCookie(cname, cvalue, exdays) {
+    //    var d = new Date();
+    //    d.setTime(d.getTime() + (exdays * 60 * 1000 ));
+    //    var expires = "expires=" + d.toGMTString();
+    //    document.cookie = cname + "=" + cvalue + "; " + expires;
+    //}
+</script>*@
+
+
+
+@foreach (var items in Model)
+{
+    <div id="BespokeSection">
+        <div class="panel panel-default">
+            @if (items.SectionName != null)
+            {
+                <div class="panel-heading usericon Lead1">
+                    <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#1-@items.SectionName.Replace(" ","")@items.TabID">
+                        <h4 class="panel-title">@items.SectionName</h4>
+                    </a>
+                </div>
+                <div class="panel-collapse collapse in" id="1-@items.SectionName.Replace(" ","")@items.TabID">
+                    <div class="panel-body LeadContent">
+                        @if (items.IsBespoke == true)
+                        {
+                            <div id="Bespokeiframe">
+                                <iframe src=@items.URL style="border:none;height:140px; width:500px" data-leadid='@items.LeadID' data-tabid='@items.TabID' data-type=@items.RefreshType class="bespokeframe"></iframe>
+                            </div>
+                        }
+                        @*<div class="form-group" id="BespokeButtons">
+                                <div class="col-sm-10">
+                                    <button type="submit" class="btn btn-primary" id="Bespokesave">Save</button>
+                                    <button type="button" class="btn btn-primary" id="BespokeCancel">Cancel</button>
+                                </div>
+                            </div>*@
+                    </div>
+
+                </div>
+            }
+            else
+            {
+                <iframe src=@items.URL style="border: none; height: 90px" data-type=@items.RefreshType class="bespokeframe"></iframe>
+                @*<div class="form-group">
+                        <div class="col-sm-10">
+                            <button type="submit" class="btn btn-primary" id="Bespokesave">Save</button>
+                            <button type="button" class="btn btn-primary" id="BespokeCancel">Cancel</button>
+                        </div>
+                    </div>*@
+            }
+        </div>
+    </div>
+}

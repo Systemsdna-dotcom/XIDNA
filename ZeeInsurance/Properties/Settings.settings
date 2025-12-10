@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ZeeInsurance.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ZeeInsurance_IDUServiceLive_iduService" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">https://ws-idu.tracesmart.co.uk/v5.1/index.php</Value>
+    </Setting>
+    <Setting Name="ZeeInsurance_TIGAPI_CFS_x0020_Schemes_x0020_API" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://cfsbeta.co.uk/API/default.asmx</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

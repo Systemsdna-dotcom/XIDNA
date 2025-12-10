@@ -1,0 +1,82 @@
+﻿@model XIDNA.ViewModels.VMQueryPreview
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#NewLeadsResult').dataTable({});
+        $('#NewLeadsResult tbody').on('click', 'tr', function () {
+            //var hg =@Html.Raw(Json.Encode(Model.Headings));
+            var table = $('#NewLeadsResult').dataTable();
+            var tr = $(this).closest('tr');
+            var data1 = table.fnGetData(tr);
+            var id;
+            id = data1[0];
+            //for (var i = 0; i < hg.length; i++) {
+            //    //if (hg[i] == "ID") {
+
+            //    //}
+
+            //}
+            var selid = parseInt(id);
+            var ReportID = 1;
+            var url = "@Url.Action("NewLeadsResultListPopUp","Inbox")?LeadID=" + selid + "&QueryID=" + ReportID;
+            //if('@Model.IsPopup'=="True"){
+            window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            //}
+        });
+    })
+</script>
+<section class="content-header hedr">
+    <h1 class="col-md-3">New Leads </h1>
+    <ol class="breadcrumb">
+
+        <li><a href="#"><i class="fa fa-dashboard"></i>Leads</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row box-body">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="row">
+                    <div class="col-xs-12 tree_btn">
+                        @*<button class="fa-pull-right" id="Default">Default</button>*@
+                    </div>
+                </div>
+                @if (Model.QueryID > 0)
+                {
+                    <div class="tab_scroll">
+                    <table id="NewLeadsResult" class="table table-bordered table-striped" width="100%">
+                        <thead>
+                            <tr>
+                                @foreach (var items in @Model.Headings)
+                                {
+                                    <th>@items</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Rows)
+                            {
+                                <tr>
+                                    @foreach (var value in item)
+                                    {
+                                        <td>@value</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                }
+                else
+                {
+                    <h4>No report assigned for this result</h4>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+

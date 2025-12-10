@@ -1,0 +1,78 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+
+@{
+    var Data = new List<CNV>();
+    if (Model.oContent.ContainsKey(XIConstant.CheckboxComponent))
+    {
+        Data = (List<CNV>)Model.oContent[XIConstant.CheckboxComponent];
+    }
+}
+
+<div class="CheckboxComponent col-md-12">
+    <div class="category col-md-2" data-type="inline">
+        @if (Data != null && Data.Count() > 0)
+        {
+            <h4>Inline</h4>
+            foreach (var item in Data)
+            {
+                <div class="form-input">
+                    <label class="label-wrapper" style="display:inline-block">
+                        @if (!string.IsNullOrEmpty(item.sType) && item.sType == "both")
+                        {
+                            var ID = item.sContext.Split('_')[0];
+                            <input type="checkbox" class="ckbox" name="checkb" value="@item.sValue" data-id="@ID" checked />
+                        }
+                        else if (!string.IsNullOrEmpty(item.sType) && item.sType == "inline")
+                        {
+                            <input type="checkbox" class="ckbox" name="checkb" value="@item.sValue" data-id="@item.sContext" checked />
+                        }
+                        else if (!string.IsNullOrEmpty(item.sType) && item.sType != "row")
+                        {
+                            <input type="checkbox" class="ckbox" name="checkb" value="@item.sValue" />
+                        }
+                        else
+                        {
+                            <input type="checkbox" class="ckbox" name="checkb" value="@item.sValue" />
+                        }
+                        <span class="check"></span> @item.sName
+                    </label>
+                </div>
+            }
+        }
+    </div>
+    <div class="category col-md-2" data-type="row">
+        @if (Data != null && Data.Count() > 0)
+        {
+            <h4>Row</h4>
+            foreach (var item in Data)
+            {
+                <div class="form-input">
+                    <label class="label-wrapper" style="display:inline-block">
+                        @if (!string.IsNullOrEmpty(item.sType) && item.sType == "both")
+                        {
+                            var ID = item.sContext.Split('_')[1];
+                            <input type="checkbox" class="CheckboxClass" name="checkb" value="@item.sValue" data-id="@ID" checked />
+                        }
+                        else if (!string.IsNullOrEmpty(item.sType) && item.sType == "row")
+                        {
+                            <input type="checkbox" class="CheckboxClass" name="checkb" value="@item.sValue" data-id="@item.sContext" checked />
+                        }
+                        else if (!string.IsNullOrEmpty(item.sType) && item.sType != "inline")
+                        {
+                            <input type="checkbox" class="CheckboxClass" name="checkb" value="@item.sValue" />
+                        }
+                        else
+                        {
+                            <input type="checkbox" class="CheckboxClass" name="checkb" value="@item.sValue" />
+                        }
+                        <span class="check"></span> @item.sName
+                    </label>
+                </div>
+            }
+
+        }
+    </div>
+
+</div>

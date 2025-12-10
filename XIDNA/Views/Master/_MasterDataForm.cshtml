@@ -1,0 +1,287 @@
+﻿@model XIDNA.Models.Types
+
+<script src="~/Scripts/ajaxfileupload.js"></script>
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        $('div.fa-hover').click(function () {
+            var Text = $(this).text();
+            var icon1 = $(this).closest('.fa-hover').find('i');
+            var Name = $(icon1).attr('class');
+            $('#IconName').val(Name);
+            $('#IconDisplay').html('<i class="' + Name + '" aria-hidden="true"></i>' + Text);
+            $(".close").click();
+        });
+        if ('@Model.ID' > 0) {
+            $('#IconDisplay').html('<i class="' + '@Model.Icon' + '" aria-hidden="true"></i>' + '@Model.Icon');
+        }
+        $('#MasterDataTypes').change(function () {
+            var type = $('#MasterDataTypes :selected').val();
+            $.ajax({
+                url: '@Url.Action("GetTypeExpressions", "Master")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { TypeID: type },
+                success: function (data) {
+                    $('#TypeExpressions').html(data);
+                },
+                error: function (data) { }
+            });
+        });
+        if ('@Model.ID' > 0) {
+            var type = $('#MasterDataTypes :selected').val();
+            $.ajax({
+                url: '@Url.Action("GetTypeExpressions", "Master")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { TypeID: '@Model.Code' },
+                success: function (data) {
+                    $('#TypeExpressions').html(data);
+                },
+                error: function (data) { }
+            });
+        }
+    });
+</script>
+
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+<section class="content-header hedr">
+    @if (@Model.ID == 0)
+    {
+        <h1> Add Data </h1>
+    }
+    else
+    {
+        <h1> Edit Data </h1>
+    }
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Master Data</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    @using (Ajax.BeginForm("SaveMasterData", "Master", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnComplete" }, new { @id = "MasterDataForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.ID)
+                        <div id="clear-text">
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Type</label>
+                                    @Html.DropDownListFor(m => m.Code, new SelectList(Model.Names, "Value", "text"), new { @class = "form-control", id = "MasterDataTypes" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.Expression, new { @placeholder = "Enter Name Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.Expression, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Type ID<span class="danger">*</span></label>
+                                    @if (Model.ID > 0)
+                                    {
+                                        @Html.TextBoxFor(model => model.TypeID, new { @placeholder = "Enter Type ID", @class = "form-control" })
+                                    }
+                                    else
+                                    {
+                                        @Html.TextBoxFor(model => model.TypeID, new { @placeholder = "Enter Type ID", @class = "form-control", @Value = "" })
+                                    }
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.TypeID, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn"> File<span class="danger"></span></label>
+                                    <input type="file" id="UploadFile" name="UploadFile" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn m-r-10">Icon<span class="danger"></span></label>
+                                        <!--<select class="form-control fa" id="icon" name="Icon">
+                                        <option value="">--Select--</option>
+                                        <option value="fa fa-home"> &#xf015; fa-home</option>
+                                        <option value="fa fa-motorcycle"> &#xf015; fa-motorcycle</option>
+                                        <option value="fa fa-bar-chart"> &#xf080; fa-bar-chart</option>
+                                        <option value="fa fa-balance-scale"> &#xf24e; fa-balance-scale</option>
+                                        <option value="fa fa-area-chart"> &#xf1fe; fa-area-chart</option>
+                                        <option value="fa fa-ban"> &#xf05e; fa-ban</option>
+                                        <option value="fa fa-car"> &#xf1b9; fa-automobile</option>
+                                    </select>-->
+                                    <button type="button" data-original-title="Click to select icons" data-toggle="modal" data-target="#icn_select_modal" class="text-yellow">Select Icon</button>
+                                    <span id="IconDisplay" style="padding-left:10px;"></span>
+                                    <input id="IconName" type="hidden" name="Icon" />
+                                    @{
+                        Html.RenderPartial("_UIIcons");
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Status</label>
+                                    @Html.DropDownListFor(m => m.Status, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="submit" class="btn btn-theme" value="Save" />
+                                @if (Model.ID == 0)
+                                {
+                                    <button type="button" class="btn btn-theme reverse" id="ResetMstrBtn">Reset</button>
+                                }
+                                <button type="button" class="btn btn-theme decline CancelMasterData">Cancel</button>
+                            </div>
+                        </div>
+                    }
+                    <div id="TypeExpressions"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</section>
+<div class="dialog-box AddDataDlg" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    function OnComplete(e) {
+        if (e > 0) {
+            $('#IconDisplay').html('');
+            var type = parseInt(e);
+            opener.location.reload();
+            if ('@Model.ID' == 0) {
+                $(".AddDataDlg").html('Data added successfully!');
+            } else {
+                $(".AddDataDlg").html('Data updated successfully!');
+            }
+            if ('@Model.ID' == 0) {
+                $.ajax({
+                    url: '@Url.Action("GetTypeExpressions", "Master")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    data: { TypeID: type },
+                    success: function (data) {
+                        $('#TypeExpressions').html(data);
+                        $('#MasterDataTypes').val(type);
+                    },
+                    error: function (data) { }
+                });
+                $.ajax({
+                    url: '@Url.Action("GetAllNames", "Master")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    cache: false,
+                    success: function (data) {
+                        $('#MasterDataTypes').empty();
+                        for (i = 0; i < data.length; i++) {
+                            $('#MasterDataTypes').append('<option value=' + data[i].Value + '>' + data[i].text + '</option>');
+                        }
+                    },
+                    error: function (data) { }
+                });
+            }
+            var id = parseInt(e);
+            var valll = $('#UploadFile').val();
+            if ($('#UploadFile').val() != "") {
+                $.ajaxFileUpload({
+                    url: '@Url.Action("UploadFiles", "Master")',
+                    secureuri: false,
+                    async: false,
+                    type: 'POST',
+                    fileElementId: 'UploadFile',
+                    dataType: 'json',
+                    data: {
+                        id: id,
+                    },
+                    success: function (data, result) {
+                        var ret = parent(result);
+                        $('#MasterDataForm')[0].reset();
+                        ShowDialog(ret);
+                    }
+                });
+            }
+            else {
+                ShowDialog(e);
+            }
+        }
+        else {
+            ShowDialog(e);
+        }
+    }
+    $('.CancelMasterData').click(function () {
+        window.close();
+    });
+    $('#ResetMstrBtn').click(function () {
+        $('#MasterDataForm')[0].reset();
+        $('#MasterDataForm .taberrormsg').find('span').html('');
+        $('#TypeExpressions').empty();
+        $('#IconName').val('');
+        $('#IconDisplay').html('');
+    });
+    function ShowDialog(e) {
+        if (e > 0) {
+            $(".AddDataDlg").dialog({
+                title: "Master Data",
+                modal: true,
+                buttons: [
+                {
+                    text: "Ok",
+                    click: function () {
+                        if ('@Model.ID' == 0) {
+                            $(".AddDataDlg").dialog("close");
+                        }
+                        else {
+                            window.close();
+                        }
+                    }
+                }
+                ]
+            });
+        }
+        else {
+            $(".AddDataDlg").html('Error while adding data!!!<br/> Please try again');
+            $(".AddDataDlg").dialog({
+                title: "Master Data",
+                modal: true,
+                buttons: [
+                {
+                    text: "Ok",
+                    click: function () {
+                        $(".AddDataDlg").dialog("close");
+                    }
+                }
+                ]
+            });
+        }
+    }
+</script>

@@ -1,0 +1,1109 @@
+﻿@model XIDNA.Models.Reports
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+@*<h2>Add Query</h2>*@
+<link href="~/Content/css/custom.css" rel="stylesheet" />
+@*<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>*@
+
+<script type="text/javascript">
+
+    var orderclicked = "";
+   
+    if ("@Model.FromBos" != 'Null') {
+        var frombo = " FROM " + "@Model.FromBos";
+    }
+    else
+    {
+        var frombo = "";
+    }
+    var finalquery = "";
+    if ("@Model.SelectFields" != 'Null')
+    {
+         var selectfields =  "@Model.generalselectedfields";
+        var hiddenselectfields = "@Model.SelectFields";
+    }
+        
+    else {
+        var selectfields = "";
+        var hiddenselectfields = "";
+    }
+
+  
+    var HiddenWhereFielddata = "";
+    if ("@Model.WhereFields" != 'Null') {
+        var wherefields = " WHERE " + "@Model.WhereFields";
+        var hiddenwherefields = " WHERE " + "@Model.WhereFields";
+    }
+    else
+    {
+        var wherefields = "";
+        var hiddenwherefields = "";
+    }
+      
+    if ("@Model.GroupFields" != 'Null')
+        var groupfields = " GROUP BY "+"@Model.GroupFields";
+    else
+        var groupfields = "";
+    if ("@Model.OrderFields" != 'Null')
+        var orderfields = " ORDER BY "+"@Model.OrderFields";
+    else
+        var orderfields = "";
+   
+    $(document).ready(function () {
+        $('#QueryID').hide();
+        $('#Querygen').hide();
+        $("#intope").show();
+        $("#stringope").hide();
+        $("#whereope").hide();
+      
+        $("#btnLeft").click(function () {
+         
+            var i, j;
+           
+            var selectedItem = $("#rightValues option:selected");
+            if (selectedItem.length != 0) {
+                $("#leftValues").append(selectedItem);
+                var allrightvalues = $("#rightValues option");
+                var assignedfields = "", assignedids = "", hiddenfields = "";
+                for (i = 0; i < allrightvalues.length; i++) {
+                    if (allrightvalues[i].id == "") {
+                        assignedfields = assignedfields + allrightvalues[i].text + ', ';
+                        hiddenfields = hiddenfields + allrightvalues[i].text + ', ';
+                    }
+                    else {
+                        assignedfields = assignedfields + allrightvalues[i].value + ', ';
+                        assignedids = assignedids + "{" + allrightvalues[i].id + "}" + ', ';
+                    }
+                }
+                selectfields = "SELECT ";
+                selectfields = selectfields + assignedfields;
+                selectfields = selectfields.slice(0, -2);
+                hiddenselectfields = "SELECT ";
+                hiddenselectfields = hiddenselectfields + assignedids + hiddenfields;
+                hiddenselectfields = hiddenselectfields.slice(0, -2);
+                document.getElementById("generatedquery").value = "";
+                document.getElementById("generatedquery").value = selectfields + frombo + wherefields + groupfields + orderfields;
+                $("#finalquery").val('');
+                $("#finalquery").append(hiddenselectfields + frombo + hiddenwherefields + groupfields + orderfields);
+            }
+        });
+
+        $("#btnRight").click(function () {
+         
+            var i, j;
+           
+            var selectedItem = $("#leftValues option:selected");
+            if (selectedItem.length != 0) {
+                $("#rightValues").append(selectedItem);
+                var allrightvalues = $("#rightValues option");
+                var assignedfields = "", assignedids = "", hiddenfields="";
+                for (i = 0; i < allrightvalues.length; i++) {
+                    if (allrightvalues[i].id == "") {
+                        assignedfields = assignedfields + allrightvalues[i].text + ', ';
+                        hiddenfields = hiddenfields + allrightvalues[i].text + ', ';
+                    }
+                    else {
+                        assignedfields = assignedfields + allrightvalues[i].value + ', ';
+                        assignedids = assignedids + "{" + allrightvalues[i].id + "}" + ', ';
+                    }
+                }
+                selectfields = "SELECT ";
+                selectfields = selectfields + assignedfields;
+                selectfields = selectfields.slice(0, -2);
+                hiddenselectfields = "SELECT ";
+                hiddenselectfields = hiddenselectfields + assignedids + hiddenfields;
+                hiddenselectfields = hiddenselectfields.slice(0, -2);
+                document.getElementById("generatedquery").value = "";
+                document.getElementById("generatedquery").value = selectfields + frombo + wherefields + groupfields + orderfields;
+                $("#finalquery").val('');
+                $("#finalquery").append(hiddenselectfields + frombo + hiddenwherefields + groupfields + orderfields);
+            }
+        });
+        $("#addwhere").click(function () {
+            $('#whereclause').val("--Select--");
+            $("#selectope").val("--Select--");
+            $("#selectstringope").val("--Select--");
+            $('#value').val("");
+            clicked = "clicked";
+            $("#whereope").show();
+            wherefields = wherefields + "AND";
+            document.getElementById("generatedquery").value = "";
+            document.getElementById("generatedquery").value = selectfields + frombo + wherefields + groupfields + orderfields;
+            $("#finalquery").val('');
+            $("#finalquery").append(hiddenselectfields + frombo + hiddenwherefields + groupfields + orderfields);
+            $("#okwhere").prop("disabled", false);
+            $("#addwhere").prop("disabled", true);
+        })
+        $("#whereclause").change(function () {
+            var res = $("#whereclause :selected").val();
+            var field = $("#whereclause :selected");
+            var fieldid = field[0].id;
+            $.ajax({
+                url: '@Url.Action("GetWhereValues", "QueryGeneration")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { FieldID: fieldid },
+                success: function (data) {
+                    if (data.IsRunTime == true) {
+                        $('#Runtime').show();
+                        $('#Runtime').html('<label>Value</label><input type="text" class="form-control" id="value1" placeholder="Enter Where Value" onKeyPress="KeyPressed()" onchange = "OnChangeEvent()" onfocusout="FocusOut()"/>');
+                    }
+                    if (data.IsDBValue == true) {
+                        if (data.IsRunTime == false) {
+                            $('#Runtime').hide();
+                            $('#ORText').hide();
+                        }
+                        else {
+                            $('#ORText').empty().append("OR").show();
+                        }
+                        var query = data.DBQuery;
+                        $.ajax({
+                            url: '@Url.Action("GetDBValuesForField", "QueryGeneration")',
+                            type: 'GET',
+                            contentType: "application/json; charset=utf-8",
+                            datatype: "JSON",
+                            cache: false,
+                            data: { Query: query },
+                            success: function (data) {
+                                $('#WhereValue').empty();
+                                $('#WhereValue').html('<label>DBValue</label><select id="value" class="form-control" onchange="selectchange()"><option value="">--Select--</option></select>');
+                                $.each(data, function (i, val) {
+                                    $('#value').append(
+                                        $('<option></option>').val(val.ID).html(val.Expression)
+                                        );
+                                });
+                            }
+                        });
+
+                    }
+                    else if (data.IsExpression == true) {
+                        if (data.IsRunTime == false) {
+                            $('#Runtime').hide();
+                            $('#ORText').hide();
+                        }
+                        else {
+                            $('#ORText').empty().append("OR").show();
+                        }
+                        $('#WhereValue').empty();
+                        $('#WhereValue').html('<label>Expression</label><select id="value" class="form-control" onchange="selectchange()"><option value="">--Select--</option></select>');
+                        $('#value').append(
+                            $('<option></option>').val(data.ExpreValue).html(data.Expression)
+                            );
+                    }
+                    else if (data.IsDate == true) {
+                        if (data.IsRunTime == false) {
+                            $('#Runtime').hide();
+                            $('#ORText').hide();
+                        }
+                        else {
+                            $('#ORText').empty().append("OR").show();
+                        }
+                        $('#WhereValue').empty();
+                        var dates = new Array();
+                        var datevaluess = new Array();
+                        dates = data.DateExpression.split(',');
+                        datevalues = data.DateValue.split(',');
+                        $('#WhereValue').html('<label>Date</label><select id="value" class="form-control" onchange="selectchange()"><option value="">--Select--</option></select>');
+                        for (i = 0; i < dates.length; i++) {
+                            $('#value').append(
+                                $('<option></option>').val(datevalues[i]).html(dates[i])
+                            );
+                        }
+                    }
+                },
+                error: function (data) {
+
+                }
+            });
+            var Datatype = res.split("-")[1];
+            $.ajax({
+                url: '@Url.Action("GetOperators", "QueryGeneration")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { DataType: Datatype },
+                success: function (data) {
+                    $('#Operators').empty();
+                    $('#Operators').html('<label>Select Operator</label><select id="oprator" class="form-control"><option value="">--Select--</option></select>');
+                    $.each(data, function (i, val) {
+                        $('#oprator').append(
+                            $('<option></option>').val(val.Value).html(val.DisplayValue)
+                            );
+                    });
+                }
+            });
+
+        })
+        $("#okwhere").click(function () {
+            
+            var rowCount = $('#myDataTable tr').length;
+            var res = $("#whereclause :selected").val();
+            var value = $("#value").val();
+            if (res != "--Select--" && ($("#selectope :selected").text() != "--Select--" || $("#selectstringope :selected").text() != "--Select--")) {
+                var textboxvalue = $('#value1').val();
+                var selctboxvalue = $('#value').val();
+                if (textboxvalue == "" && selctboxvalue == 0){
+                    alert('Please Enter Value Or Select From DropDown');
+                }
+                else{
+                    if ((textboxvalue != "" && selctboxvalue == 0) || (textboxvalue != "" && selctboxvalue == undefined)) {
+                    var final = res.split("-")[1];
+                    var res9 = $('#Operators option:selected').text();
+                    var WhereFielddata = {
+                        where: $("#whereclause :selected").text(),
+                        selectoperator: res9,
+                        inputvalue: $("#value1").val(),
+                    }
+                    if (HiddenWhereFielddata == "") {
+                        HiddenWhereFielddata = $("#whereclause :selected").text() + " " + res9 + " " + $("#value1").val();
+                    }
+                    else {
+                        HiddenWhereFielddata = HiddenWhereFielddata +" AND "+ $("#whereclause :selected").text() + " " + res9 + " " + $("#value1").val();
+                    }
+                }
+                else if ((textboxvalue == "" && selctboxvalue != 0) || (textboxvalue == undefined && selctboxvalue != 0)) {
+                    var final = res.split("-")[1];
+                    var res9 = $('#Operators option:selected').text();
+                    var WhereFielddata = {
+                        where: $("#whereclause :selected").text(),
+                        selectoperator: res9,
+                        inputvalue: $("#value option:selected").text(),
+                    }
+                    if (HiddenWhereFielddata == "") {
+                        HiddenWhereFielddata = $("#whereclause :selected").text() + " " + res9 + " " + $("#value option:selected").val();
+                    }
+                    else {
+                        HiddenWhereFielddata = HiddenWhereFielddata + " AND "+  $("#whereclause :selected").text() + " " + res9 + " " + $("#value option:selected").val();
+                    }
+                }
+                    var col = '<td>' + (WhereFielddata.where).toUpperCase() + '</td>';
+                    col = col + '<td>' + WhereFielddata.selectoperator + '</td>'
+                    if (final == "INT")
+                        col = col + '<td>' + WhereFielddata.inputvalue + '</td>'
+                    else
+                        col = col + '<td>' + "'" + WhereFielddata.inputvalue + "'" + '</td>'
+
+                    col = col + '<td>' + ("<button id='remove' class='savebtn btn btn-theme' onclick='deletewhereRow(this)'>Remove</button>"); +'</td>'
+
+                    var row = '<tr>' + col + '</tr>';
+                    $('#myDataTable').append(row);
+                    var wherecontent = "";
+                    if (wherefields == "") {
+                        $('#myDataTable tbody tr').each(function () {
+                            $(this).find('td').each(function () {
+                                wherecontent = wherecontent + $(this).text() + " ";
+                            })
+                            wherecontent = wherecontent.replace("Remove ", "");
+                        })
+                    }
+                    else {
+                        $('#myDataTable tbody tr').each(function () {
+                            $(this).find('td').each(function () {
+                                wherecontent = wherecontent + $(this).text() + " ";
+                            })
+                            wherecontent = wherecontent.replace("Remove ", "");
+                            wherecontent = wherecontent + "AND ";
+                        })
+                        wherecontent = wherecontent.slice(0, -4);
+                    }
+                    wherefields = " WHERE " + wherecontent;
+                    hiddenwherefields = " WHERE " + HiddenWhereFielddata;
+                    document.getElementById("generatedquery").value = "";
+                    document.getElementById("generatedquery").value = selectfields + frombo + wherefields + groupfields + orderfields;
+                    $("#finalquery").val('');
+                    $("#finalquery").append(hiddenselectfields + frombo + hiddenwherefields + groupfields + orderfields);
+                    $('#whereclause').val("--Select--");
+                    $("#selectope").val("--Select--");
+                    $("#selectstringope").val("--Select--");
+                    $('#value').val("");
+                    $('#value1').val("");
+                    clicked = "clicked";
+                    $("#whereope").show();
+                    $("#okwhere").prop("disabled", true);
+                    $("#addwhere").prop("disabled", false);
+                    $('#value').removeAttr('disabled');
+                    $('#value1').removeAttr('disabled');
+                }
+
+            }
+
+
+
+        })
+        $("#okgroup").click(function () {
+       
+            var rowCount = $('#myGroupTable tr').length;
+            var groupbyfields = $("#groupby :selected").text();
+            if (groupbyfields != "") {
+                groupbyfields = groupbyfields.replace(/ /g, ', ');
+                groupbyfields = groupbyfields.slice(0, -2);
+                var GroupFielddata = {
+                    group: groupbyfields,
+                }
+                var col = '<td>' + (GroupFielddata.group).toUpperCase() + '</td>';
+                col = col + '<td>' + ("<button id='remove' class='savebtn btn btn-theme' onclick='deleteRow(this)'>Remove</button>"); +'</td>'
+                var row = '<tr>' + col + '</tr>';
+                $('#myGroupTable').append(row);
+                var groupcontent = "";
+                if (groupfields == "") {
+                    $('#myGroupTable tbody tr').each(function () {
+                        $(this).find('td').each(function () {
+                            groupcontent = groupcontent + $(this).text() + " ";
+                        })
+                        groupcontent = groupcontent.replace("Remove ", " ");
+                    })
+                }
+                else {
+                    $('#myGroupTable tbody tr').each(function () {
+                        $(this).find('td').each(function () {
+                            groupcontent = groupcontent + $(this).text()+" ";
+                        })
+                        groupcontent = groupcontent.replace(" Remove ", ", ");
+                    })
+                }
+                groupfields = " GROUP BY " + groupcontent;
+                groupfields = groupfields.slice(0, -2);
+                document.getElementById("generatedquery").value = "";
+                document.getElementById("generatedquery").value = selectfields + frombo + wherefields + groupfields + orderfields;
+                $("#finalquery").val('');
+                $("#finalquery").append(hiddenselectfields + frombo + hiddenwherefields + groupfields + orderfields);
+            }
+
+        })
+        $("#okorder").click(function () {
+            var rowCount = $('#myOrderTable tr').length;
+            var OrderFielddata = {
+                order: $("#orderfeild :selected").text(),
+                ordertype: $("#ordertype :selected").text(),
+            }
+            if ($("#orderfeild :selected").text() != "--Select--" && $("#ordertype :selected").text() != "--Select--") {
+                var col = '<td>' + (OrderFielddata.order).toUpperCase() + '</td>';
+                col = col + '<td>' + OrderFielddata.ordertype + '</td>'
+                col = col + '<td>' + ("<button id='remove' class='savebtn btn btn-theme' onclick='deleteorderRow(this)'>Remove</button>"); +'</td>'
+                var row = '<tr>' + col + '</tr>';
+                $('#myOrderTable').append(row);
+                var ordercontent = "";
+                if (orderfields == "") {
+                    $('#myOrderTable tbody tr').each(function () {
+                        $(this).find('td').each(function () {
+                            ordercontent = ordercontent + $(this).text() + " ";
+                        })
+                        ordercontent = ordercontent.replace("Remove ", " ");
+                    })
+                }
+                else {
+                    $('#myOrderTable tbody tr').each(function () {
+                        $(this).find('td').each(function () {
+                            ordercontent = ordercontent + $(this).text() + " ";
+                        })
+                        ordercontent = ordercontent.replace(" Remove ", ", ");
+                    })
+                }
+                orderfields = " ORDER BY " + ordercontent;
+                orderfields = orderfields.slice(0, -2);
+                document.getElementById("generatedquery").value = "";
+                document.getElementById("generatedquery").value = selectfields + frombo + wherefields + groupfields + orderfields;
+                $("#finalquery").val('');
+                $("#finalquery").append(hiddenselectfields + frombo + hiddenwherefields + groupfields + orderfields);
+                $('#orderfeild').val("--Select--");
+                $('#ordertype').val("--Select--");
+            }
+
+        })
+        $("#reset").click(function () {
+            $("select").val("0");
+            $("textarea").val("");
+            $('input[type=text]').val("");
+            $("#leftValues").empty();
+            $("#viewquery").empty();
+        })
+        $("#preview").click(function () {
+            $("#viewquery").append(selectfields + frombo + wherefields + groupfields + orderfields);
+        })
+        $("#Save").click(function () {
+          
+            var id = $('#QueryID').text();
+            $('#Queryid').val(id);
+            var name = $("#nameq").val();
+            $("#nameque").val(name);
+            var querygenerated = $('#generatedquery').val();
+           var whrerep=wherefields.replace(/&#39;/g,"'")
+           $("#finalquery").val(hiddenselectfields + frombo + whrerep + groupfields + orderfields);
+            selectfields = hiddenselectfields.replace("SELECT ", "");
+            $("#selectedfields").val(selectfields);
+            frombo = frombo.replace(" FROM ", "");
+            $("#fromfields").val(frombo);
+            wherefields = wherefields.replace(" WHERE ", "");
+            $("#wherefields").val(wherefields);
+            groupfields = groupfields.replace(" GROUP BY ", "");
+            $("#groupfields").val(groupfields);
+            orderfields = orderfields.replace(" ORDER BY ", "");
+            $("#orderfields").val(orderfields);
+            $.ajax({
+                url: '@Url.Action("UpdateQuery", "QueryGeneration")',
+                type: 'POST',
+                datatype: 'JSON',
+                data: $('#querygenerate').serialize(),
+                success: function (data) {
+                    window.location.href = '@Url.Action("Index", "QueryGeneration")'
+                },
+                error: function (data) {
+                },
+            });
+        })
+        $("#cancel").click(function () {
+            window.close();
+        });
+        $('#QueryCancel').click(function () {
+            window.close();
+        });
+      
+            var res = $("#generatedquery").val();
+            var selectedItem = $("#buisiness").val();
+                var text = $("#buisines").text();
+          
+            frombo = " FROM " + $("#buisiness :selected").text();
+            finalquery = frombo;
+            var res1 = res.split(" FROM ")[0];
+            document.getElementById("generatedquery").value = "";
+            document.getElementById("generatedquery").value = frombo;
+            $.ajax({
+                url: '@Url.Action("GetAvaialbleFields", "QueryGeneration")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { BOID: selectedItem },
+                success: function (data) {
+                    $("#rightValues").empty();
+                    $("#whereclause").empty();
+                    $("#groupby").empty();
+                    $("#orderfeild").empty();
+                    $("#leftValues").html(""); // clear before appending new list
+                    $("#whereclause").html("<option>--Select--</option>");
+                    $("#orderfeild").html("<option>--Select--</option>");
+                    $.each(data, function (i, availableval) {
+                        if (availableval.IsVisible == true) {
+                            $("#leftValues").append(
+                            $('<option></option>').val(availableval.Name + "-" + availableval.Type).html(availableval.Name));
+                        }
+                        if (availableval.IsWhere == true) {
+                            $("#whereclause").append(
+                            $('<option id="' + availableval.ID + '"></option>').val(availableval.Name + "-" + availableval.Type).html(availableval.Name));
+                        }
+                        if (availableval.IsGroupBy == true) {
+                            $("#groupby").append(
+                            $('<option></option>').val(availableval.BOID).html(availableval.Name + " "));
+                        }
+                        if (availableval.IsOrderBy == true) {
+                            $("#orderfeild").append(
+                            $('<option></option>').val(availableval.BOID).html(availableval.Name));
+                        }
+                    });
+                    var names = data[0].GroupNames;
+                    var fields = data[0].GroupFields;
+                    var ids = data[0].GroupIDs;
+                    $.each(names, function (i, names) {
+
+                        $("#leftValues").append(
+                        $('<option style="color:#F5A301;" id="' + ids[i] + '"></option>').val(fields[i]).html(names));
+                    });
+                },
+                error: function (data) {
+
+                }
+            });
+          
+    })
+    function deleteRow(r) {
+     
+        var z = r.parentNode.parentNode.rowIndex;
+        document.getElementById("myGroupTable").deleteRow(z);
+        var groupcontent = "";
+        $('#myGroupTable tbody tr').each(function () {
+            $(this).find('td').each(function () {
+                groupcontent = groupcontent + $(this).text() + " ";
+            })
+            groupcontent = groupcontent.replace(" Remove ", ", ");
+        })
+        groupfields = " GROUP BY " + groupcontent;
+        if (groupfields == " GROUP BY ") {
+            groupfields = "";
+        }
+        else {
+            groupfields = groupfields.slice(0, -2);
+        }
+       
+        document.getElementById("generatedquery").value = "";
+        document.getElementById("generatedquery").value = selectfields + frombo + wherefields + groupfields + orderfields;
+        $("#finalquery").val('');
+        $("#finalquery").append(hiddenselectfields + frombo + hiddenwherefields + groupfields + orderfields);
+        var count = $('#myGroupTable tr').length;
+        if (count == 0) {
+            $('#myGroupTable').empty();
+        }
+    }
+    function deletewhereRow(r) {
+    
+        var genquery = $("#generatedquery").val();
+        var z = r.parentNode.parentNode.rowIndex;
+        document.getElementById("myDataTable").deleteRow(z);
+        var wherecontent = "";
+        $('#myDataTable tbody tr').each(function () {
+            $(this).find('td').each(function () {
+                wherecontent = wherecontent + $(this).text() + " ";
+            })
+            wherecontent = wherecontent.replace("Remove ", "");
+            wherecontent = wherecontent + "AND ";
+        })
+        wherefields = " WHERE " + wherecontent;
+        if (wherefields == " WHERE ") {
+            wherefields = "";
+        }
+        else {
+            wherefields = wherefields.slice(0, -4);
+        }
+    
+        document.getElementById("generatedquery").value = "";
+        document.getElementById("generatedquery").value = selectfields + frombo + wherefields + groupfields + orderfields;
+        $("#finalquery").val('');
+        $("#finalquery").append(hiddenselectfields + frombo + hiddenwherefields + groupfields + orderfields);
+    }
+    function deleteorderRow(r) {
+   
+        var i = r.parentNode.parentNode.rowIndex;
+        document.getElementById("myOrderTable").deleteRow(i);
+        var ordercontent = "";
+        $('#myOrderTable tbody tr').each(function () {
+            $(this).find('td').each(function () {
+                ordercontent = ordercontent + $(this).text() + " ";
+            })
+            ordercontent = ordercontent.replace(" Remove ", ", ");
+        })
+        orderfields = " ORDER BY " + ordercontent;
+        if (orderfields == " ORDER BY ") {
+            orderfields = "";
+        }
+        else {
+            orderfields = orderfields.slice(0, -2);
+        }
+        var count1 = $('#myOrderTable tbody tr').length;
+        //if (count1 == 0) {
+        //    orderfields = "";
+        //}
+        document.getElementById("generatedquery").value = "";
+        document.getElementById("generatedquery").value = selectfields + frombo + wherefields + groupfields + orderfields;
+        $("#finalquery").val('');
+        $("#finalquery").append(hiddenselectfields + frombo + hiddenwherefields + groupfields + orderfields);
+        var count = $('#myOrderTable tr').length;
+        if (count == 0) {
+            $('#myOrderTable').empty();
+        }
+    }
+ 
+</script>
+
+<style>
+    .errormsg {
+        color: red;
+    }
+
+    .disabled a {
+        color: #777 !important;
+    }
+</style>
+
+
+@Html.AntiForgeryToken()
+@*<hr />*@
+<section class="content-header hedr">
+    <h1> Query Management </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Query</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="nav-tabs-custom">
+
+                        <div class="nav-tabs-custom">
+                            <ul class="nav nav-tabs">
+                                <li id="queryc" class="active"><a href="#query">Query</a></li>
+                                <li id="select" class="disabled"><a href="#sel">Select Fields</a></li>
+                                <li id="where" class="disabled"><a href="#wher">Where Fields</a></li>
+                                <li id="group" class="disabled"><a href="#grou">Group Fields</a></li>
+                                <li id="order" class="disabled"><a href="#orde">Order Fields</a></li>
+                            </ul>
+
+
+
+                            <div class="tab-content">
+                                @Html.ValidationSummary(true)
+                                <div class="active tab-pane" id="query">
+                                    @*<div id="QueryID"></div>*@
+                                    <p id="QueryID"></p>
+                                    @using (Ajax.BeginForm("SaveQuery", "QueryGeneration", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "QueryID", OnComplete = "OnComplete()" }, new { @id = "QueryForm", @class = "form-horizontal" }))
+                                    {
+                                        <div class="form-group">
+                                            <label for="inputName" class="col-sm-2 control-label">Title</label>
+                                            <div class="col-sm-4">
+                                                @Html.HiddenFor(m => m.ID)
+                                                 @Html.TextBoxFor(model => model.Name, new { @Name = "Name", @id = "nameq", @placeholder = "Enter Query Name", @class = "form-control" })
+                                                @*@Html.TextBoxFor(m => m.Name, new { @Name="Name", @id="nameq",@placeholder="Enter Query Name", @class="form-control"})*@
+                                            </div>
+                                            <div class="col-sm-4 errormsg" id="TitleError">
+                                                @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="inputEmail" class="col-sm-2 control-label">Business Object</label>
+                                            <div class="col-sm-4">
+                                                @Html.DropDownListFor(model => model.BOID, new SelectList(ViewBag.columnlist
+                                               , "BOID", "Name"), "---Select---", new { @class = "form-control", @id = "buisiness",@readonly="readonly" })
+                                            </div>
+                                            <div class="col-sm-4 errormsg">
+                                                @Html.ValidationMessageFor(model => model.BOID, null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="inputName" class="col-sm-2 control-label">Category</label>
+                                            <div class="col-sm-4">
+                                                @Html.DropDownListFor(model => model.CategoryID, new SelectList(new List<Object>{
+                                               new { key= 0 , value = "--Select--" },
+                       new { key= 1 , value = "1" },
+                       new { key= 2, value = "2" },
+                       new { key= 3 , value = "3" },
+                       new { key= 4 , value = "4" },
+                       new { key= 5 , value = "5" },
+                    }, "key", "Value"), new { @class = "form-control", @id = "Category" })
+
+                                            </div>
+                                            <div class="col-sm-4 errormsg" id="CategoryError">
+                                                @*@Html.ValidationMessageFor(m => m.CategoryID, null, new { @class = "red" })*@
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="inputSkills" class="col-sm-2 control-label">Type</label>
+                                            <div class="col-sm-4">
+                                                @Html.DropDownListFor(model => model.TypeID, new SelectList(new List<Object>{
+                                               new { key= 0 , value = "--Select--" },
+                       new { key= 1 , value = "1" },
+                       new { key= 2, value = "2" },
+                       new { key= 3 , value = "3" },
+                       new { key= 4 , value = "4" },
+                       new { key= 5 , value = "5" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Type" })
+
+                                            </div>
+                                            <div class="col-sm-4 errormsg" id="TypeError">
+                                                @*@Html.ValidationMessageFor(m => m.TypeID, null, new { @class = "red" })*@
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-offset-2 col-sm-10">
+                                                <button type="submit" class="btn btn-theme" id="querysave">Save & Continue</button>
+                                                <button type="button" class="btn btn-theme decline" id="QueryCancel">Cancel</button>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="tab-pane" id="sel">
+                                    <h6 class="queryheading"></h6>
+                                    <div class="box_filters">
+                                        <div class="feature-box col-md-5">
+                                            <h4>Available Fields</h4>
+                                            <select id="leftValues" multiple class="task availableTasks form-control"></select>
+                                        </div>
+                                        <div class="arrows_div col-md-2">
+                                            <div>
+                                                <button class="" type="button" id="btnRight"> <img src="~/Content/images/arrow-slider-right.png"> </button>
+                                                <br>
+                                                <button class="" id="btnLeft" type="button"> <img src="~/Content/images/arrow-slider-left.png"> </button>
+                                            </div>
+                                        </div>
+                                        <div class="feature-box col-md-5">
+                                            <h4>Selected Fields</h4>
+                                            <select id="rightValues" multiple class="task availableTasks form-control"></select>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="tab-pane" id="wher">
+                                    <h6 class="queryheading"></h6>
+                                    <form class="col-xs-12" style="padding:0px;">
+                                        @*<span id="whereope">
+                                                <label class="col-sm-2">Operators<span style="color: #ff0000;">*</span></label>
+                                                <div class="col-sm-3 groupname">
+                                                    @Html.DropDownList("sort", (IEnumerable<SelectListItem>)ViewData["WhereAppend"], "--Select--", new { @class = "form-control", @id = "whereoperators" })
+                                                </div>
+                                            </span>*@
+                                        <div class="form-group col-md-2" style="padding-left:0px;">
+                                            <label for="exampleInputEmail1">Select Field</label>
+                                            @Html.DropDownListFor(model => model.ID, new SelectList(ViewBag.columnlist
+                                            , "BOID", "Name", 0), "---Select---", new { @class = "form-control", @id = "whereclause" })
+                                        </div>
+                                        <div class="form-group col-md-2" id="Operators">
+                                         
+                                        </div>
+                                     
+                                        <div class="form-group col-md-2" id="Runtime"></div>
+                                        <div class="form-group col-md-1" id="ORText"><label></label></div>
+                                        <div class="form-group col-md-2" id="WhereValue"></div>
+                                        <div class="form-group col-md-2 ttb_bt">
+                                            <input type="button" id="okwhere" class="btn btn-theme" value="OK">
+                                            <input type="button" id="addwhere" class="btn btn-theme" disabled value="Add More">
+
+                                        </div>
+                                    </form>
+                                    <div class="" style="padding:0px;">
+                                        <table id="myDataTable" class="table table-bordered table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Clause</th>
+                                                    <th>Operator</th>
+                                                    <th>Value</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                        <div class="row"> </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="tab-pane" id="grou">
+                                    <h6 class="queryheading"></h6>
+                                    <form class="col-xs-12" style="padding:0px;">
+                                        <div class="form-group col-md-3" style="padding-left:0px;">
+                                            <label for="exampleInputEmail1">Select Field</label>
+                                            <select id="groupby" multiple class="form-control" style="height:180px;"></select>
+                                        </div>
+                                        <div class="form-group col-md-3 ttb_bt">
+                                            @*<button type="submit" class="btn btn-theme">Save</button>*@
+                                            <input type="button" id="okgroup" class="btn btn-theme" value="OK">
+                                        </div>
+                                    </form>
+                                    <div class="" style="padding:0px;">
+                                        <table id="myGroupTable" class="table table-bordered table-striped">
+
+                                            <thead>
+                                                <tr>
+                                                    <th>Clause</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+
+                                <div class="tab-pane" id="orde">
+                                    <h6 class="queryheading"></h6>
+                                    <form class="col-xs-12" style="padding:0px;">
+                                        <div class="form-group col-md-3" style="padding-left:0px;">
+                                            <label class="exampleInputEmail1">Order Field</label>
+                                            @Html.DropDownListFor(model => model.ID, new SelectList(ViewBag.columnlist
+                                                    , "BOID", "Name", 0), "---Select---", new { @class = "form-control", @id = "orderfeild" })
+
+                                        </div>
+
+                                        <div class="form-group col-md-3">
+                                            <label class="exampleInputEmail1">Order Type</label>
+
+                                            <select id="ordertype" class="form-control">
+                                                <option value="0">--Select--</option>
+                                                <option value="ASC">ASC</option>
+                                                <option value="DESC">DESC</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-3 ttb_bt">
+                                            @*<button type="submit" class="btn btn-theme">Save</button>*@
+
+                                            <input type="button" id="okorder" class="btn btn-theme" value="OK">
+
+                                        </div>
+                                    </form>
+                                    <div class="" style="padding:0px;">
+                                        <table id="myOrderTable" class="table table-bordered table-striped">
+
+                                            <thead>
+                                                <tr>
+                                                    <th>Clause</th>
+                                                    <th>Type</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                                <div class="txt_tab" id="Querygen">
+                                    <form id="querygenerate">
+                                        <div class="col-sm-4">
+                                            <input type="hidden" class="form-control" name="ID" id="Queryid">
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <input type="hidden" class="form-control" name="Name" id="nameque" placeholder="Name">
+                                        </div>
+                                        @*<div class="col-sm-4">
+                                                <input type="hidden" class="form-control" name="Query" id="finalquery" placeholder="Name">
+                                            </div>*@
+                                        <h4>Generated Query</h4>
+                                        <textarea id="generatedquery" class="form-control" rows="10"cols="30" name="generalquery"></textarea>
+                                        @*<input type="hidden" class="form-control" name="Query" id="finalquery" placeholder="Name">*@
+                                        <textarea id="finalquery" class="form-control" rows="4" name="Query" style="display:none;"></textarea>
+
+                                        <div class="form-group">
+                                            <div class="col-sm-3 groupname">
+                                                <input type="hidden" id="selectedfields" name="SelectFields" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <div class="col-sm-3 groupname">
+                                                <input type="hidden" id="fromfields" name="FromBos" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <div class="col-sm-3 groupname">
+                                                <input type="hidden" id="wherefields" name="WhereFields" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <div class="col-sm-3 groupname">
+                                                <input type="hidden" id="groupfields" name="GroupFields" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <div class="col-sm-3 groupname">
+                                                <input type="hidden" id="orderfields" name="OrderFields" class="form-control">
+                                            </div>
+                                        </div>
+                                        @*<div class="form-group">
+
+                                            <div class="col-sm-3 groupname">
+                                                <input type="hidden" id="selectrightfields" name="selectrightfields" class="form-control">
+                                            </div>
+                                        </div>*@
+                                        <div class="form-group">
+                                            <div class="col-sm-12 groupname" style="padding-left:0px;">
+                                                <input type="button" id="Save" value="Save" class="savebtn btn btn-theme">
+                                                <input type="button" id="cancel" value="Cancel" class="savebtn btn btn-theme decline">
+                                                <input type="button" id="reset" value="Reset" class="savebtn btn btn-theme reverse">
+                                                <input type="button" id="preview" value="Preview Query" class="savebtn btn btn-theme">
+                                            </div>
+                                        </div>
+                                    </form>
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="viewquery" class="col-sm-12">
+    </div>
+</section>
+
+<script>
+    function OnComplete(data) {
+
+        $('#Querygen').show();
+        $('#queryc').removeClass('active');
+        $('#query').removeClass('active');
+        $('#select').addClass('active');
+        $('#sel').addClass('active');
+        $("ul.nav-tabs").find("li").each(function () {
+            $(this).removeClass('disabled');
+        });
+        $("ul.nav-tabs").find("a").each(function () {
+            $(this).attr('data-toggle', 'tab');
+        });
+        var queryname = $('#nameq').val();
+        var buisiness = $('#buisiness option:selected').text();
+        var Category = $('#Category option:selected').text();
+        var Type = $('#Type option:selected').text();
+        var queryheading = queryname + " - " + buisiness + " - " + Category + " - " + Type;
+        $('.queryheading').append(queryheading);
+        //to append query
+        var query = '@Model.generalquery';
+        if(query!='Null')
+        {
+            
+            var res1=query.replace(/&#39;/g,"'")
+            document.getElementById("generatedquery").value = res1;
+        }
+        //to append selectfields
+        var i, j, k, l;
+        var right=[];
+        var model = @Html.Raw(Json.Encode(Model.groupallfields));
+
+        for (var i = 0; i < model.length; i++) {
+
+            right.push(model[i])
+            
+        }
+        var res1= selectfields;
+        var aright = res1.split(', ');
+      
+        if (query != 'Null')
+        {
+          
+            for(j=0;j<right.length;j++){
+              
+                if (right[j].groupid!=null) {
+                    $("#rightValues").append(
+                               $('<option style="color: rgb(245, 163, 1);" id=' + right[j].groupid +'></option>').val(right[j].bofieldnames).html(aright[j]));
+
+                }
+              
+                else{
+                    $("#rightValues").append(
+                            $('<option></option>').html(aright[j]));
+                }
+            }
+                
+            
+        }
+
+        //to append group
+        var group = '@Model.GroupFields';
+        if (group != 'Null') {
+            var agroup = group.split(',');
+            for (i = 0; j = agroup[i]; i++) {
+                var col = '<td>' + agroup[i] + '</td>';
+                col = col + '<td>' + ("<button id='remove' class='savebtn btn btn-theme' onclick='deleteRow(this)'>Remove</button>"); +'</td>'
+                var row = '<tr>' + col + '</tr>';
+                $('#myGroupTable').append(row);
+            }
+        }
+        //to append orderby
+        var order = '@Model.OrderFields';
+        if (order != 'Null') {
+            var afterordersplit, orderappendor;
+            var aorder = order.split(",");
+
+            if (aorder.length == 1) {
+                afterordersplit = order.split(' ');
+                var col = '<td>' + afterordersplit[0] + '</td>';
+                col = col + '<td>' + afterordersplit[1] + '</td>';
+                col = col + '<td>' + ("<button id='remove' class='savebtn btn btn-theme' onclick='deleteorderRow(this)'>Remove</button>"); +'</td>'
+                var row = '<tr>' + col + '</tr>';
+                $('#myOrderTable').append(row);
+            }
+
+            else {
+                for (k = 0; k < aorder.length; k++) {
+                    if (aorder[k].split(' ') != undefined) {
+                        var edited = aorder[k].trim();
+                        afterordersplit = (edited.split(' '));
+                        var col = '<td>' + afterordersplit[0] + '</td>';
+                        col = col + '<td>' + afterordersplit[1] + '</td>';
+
+                        col = col + '<td>' + ("<button id='remove' class='savebtn btn btn-theme' onclick='deleteorderRow(this)'>Remove</button>"); +'</td>'
+                        var row = '<tr>' + col + '</tr>';
+                        $('#myOrderTable').append(row);
+                    }
+
+                }
+            }
+        }
+        //to append where
+        var where = '@Model.WhereFields';
+        if (where != 'Null') {
+            var aftersplit, appendor;
+            var awhere = where.split("AND");
+            var saperators = ["NOT STARTS WITH", "STARTS WITH", "NOT CONTAINS", "CONTAINS", "LIKE", "NOT IN", "IN", "ISNULL", "NOT NULL", "&gt;=", "&lt;=", "&gt;", "&lt;", "=","NOT ENDS WITH","ENDS WITH"]
+
+            if (awhere.length == 1) {
+
+                for (i = 0; j = saperators[i]; i++) {
+                    if ((where.split(saperators[i])).length != 1) {
+                        aftersplit = where.split(saperators[i]);
+                        appendor = saperators[i];
+                        break;
+                    }
+
+                }
+                var col = '<td>' + aftersplit[0] + '</td>';
+                col = col + '<td>' + appendor + '</td>';
+                col = col + '<td>' + aftersplit[1] + '</td>';
+                col = col + '<td>' + ("<button id='remove' class='savebtn btn btn-theme' onclick='deletewhereRow(this)'>Remove</button>"); +'</td>'
+                var row = '<tr>' + col + '</tr>';
+                $('#myDataTable').append(row);
+            }
+
+            else {
+
+                for (i = 0; i < awhere.length; i++) {
+                    for (j = 0; j < saperators.length; j++) {
+                        if ((awhere[i].split(saperators[j])).length != 1) {
+                            aftersplit = awhere[i].split(saperators[j]);
+                            appendor = saperators[j];
+                            var col = '<td>' + aftersplit[0] + '</td>';
+                            col = col + '<td>' + appendor + '</td>';
+                            col = col + '<td>' + aftersplit[1] + '</td>';
+                            col = col + '<td>' + ("<button id='remove' class='savebtn btn btn-theme' onclick='deletewhereRow(this)'>Remove</button>"); +'</td>'
+                            var row = '<tr>' + col + '</tr>';
+                            $('#myDataTable').append(row);
+                            break;
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    function OnChangeEvent() {
+        var textvalue = $("#value1").val();
+        if (textvalue == "") {
+            $('#value').removeAttr('disabled');
+        }
+    }
+    function KeyPressed() {
+        $('#value').prop('disabled', true);
+    }
+
+    function selectchange() {
+        var selectvalue = $('#value').val();
+        if (selectvalue == 0) {
+            $('#value1').removeAttr('disabled');
+        }
+        else {
+            $('#value1').prop('disabled', true);
+        }
+    }
+    function FocusOut() {
+        var textvalue = $("#value1").val();
+        if (textvalue == "") {
+            $('#value').removeAttr('disabled');
+        }
+        else {
+            $('#value').prop('disabled', true);
+            $('#value1').removeAttr('disabled');
+        }
+    }
+
+
+</script>

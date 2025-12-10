@@ -1,0 +1,127 @@
+﻿@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        $('#RunQueryBtn').click(function () {
+            var sUser = $('#sUserName').val();
+            var sTable = $('#sTable').val();
+            var sQuery = $('#sQuery').val();
+            if (sUser && sUser.length > 0 && sTable && sTable.length > 0) {
+                if (sQuery && sQuery.length > 0) {
+                    $('#ConfirmQueryExe').html(sQuery);
+                    $("#ConfirmQueryExe").dialog({
+                        title: "Confirm Query",
+                        buttons: {
+                            "Yes": function () {
+                                $('.QryResult').html('');
+                                var Data = { sUser: sUser, sTable: sTable, sQuery: sQuery };
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("Execute_Query", "DataBase")',
+                                data: JSON.stringify(Data),
+                                contentType: 'application/json;',
+                                dataType: 'json',
+                                traditional: true,
+                                async: false,
+                                success: function (response) {
+                                    debugger
+                                    $('.StrStatusMessages').empty();
+                                    if (response) {
+                                        for (const [key, value] of Object.entries(response)) {
+                                            if (key == "Data") {
+                                                var data = value;
+                                                var HTML = '<table class="table table_v2 table-striped custom-table table-condensed table-hover tablesorter dataTable tablelook"><thead>';
+                                                var Heads = data[0].Attributes;
+                                                for (const [key, value] of Object.entries(Heads)) {
+                                                    HTML = HTML + '<th>' + value.sName + '</th>';
+                                                }
+                                                HTML = HTML + '</thead><tbody>';
+                                                for (var i = 0; i < data.length; i++) {
+                                                    HTML = HTML + '<tr>';
+                                                    for (const [key, value] of Object.entries(data[i].Attributes)) {
+                                                        HTML = HTML + '<td>' + value.sValue + '</td>';
+                                                    }
+                                                    HTML = HTML + '</tr>';
+                                                }
+                                                HTML = HTML + '</tbody></table>';
+                                                $('.QryResult').html(HTML);
+                                            }
+                                            else if (key == "Message") {
+                                                if (value.startsWith('Failure')) {
+                                                    $('.StrStatusMessages').prepend($('<div class="alert alert-danger">' + value + '</div>'));
+                                                }
+                                                else if (value.startsWith('Success')) {
+                                                    $('.StrStatusMessages').prepend($('<div class="alert alert-success">' + value + '</div>'));
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        $('.StrStatusMessages').prepend($('<div class="alert alert-danger">Something went wrong</div>'));
+                                    }
+                                },
+                                error: function (response) { }
+                            });
+                                $(this).dialog("close");
+                        },
+                            "No": function () {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                }
+            }
+        })
+
+    });
+</script>
+
+
+<section class="content-header hedr">
+    <h1> DB Helper</h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i>DB Helper</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="">
+        <div class="box">
+            <div class="box-body padding10Tab">
+                <div class="innerborder">
+                    <div class="StrStatusMessages"></div>
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <label for="inputEmail" class="gn">User<span class="danger">*</span></label>
+                                <input type="text" name="sUserName" id="sUserName" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <label for="inputEmail" class="gn">Table<span class="danger">*</span></label>
+                                <input type="text" name="sTable" id="sTable" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <label for="inputEmail" class="gn">Query<span class="danger">*</span></label>
+                                <textarea id="sQuery" class="form-control"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="button" class="btn btn-theme" id="RunQueryBtn" value="Run" />
+                            </div>
+                        </div>
+                    </form>
+                    <div class="QryResult"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="ConfirmQueryExe" style="display:none;"></div>

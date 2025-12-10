@@ -1,0 +1,76 @@
+﻿@*@model XIDNA.Models.ContentEditors
+@{
+    ViewBag.Title = "GetdropdownforContent";
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+
+<form class="form-horizontal">
+    <div class="form-group">
+        <label class="control-label col-sm-2">Select Content<span class="danger">*</span></label>
+        <div class="col-sm-4">
+            @Html.DropDownListFor(model => model.Type, new SelectList(new List<Object>{
+                                               new {key= 0 ,value ="--Select--"},
+                                               new { key= 1 , value = "Email" },
+                                               new { key= 2 , value = "SMS" },
+                                               }, "key", "Value"), new { @class = "form-control", @id = "Template" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label col-sm-2">Select MailContent<span class="danger">*</span></label>
+        <div class="col-sm-4">
+            @Html.DropDownListFor(model => model.Type, new SelectList(new List<Object> { }), new { @class = "form-control", @id = "content" })
+        </div>     
+    </div>
+</form>
+<script type="text/javascript">
+    $(document).ready(function () {
+
+
+    })
+    $("#Template").change(function () {
+        var value = $('#Template').val();
+        
+        $.ajax({
+            url: '@Url.Action("Contentdropdown", "Content")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            cache: false,
+            data: { Type: value },
+            success: function (data) {
+                if (value == 1)
+                {
+                    $("#div-hide").show();
+                }
+                else
+                {
+                    $("#div-hide").hide();
+                }
+                $("#box-body").hide();
+                $("#content").empty();
+                if (data.length>0) {
+                    for (i = 0; i < data.length; i++) {
+                        $("#content").append(
+                        $('<option value="' + data[i].value + '">' + data[i].text + '</option>'));                    
+                    }                   
+                }
+            },
+            error: function (data) {
+            }
+        });
+    });
+    $(function () {
+        
+            $('select#content').change(function () {              
+                var selectedcontentid = $(this).val();
+                $("#target").load('@Url.Action("GetUsersList", "Content")', { id: selectedcontentid })
+                $("#target").show();
+            })
+        })
+</script>
+<div id="target">
+</div>*@
+
+

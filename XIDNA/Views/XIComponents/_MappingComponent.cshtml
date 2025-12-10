@@ -1,0 +1,497 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIIBO oBOI = new XIIBO();
+    List<CNV> LeftValues = new List<CNV>();
+    List<CNV> RightValues = new List<CNV>();
+    var oVisualD = new XIVisualisation();
+    bool bSave = true;
+    string sMode = string.Empty;
+    var sRenderType = string.Empty;
+    XIInfraCache oCache = new XIInfraCache();
+    var SBOName = string.Empty;
+    string sAttr = string.Empty;
+    string sMapAttr = string.Empty;
+    string iType = string.Empty;
+    string iInstanceID = string.Empty;
+    if (Model.oContent.ContainsKey(XIConstant.MappingComponent))
+    {
+        //if (Model.oContent.ContainsKey(XIConstant.MappingComponent))
+        //{
+        //    var control = Model.oContent[XIConstant.MappingComponent];
+        //    if (control != null)
+        //    {
+        //        sRenderType = control.GetType().GetGenericArguments().Single().Name;
+        //    }
+        //}
+        var oDef = (XIDComponent)Model.oDefintion;
+        SBOName = oDef.Params.Where(m => m.sName.ToLower() == "bo").Select(m => m.sValue).FirstOrDefault();
+        var oBOD = (XIDBO)oCache.GetObjectFromCache(XIConstant.CacheBO, SBOName, null);
+        var MappingValues = Model.oContent[XIConstant.MappingComponent];
+        foreach (var item in (Dictionary<string, object>)MappingValues)
+        {
+            if (item.Key == "LeftValues" && item.Value != null)
+            {
+                sRenderType = "CNV";
+                LeftValues = (List<CNV>)item.Value;
+            }
+            else if (item.Key == "RightValues" && item.Value != null)
+            {
+                RightValues = (List<CNV>)item.Value;
+            }
+            else if (item.Key == "Visualisation" && item.Value != null)
+            {
+                oVisualD = (XIVisualisation)item.Value;
+            }
+            else if (item.Key == "sAttr" && item.Value != null)
+            {
+                sAttr = (string)item.Value;
+            }
+            else if (item.Key == "iInstanceID" && item.Value != null)
+            {
+                iInstanceID = (string)item.Value;
+            }
+            else if (item.Key == "sMapAttr" && item.Value != null)
+            {
+                sMapAttr = (string)item.Value;
+            }
+            else if (item.Key == "iType" && item.Value != null)
+            {
+                iType = (string)item.Value;
+            }
+        }
+        if (oVisualD != null && oVisualD.XiVisualisationNVs != null && oVisualD.XiVisualisationNVs.Count() > 0)
+        {
+            var Save = oVisualD.XiVisualisationNVs.Where(m => m.sName.ToLower() == "save").Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(Save) && Save.ToLower() == "no")
+            {
+                bSave = false;
+            }
+            sMode = oVisualD.XiVisualisationNVs.Where(m => m.sName.ToLower() == "mode").Select(m => m.sValue).FirstOrDefault();
+        }
+    }
+}
+
+@*else
+    {
+        XIBODisplay oBOIns = new XIBODisplay();
+        XIDBO oBOD = new XIDBO();
+        if (Model.oContent.ContainsKey(XIConstant.MappingComponent))
+        {
+            oBOIns = (XIBODisplay)Model.oContent[XIConstant.MappingComponent];
+            if (oBOIns.BOInstance != null)
+            {
+                oBOI = oBOIns.BOInstance;
+            }
+            XIInfraCache oCache = new XIInfraCache();
+            oBOD = (XIDBO)oCache.GetObjectFromCache(XIConstant.CacheBO_All, null, oBOI.iBODID.ToString());
+            if (oBOD != null)
+            {
+                oBOI.BOD = oBOD;
+            }
+        }
+    }*@
+<h3 class="maintitle">Mapping <span class="text-primary">(ID: @iInstanceID)</span></h3>
+@if (sRenderType == "CNV")
+{
+    <div class="StatusMessages" style="display:none"><div class="alert alert-success">Data Saved Succesfully</div></div>
+    <div id="EditAttributeMappingForm">
+        <div id="EditMappingforms">
+            <div class="form-group">
+                @if (oBOI != null)
+                {
+                    foreach (var items in oBOI.Attributes.Values.Where(m => m.bDirty == true).ToList())
+                    {
+                        var AttrD = oBOI.BOD.Attributes.Values.Where(m => m.Name.ToLower() == items.sName.ToLower() || m.LabelName.ToLower() == items.sName.ToLower()).FirstOrDefault();
+                        var NewsGUID = Guid.NewGuid().ToString();
+                        var bIsSelect = false;
+                        <select name="@items.sName" class="form-control" id="DDLBOID" data-attrname="@items.sName" onchange="MappingComponentChange()">
+                            @{var OptValue = items.sPreviousValue;
+                                if (items.FieldDDL != null && items.FieldDDL.Count() > 0)
+                                {
+                                    <option value="" disabled>Please Select</option>
+                                    foreach (var opt in items.FieldDDL.OrderBy(m => m.Expression))
+                                    {
+                                        if (opt.Expression != null && opt.Expression.ToLower() == "please select")
+                                        {
+                                            {
+                                                bIsSelect = true;
+                                            }
+                                        }
+                                        else if (string.IsNullOrEmpty(OptValue))
+                                        {
+                                            <option value="@opt.text">@opt.Expression</option>
+                                        }
+                                        else
+                                        {
+                                            if (opt.text == OptValue)
+                                            {
+                                                <option value="@opt.text" selected>@opt.Expression</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@opt.text">@opt.Expression</option>
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (AttrD.FieldDDL != null && AttrD.FieldDDL.Count() > 0)
+                                {
+                                    <option value="" disabled>Please Select</option>
+                                    foreach (var opt in AttrD.FieldDDL.OrderBy(m => m.Expression))
+                                    {
+                                        if (opt.Expression != null && opt.Expression.ToLower() == "please select")
+                                        {
+                                            {
+                                                bIsSelect = true;
+                                            }
+                                        }
+                                        else if (string.IsNullOrEmpty(OptValue))
+                                        {
+                                            <option value="@opt.text">@opt.Expression</option>
+                                        }
+                                        else
+                                        {
+                                            if (opt.text == OptValue)
+                                            {
+                                                <option value="@opt.text" selected>@opt.Expression</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@opt.text">@opt.Expression</option>
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    <option value="0"></option>
+                                }
+                            }
+                        </select>
+                    }
+                }
+                @*<div class="col-md-7">
+                    <div class="errormessage col-sm-5" id="splerror" style="color:red;"></div>
+                    <div class="errormessage col-sm-5" id="error" style="color:red;"></div>
+                </div>*@
+            </div>
+            <div class="box_filters mapping-container">
+                <div class="mapping-box">
+                    <h4 class="map-title">Available</h4>
+                    <ul class="list1 task availableTasks form-control" id="leftValues">
+                        @foreach (var item in LeftValues)
+                        {
+                            <li id="@item.sValue">@item.sName</li>
+                        }
+                    </ul>
+                </div>
+                <div class="arrows_div GroupingArrows">
+                    <button id="rightall" type="button" class="btn btn-rr">
+                        <i class="fas fa-angle-double-right"></i>
+                    </button>
+                    <button id="right" type="button" class="btn btn-rr">
+                        <i class="fas fa-angle-right"></i>
+                    </button>
+                    <button type="button" id="left" class="btn btn-ll">
+                        <i class="fas fa-angle-left"></i>
+                    </button>
+                    <button type="button" id="leftall" class="btn btn-ll">
+                        <i class="fas fa-angle-double-left"></i>
+                    </button>
+                </div>
+                <div class="mapping-box">
+                    <h4 class="map-title">Assigned<span class="text-danger">*</span></h4>
+                    <ul id="rightValues" class="AssignedFields list2 task form-control">
+                        @foreach (var item in RightValues)
+                        {
+                            <li id="@item.sValue">@item.sName</li>
+                        }
+                    </ul>
+                </div>
+
+            </div>
+
+            @if (bSave)
+            {
+                <input type="button" class="btn btn-theme" value="save" id="savemenu" />
+            }
+        </div>
+    </div>
+    }
+                                else
+                                {
+                                    <div id="EditAttributeMappingForm">
+                                        <h3>Mapping Details:</h3>
+                                        <div id="EditMappingforms">
+                                            <form class="form-horizontal" id="BOAMappingForm">
+                                                <div class="form-group">
+                                                    <label for="inputEmail" class="gn">Group Name<span class="danger">*</span></label>
+                                                    @*<div class="col-md-5">
+                                                            <label for="inputEmail" class="gn">Group Name<span class="danger">*</span></label>
+                                                            <input id="GroupName" type="text" value="@oGroup.GroupName" class="form-control" onchange="OnChangeEvent()" maxlength="128" , onpaste="return false;" />
+                                                        </div>*@
+                                                    @foreach (var items in oBOI.Attributes.Values.Where(m => m.bDirty == true).ToList())
+                {
+                    var AttrD = oBOI.BOD.Attributes.Values.Where(m => m.Name.ToLower() == items.sName.ToLower() || m.LabelName.ToLower() == items.sName.ToLower()).FirstOrDefault();
+                    var NewsGUID = Guid.NewGuid().ToString();
+                    var bIsSelect = false;
+                                                        <select name="@items.sName" class="form-control" id="DDLBOID" data-attrname="@items.sName" onchange="MappingComponentChange()">
+                                                            @{var OptValue = items.sPreviousValue;
+                                                                if (items.FieldDDL != null && items.FieldDDL.Count() > 0)
+                                                                {
+                                                                    <option value="" disabled>Please Select</option>
+                                                                    foreach (var opt in items.FieldDDL.OrderBy(m => m.Expression))
+                                                                    {
+                                                                        if (opt.Expression != null && opt.Expression.ToLower() == "please select")
+                                                                        {
+                                                                            {
+                                                                                bIsSelect = true;
+                                                                            }
+                                                                        }
+                                                                        else if (string.IsNullOrEmpty(OptValue))
+                                                                        {
+                                                                            <option value="@opt.text">@opt.Expression</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            if (opt.text == OptValue)
+                                                                            {
+                                                                                <option value="@opt.text" selected>@opt.Expression</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@opt.text">@opt.Expression</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else if (AttrD.FieldDDL != null && AttrD.FieldDDL.Count() > 0)
+                                                                {
+                                                                    <option value="" disabled>Please Select</option>
+                                                                    foreach (var opt in AttrD.FieldDDL.OrderBy(m => m.Expression))
+                                                                    {
+                                                                        if (opt.Expression != null && opt.Expression.ToLower() == "please select")
+                                                                        {
+                                                                            {
+                                                                                bIsSelect = true;
+                                                                            }
+                                                                        }
+                                                                        else if (string.IsNullOrEmpty(OptValue))
+                                                                        {
+                                                                            <option value="@opt.text">@opt.Expression</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            if (opt.text == OptValue)
+                                                                            {
+                                                                                <option value="@opt.text" selected>@opt.Expression</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@opt.text">@opt.Expression</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="0"></option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                                }
+                                                    <div class="col-md-7">
+                                                        <div class="errormessage col-sm-5" id="splerror" style="color:red;"></div>
+                                                        <div class="errormessage col-sm-5" id="error" style="color:red;"></div>
+                                                    </div>
+                                                </div>
+
+
+                                                <div class="box_filters">
+                                                    <div class="feature-box col-xs-5">
+                                                        <label for="inputEmail" class="gn">Available Fields</label>
+                                                        <ul class="list1 task availableTasks form-control" id="leftValues"></ul>
+                                                    </div>
+                                                    <div class="arrows_div GroupingArrows col-xs-2">
+                                                        <div>
+                                                            <button id="right" type="button" class="btn btn-rr">  <i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+                                                            <br>
+                                                            <button type="button" id="left" class="btn btn-ll"><i class="fa fa-chevron-left"></i> </button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="feature-box col-xs-5">
+                                                        <label for="inputEmail" class="gn">Assigned Fields<span class="danger">*</span></label>
+                                                        <ul id="rightValues" class="AssignedFields list2 task form-control"></ul>
+                                                    </div>
+
+                                                </div>
+                                                <div class="form-group">
+                                                    <div id="ErrorBox" class="col-md-6"></div>
+                                                    <div class="col-md-12">
+                                                        @*<input type="button" class="savebtn btn btn-theme decline pull-right m-l-10" id="Cancel" value="Cancel" />*@
+                                                        <input type="button" class="savebtn btn btn-theme reverse pull-right m-l-10" id="Reset" value="Reset" />
+                                                        <input type="button" class="savebtn sv_bt btn btn-theme m-l-10 pull-right" id="EditSave" value="Save" />
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                                                }
+<script>
+    $(document).ready(function () {
+        $('ul').on('click', 'li', function () {
+            $('ul').each(function (i, li) {
+                $('li').removeClass('selected');
+            })
+            $(this).toggleClass('selected');
+        });
+
+        $('#left').click(function () {
+            var items = $('.list2 .selected');
+            if (items.length != 0) {
+                var id = items[0].id;
+                var name = items[0].innerHTML;
+                $('.list1').append('<li id="' + id + '">' + name + '</li>');
+                $('.list2 .selected').remove();
+            }
+        });
+        $('#leftall').click(function () {
+            var items = $('.list2 li');
+            if (items.length > 0) {
+                for (var m = 0; m < items.length; m++) {
+                    var id = items[m].id;
+                    var name = items[m].innerHTML;
+                    $('.list1').append('<li id="' + id + '">' + name + '</li>');
+                }
+                $('.list2 li').remove();
+            }
+        });
+        $('#rightValues').dblclick(function () {
+            var items = $('.list2 .selected');
+            if (items.length != 0) {
+                var id = items[0].id;
+                var name = items[0].innerHTML;
+                $('.list1').append('<li id="' + id + '">' + name + '</li>');
+                $('.list2 .selected').remove();
+            }
+        });
+
+        $('#right').click(function () {
+            var items = $('.list1 .selected');
+            if (items.length != 0) {
+                var id = items[0].id;
+                var name = items[0].innerHTML;
+                $('.list2').append('<li id="' + id + '">' + name + '</li>');
+                $('.list1 .selected').remove();
+                $("#ErrorBox").empty();
+            }
+
+        });
+        $('#rightall').click(function () {
+            var items = $('.list1 li');
+            if (items.length != 0) {
+                for (var n = 0; n < items.length; n++) {
+                    var id = items[n].id;
+                    var name = items[n].innerHTML;
+                    $('.list2').append('<li id="' + id + '">' + name + '</li>');
+                }
+                $('.list1 li').remove();
+                $("#ErrorBox").empty();
+            }
+
+        });
+        $('#leftValues').dblclick(function () {
+            var items = $('.list1 .selected');
+            if (items.length != 0) {
+                var id = items[0].id;
+                var name = items[0].innerHTML;
+                $('.list2').append('<li id="' + id + '">' + name + '</li>');
+                $('.list1 .selected').remove();
+                $("#ErrorBox").empty();
+            }
+
+        });
+        $("#rightValues").sortable();
+        $("#rightValues").disableSelection();
+    });
+    function MappingComponentChange() {
+        var BOID = $('#DDLBOID').val();
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("GetAvailableFields", "BusinessObjects")',
+            data: { BOID: BOID },
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                $('#leftValues').empty();
+                if (data.AvailableFields.length > 0) {
+                    for (i = 0; i < data.AvailableFields.length; i++) {
+                        $('#leftValues').append('<li id="' + data.AvailableFields[i].ID + '">' + data.AvailableFields[i].FieldName + '</li>');
+                    }
+                }
+            }
+        });
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("GroupingGrid", "BusinessObjects")',
+            data: { BOID: BOID },
+            cache: false,
+            dataType: 'html',
+            success: function (data) {
+                $('#GroupingGrid').empty();
+                $('#GroupingGrid').append(data);
+            }
+        });
+    }
+    $('#savemenu').click(function () {
+        var rightvalues = $("#rightValues li");
+        // if (rightvalues.length != 0) {
+        var fieldids = new Array();
+        //var RootName = $("#RootName").val();
+        //var iRoleID = $('#RoleID').val();
+        var iOrgID = $('#OrgID').val();
+        var SGUID = '@Model.sGUID';
+        var listItems = $(".list2").find("li");
+        var ind, len, product;
+        for (ind = 0, len = listItems.length; ind < len; ind++) {
+            product = $(listItems[ind]);
+            var id = product[0].id;
+            fieldids.push(id);
+        }
+        // var ParentID = $("#" + $node).parent().parent().attr('id');
+        var URL;
+        if ('@SBOName' == "XIRoleMenus")
+        {
+            URL = '@Url.Action("SaveMenuRoles", "XiLink")'
+        }
+        else if ('@SBOName' == "1Query Permission" || '@SBOName' == "1Link Permission" || '@SBOName' == "1ClickNV") {
+            URL = '@Url.Action("ClickPermission", "XiLink")'
+        }
+        else if ('@SBOName' == "XIRoleInbox")
+        {
+            URL = '@Url.Action("SaveInboxRoles", "XiLink")'
+        }
+        else
+        {
+          URL = '@Url.Action("ClickPermission", "XiLink")'
+        }
+        $.ajax({
+            type: 'POST',
+            url: URL,
+            data: { BOFieldNames: fieldids.join(), SGUID: SGUID, sBO: '@SBOName', sAttr: '@sAttr', sMapAttr: '@sMapAttr', iType:'@iType' },
+            cache: false,
+            dataType: 'html',
+            success: function (data) {
+                $(".StatusMessages").show();
+                $(function () {
+                    setTimeout(function () {
+                        $(".StatusMessages").hide('blind', {}, 500)
+                    }, 2000);
+                });
+            }
+        });
+        // }
+    });
+</script>

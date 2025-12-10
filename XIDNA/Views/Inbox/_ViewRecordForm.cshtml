@@ -1,0 +1,171 @@
+﻿@model IEnumerable<XIDNA.ViewModels.SectionsData>
+
+<script>
+    $(document).ready(function () {
+        var leadid = '@Model.FirstOrDefault().LeadID';
+        var tab1clickid = '@Model.FirstOrDefault().Tab1ClickID';
+        $('.EditViewRecord-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').click(function () {
+            $.ajax({
+                url: '@Url.Action("QueryDynamicForm", "Inbox")',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                data: { ReportID: tab1clickid, LeadID: leadid },
+                cache: false,
+                success: function (data) {
+                    $(".EditRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID").html(data);
+                    $('.EditRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').show();
+                    $('.ViewRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+                    $('.ViewButtons-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+                    $('.CreateRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+                    $('.CreateButtons').hide();
+                    $('.EditButtons').show();
+                },
+                error: function (data) {
+                }
+            });
+
+        });
+        $('.CreateViewRecord').click(function () {
+            @*$.ajax({
+                url: '@Url.Action("QueryDynamicForm", "Inbox")',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                data: { ReportID: tab1clickid, LeadID: leadid },
+                cache: false,
+                success: function (data) {
+                    $(".EditRecordForm").html(data);
+                    $('.EditRecordForm').show();
+                    $('.ViewRecordForm').hide();
+                    $('.ViewButtons').hide();
+                    $('#CreateButtons').hide();
+                    $('.EditButtons').show();
+                },
+                error: function (data) {
+                }
+            });*@
+            $('.EditRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+            $('.ViewRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+            $('.CreateRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').show();
+            $('.ViewButtons-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+            $('.EditButtons').hide();
+            $('.CreateButtons').show();
+            $('.CreateRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID input').val('');
+            $('.CreateRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID span').html('');
+        });
+    });
+</script>
+
+@foreach (var items in Model.OrderBy(m=>m.Rank))
+{
+    if (items.SectionName != null)
+    {
+    <div class="panel panel-default">
+        @if (items.SectionName != null)
+        {
+            <div class="panel-heading usericon Lead1">
+                <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#1-@items.SectionName.Replace(" ","")@items.TabID">
+                    <h4 class="panel-title">@items.SectionName</h4>
+                </a>
+            </div>
+        }
+        <div class="panel-collapse collapse in" id="1-@items.SectionName.Replace(" ","")@items.TabID">
+            <div class="panel-body LeadContent">
+                <table class="table table-striped tablebrd DetailsTable">
+                    <tbody class="col-md-5">
+                        @for (var i = 0; i < items.ViewFields.Count; i++)
+                        {
+                            if (items.ViewFields[i] != null && items.ViewFields[i] != "Null")
+                            {
+                                <tr>
+                                    @if (items.ViewFields[i].Contains("NE-"))
+                                    {
+                                        var field = items.ViewFields[i].Replace("NE-", "");
+                                        <td class="lightblue col-md-2">@field</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="lightblue col-md-2">@items.ViewFields[i]</td>
+                                    }
+                                    <td class="col-md-1">:</td>
+                                    <td class="leftpd drkieblue col-md-3">@items.ViewFieldsData[i]</td>
+                                </tr>
+                            }
+                        }
+                        <tr>
+                            <td class="col-md-2"></td>
+                            <td class="col-md-1"></td>
+                            <td class="col-md-3">
+                                <div class="ViewButtons-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID">
+                                    @if (items.IsEdit == true)
+                                    {
+                                        <button type="button" class="btn btn-theme EditViewRecord-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID">Edit</button>
+                                    }
+                                    <button type="button" class="btn btn-theme decline RecordCancel">Cancel</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+}
+    else
+    {
+        <table class="table table-striped tablebrd DetailsTable">
+                    <tbody class="col-md-5">
+                        @for (var i = 0; i < items.ViewFields.Count; i++)
+                        {
+                            if (items.ViewFields[i] != null && items.ViewFields[i] != "Null")
+                            {
+                                <tr>
+                                    @if (items.ViewFields[i].Contains("NE-"))
+                                    {
+                                        var field = items.ViewFields[i].Replace("NE-", "");
+                                        <td class="lightblue col-md-2">@field</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="lightblue col-md-2">@items.ViewFields[i]</td>
+                                    }
+                                    <td class="col-md-1">:</td>
+                                    <td class="leftpd drkieblue col-md-3">@items.ViewFieldsData[i]</td>
+                                </tr>
+                            }
+                        }
+                        <tr>
+                            <td class="col-md-2"></td>
+                            <td class="col-md-1"></td>
+                            <td class="col-md-3">
+                                <div class="ViewButtons">
+                                    <button type="button" class="btn btn-theme CreateViewRecord">Create</button>
+                                    <button type="button" class="btn btn-theme EditViewRecord">Edit</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+    }
+}
+@*<table class="table table-striped tablebrd DetailsTable">
+        <tbody class="col-md-5">
+            <tr>
+                <td class="col-md-2"></td>
+                <td class="col-md-1"></td>
+                <td class="col-md-3">
+                    <div class="ViewButtons">
+                        <button type="button" class="btn btn-theme CreateViewRecord">Create</button>
+                        <button type="button" class="btn btn-theme EditViewRecord">Edit</button>
+                    </div>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>*@
+<script>
+    $('.RecordCancel').click(function () {
+        window.close();
+    });
+</script>

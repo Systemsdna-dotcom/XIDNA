@@ -1,0 +1,109 @@
+﻿
+@using XIDNA
+@{
+    ViewBag.Title = "Log in";
+    //Layout = "~/Views/Shared/_UserLayout.cshtml";
+    var LogoPath = System.Configuration.ConfigurationManager.AppSettings["XIAppLogosPath"];
+    var Title = "XIDNA";
+    if (SessionManager.AppName != null)
+    {
+        Title = SessionManager.AppName;
+    }
+    string ApplicationName = SessionManager.AppName; //System.Configuration.ConfigurationManager.AppSettings["ApplicationName"];
+    int appilcationid = SessionManager.ApplicationID;
+}
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>@Title</title>
+    <link rel="icon" type="image/png" href="~/favicon.ico" />
+    <link rel="stylesheet" href="~/Content/css/bootstrap.min.css">
+    <link href="~/Content/css/main.css" rel="stylesheet">
+    <link href="~/Content/css/custom.css" rel="stylesheet" />
+    <script src="~/Scripts/JQuery/jQuery-2.1.4.min.js"></script>
+    <link rel="stylesheet" href="~/Content/css/skins/@SessionManager.Theme.ToString()">
+    <script src="@Url.Content("~/Scripts/JQuery/jQuery-2.1.4.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/CommonFunctions.js")"></script>
+    <script>
+            $(document).ready(function () {
+                AutoCreateLayoutURL = '@Url.Action("AutoCreateLayout", "Popup")';
+                AddEditLayoutURL = '@Url.Action("AddEditPopupLayout","Popup")';
+                LayoutMappingsURL = '@Url.Action("GetLayoutMappings", "Popup")';
+                AddEditXiLinkURL = '@Url.Action("AddEditXiLink", "XiLink")';
+                XiLinkListByOrgURL = '@Url.Action("GetXiLinkListByOrg", "QueryGeneration")';
+                ViewXiLinkURL = '@Url.Action("ViewXiLink", "XiLink")';
+                SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+                AddEditXiParameterURL = '@Url.Action("AddEditXiParameter", "XiLink")';
+                ViewXiParameterURL = '@Url.Action("ViewXiParameter", "XiLink")';
+                XiParameterListByOrgURL = '@Url.Action("GetXiParameterListByOrg", "QueryGeneration")';
+                AddEditXiLayoutURL = '@Url.Action("AddEditLayoutDetails", "Popup")';
+                XiLayoutListByOrgURL = '@Url.Action("GetXiLayoutListByOrg", "Popup")';
+                UpdateXIParamsURL = '@Url.Action("UpdateXIParams", "XIComponents")';
+                StepContentURL = '@Url.Action("GetStepContent", "XiLink")';
+                StepDataURL = '@Url.Action("GetStepData", "XiLink")';
+                CallQSEventURL = '@Url.Action("CallQSEvent", "XIComponents")';
+                ComponentParmsByStepURL = '@Url.Action("GetComponentParmsByStep", "XIComponents")';
+                ComponentURL = '@Url.Action("LoadComponentByID", "XIComponents")';
+                UpdateInstanceIDURL = '@Url.Action("UpdateInstanceID", "XiLink")';
+                ParentGUIDURL = '@Url.Action("GetParentGUID", "XiLink")';
+                XILinkLoadURL = '@Url.Action("XILinkLoad", "XiLink")';
+                XILinkLoadJsonURL = '@Url.Action("XILinkLoadJson", "XiLink")';
+                XIContentURL = '@Url.Action("XIContent", "XiLink")';
+                XIContentLoadURL = '@Url.Action("XIContentLoad", "XiLink")';
+                DeleteBOURL = '@Url.Action("DeleteBO", "XiLink")';
+                LoadStepURL = '@Url.Action("TriggerStep", "XiLink")';
+                LoadLayoutURL = '@Url.Action("LoadLayout", "XiLink")';
+                XILinkDefinitionURL = '@Url.Action("GetXILinkDefinition", "XiLink")';
+                PopupDefinitionURL = '@Url.Action("GetPopupDefinition", "XiLink")';
+                OpenInPopupURL = '@Url.Action("OpenInPopup", "XiLink")';
+                SetParamUrl = '@Url.Action("SetParams", "XiLink")';
+                AutoCompleteLarge = '@Url.Action("GetAutoCompleteData", "XiLink")';
+                AutoCompleteMedium = '@Url.Action("GetAutoCompleteList", "BusinessObjects")';
+                NextStepURL = '@Url.Action("GetNextStep", "XiLink")';
+                PrevStepURL = '@Url.Action("GetPreviousStep", "XiLink")';
+                SaveQSStepURL = '@Url.Action("SaveQSStep", "XiLink")';
+                LogSignalRURL = '@Url.Action("LogSignalR", "XiLink")';
+                AmendDetailsURL = '@Url.Action("AmendDetails", "XiLink")';
+                UpdateQuoteURL = '@Url.Action("UpdateQuotePrice", "XiLink")';
+                PaymentURL = '@Url.Action("Payment", "Payment")';
+                SaveGridURL = '@Url.Action("SaveGrid", "XiLink")';
+                RemoveSectionURL = '@Url.Action("RemoveSectionInstance", "XiLink")';
+                ExecuteXIScriptURL = '@Url.Action("ExecuteXIScript", "XiLink")';
+                SecureKeyURL = '@Url.Action("CheckSecureKey", "Account")';
+                GetCacheParameterValueURL = '@Url.Action("GetCacheParameterValue", "XiLink")';
+                TriggerXILinkURL = '@Url.Action("TriggerXILink", "XiLink")';
+                AddTriggerXILinkURL = '@Url.Action("AddTriggerXILink", "XiLink")';
+                GetQSDefinitionURL = '@Url.Action("GetQSDefinitionByInstanceID", "XiLink")';
+                GetTemplateDefinitionURL = '@Url.Action("GetTemplateIDByClass", "XiLink")';
+                RemoveStepXIIValuesURL = '@Url.Action("RemoveStepXIIValues", "XiLink")';
+                UpdateQuoteRankURL = '@Url.Action("UpdateQuoteRank", "XiLink")';
+                GetGridDataURL = '@Url.Action("GetGridData", "XiLink")';
+                DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+                ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+                SaveAccountComponentURL = '@Url.Action("SaveUser", "XiLink")';
+            LoginAccountComponentURL = '@Url.Action("LoginUser", "XiLink")';
+            ForgotPasswordURL = '@Url.Action("CheckOTP", "XiLink")';
+            ResetPasswordURL = '@Url.Action("ResetPassword", "XiLink")';
+            });
+    </script>
+</head>
+
+<body class="hold-transition login-page">
+    @*<div id="ApplicationMain">*@
+        @*<div class="login-box">*@
+        @*<div class="login-box-logo">
+                <img src="~/Content/images/@ViewBag.Logo">
+            </div>*@
+        <div @*class="login-box-body"*@ id="ApplicationMain">
+            @{
+                Html.RenderAction("GetLayoutData", "XiLink", new { model = Model });
+            }
+        </div>
+        @*</div>*@
+        @*</div>*@
+</body>
+

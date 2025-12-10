@@ -1,0 +1,201 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Globalization;
+
+@{
+    XIGraphData oXIGraph = new XIGraphData();
+    var sColour = new List<string>();
+    //int Colorsize = 0;
+    if (Model.oContent.ContainsKey(XIConstant.AM4PieChartComponent))
+    {
+        oXIGraph = (XIGraphData)Model.oContent[XIConstant.AM4PieChartComponent];
+        if (oXIGraph == null)
+        {
+            oXIGraph = new XIGraphData();
+        }
+        if (oXIGraph.sColours == null)
+        {
+            sColour = "#ffff00,#00ff00,#800000,#800080,#0000ff,#ffa500".Split(',').ToList();
+        }
+        else
+        {
+            sColour = oXIGraph.sColours;
+        }
+    }
+    var NewGUID = Guid.NewGuid();
+}
+@*<script>
+    $(document).ready(function () {
+        var jsonData = @Html.Raw(Json.Encode(oXIGraph));
+        var Color=@Html.Raw(Json.Encode(sColour));
+        if (jsonData != null) {
+            if (jsonData.PieData.length > 0) {
+                var data = {};
+                //var status = [];
+                var Colour=[];
+                // var Label = [];
+                for (i = 1; i < jsonData.PieData.length; i++) {
+                    if (jsonData.PieData[i].label) {
+                        //  Label.push(jsonData.PieData[i].label);
+                        //   status.push(jsonData.PieData[i].iStatus);
+                       // var name = jsonData.PieData[i].value.split(' ');
+                        data[jsonData.PieData[i].label] = jsonData.PieData[i].value;
+                        //data["color"+i]=Color[i];
+                    }
+                }
+
+                var dataProvider = [];
+                //$.each(data, function (i, item,colour) {
+                //debugger;
+                var sColr = "";
+                for (var key in data) {
+                    if (key!=null) {
+                        sColr = '@sColour';
+                    }
+                    if (key.toLowerCase() == "critical") {
+                        sColr = "#ed1c24";
+                    }
+                    if (key.toLowerCase() == "low") {
+                        sColr = "#75c814";
+                    }
+                    if (key.toLowerCase() == "high") {
+                        sColr = "#ff9800";
+                    }
+
+                    dataProvider.push({
+                        value: data[key],
+                        title: key,
+                        //color:sColr,
+                        //color:colour,
+                    });
+                }/**///)
+                // Set theme
+                //am4core.useTheme(am4themes_animated);
+                function am4themes_myTheme(target) {
+                    if (target instanceof am4core.ColorSet) {
+                        target.list = [
+                        am4core.color("#eb477e")
+                        ];
+                    }
+                }
+                am4core.useTheme(am4themes_myTheme);
+                // Set theme end
+                var Name1 = "Piechart-" + jsonData.ReportID;
+                var chart = am4core.create(Name1, am4charts.PieChart);
+
+                //var chart = am4core.create(Name1, am4charts.PieChart3D);
+                // chart.hiddenState.properties.opacity = 0;
+
+                // Let's cut a hole in our Pie chart the size of 60% the radius
+                chart.innerRadius = am4core.percent(40);
+                //chart.hiddenState.properties.opacity = 0;
+                //chart.exporting.menu = new am4core.ExportMenu();
+                // Set data
+                chart.data = dataProvider;
+                chart.data.id = 'title';
+                // Create slices
+                var pieSeries = chart.series.push(new am4charts.PieSeries());
+
+                pieSeries.dataFields.value = 'value';
+                pieSeries.dataFields.category = 'title';
+                pieSeries.colors.step = 3;
+                pieSeries.ticks.template.disabled = true;
+                pieSeries.labels.template.disabled = true;
+                pieSeries.hiddenState.properties.endAngle = -90;
+                pieSeries.ticks.template.disabled = true;
+                pieSeries.alignLabels = false;
+
+                pieSeries.slices.template.draggable = true;
+
+                // Add inner labels to pie slices
+                pieSeries.labels.template.text = `{value.percent.formatNumber('#.0')}%`;
+                pieSeries.labels.template.radius = am4core.percent(-25);
+                pieSeries.labels.template.fill = am4core.color('white');
+
+                // These functions are here so the inner labels don't show whenever the slice is less than 5 percent
+                pieSeries.labels.template.adapter.add('radius', function (radius, target) {
+                    if (target.dataItem && (target.dataItem.values.value.percent < 5)) {
+                        target.dataItem.label.text = '';
+                        return 0;
+                    }
+                    return radius;
+                });
+                var label = chart.chartContainer.createChild(am4core.Label);
+                label.text = "AM4PieChart";
+                label.align = "center";
+
+                chart.legend = new am4charts.Legend();
+                chart.legend.position = "bottom";
+                var cellSize = 20;
+                chart.events.on("datavalidated", function (ev) {
+                    // Get objects of interest
+                    var chart = ev.target;
+                    //var categoryAxis = 1000;
+
+                    // Calculate how we need to adjust chart height
+                    var adjustHeight = chart.data.length * cellSize - 10;
+
+                    // get current chart height
+                    var targetHeight = chart.pixelHeight + adjustHeight;
+
+                    // Set it on chart's container
+                    chart.svgContainer.htmlElement.style.height = targetHeight + "px";
+                });
+                var markerTemplate = chart.legend.markers.template;
+                markerTemplate.width = 20;
+                markerTemplate.height = 5;
+                pieSeries.slices.template.events.on("hit", (ev) => {
+                    // event.target is the clicked Slice
+                    var Searchtext = ev.target._dataItem.dataContext["title"]
+                    var sRowXiLinkID = jsonData.RowXiLinkIDXIGUID;
+                    var oParams = [];
+                    var Param = {};
+                    Param["sName"] = "{XIP|sStatusName}";
+                    //Param["sValue"] = listofdata;
+                    Param["sValue"] = Searchtext;
+                    oParams.push(Param);
+                    XILinkLoadJson(sRowXiLinkID, null, oParams, null);
+                });
+                //pieSeries.slices.template.propertyFields.fill = "color";
+                pieSeries.slices.template.propertyFields.fill = "color";
+            }
+
+        }
+        //$("#Piechart").chart.logo.disabled = true;
+        $('g[fill="#000000"] g').css("display", "none");
+    });
+</script>*@
+
+<script>
+    $(document).ready(function () {
+        debugger;
+        var jsonData = @Html.Raw(Json.Encode(oXIGraph));
+        var Color =@Html.Raw(Json.Encode(sColour));
+        fncDeviceAM4pieChart(jsonData, Color,"@NewGUID");
+
+    });
+</script>
+@*<div class="conStep" style="height:auto;">
+    <div class="conSection">    
+        <div class="conTitle">
+            @oXIGraph.QueryName
+            <div class="conOptions small text-muted">Last Updated:-<strong>@oXIGraph.sLastUpdated</strong></div>
+        </div>
+        <div class="conBody">
+            <div id="AM4Piechart-@NewGUID-@oXIGraph.sOneClickID"></div>
+        </div>
+    </div>
+</div>*@
+<div class="m-3">
+    <div class="card mb-0">
+        <div class="card-header">
+            <h4>@oXIGraph.QueryName</h4>
+            <div class="options">@oXIGraph.sLastUpdated</div>
+        </div>    
+        <div class="conBody">
+            <div class="chartContainer" id="AM4Piechart-@NewGUID-@oXIGraph.sOneClickID"></div>
+        </div>
+    </div>
+</div>
+

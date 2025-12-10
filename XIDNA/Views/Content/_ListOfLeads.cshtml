@@ -1,0 +1,75 @@
+﻿@model IEnumerable<XIDNA.ViewModels.VMNewLeads>
+
+
+<div class="box-body">
+    <div class="table-clean">
+        <table id="Preview" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Select Lead</th>
+                    <th style="display:none;">
+                        ID
+                    </th>
+
+                    <th>
+                        Name
+                    </th>
+                    <th style="display:none;">
+                        Last Name
+                    </th>
+                    <th>
+                        Phone Number
+                    </th>
+                    <th>
+                        Email
+                    </th>
+                    <th style="display:none;">
+                        Class
+                    </th>
+                    <th>
+                        Preview
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @{int i = 1;}
+                @foreach (var item in Model)
+                {
+
+
+                    <tr>
+                        <td>@i</td>
+                        <td><input type="checkbox" class="case" name="case[]" value=@item.ID data-id="@item.ID" /></td>
+                        <td style="display:none;">
+                            @Html.DisplayFor(modelItem => item.ID)
+                        </td>
+
+                        <td>
+                            @Html.DisplayFor(modelItem => item.FirstName)
+                        </td>
+                        <td style="display:none;">
+                            @Html.DisplayFor(modelItem => item.LastName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Mobile)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Email)
+                        </td>
+                        <td style="display:none;">
+                            @Html.DisplayFor(modelItem => item.Class)
+                        </td>
+                        <td>
+                            <input type="button" id=@item.ID value="Preview" class="btn btn-large btn-theme visible-desktop preview" disabled>
+                        </td>
+                    </tr>
+
+                    i++;
+                }
+            </tbody>
+        </table>
+
+    </div>
+</div>
+

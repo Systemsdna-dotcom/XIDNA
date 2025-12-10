@@ -1,0 +1,353 @@
+﻿@using XICore
+@using XISystem
+
+@model XICore.XIDQS
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    List<XIDQSStep> Steps = new List<XIDQSStep>();
+    List<XIDQSSection> Sections = new List<XIDQSSection>();
+    List<string> Visualisations = new List<string>();
+}
+<style>
+    h5 {
+        color: #f28d48;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Query Management </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Query Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="QSConfig">
+                        @if (Model != null)
+                        {
+                            <h5>Questionset ID : @Model.ID</h5>
+                            <h5>Questionset : @Model.sName</h5>
+                            if (Model.Steps.Values.Count() > 0)
+                            {
+                                foreach (var Step in Model.Steps.Values.Where(m => m.StatusTypeID == 10).OrderBy(m => m.iOrder).ToList())
+                                {
+                                    <div class="col-md-12">
+                                        <h5>Step : @Step.sName</h5>
+                                        @if (Step.Sections.Values.Count() > 0)
+                                        {
+                                            Steps.Add(Step);
+                                            foreach (var Section in Step.Sections.Values.OrderBy(m => m.iOrder).ToList())
+                                            {
+                                                Sections.Add(Section);
+                                                <div class="col-md-3">
+                                                    @if (!string.IsNullOrEmpty(Section.sName))
+                                                    {
+                                                        <h5>Section : @Section.sName</h5>
+                                                    }
+                                                    else
+                                                    {
+                                                        <h5>Section : @Section.ID</h5>
+                                                    }
+                                                    @if (Section.iDisplayAs == 30)
+                                                    {
+                                                        <h5>Fields</h5>
+                                                    }
+                                                    else if (Section.iDisplayAs == 40)
+                                                    {
+                                                        <h5>Component</h5>
+                                                    }
+                                                    else
+                                                    {
+                                                        <h5>HTML</h5>
+                                                    }
+                                                    @if (Section.FieldDefs.Values.Count() > 0)
+                                                    {
+                                                        foreach (var Field in Section.FieldDefs.Values.ToList())
+                                                        {
+                                                            if (Field.FieldOrigin != null)
+                                                            {
+                                                                <h6>ID: @Field.FieldOrigin.ID, Field: @Field.FieldOrigin.sName</h6>
+                                                            }
+                                                        }
+                                                    }
+                                                    else if (!string.IsNullOrEmpty(Section.HTMLContent))
+                                                    {
+                                                        <h6>@Section.HTMLContent</h6>
+                                                    }
+                                                    else if (Section.iDisplayAs == 40)
+                                                    {
+                                                        if (Section.iXIComponentID > 0)
+                                                        {
+                                                            XIInfraCache oCache = new XIInfraCache();
+                                                            var oCompD = (XIDComponent)oCache.GetObjectFromCache(XIConstant.CacheComponent, null, Section.iXIComponentID.ToString());
+                                                            var oCompC = (XIDComponent)oCompD.Clone(oCompD);
+                                                            var Params = Section.ComponentDefinition.GetParamsByContext(oCompC, "QSStepSection", Section.ID);
+                                                            <h6>@oCompC.sName</h6>
+
+                                                            foreach (var Param in Params.Params)
+                                                            {
+                                                                if (!string.IsNullOrEmpty(Param.sValue))
+                                                                {
+                                                                    <h6>@Param.sName: @Param.sValue</h6>
+                                                                    if (Param.sName.ToLower() == "visualisation")
+                                                                    {
+                                                                        Visualisations.Add(Param.sValue);
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    @if (Section.QSLinks != null)
+                                                    {
+                                                        if (Section.QSLinks.Values.Count() > 0)
+                                                        {
+                                                            foreach (var QSLink in Section.QSLinks.Values.ToList())
+                                                            {
+                                                                <h6>QS Link : @QSLink.sCode</h6>
+                                                                if (QSLink.XiLink.Values.Count() > 0)
+                                                                {
+                                                                    foreach (var XILink in QSLink.XiLink.Values.ToList())
+                                                                    {
+                                                                        <h6>@XILink.sName</h6>
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                </div>
+                                            }
+                                            if (Step.QSLinks != null)
+                                            {
+                                                if (Step.QSLinks.Values.Count() > 0)
+                                                {
+                                                    <div class="col-md-12">
+                                                        @foreach (var QSLink in Step.QSLinks.Values.ToList())
+                                                        {
+                                                            <h5>QS Link</h5>
+                                                            <h6>Name : @QSLink.sCode</h6>
+                                                            if (QSLink.XiLink.Values.Count() > 0)
+                                                            {
+                                                                foreach (var XILink in QSLink.XiLink.Values.ToList())
+                                                                {
+                                                                    <h5>XILink</h5>
+                                                                    XIInfraCache oCache = new XIInfraCache();
+                                                                    var oXILinkD = (XILink)oCache.GetObjectFromCache(XIConstant.CacheXILink, null, XILink.FKiXILInkID.ToString());
+                                                                    <h6>Name : @oXILinkD.Name</h6>
+                                                                    <h6>URL: @oXILinkD.URL</h6>
+                                                                    if (oXILinkD.XiLinkNVs.Count() > 0)
+                                                                    {
+                                                                        foreach (var NV in oXILinkD.XiLinkNVs.ToList())
+                                                                        {
+                                                                            if (!string.IsNullOrEmpty(NV.Value))
+                                                                            {
+                                                                                <h6>@NV.Name : @NV.Value</h6>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                }
+                            }
+                        }
+                        <h5>Steps</h5>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Display Name</th>
+                                    <th>Order</th>
+                                    <th>Code</th>
+                                    <th>Layout</th>
+                                    <th>Display As</th>
+                                    <th>Hidden</th>
+                                    <th>In Memory Only</th>
+                                    <th>Is Save Next</th>
+                                    <th>Is Save Close</th>
+                                    <th>Save Close Btn Label</th>
+                                    <th>Is Save</th>
+                                    <th>Save Btn Label</th>
+                                    <th>Is Back</th>
+                                    <th>Back Btn Label</th>
+                                    <th>Is Continue</th>
+                                    <th>Is History</th>
+                                    <th>Is Copy</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var Step in Steps)
+                                {
+                                <tr>
+                                    <td>@Step.sName</td>
+                                    <td>@Step.sDisplayName</td>
+                                    <td>@Step.iOrder</td>
+                                    <td>@Step.sCode</td>
+                                    <td>@Step.iLayoutID</td>
+                                    <td>@Step.iDisplayAs</td>
+                                    <td>@Step.sIsHidden</td>
+                                    <td>@Step.bInMemoryOnly</td>
+                                    <td>@Step.bIsSaveNext</td>
+                                    <td>@Step.bIsSaveClose</td>
+                                    <td>@Step.sSaveBtnLabelSaveClose</td>
+                                    <td>@Step.bIsSave</td>
+                                    <td>@Step.sSaveBtnLabel</td>
+                                    <td>@Step.bIsBack</td>
+                                    <td>@Step.sBackBtnLabel</td>
+                                    <td>@Step.bIsContinue</td>
+                                    <td>@Step.bIsHistory</td>
+                                    <td>@Step.bIsCopy</td>
+                                    <td>@Step.StatusTypeID</td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <h5>Sections</h5>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Code</th>
+                                    <th>Hidden</th>
+                                    <th>Group</th>
+                                    <th>Group Label</th>
+                                    <th>Group Description</th>
+                                    <th>Display AS</th>
+                                    <th>Component</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var sec in Sections)
+                                {
+                                    <tr>
+                                        <td>@sec.sName</td>
+                                        <td>@sec.sCode</td>
+                                        <td>@sec.sIsHidden</td>
+                                        <td>@sec.bIsGroup</td>
+                                        <td>@sec.sGroupLabel</td>
+                                        <td>@sec.sGroupDescription</td>
+                                        <td>@sec.iDisplayAs</td>
+                                        <td>@sec.iXIComponentID</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        <h5>Field Orgin</h5>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Disaply Name</th>
+                                    <th>Additional Text</th>
+                                    <th>QS Code</th>
+                                    <th>Data Type</th>
+                                    <th>Hidden</th>
+                                    <th>Length</th>
+                                    <th>Default Value</th>
+                                    <th>Display Help</th>
+                                    <th>Placeholder</th>
+                                    <th>Code</th>
+                                    <th>Mandatory</th>
+                                    <th>Validation Type</th>
+                                    <th>Validation Display Type</th>
+                                    <th>Option List</th>
+                                    <th>Master Data</th>
+                                    <th>1-Click</th>
+                                    <th>BO</th>
+                                    <th>Merge</th>
+                                    <th>Merge BO</th>
+                                    <th>Merge BO Field</th>
+                                    <th>Merge Variable</th>
+                                    <th>Compare</th>
+                                    <th>Disable</th>
+                                    <th>Uppercase</th>
+                                    <th>Lowercase</th>
+                                    <th>Help Icon</th>
+                                    <th>Script</th>
+                                    <th>Validation Message</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                @if (Model.XIDFieldOrigin.Values.Count() > 0)
+                                {
+                                    foreach (var Origin in Model.XIDFieldOrigin.Values.ToList())
+                                    {
+                                        <tr>
+                                            <td>@Origin.sName</td>
+                                            <td>@Origin.sDisplayName</td>
+                                            <td>@Origin.sAdditionalText</td>
+                                            <td>@Origin.sQSCode</td>
+                                            <td>@Origin.FKiDataType</td>
+                                            <td>@Origin.sIsHidden</td>
+                                            <td>@Origin.iLength</td>
+                                            <td>@Origin.sFieldDefaultValue</td>
+                                            <td>@Origin.sDisplayHelp</td>
+                                            <td>@Origin.sPlaceHolder</td>
+                                            <td>@Origin.sCode</td>
+                                            <td>@Origin.bIsMandatory</td>
+                                            <td>@Origin.iValidationType</td>
+                                            <td>@Origin.iValidationDisplayType</td>
+                                            <td>@Origin.bIsOptionList</td>
+                                            <td>@Origin.iMasterDataID</td>
+                                            <td>@Origin.FK1ClickID</td>
+                                            <td>@Origin.FKiBOID</td>
+                                            <td>@Origin.bIsMerge</td>
+                                            <td>@Origin.sMergeBo</td>
+                                            <td>@Origin.sMergeBoField</td>
+                                            <td>@Origin.sMergeVariable</td>
+                                            <td>@Origin.bIsCompare</td>
+                                            <td>@Origin.bIsDisable</td>
+                                            <td>@Origin.bIsUpperCase</td>
+                                            <td>@Origin.bIsLowerCase</td>
+                                            <td>@Origin.bIsHelpIcon</td>
+                                            <td>@Origin.sScript</td>
+                                            <td>@Origin.sValidationMessage</td>
+                                            <td>@Origin.StatusTypeID</td>
+                                        </tr>
+                                    }
+
+                                }
+                            </tbody>
+                        </table>
+                        <h5>Visualisations</h5>
+                        @foreach (var vis in Visualisations)
+                        {
+                            <h5>@vis</h5>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{XIInfraCache oCache = new XIInfraCache();
+                                            var oVisD = (XIVisualisation)oCache.GetObjectFromCache(XIConstant.CacheVisualisation, vis, null);
+                                        }
+                                        @foreach (var visNV in oVisD.XiVisualisationNVs)
+                                        {
+                                            <tr>
+                                                <td>@visNV.sName</td>
+                                                <td>@visNV.sValue</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                                            }
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

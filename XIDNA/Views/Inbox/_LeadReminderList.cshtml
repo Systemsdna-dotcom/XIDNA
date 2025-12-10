@@ -1,0 +1,62 @@
+﻿@model int
+<script>
+    $(document).ready(function () {
+        var table = $('#Reminder').dataTable({
+                //"bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Url.Action("GetReminderList", "Inbox", new { LeadID = @Model })",
+                "order": [[3, "desc"]],
+                "aoColumns": [
+                {},
+                                {
+                                    "sName": "ReminderID",
+                                    "bVisible": false
+                                },
+                                {
+                                    "sName": "ReminderTime",
+                                    "sWidth": "20%" 
+                                },
+                                {
+                                    "sName": "Message",
+                                },
+                                {
+                                    "sName": "StatusTypeID",
+                                }
+                ],
+            });
+        $("#Reminder").css("width", "100%");
+        });
+
+</script>
+@*<style>
+    .subnav {
+        margin-bottom: 10px;
+    }
+
+    #Botbl {
+        width: 100% !important;
+    }
+</style>*@
+
+<div id="Reminder1">
+    <div class="tab_scroll main-table">
+        <div class="dataTables_wrapper no-footer table-responsive">
+            <table class="table table-bordered table-striped dataTable" id="Reminder">
+                <thead>
+                    <tr role="row">
+                        <th>S.no</th>
+                        <th>ID</th>
+                        <th>ReminderTime</th>
+                        <th>Message</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody></tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,337 @@
+﻿
+@model IEnumerable<XICore.XITableRecords>
+@using XISystem;
+@using System.Web.Script.Serialization;
+@{
+    int i = 0;
+    var serializer = new JavaScriptSerializer();
+    serializer.MaxJsonLength = Int32.MaxValue;
+    var XIRecords = serializer.Serialize(Model);
+}
+
+<div class="content">
+    @if (Model.Count() > 0 && Model.Where(m => m.iDiffCount > 0 || m.iSourceCount > 0 || m.iTargetCount > 0).Count() > 0)
+    {
+        <input type="button" value="Update All To Target" class="btn btn-primary" onclick="fnSourceToTargetUpdate()" />
+    }
+    <div class="table-responsive" style="height:calc(49vh - 50px);overflow-y:auto;">
+        <table class="table table-striped custom-table dark-head dark-head2 table-condensed">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Table Name</th>
+                    <th>Different Records</th>
+                    <th>Only in Source</th>
+                    <th>Only in Target</th>
+                    <th>Identical Records</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    string difffStyle = string.Empty;
+                    string sourceStyle = string.Empty;
+                    string targetStyel = string.Empty;
+                    if (item.iDiffCount > 0)
+                    {
+                        difffStyle = "class=fc-blue style=cursor:pointer;";
+                    }
+
+                    if (item.iSourceCount > 0)
+                    {
+                        sourceStyle = "class=fc-blue style=cursor:pointer;";
+                    }
+                    if (item.iTargetCount > 0)
+                    {
+                        targetStyel = "class=fc-blue style=cursor:pointer;";
+                    }
+                    <tr>
+                        <th>@(++i)</th>
+                        <th>@item.sTableName</th>
+                        <th onclick="fnDifferentRecords('@item.sTableName', @item.iDiffCount, '@item.sPrimaryKey')" @difffStyle>@item.iDiffCount</th>
+                        <th onclick="fnSourceTargetRecords('@item.sTableName', '@XIConstant.Source', @item.iSourceCount, '@item.sPrimaryKey')" @sourceStyle>@item.iSourceCount</th>
+                        @*<th onclick="fnSourceTargetRecords('@item.sTableName', '@XIConstant.Target', @item.iTargetCount, '@item.sPrimaryKey')" @targetStyel>@item.iTargetCount</th>*@
+                        <th>@item.iTargetCount</th>
+                        <th>@item.iEqualCount</th>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+
+</div>
+<div class="content" id="div_Table" style="display:none;">
+    <div id="div_AppendButton">
+
+    </div>
+    <span><h2 id="id_heading"></h2></span>
+    <div class="table-responsive" style="height:calc(49vh - 50px);overflow-y:auto;">
+        <table class="table table-striped custom-table dark-head dark-head2 table-condensed">
+            <thead id="tHead"></thead>
+            <tbody id="tBody"></tbody>
+        </table>
+    </div>
+</div>
+<div id="Dialog_Script" title="Inset Update Schema"></div>
+
+<script>
+    var Json = '@Html.Raw(XIRecords)';
+    $(function () {
+        $('#Dialog_Script').dialog({
+            autoOpen: false,
+            width: 1600,
+            height: 756,
+            buttons: [
+                @*{
+                    text: "Execute",
+                    click: function () {
+                        $("#Dialog_Confirm").html("Are you sure want to execute?");
+                        $("#Dialog_Confirm").dialog('open');
+
+                    }
+                },
+                {
+                    text: "Validate",
+                    click: function () {
+                        if (window.editor.getValue()) {
+                            var model = {};
+
+                            if ('@ViewBag.IsFromBo' == 'True') {
+                                model = {
+                                    sScript: window.editor.getValue(),
+                                    iDataSource: parseInt($('#DD_Database').val())
+                                }
+                            }
+                            else {
+                                model = {
+                                    sScript: window.editor.getValue(),
+                                    sTarget: $('#hiddenTarget').val()
+                                }
+                            }
+
+                        }
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("ValidateScript","DataBase")',
+                            data: model,
+                            cache: false,
+                            async: false,
+                            dataType: 'JSON',
+                            success: function (data) {
+                                if (data)
+                                    alert(data);
+                                else
+                                    alert("Script is Valid");
+                            }
+                        });
+
+                    }
+                },*@
+                {
+                    text: "Close",
+                    click: function () {
+                        $('#Dialog_Script').dialog("close");
+                    }
+                }
+            ]
+        });
+    })
+
+    /******************************  Display  Different Records as Table *************************************/
+    var fnDifferentRecords = function (sTableName, Count, sPrimaryKey) {
+        $('#div_AppendButton').empty();
+        $('#id_heading').empty();
+        $('#div_Table').css('display', 'none');
+        if (Count > 0) {
+            $('#id_heading').text('Different Records (' + Count + ')');
+            $('#div_Table').css('display', '');
+
+            //calling Server method for getting Table Different records
+            var model = {
+                sTableName: sTableName,
+                sActionType: "@XIConstant.Difference",
+            };
+            GetTableRecords(model).then(function (TableRecords) {
+                if (TableRecords && TableRecords.Source && TableRecords.Target) {
+                    var Source = TableRecords.Source;
+                    var Target = TableRecords.Target;
+                    fnAppendHeadings(Source[0]);
+                    var HtmlBody = '';
+                    $.each(Source, function (i, sRecord) {
+                        HtmlBody += "<tr><td><input type='checkbox' checked id='" + i + "' class='cls_SourceRecords' onchange=fnDiffChange('Source'," + i + ") /><span><i class='fa fa-exchange'></i></span><input type='checkbox' id='id_Target_" + i + "' onchange=fnDiffChange('Target'," + i + ") class='cls_TargetRecords' /></td>";
+                        var tRecord = Target[i];
+                        $.each(sRecord, function (j) {
+                            var style = '';
+                            var sGUID = '';
+                            var tGUID = '';
+                            if (sRecord[j].sValue != tRecord[j].sValue) {
+                                style = 'style="color:red"';
+                            }
+                            if (sRecord[j].sName.toLowerCase() == sPrimaryKey.toLowerCase()) {
+                                sGUID = 'id=Source_' + i + '';
+                                tGUID = 'id=Target_' + i + '';
+                            }
+                            HtmlBody += '<td ' + sGUID + ' ' + style + '>' + sRecord[j].sValue + '</td><td ' + tGUID + '' + style + '>' + tRecord[j].sValue + '</td>';
+                        });
+                        HtmlBody += '</tr>';
+                    });
+                    $('#tBody').html(HtmlBody);
+                      $('#div_AppendButton').html('<input type="button" value="Update Target" onclick=fnUpdateRecords("@XIConstant.Difference","' + sTableName + '") class="btn btn-danger" />')
+                }
+
+            });
+        }
+    };
+
+    /*********************************************************** Display Only Source, Only Target Records as Table ***************************************************/
+    var fnSourceTargetRecords = function (sTableName, from, Count, sPrimaryKey) {
+
+        $('#div_AppendButton').empty();
+        $('#id_heading').empty();
+        $('#div_Table').css('display', 'none');
+        if (Count > 0) {
+            $('#id_heading').text('Only in ' + from + ' (' + Count + ')');
+            $('#div_Table').css('display', '');
+            var model = {
+                sTableName: sTableName,
+                sActionType: from
+            }
+            GetTableRecords(model).then(function (TableRecords) {
+                if (TableRecords && (TableRecords.Source || TableRecords.Target)) {
+                    var ValueName = "";
+                    var fncName = "fnUpdateRecords('" + from + "','" + sTableName + "')";
+                    var ClassName = "cls_" + from + "Records";
+                    var id = from;
+                    if (from == 'Source') {
+                        SourceTarget = TableRecords.Source;
+                        ValueName = "Update Target";
+                    }
+                    else {
+                        SourceTarget = TableRecords.Target;
+                        ValueName = "Update Source";
+                    }
+
+                    fnAppendHeadings(SourceTarget[0], from);
+                    var HtmlBody = '';
+                    $.each(SourceTarget, function (i, sRecord) {
+                        HtmlBody += "<tr><td><input type='checkbox' id='" + i + "' checked class='" + ClassName + "' /></td>";
+                        $.each(sRecord, function (j) {
+                            var sGUID = "";
+                            if (sRecord[j].sName.toLowerCase() == sPrimaryKey.toLowerCase())
+                                sGUID = 'id=' + id + '_' + i + '';
+                            HtmlBody += '<td ' + sGUID + '>' + sRecord[j].sValue + '</td>';
+                        });
+                        HtmlBody += '</tr>';
+                    });
+                    $('#tBody').html(HtmlBody);
+                    $('#div_AppendButton').html("<input type='button' onclick=" + fncName + " value='" + ValueName + "' class='btn btn-danger' />");
+                }
+            });
+        }
+    }
+    function GetTableRecords(model) {
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                type: 'POST',
+                url: "@Url.Action("GetTableRecords", "DataBase")",
+                data: model,
+                dataType: 'json',
+                success: function (data) {
+                    resolve(data);
+                }
+            });
+        });
+    }
+
+    /****************************************************************** Generate Table Headings ******************************************************************************************/
+    var fnAppendHeadings = function(Record, from) {
+        if (Record && Record.length > 0) {
+            var Headers = [];
+            $.each(Record, function (i, item) {
+                Headers.push(item.sName);
+            })
+            var HtmlHeader = '<tr><th>Update</th>';
+            $.each(Headers, function(i, Header) {
+                var th = '<th>' + Header + '</th>';
+                if ((from == 'Source' || from == 'Target'))
+                   HtmlHeader += th;
+                else
+                   HtmlHeader += th + th;
+            });
+            HtmlHeader += '</tr>';
+            $('#tHead').html(HtmlHeader);
+        }
+    }
+
+    /******************************************************************Toggle the Different Reocrd Checkboxes******************************************************************************************/
+    var fnDiffChange = function(from, i) {
+        if (from == 'Source')
+            if ($('#id_Source_' + i).is(":checked"))
+                $('#id_Target_' + i).attr('checked', false);
+        if (from == 'Target')
+            if ($('#id_Target_' + i).is(":checked"))
+                $('#id_Source_' + i).attr('checked', false);
+    }
+
+    /*****************************************************************Update Target By Default ****************************************************************************************/
+    var fnSourceToTargetUpdate = function () {
+        $('#div_Table').css('display', 'none');
+        $('#Dialog_Script').empty();
+        if (Json && Json.length > 0) {
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("InsertUpdateTarget", "DataBase")',
+                    cache: false,
+                    //data: { sCompareWith: $('.radio_CompareWith:checked').val()},
+                    async: false,
+                    dataType: 'HTML',
+                    success: function (html) {
+                        $('#Dialog_Script').html(html);
+                        $('#Dialog_Script').dialog('open');
+                    }
+
+                })
+        }
+    }
+
+    /*****************************************************************Update Source To Target and Target To Source based on sActionType ****************************************************************************************/
+    var fnUpdateRecords = function (sActionType, sTableName) {
+        var SourceChecked = $('.cls_SourceRecords:checked');
+        var TargetChecked = $('.cls_TargetRecords:checked');
+        var GUIDs = [];
+        if (SourceChecked && SourceChecked.length > 0)
+            $.each(SourceChecked, function (i, item) {
+                var id = $(item).attr('id');
+                if (id && parseInt(id) >= 0) {
+                    var sGUID = $('#Source_' + parseInt(i)).text();
+                    if (sGUID)
+                        GUIDs.push(sGUID);
+                }
+            });
+        if (!GUIDs || GUIDs.length == 0)
+            GUIDs = null;
+        if (GUIDs) {
+            $('#Dialog_Script').empty();
+            var model = {
+                sTableName: sTableName,
+                GUIDs: GUIDs,
+                sActionType: sActionType
+            }
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("UpdateSourceTarget", "DataBase")',
+                cache: false,
+                async: false,
+                data: model,
+                dataType: 'html',
+                success: function (html) {
+                    $('#Dialog_Script').html(html);
+                    $('#Dialog_Script').dialog('open');
+                }
+            })
+        }
+        else
+            alert("Please Select Record");
+    };
+</script>

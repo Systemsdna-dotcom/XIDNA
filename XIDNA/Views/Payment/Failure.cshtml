@@ -1,0 +1,67 @@
+﻿@{
+    /**/
+
+    ViewBag.Title = "Failure";
+    var QuoteID = ViewBag.QuoteID;
+    var sGUID = ViewBag.sGUID;
+    int NoofAttempts = ViewBag.NoOfAttempts;
+    string ApplicationPath = System.Configuration.ConfigurationManager.AppSettings["ApplicationPath"];
+    var sLayOutGUID = ViewBag.sLayoutGUID;
+}
+
+
+@if (NoofAttempts > 3)
+{
+    <div class="aggregations">
+        <h2>Failure</h2>
+        <p>Unfortunately, we are unable to process your payment as this time.</p>
+        <p>Please contact us on 01227 774050 and a member of the Motorhome Team will be able to assist you further.</p>
+        <p>Opening hours:</p>
+        <p>Monday – Friday 09:00 – 17:30</p>
+        <p>Saturday 09:00 – 13:00 </p>
+    </div>
+}
+<style>
+    .aggregations {
+        position: relative;
+        max-width: 260px;
+        margin: 40px auto 0px;
+        background: #f8f8f8;
+        padding: 20px 17px;
+        text-align: center;
+        border-radius: 3%;
+        box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.5);
+        -webkit-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.5);
+        -moz-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.5);
+    }
+
+        .aggregations h2 {
+            color: #fff;
+            background-color: #ec1846;
+            border-radius: 6px;
+            width: 140px;
+            margin: 0 auto;
+            font-family: 'RobotoCond',Arial,Sans-Serif;
+        }
+
+        .aggregations p {
+            font-family: 'RobotoCond',Arial,Sans-Serif;
+        }
+</style>
+<script>
+    $(document).ready(function () {
+        debugger;
+        //$(".QuotesPayment").trigger('click');
+        if (@NoofAttempts<= 3) {
+            //var FinalBuyAmount = $('#FinalAmt').text();
+            //var BuyPrice = FinalBuyAmount;
+            var url = '@ApplicationPath' + '/Payment/Payment?ID=' + '@QuoteID' + '_' + '@sGUID' + '&Amount=' + '@ViewBag.amount' + '&QuoteID=' + '@QuoteID' + '&sLayoutGUID=' + '@sLayOutGUID';
+            parent.postMessage(url, "*");
+            //$('#iframe_a').attr('src', url)
+        }
+        //$(".rxp-container").show();
+        //$(".rxp-btn").removeAttr('disabled');
+        //$(".rxp-btn").attr('value', 'Pay Now');
+
+    });
+</script>

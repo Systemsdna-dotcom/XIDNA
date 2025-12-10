@@ -1,0 +1,29 @@
+﻿@model XICore.XIDQSStep
+
+@{ 
+    var sGUID = ViewBag.sGUID;
+}
+@if (Model.iLayoutID > 0 && Model.Layout != null)
+    {
+        { Html.RenderAction("GetLayoutContent", "XiLink", new { model = Model.Layout});}
+    }
+    else
+    {
+        @*<div id="Component-@Model.ID" data-type="Component" data-name="Component-@Model.ID">*@
+    { Html.RenderAction("GetStepData", "XiLink", new { oStepDef = Model, sGUID = sGUID }); }
+@*</div>*@        
+    }
+
+@*<script>
+    $(document).ready(function () {
+        var sGUID = '@ViewBag.sGUID';
+        var StepDef = @Html.Raw(Json.Encode(Model));
+        if(StepDef.iLayoutID > 0 && StepDef.Layout){
+            var Layout = StepDef.Layout;
+            ShowContentInDialogOrPopup(Layout, sGUID);
+        }
+        else{
+            fncGetStepData(Layout, StepDef, PlaceHolderID, sGUID, 'Step_'+StepDef.ID);
+        }
+    });
+</script>*@

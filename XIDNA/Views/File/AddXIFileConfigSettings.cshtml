@@ -1,0 +1,506 @@
+﻿@*XIDynaware Code*@
+@model XIDNA.Models.XIFileTypes
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<section class="content-header hedr">
+    @if (Model.ID == 0)
+    {
+        <h1> Add File Settings </h1>
+    }
+    else
+    {
+        <h1> Edit File Settings </h1>
+    }
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> File Settings</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="innerborder">
+                    @* SaveBO *@
+                    @using (Ajax.BeginForm("CreateFileSettings", "File", new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "FilesForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.ID)
+                        <div id="clear-text">
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    @if (Model.ID == 0)
+                                    {
+                                        @Html.TextBoxFor(model => model.Name, new { @placeholder = "Enter Name Here", @class = "form-control" })
+                                    }
+                                    else
+                                    {
+                                        @Html.TextBoxFor(model => model.Name, new { @readonly = "readonly", @placeholder = "Enter Name Here", @class = "form-control" })
+                                    }
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">File Type<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.Type, new SelectList(new List<Object>{
+                                    new {key=0,value="---------Select---------"},
+                                               new { key= 10 , value = "Image" },
+                                               new { key= 20 , value = "File" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Type" })
+                                </div>
+                            </div>
+
+                            <div id="DivForImages" style="display:none">
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Image Width<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(model => model.MaxWidth, new { @placeholder = "Enter the Width", @class = "form-control"})
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Image Height<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(model => model.MaxHeight, new { @placeholder = "Enter the Height", @class = "form-control"})
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Thumbnails<span class="danger"></span></label>
+                                        @Html.DropDownListFor(m => m.Thumbnails, new SelectList(new List<Object>{
+                                    new {key=0,value="---------Select---------"},
+                                               new { key= 10 , value = "Yes" },
+                       new { key= 20 , value = "No" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Thumbnail" })
+                                    </div>
+                                </div>
+
+                                <div id="ThumbDiv" style="display:none">
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Thumbnails Width</label>
+                                            @Html.TextBoxFor(model => model.ThumbWidth, new { @placeholder = "Enter the Width", @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Thumbnails Height</label>
+                                            @Html.TextBoxFor(model => model.ThumbHeight, new { @placeholder = "Enter the Height", @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Preview<span class="danger"></span></label>
+                                        @Html.DropDownListFor(m => m.Preview, new SelectList(new List<Object>{
+                                    new {key=0,value="---------Select---------"},
+                                               new { key= 10 , value = "Yes" },
+                       new { key= 20 , value = "No" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Preview" })
+                                    </div>
+                                </div>
+
+                                <div id="PreviewDiv" style="display:none">
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Preview Width</label>
+                                            @Html.TextBoxFor(model => model.PreviewWidth, new { @placeholder = "Enter the Width", @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Preview Height</label>
+                                            @Html.TextBoxFor(model => model.PreviewHeight, new { @placeholder = "Enter the Height", @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">File Count<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.sCount, new SelectList(new List<Object>{
+                                    new {key=0, value="---------Select---------"},
+                                               new { key= 10 , value = "Single" },
+                                               new { key= 20 , value = "Multiple" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "FileCount" })
+                                </div>
+                            </div>
+
+                            <div id="AddFileCount" style="display:none">
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Count<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(model => model.MaxCount, new { @placeholder = "Enter the Count", @class = "form-control", @id = "MaxCount" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.MaxCount, null, new { @class = "red" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Format<span class="danger">*</span></label>
+                                    @Html.DropDownListFor(m => m.FileType, new SelectList(Model.FileTypes, "Value", "text"), "--Select--", new { @class = "form-control", @id = "FileType" })
+                                </div>
+                                <div class="col-sm-7 fielderror">
+                                    @Html.ValidationMessageFor(m => m.Type, "", new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">DrillDown<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.Drilldown, new SelectList(new List<Object>{
+                                    new {key=0,value="---------Select---------"},
+                                               new { key= 10 , value = "Yes" },
+                       new { key= 20 , value = "No" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "DrillDown" })
+                                </div>
+                            </div>
+
+                            <div id="DrillDiv" style="display:none">
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">DrillDown Type</label>
+                                        @Html.DropDownListFor(m => m.DrillDownType, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Dialog" },
+                       new { key= 20 , value = "Popup" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "DrillDownType" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">DrillDown Width</label>
+                                        @Html.TextBoxFor(model => model.DrillWidth, new { @placeholder = "Enter the Width", @class = "form-control"})
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.DrillWidth, null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">DrillDown Height</label>
+                                        @Html.TextBoxFor(model => model.DrillHeight, new { @placeholder = "Enter the Height", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.DrillHeight, null, new { @class = "red" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="submit" class="btn btn-theme m-r-10" value="Save" />
+                                @*@if (Model.ID == 0)
+                                    {
+                                        <button type="button" class="btn btn-info m-r-10" id="ResetBoBtn">Reset</button>
+                                    }
+                                    @if (Model.ID > 0)
+                                    {
+                                        // CopyBO", "BusinessObjects"
+                                        <input type="button" class="btn btn-info m-r-10" id="CopyBoBtn" value="Copy">
+                                    }*@
+                                <button type="button" class="btn btn-theme decline m-r-10" id="CancelBO">Cancel</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+<script type="text/javascript">
+    $(document).ready(function () {
+        //var sThumbSelect= document.getElementById("Thumbnail");
+        //var sThumbVal = sThumbSelect.options[sThumbSelect.selectedIndex].value;
+        //if (sThumbVal == "Yes")
+        //{
+        //    $("#ThumbDiv").Show();
+        //}
+        //var sPrevSelect = document.getElementById("Preview");
+        //var sPrevVal = sPrevSelect.options[sPrevSelect.selectedIndex].value;
+        //if (sPrevVal == "Yes") {
+        //    $("#PreviewDiv").Show();
+        //}
+
+
+        var sGetThumb = $('#Thumbnail').val();
+        var sGetPrev = $('#Preview').val();
+        var sDtaType = $("#Type").val();
+        var sFleCount = $("#FileCount").val();
+        var sDrillCount = $("#DrillDown").val();
+        if (sDrillCount == '10') {
+            $("#DrillDiv").show();
+        }
+        else {
+            $("#DrillDiv").hide();
+        }
+
+        if (sFleCount == '10') {
+            $("#AddFileCount").hide();
+        }
+        else if (sFleCount == '20') {
+            $("#AddFileCount").show();
+        }
+        else {
+            $("#AddFileCount").hide();
+        }
+        if (sDtaType == '10') {
+            $("#DivForImages").show();
+        }
+        else {
+            $("#DivForImages").hide();
+        }
+        if (sGetThumb == '10') {
+            $("#ThumbDiv").show();
+        }
+        else {
+            $("#ThumbDiv").hide();
+
+        }
+        if (sGetPrev == '10') {
+            $("#PreviewDiv").show();
+        }
+        else {
+            $("#PreviewDiv").hide();
+        }
+
+        $("#Type").on('change', function () {
+            if (this.value == '10') {
+                $("#DivForImages").show();
+            }
+            else {
+                $("#DivForImages").hide();
+                if ('@Model.ID' == 0) {
+                    $('#MaxWidth').val('');
+                    $('#MaxHeight').val('');
+                    $('#Thumbnail')[0].selectedIndex = 0;
+                    $("#ThumbDiv").hide();
+                    $('#Preview')[0].selectedIndex = 0;
+                    $('#PreviewDiv').hide();
+                    $('#PreviewWidth').val(0);
+                    $('#PreviewHeight').val(0);
+                    $('#ThumbWidth').val(0);
+                    $('#ThumbHeight').val(0);
+                }
+            }
+        });
+        $('#Thumbnail').on('change', function () {
+            if (this.value == '10') {
+                $("#ThumbDiv").show();
+            }
+            else {
+                $("#ThumbDiv").hide();
+                if ('@Model.ID' == 0) {
+                    $('#ThumbWidth').val(0);
+                    $('#ThumbHeight').val(0);
+                }
+            }
+        });
+        $('#DrillDown').on('change', function () {
+            if (this.value == '10') {
+                $("#DrillDiv").show();
+            }
+            else {
+                $("#DrillDiv").hide();
+                if ('@Model.ID' == 0) {
+                    $('#DrillDownType')[0].selectedIndex = 0;
+                    $('#DrillWidth').val(0);
+                    $('#DrillHeight').val(0);
+                }
+            }
+        });
+        $('#FileCount').on('change', function () {
+            if (this.value == '20') {
+                $("#AddFileCount").show();
+            }
+            else {
+                $("#AddFileCount").hide();
+                if ('@Model.ID' == 0) {
+                    $('#MaxCount').val('');
+                }
+            }
+        });
+        $('#Preview').on('change', function () {
+            if (this.value == '10') {
+                $("#PreviewDiv").show();
+            }
+            else {
+                $("#PreviewDiv").hide();
+                if ('@Model.ID' == 0) {
+                    $('#PreviewWidth').val(0);
+                    $('#PreviewHeight').val(0);
+                }
+            }
+        });
+
+
+        $('#CancelBO').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#FilesForm')[0].reset();
+            $('#FilesForm .taberrormsg').find('span').html('');
+        });
+    })
+    function OnFormBegin() {
+        $('#FilesForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+
+    function OnComplete(e) {
+        $('#FilesForm').unblock();
+        $('#FilesForm')[0].reset();
+        opener.location.reload();
+        //CustomMessage(e.ResponseMessage, e.Status);
+        if (e.Status == false) {
+            $("#BootstrpError").show();
+            $("#BootstrpError").append("<strong>Failure!</strong> OOPS looks like there is some error");
+            $(function () {
+                setTimeout(function () {
+                    $("#BootstrpError").hide('blind', {}, 500)
+                }, 5000);
+            });
+        }
+        else {
+            $("#BootstrpAlertSuccess").show();
+            $("#BootstrpAlertSuccess").append("<strong>Success!</strong> The File settings has been created successfully.");
+            $(function () {
+                setTimeout(function () {
+                    $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                }, 5000);
+            });
+        }
+    }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@*<script>
+        $(document).ready(function () {
+            var Copypopups = new Array();
+            $('#CancelBO').click(function () {
+                window.close();
+            });
+            $('#ResetBoBtn').click(function () {
+                $('#FilesForm')[0].reset();
+                $('#FilesForm .taberrormsg').find('span').html('');
+            });
+            $('#CopyBoBtn').click(function () {
+                var ID=@Model.BOID;
+                if (Copypopups.length > 0) {
+                    for (i = 0; i < Copypopups.length; i++) {
+                        Copypopups[i].close();
+                    }
+                }
+                var Copybo = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("CopyBO", "BusinessObjects")',
+                    data: { ID: ID },
+                    cache: false,
+                    async: false,
+                    dataType: 'html',
+                    success: function (data) {
+                        with (Copybo.document) {
+                            open();
+                            write(data);
+                            close();
+                        }
+                        Copypopups.push(Copybo);
+                        Copybo.moveTo(0, 0);
+                    }
+                });
+                  });
+        })
+        function OnFormBegin() {
+            $('#FilesForm').block({
+                message: '<h4>Saving</h4>',
+                blockMsgClass: 'report-success',
+            });
+        }
+
+        function OnComplete(e) {
+            $('#FilesForm').unblock();
+            $('#FilesForm')[0].reset();
+            opener.location.reload();
+            CustomMessage(e.ResponseMessage, e.Status);
+        }
+    </script>*@

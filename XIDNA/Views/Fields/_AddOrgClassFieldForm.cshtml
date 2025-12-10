@@ -1,0 +1,213 @@
+﻿@model XIDNA.Models.MappedFields
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        $('#FieldType').change(function () {
+            if ($(this).val() == "VARCHAR") {
+                $('#Length').prop("disabled", false);
+            }
+            else {
+                $('#Length').prop("disabled", true);
+            }
+        });
+        if ('@Model.OrganizationID' == 0) {
+            $('.Fieldheading').append(" Admin - Class Specific Field");
+        } else {
+            $('.Fieldheading').append("Class Specific Field");
+        }
+        $('#Class').change(function () {
+            $('#ClassName').val($('#Class :selected').text());
+            $('#ClassID').val($('#Class :selected').val());
+        });
+
+        $('#BOID').change(function () {
+            var BOID = $(this).val();
+            if (BOID > 0) {
+                $.ajax({
+                    url: '@Url.Action("GetBOClassesDDL", "Fields")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: 'JSON',
+                    cache: false,
+                    data: { BOID: BOID },
+                    success: function (data) {
+                        $('#Classes').empty();
+                        $('#Classes').html('<option value="">--Select--</option>')
+                        for (i = 0; i < data.length; i++) {
+                            $('#Classes').append('<option value=' + data[i].Value + '>' + data[i].text + '</option>');
+                        }
+                    },
+                    error: function (data) {
+                    }
+                })
+            }
+        });
+
+        $('#Classes').change(function () {
+            var value = $(this).val();
+            $.ajax({
+                url: '@Url.Action("SelectedFields", "Fields")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: 'JSON',
+                cache: false,
+                data: { ID: value },
+                success: function (data) {
+                    $('#Selectedfield').html(data);
+                },
+                error: function (data) {
+                }
+            })
+        })
+    });
+</script>
+<style>
+    .danger {
+        color: red;
+    }
+
+    .fielderror {
+        margin-top: 30px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Add Class Specific Field </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Fields Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div id="AddFieldForm" class="box-body">
+    <div class="innerborder">
+        <h6 class="Fieldheading"></h6>
+        @using (Ajax.BeginForm("SaveOrgField", "Fields", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnComplete" }, new { @id = "FieldsForm", @class = "form-horizontal" }))
+        {
+            @Html.HiddenFor(m => m.ID, new { @Value = 0 })
+            @Html.HiddenFor(m => m.ClassSpecific, new { @Value = "ClassSpecific" })
+            @Html.HiddenFor(m => m.CreationType, new { @Value = "Create" })
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">BO<span class="danger">*</span></label>
+                    @Html.DropDownListFor(m => m.BOID, new SelectList(Model.ddlBOs, "Value", "text"), "--Select--", new { @class = "form-control" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.BOID, "", new { @class = "red" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">Class<span class="danger">*</span></label>
+                    @Html.DropDownListFor(m => m.ClassID, new SelectList(Model.Classes, "value", "text"), "--Select--", new { @class = "form-control", @id = "Classes" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.ClassID, "", new { @class = "red" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">Field Name<span class="danger">*</span></label>
+                    @Html.TextBoxFor(m => m.FieldName, new { @class = "form-control", @placeholder = "Enter Name", @id = "FieldName" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.FieldName, "", new { @class = "red" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">Field Type<span class="danger">*</span></label>
+                    @Html.DropDownListFor(m => m.FieldType, new SelectList(new List<Object>{
+                                               new { key= "" , value = "--Select--" },
+                       new { key= "INT" , value = "int" },
+                       new { key= "VARCHAR", value = "varchar" },
+                       new { key= "DATETIME", value = "datetime" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "FieldType" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.FieldType, "", new { @class = "red" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">Field Length<span class="danger">*</span></label>
+                    @Html.DropDownListFor(m => m.Length, new SelectList(new List<Object>{
+                                               new { key= "" , value = "--Select--" },
+                       new { key= "32" , value = "32" },
+                       new { key= "64" , value = "64" },
+                       new { key= "128" , value = "128" },
+                       new { key= "256" , value = "256" },
+                       new { key= "512" , value = "512" },
+                       new { key= "MAX" , value = "MAX" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Length" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.Length, "", new { @class = "red" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">Description<span class="danger">*</span></label>
+                    @Html.TextBoxFor(m => m.Description, new { @class = "form-control", @placeholder = "Enter Description", @id = "Description" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.Description, "", new { @class = "red" })
+                </div>
+            </div>
+            <input type="hidden" id="ClassName" name="ClassName" class="form-control">
+            <input type="hidden" id="ClassID" name="ClassID" class="form-control">
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <button type="submit" class="btn btn-theme" id="FieldSave">Save</button>
+                    <button type="button" class="btn btn-theme reverse" id="FieldReset">Reset</button>
+                    <button type="button" class="btn btn-theme decline" id="FieldCancel">Cancel</button>
+                </div>
+            </div>
+        }
+        <div id="Selectedfield">
+
+        </div>
+    </div>
+</div>
+<div class="dialog-box AddNonFieldDlg" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    var form = $('#FieldsForm');
+    $.validator.unobtrusive.parse(form);
+    function OnComplete(res) {
+        if (res > 0) {
+            $(".AddNonFieldDlg").unblock();
+            opener.location.reload();
+            CustomMessage(res.ResponseMessage, res.Status);
+            var classval = $('#Classes option:selected').val();
+            $('#Selectedfield').load('@Url.Action("SelectedFields", "Fields")?ID=' + classval);
+            var classID = $('#Class').val();
+            var classname = $('#Class :selected').text();
+            $('#AddFieldForm input#FieldName').val('');
+            $('#AddFieldForm select#FieldType').val("");
+            $('#AddFieldForm select#Length').val("");
+            $('#AddFieldForm input#Description').val('');
+            $('#Class').val(classID);
+            $('#Class').prop('disabled', true);
+            $('#ClassName').val(classname);
+            $('#ClassID').val(classID);
+            $('#Length').prop('disabled', false);
+            opener.location.reload();
+        }
+        else {
+            $(".AddNonFieldDlg").unblock();
+            opener.location.reload();
+            CustomMessage(res.ResponseMessage, res.Status);
+        }
+    }
+    $('#FieldReset').click(function () {
+        $('#FieldsForm')[0].reset();
+        $('#Class').prop("disabled", false);
+        $('#Length').prop("disabled", false);
+        $('#FieldsForm .fielderror').find('span').html('');
+    });
+    $('#FieldCancel').click(function () {
+        window.close();
+    });
+</script>

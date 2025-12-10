@@ -1,0 +1,435 @@
+﻿@model XIDNA.ViewModels.VMUserDashContents
+
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+@*<meta http-equiv="refresh" content="60" />
+    <meta name="viewport" content="width=device-width" />*@
+<title>DashboardResult</title>
+<script>
+    $(document).ready(function () {
+
+        @*$("#Row2").sortable({
+                revert: true,
+                placeholder: "ui-state-highlight",
+                update: function (event, ui) {
+                    var r = $("#Row2").sortable("toArray");
+                    var order = "";
+                    for (i = 0; i < r.length; i++) {
+                        order = order + r[i] +", ";
+                    }
+                    order = order.slice(0, -2);
+                    $.ajax({
+                        url: '@Url.Action("SaveColSettings", "Inbox")',
+                        type: 'GET',
+                        data: { ColOrder: order, UserID: parseInt(@Model.UserID), Row: "Row2" },
+                        contentType: "application/json; charset=utf-8",
+                        datatype: 'JSON',
+                        cache: false,
+                        success: function (data) {
+                        },
+                        error: function (data) {
+                        }
+                    });
+                }
+            });*@
+        @*$("#Row3").sortable({
+                revert: true,
+                placeholder: "ui-state-highlight",
+                update: function (event, ui) {
+                    var r = $("#Row3").sortable("toArray");
+                    var order = "";
+                    for (i = 0; i < r.length; i++) {
+                        order = order + r[i] +", ";
+                    }
+                    order = order.slice(0, -2);
+                    $.ajax({
+                        url: '@Url.Action("SaveColSettings", "Inbox")',
+                        type: 'GET',
+                        data: { ColOrder: order, UserID: parseInt(@Model.UserID), Row: "Row3" },
+                        contentType: "application/json; charset=utf-8",
+                        datatype: 'JSON',
+                        cache: false,
+                        success: function (data) {
+
+                        },
+                        error: function (data) {
+                        }
+                    });
+                }
+            });*@
+        @*$("#Row4").sortable({
+                revert: true,
+                placeholder: "ui-state-highlight",
+                update: function (event, ui) {
+                    var r = $("#Row4").sortable("toArray");
+                    var order = "";
+                    for (i = 0; i < r.length; i++) {
+                        order = order + r[i] +", ";
+                    }
+                    order = order.slice(0, -2);
+                    $.ajax({
+                        url: '@Url.Action("SaveColSettings", "Inbox")',
+                        type: 'GET',
+                        data: { ColOrder: order, UserID: parseInt(@Model.UserID), Row: "Row4" },
+                        contentType: "application/json; charset=utf-8",
+                        datatype: 'JSON',
+                        cache: false,
+                        success: function (data) {
+
+                        },
+                        error: function (data) {
+                        }
+                    });
+                }
+            });*@
+        @*$("#Row5").sortable({
+                revert: true,
+                placeholder: "ui-state-highlight",
+                update: function (event, ui) {
+                    var r = $("#Row5").sortable("toArray");
+                    var order = "";
+                    for (i = 0; i < r.length; i++) {
+                        order = order + r[i] +", ";
+                    }
+                    order = order.slice(0, -2);
+                    $.ajax({
+                        url: '@Url.Action("SaveColSettings", "Inbox")',
+                        type: 'GET',
+                        data: { ColOrder: order, UserID: parseInt(@Model.UserID), Row: "Row5" },
+                        contentType: "application/json; charset=utf-8",
+                        datatype: 'JSON',
+                        cache: false,
+                        success: function (data) {
+
+                        },
+                        error: function (data) {
+                        }
+                    });
+                }
+            });*@
+        @*$(".rowsort").sortable({
+                revert: true,
+                placeholder: "ui-state-highlight",
+                update: function (event, ui) {
+                    var r = $(".rowsort").sortable("toArray");
+                    var order = "";
+                    for (i = 0; i < r.length; i++) {
+                        order = order + r[i] +", ";
+                    }
+                    order = order.slice(0, -2);
+                    $.ajax({
+                        url: '@Url.Action("SaveColSettings", "Inbox")',
+                        type: 'GET',
+                        data: { ColOrder: order, UserID: parseInt(@Model.UserID), Row: "Col0" },
+                        contentType: "application/json; charset=utf-8",
+                        datatype: 'JSON',
+                        cache: false,
+                        success: function (data) {
+
+                        },
+                        error: function (data) {
+                        }
+                    });
+                }
+            });*@
+
+        @*$(".btn-close").click(function () {
+                var rows = $(this).attr('id');
+                $.ajax({
+                    url: '@Url.Action("Close", "Inbox")',
+                    type: 'GET',
+                    data: { UserID: parseInt(@Model.UserID), Row: rows  },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: 'JSON',
+                    cache: false,
+                    success: function (data) {
+                        $('#' + rows).hide();
+                        if (data.Row1 == "NULL")
+                        {
+                            $("#Row1").hide();
+                        }
+                        if (data.Row2 == "NULL") {
+                            $("#Row2").hide();
+                        }
+                        if (data.Row3 == "NULL") {
+                            $("#Row3").hide();
+                        }
+                        if (data.Row4 == "NULL") {
+                            $("#Row4").hide();
+                        }
+                        if (data.Row5 == "NULL") {
+                            $("#Row5").hide();
+                        }
+                    },
+                    error: function (data) {
+                    }
+                });
+            })*@
+        $("#DefaultDashboard").click(function () {
+            $.ajax({
+                url: '@Url.Action("GetDefaultSettings", "Inbox")',
+                type: 'GET',
+                cache: false,
+                async: false,
+                contentType: 'application/json; charset=utf-8',
+                datatype: 'html',
+                success: function (data) {
+                    $.ajax({
+                        url: '@Url.Action("FilterDashboardResults", "Inbox")',
+                        type: 'GET',
+                        cache: false,
+                        async: false,
+                        data: { dropdownValue: 0, dropdownDate: 0 },
+                        contentType: 'application/json; charset=utf-8',
+                        datatype: 'html',
+                        success: function (data) {
+                            $("#DashboardGraphs").html(data);
+                            $('#ddlClassGlobalFilter').val("");
+                            $('#ddlDateGlobalFilter').val("");
+                            $('.portlet')
+            .addClass('ui-widget ui-helper-clearfix ui-corner-all')
+            .find('.portlet-header')
+                .addClass('ui-widget-header ui-corner-all')
+                .prepend('<span class="ui-icon ui-icon-minusthick"></span>')
+            .end();
+                        }
+                    });
+                }
+            });
+            //GetUserQueryList();
+        });
+
+        //$(".column").sortable({
+        //    //revert: true,
+        //    connectWith: ".column",
+        //    placeholder: "ui-state-highlight",
+        //});
+        //$(".column").addClass("ui-helper-clearfix");
+        //$(".column").disableSelection();
+        @*$('.sortable').sortable({
+            connectWith: '.sortable',
+            update: function (event, ui) {
+                var Rows = $('.sortable').find('.portlet');
+                var ReportIDs = new Array();
+                for (i = 0; i < Rows.length; i++) {
+                    var Row = Rows[i];
+                    var id = Row.id;
+                    ReportIDs.push(id);
+                    var leaddata = {
+                        ColOrder: ReportIDs, UserID: parseInt(@Model.UserID), Row: "Row2"
+                    }
+                }
+                $.ajax({
+                    url: '@Url.Action("SaveColSettings", "Inbox")',
+                    type: 'POST',
+                    data: JSON.stringify(leaddata),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: 'JSON',
+                    cache: false,
+                    success: function (data) {
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+        }).disableSelection();
+
+        $('.portlet')
+            .addClass('ui-widget ui-helper-clearfix ui-corner-all')
+            .find('.portlet-header')
+                .addClass('ui-widget-header ui-corner-all')
+                .prepend('<span class="ui-icon ui-icon-minusthick"></span>')
+            .end();*@
+
+
+    });
+    function GetUserQueryList() {
+
+        $.ajax({
+            url: '@Url.Action("GetUserQueryList", "Inbox")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            cache: false,
+            success: function (data) {
+                var Types = "";
+                for (i = 0; i < data.length; i++) {
+                    Types = Types + "<div id='control-sidebar-home-tab'><h3 class='control-sidebar-heading'>" + data[i].QueryType + "</h3>";
+                    Types = Types + "<ul class='control-sidebar-menu'>";
+                    for (j = 0; j < data[i].QueryName.length; j++) {
+                        Types = Types + "<li><a><label class='checkbox-inline'>";
+                        if (data[i].Visibility[j] == "true") {
+                            Types = Types + "<input type='checkbox' data-id='" + data[i].QueryName[j].replace(/ /g, "_") + "' visible='true' data-type='" + data[i].QueryType.replace(/ /g, "_") + "' checked /><span class='control-sidebar-subheading'>" + data[i].QueryName[j] + "</span>";
+                        }
+                        else {
+                            Types = Types + "<input type='checkbox' data-id='" + data[i].QueryName[j].replace(/ /g, "_") + "' visible='false' data-type='" + data[i].QueryType.replace(/ /g, "_") + "' /><span class='control-sidebar-subheading'>" + data[i].QueryName[j] + "</span>";
+                        }
+                        
+                        Types = Types + "</label></a></li>";
+                    }
+                    Types = Types + "</ul></div>";
+                }
+                $('#QueryList').html(Types);
+            }
+        });
+    }
+</script>
+<style>
+    /*#sortable {
+        width: 100%;
+        height: 50px;
+    }
+    #Row1Col12 {
+        width: 100%;
+        height: 250px;
+    }
+
+     .ui-state-highlight {
+        height: 310px;
+        line-height: 1.2em;
+    }
+
+    #ddlClassGlobalFilter, #ddlDateGlobalFilter {
+        margin-bottom: 10px;
+    }
+
+    .sortable {
+        font-size: 0;
+        border-radius: 5px;
+        padding-top: 15px;
+    }
+
+    .portlet {
+        font: 12px/1.3 sans-serif;
+        margin: 3px;
+        padding: 1px;
+        display: inline-block;
+        vertical-align: top;
+        height: auto;
+        background-color: deepskyblue;
+    }
+        .portlet.col-md-12 {
+            width: 100%;
+        }
+
+    .portlet-header {
+        
+    }
+
+        .portlet-header .ui-icon {
+            float: right;
+        }
+
+    .portlet-content {
+        
+    }
+
+    .portlet-minimized {
+        height: auto;
+    }
+
+        .portlet-minimized .portlet-content {
+            display: none;
+        }
+
+    .ui-sortable-placeholder {
+        border: 1px dotted black;
+        visibility: visible !important;
+    }*/
+</style>
+<section class="content-header">
+    <h1 class="inline-block pull-left m-t-5 m-r-10">Dashboard</h1>
+    <div class="form-inline">
+        @Html.DropDownList("ddlGlobal", new SelectList(@Model.ClassDDL, "Value", "text", ""), "-Select Class-", new { @class = "form-control input-xs", @id = "ddlClassGlobalFilter" })
+
+        @Html.DropDownList("ddlDateDashboard", new SelectList(@Model.DateDDL, "Value", "text", ""), "-Select Date-", new { @class = "form-control input-xs", @id = "ddlDateGlobalFilter" })
+        <input type="button" class="btn btn-theme btn-xs" value="Default" id="DefaultDashboard" />
+    </div>
+    <ol class="breadcrumb">
+        <li><i class="fa fa-dashboard"></i> Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12 gutter6">
+            <div id="DashboardGraphs">
+                @{
+                    Html.RenderAction("GetDashboardGraphs", "Inbox", new { model = @Model });
+                }
+            </div>
+        </div>
+    </div>
+</section>
+    <aside class="control-sidebar control-sidebar-dark right-aside-menu">
+        <div class="panel-body">
+            <div id="QueryList"></div>
+        </div>
+    </aside>
+    <div class="control-sidebar-bg"></div>
+    <script>
+        $("#ddlClassGlobalFilter").change(function () {
+            var ClassValue = $("#ddlClassGlobalFilter").val();
+            var DateValue = $("#ddlDateGlobalFilter").val();
+            $.ajax({
+                url: '@Url.Action("FilterDashboardResults", "Inbox")',
+                type: 'GET',
+                cache: false,
+                //async: false,
+                data: { ClassValue: ClassValue, DateValue: DateValue },
+                contentType: 'application/json; charset=utf-8',
+                datatype: 'html',
+                success: function (data) {
+                    $("#DashboardGraphs").html(data);
+
+                    $(".CirlceClassDropDown").val(ClassValue);
+                    $(".CirlceDateDropDown").val(DateValue);
+
+                    $(".PieClassDropDown").val(ClassValue);
+                    $(".PieDateDropDown").val(DateValue);
+
+                    $(".BarClassDropDown").val(ClassValue);
+                    $(".BarDateDropDown").val(DateValue);
+
+                    $(".LineClassDropDown").val(ClassValue);
+                    $(".LineDateDropDown").val(DateValue);
+
+                    $(".GridClassDropDown").val(ClassValue);
+                    $(".GridDateDropDown").val(DateValue);
+                }
+            });
+        });
+
+        $("#ddlDateGlobalFilter").change(function () {
+            var ClassValue = $("#ddlClassGlobalFilter").val();
+            var DateValue = $("#ddlDateGlobalFilter").val();
+            $.ajax({
+                url: '@Url.Action("FilterDashboardResults", "Inbox")',
+                type: 'GET',
+                cache: false,
+                data: { ClassValue: ClassValue, DateValue: DateValue },
+                //async: false,
+                contentType: 'application/json; charset=utf-8',
+                datatype: 'html',
+                success: function (data) {
+                    $("#DashboardGraphs").html(data);
+
+                    $(".CirlceClassDropDown").val(ClassValue);
+                    $(".CirlceDateDropDown").val(DateValue);
+
+                    $(".PieClassDropDown").val(ClassValue);
+                    $(".PieDateDropDown").val(DateValue);
+
+                    $(".BarClassDropDown").val(ClassValue);
+                    $(".BarDateDropDown").val(DateValue);
+
+                    $(".LineClassDropDown").val(ClassValue);
+                    $(".LineDateDropDown").val(DateValue);
+
+                    $(".GridClassDropDown").val(ClassValue);
+                    $(".GridDateDropDown").val(DateValue);
+
+                }
+            });
+        });
+    </script>

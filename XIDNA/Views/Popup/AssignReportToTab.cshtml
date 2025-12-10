@@ -1,0 +1,147 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        var table = $('#1clickstbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("TabsReportsList", "Popup")",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+        {},
+                             {
+                                 "sName": "ID",
+                                 "visible": false
+                             },
+                            {
+                                "sName": "Tab",
+                            },
+                            {
+                                "sName": "Section",
+                            },
+                            {
+                                "sName": "Display",
+                            },
+                            {
+                                "sName": "Class",
+                            },
+                            {
+                                "sName": "Report",
+                            },
+                            {
+                                "sName": "Status",
+                            },
+                             {},
+                             {}
+
+        ],
+            "columnDefs": [{
+                "targets": [7],
+                "createdCell": function (td, cellData, rowData, row, col) {
+                    if (cellData == 10)
+                        $(td).replaceWith('<td>Active</td>')
+                    else
+                        $(td).replaceWith('<td>Inactive</td>')
+                }
+            }],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+
+                $('td:eq(7)', nRow).html('<a class="Edittabreport" data-url="@Url.Action("EditTabReport", "Popup")?ID=' + aData[1] + '" data-ajax-update="#QueryPreview"  data-ajax-method="POST" data-ajax="true">Edit</a>');
+                $('td:eq(8)', nRow).html('<a class="Deletetabreport" id="' + aData[1] + '" data-ajax-update="#QueryPreview"  data-ajax-method="POST" data-ajax="true">Delete</a> ');
+                return nRow;
+            }
+    });
+        $('#1clickstbl').on('click', 'a.Edittabreport', function () {
+        var url = $(this).attr('data-url');
+        window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.heights);
+    })
+        $('#1clickstbl').on('click', 'a.Deletetabreport', function () {
+        var id = $(this).attr('id');
+        $("#1ClickDlg").html('Do You Want To Delete Report?');
+        $("#1ClickDlg").dialog({
+            title: "Delete",
+            modal: true,
+            buttons: [
+               {
+                   text: "Yes",
+                   click: function () {
+                       $.ajax({
+                           type: 'POST',
+                           url: '@Url.Action("DeleteReportToTab", "Popup")',
+                           data: { ID: id },
+                           cache: false,
+                           dataType: 'json',
+                           success: function (data) {
+                               $('#1ClickDlg').dialog('close');
+                               location.reload();
+                           }
+                       });
+                   }
+               },
+            {
+                text: "No",
+                click: function () {
+                    $("#1ClickDlg").dialog("close");
+                }
+            }
+            ]
+        });
+    })
+        $('#1ClickButton').on('click', 'input', function () {
+            var url = $(this).attr('data-url');
+            window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+        })
+    });
+</script>
+<section class="content-header hedr">
+    <h1> 1-Click Management </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> 1-Click Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="row">
+                    <div class="col-xs-12 tree_btn" id="1ClickButton">
+                        <input class="savebtn btn btn-theme btn2 pull-right" type="button" value="Assign 1-Click" data-url="@Url.Action("AssignReportsForm", "Popup")" />
+                    </div>
+
+                </div>
+                <div id="box-body" class="col-xs-12">
+                    <div class="table-clean">
+                        <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="1clickstbl">
+                            <thead>
+                                <tr role="row">
+                                    <th>S.No</th>
+                                    <th>ID</th>
+                                    <th>Tab</th>
+                                    <th>Section</th>
+                                    <th>Display</th>
+                                    <th>Class</th>
+                                    <th>Report</th>
+                                    <th>Status</th>
+                                    <th>Edit</th>
+                                    <th>Delete</th>
+                                </tr>
+                            </thead>
+
+                            <tbody></tbody>
+
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div id="1ClickDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>

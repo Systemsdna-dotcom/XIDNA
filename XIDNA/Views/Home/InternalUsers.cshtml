@@ -1,0 +1,46 @@
+﻿@model XICore.XIDLayout
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        @*var ilayoutID = '@Model.ID';
+        $('.LayoutCode_@Model.sGUID div').each(function (j, obj) {
+            var Details = @Html.Raw(Json.Encode(Model.LayoutDetails));
+            var id = $(this).attr('id');
+            if (id && id.length > 0) {
+                var PlaceholderArea = "div" + id;
+                for (var k = 0; k < Details.length; k++) {
+                    if (Details[k].PlaceholderArea == PlaceholderArea) {
+                        $(this).attr('data-name', Details[k].PlaceholderName);
+                        $(this).attr('id', Details[k].PlaceholderUniqueName);
+                    }
+                }
+            }
+        });
+        var _uidialog = $('.LayoutCode_@Model.sGUID');
+        fncLoadLayout(ilayoutID, _uidialog);*@
+        ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+        DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+        PopupURL = '@Url.Action("GetPopupDetails", "XiLink")';
+        PopupORDialogURL = '@Url.Action("GetPopupORDialog", "XiLink")';
+        DialogURL = '@Url.Action("GetDialog", "XiLink")';
+        SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+        SemanticURL = '@Url.Action("GetSemanticDetails", "XiLink")';
+        ComponentURL = '@Url.Action("LoadComponentByID", "XIComponents")';
+        StepURL = '@Url.Action("GetStepContent", "XiLink")';
+        StepContentURL = '@Url.Action("GetStepContent", "XiLink")';
+        StepDataURL = '@Url.Action("GetStepData", "XiLink")';
+        ComponentParmsByStepURL = '@Url.Action("GetComponentParmsByStep", "XIComponents")';
+        XIContentURL = '@Url.Action("XIContent", "XiLink")';
+        DeleteBOURL = '@Url.Action("DeleteBO", "XiLink")';
+        var ilayoutID = '@Model.XIGUID';
+        var oParams = @Html.Raw(Json.Encode(Model.oLayoutParams));
+        $('.UpldCIFDoc').attr('lguid', '@Model.sGUID');
+        fncLoadLayout(ilayoutID, oParams, '@Model.sGUID');
+    });
+</script>
+<div class="Layout_@Model.XIGUID"></div>
+@*<div class="content">
+
+    </div>*@

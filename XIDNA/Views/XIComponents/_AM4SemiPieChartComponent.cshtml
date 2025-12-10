@@ -1,0 +1,92 @@
+﻿
+@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Globalization;
+
+@{
+    XIGraphData oXIGraph = new XIGraphData();
+    if (Model.oContent.ContainsKey(XIConstant.AM4SemiPieChartComponent))
+    {
+        oXIGraph = (XIGraphData)Model.oContent[XIConstant.AM4SemiPieChartComponent];
+        if (oXIGraph == null)
+        {
+            oXIGraph = new XIGraphData();
+        }
+        XIInfraCache oCache = new XIInfraCache();
+    }
+}
+<script>
+    $(document).ready(function () {
+    debugger;
+    var JsonData = @Html.Raw(Json.Encode(oXIGraph));
+        fncDeviceAM4SemipieChart(JsonData);
+        var idname = '';
+    });
+
+
+
+</script>
+<div>
+    <div style="text-align: right"><label>Last Updated:-<strong>@oXIGraph.sLastUpdated</strong></label></div>
+    @if (oXIGraph.Type != "Dashboard" && oXIGraph.Type != "Run")
+    {
+        if (oXIGraph.SectionName != null)
+        {
+            <div class="panel panel-default">
+                @if (oXIGraph.SectionName != null)
+                {
+                    <div class="panel-heading usericon Lead1">
+                        <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#@oXIGraph.SectionName.Replace(" ","")@oXIGraph.TabID">
+                            <h4 class="panel-title">@oXIGraph.SectionName</h4>
+                        </a>
+                    </div>
+                }
+                <div class="panel-collapse collapse in" id=@oXIGraph.SectionName.Replace(" ","")@oXIGraph.TabID>
+                    <div class="panel-body LeadContent">
+                        <div class="statistic-box">
+                            <div class="row text-center">
+                                <div id="SemiPiechart-@oXIGraph.TabID@oXIGraph.SectionName.Replace(" ","")"></div>
+                                @*<div class="col-lg-6">
+                                        <canvas id="1Pie-@Model.TabID@Model.SectionName.Replace(" ","")" width="115" height="115"></canvas>
+                                        <h5>Leads By Source</h5>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <canvas id="2Pie-@Model.TabID@Model.SectionName.Replace(" ","")" width="115" height="115"></canvas>
+                                        <h5>Leads By Class</h5>
+                                    </div>*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="PieChartGraph content-block">
+            <p class="chart-title">@oXIGraph.QueryName</p>
+            <div class="pull-right box-tools form-inline">
+                @if (oXIGraph.Type != "Run")
+                {
+                    @Html.DropDownList("ddlPieChart", new SelectList(@oXIGraph.ClassDDL, "Value", "text", ""), "-Class-", new { @class = "form-control PieClassDropDown", @id = oXIGraph.QueryName.Replace(" ", "_") + "-ddlClassPieChart" })
+                    @Html.DropDownList("ddlDatePieChart", new SelectList(@oXIGraph.DateDDL, "Value", "text", ""), "-Date-", new { @class = "form-control PieDateDropDown", @id = oXIGraph.QueryName.Replace(" ", "_") + "-ddlDatePieChart" })
+                    <button class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove" id="PieChartGraphClose-@oXIGraph.QueryName.Replace(" ","_")" data-type="SemiPiechart" data-name="@oXIGraph.QueryName.Replace(" ","_")"><i class="fa fa-times"></i></button>
+                }
+                <!--@*<a href="#" class="btn-minimize btn-default"><i class="fa fa-angle-down"></i></a>*@
+                <a href="#" class="btn-close btn-default" id="PieChartGraphClose-@oXIGraph.QueryName.Replace(" ","_")" data-type="PieChart" data-name="@oXIGraph.QueryName.Replace(" ","_")"><i class="fa fa-close"></i></a>-->
+
+            </div>
+            <div class="PieChartData">
+                @if (oXIGraph.Type != "Run")
+                {
+                    <div id="SemiPiechart-@oXIGraph.ReportID"></div>
+                }
+                else
+                {
+                    <div id="SemiPiechart-@oXIGraph.ReportID"></div>
+                }
+            </div>
+        </div>
+    }
+</div>

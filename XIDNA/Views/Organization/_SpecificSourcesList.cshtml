@@ -1,0 +1,73 @@
+﻿@model int
+
+<script>
+
+        $(document).ready(function () {
+            var popups = new Array();
+            var table = $('#Spesortbl').dataTable({
+                "paging": true,
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Url.Action("SpecSourcesList", "Organization", new { OrgID = @Model })",
+                "aaSorting": [[1, 'desc']],
+                "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+                "autoWidth": false,
+                "aoColumns": [
+                {},
+                                 {
+                                     "sName": "ID",
+                                     "visible": false
+                                 },
+                                 {
+                                     "sName": "Icon"
+                                 },
+                                {
+                                    "sName": "Name"
+                                },
+                                {
+                                    "sName": "Type"
+                                },
+                                {
+                                    "sName": "Provider"
+                                },
+                                 {
+                                     "sName": "EmailID"
+                                 },
+                                  {
+                                      "sName": "Mobile Number"
+                                  },
+
+                ],
+                "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                    $('td:eq(1)', nRow).html('<i class="' + aData[2] + '" style="padding-left:10px;" ></i>');
+                    return nRow;
+                }
+            });
+            $('#Spesortbl').css({ 'width': '100%' });
+        });
+</script>
+
+
+<div id="SubscriptionGrid">
+    <div id="box-body">
+        <div class="table-clean">
+            <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="Spesortbl">
+                <thead>
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th>ID</th>
+                        <th>Icon</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Provider</th>
+                        <th>Email ID</th>
+                        <th>Mobile Number</th>
+                    </tr>
+                </thead>
+
+                <tbody></tbody>
+
+            </table>
+        </div>
+    </div>
+</div>

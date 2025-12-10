@@ -1,0 +1,93 @@
+﻿
+@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Globalization;
+
+@{
+    XIGraphData oXIGraph = new XIGraphData();
+    var sColour = new List<string>();
+    //int Colorsize = 0;
+    if (Model.oContent.ContainsKey(XIConstant.AM4FunnelChartComponent))
+    {
+        oXIGraph = (XIGraphData)Model.oContent[XIConstant.AM4FunnelChartComponent];
+        if (oXIGraph == null)
+        {
+            oXIGraph = new XIGraphData();
+        }
+        if (oXIGraph.sColours == null)
+        {
+            sColour = "#ffff00,#00ff00,#800000,#800080,#0000ff,#ffa500".Split(',').ToList();
+        }
+        else
+        {
+            sColour = oXIGraph.sColours;
+        }
+    }
+}
+<script>
+    $(document).ready(function () {
+        // Set theme
+        //am4core.useTheme(am4themes_animated);
+        function am4themes_myTheme(target) {
+            if (target instanceof am4core.ColorSet) {
+                target.list = [
+                am4core.color("#dd576d")
+                ];
+            }
+        }
+        am4core.useTheme(am4themes_myTheme);
+        debugger;
+        var jsonData = @Html.Raw(Json.Encode(oXIGraph.FunnelData));
+
+            // Create a chart instance
+        var chart = am4core.create("am4funnelchart", am4charts.SlicedChart);
+            chart.hiddenState.properties.opacity = 0; // This line ensures the chart doesn't initially appear hidden.
+
+            // Create series
+        var series = chart.series.push(new am4charts.FunnelSeries());
+
+        series.colors.step = 2;
+            series.dataFields.value = "value";
+            series.dataFields.category = "label";
+        series.labels.template.text = "{label}: {value.valueFormat}";   
+            // Add data from your JSON variable
+            series.data = jsonData; 
+            chart.legend = new am4charts.Legend();
+            chart.legend.position = "bottom";
+
+            chart.legend.labels.template.maxWidth = 350;
+            chart.legend.labels.template.truncate = true;
+            chart.legend.itemContainers.template.paddingTop = 5;
+            chart.legend.itemContainers.template.paddingBottom = 0;
+            var markerTemplate = chart.legend.markers.template;
+            markerTemplate.width = 10;
+            markerTemplate.height = 10;
+
+    });
+</script>
+@* <div class="col-md-12">
+    <div class="snippet-box-container">
+        <div style="text-align: right"><label>Last Updated:-<strong>@oXIGraph.sLastUpdated</strong></label></div>
+
+        <div class="PieChartGraph content-block">
+            <p class="chart-title">@oXIGraph.QueryName</p>
+            <div class="pull-right box-tools form-inline">
+
+            </div>
+            <div class="am4funnelchart">
+                <div id="am4funnelchart-@oXIGraph.ReportID"></div>
+            </div>
+        </div>
+
+    </div>
+</div> *@
+<div class="card">
+    <div class="card-header">        
+        <div class="card-title">@oXIGraph.QueryName</div>
+        <div class="card-option">Last Updated:-<strong>@oXIGraph.sLastUpdated</strong></div>
+    </div>
+    <div class="chart-container card-body am4funnelchart">
+        <div id="am4funnelchart-@oXIGraph.ReportID"></div>
+    </div>
+</div>

@@ -1,0 +1,125 @@
+﻿@model XIDNA.ViewModels.VMResultList
+
+@{
+    int ReportID = Model.ReportID;
+}
+<link href="~/Content/theme.default.css" rel="stylesheet" />
+<script src="~/Scripts/jquery.tablesorter.js"></script>
+<script src="~/Scripts/jquery.tablesorter.widgets.js"></script>
+<script>
+
+    var Fields = "";
+    var Optrs = "";
+    var Values = "";
+    var Type="";
+    var SearchText="";
+    function GetDataTable(Fields,Optrs,Values,Type){
+        if('@Model.ResultListDisplayType'==1){
+            var SortColumns = @Html.Raw(Json.Encode(Model.TableColumns));
+            var expColumns = new Array();
+            for (var i = 0; i < SortColumns.length; i++) {
+                var obj = new Object();
+                obj.sName = SortColumns[i];
+                obj.bSortable = true
+                expColumns.push(obj);
+            }
+            dtable = $('#ReportResultList-@ReportID').dataTable({
+                "destroy": true,
+                "paging": true,
+                "bProcessing": true,
+                "bServerSide": true,
+                @*"pageLength": parseInt('@Value'),*@
+                "aoColumns": expColumns,
+                "sAjaxSource": "@Html.Raw(Url.Action("GetReportResult", "XiLink", new { ReportID = Model.ReportID, SearchText = Model.SearchText, SearchType = Model.SearchType }))",
+                //"aaSorting": [[1, 'desc']],
+                "sDom": 'r<"dtable-header"><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+                "autoWidth": false,
+                "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+
+                },
+                initComplete: function () {
+                    $("#ReportResultList-@ReportID tbody tr:first").addClass('rowborder');
+                },
+                "fnServerParams": function (aoData) {
+                    aoData.push({ "name": "Fields", "value": Fields });
+                    aoData.push({ "name": "Optrs", "value": Optrs });
+                    aoData.push({ "name": "Values", "value": Values });
+                    aoData.push({ "name": "Type", "value": Type });
+                    aoData.push({ "name": "SearchText", "value": SearchText });
+                },
+            });
+        }
+        else{
+            $("#ReportResultList-@ReportID").tablesorter();
+        }
+    }
+    $(document).ready(function () {
+        GetDataTable(Fields,Optrs,Values,null);
+        $('#ReportResultList-@ReportID tbody').on('click', 'tr', function () {
+            fncgridrowclick('click', this);
+        });
+        LabelDataURL = '@Url.Action("GetLabelData", "XiLink")';
+    });
+
+    function fncgridrowclick(Type, $this, srchtxt){
+        debugger
+        var RowData;
+        var id = 0;
+        var Label;
+        var Headings =@Html.Raw(Json.Encode(Model.Headings));
+        if(Type == 'click'){
+            if('@Model.ResultListDisplayType'==1)
+            {
+                var tr = $($this).closest('tr');
+                RowData = dtable.fnGetData(tr);
+                var td = $(tr[0]).find('td')[1];
+                Label = td.innerText;
+            }
+            else{
+                RowData = $($this).children("td").map(function() {
+                    return $($this).text();
+                }).get();
+            }
+        }
+        else{
+            var tr = $('#ReportResultList-@ReportID').find('tbody tr:eq(0)').get(0);
+            if(srchtxt.length > 0){
+                RowData = dtable.fnGetData(tr);
+            }
+        }
+        if(RowData){
+            for (var i = 0; i < Headings.length; i++) {
+                if (Headings[i].toLowerCase() == "ID".toLowerCase()) {
+                    id = RowData[i];
+                }
+                else
+                {
+                    Label = Label;
+                }
+            }
+            var iInstanceID = parseInt(id);
+            if(Label != null){
+                fncgetlabeldata('@Model.BOID',iInstanceID, Label, '@ViewBag.Field', 0);
+            }
+        }
+    }
+
+</script>
+
+<div class="content">
+    <div class="row">
+        <div class="table-clean">
+            <table id="ReportResultList-@ReportID" class="table table-striped custom-table dark-head dark-head2 table-condensed table-hover tablesorter">
+                <thead>
+                    <tr>
+                        @for (int k = 0; k < Model.Headings.Count(); k++)
+                        {
+                            <th>@Model.Headings[k]</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>

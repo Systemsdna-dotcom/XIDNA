@@ -1,0 +1,145 @@
+﻿@using XIDNA.ViewModels
+@using XICore
+@using XISystem
+@model XICore.XIIQS
+@{
+
+    var Visulistations = new XIVisualisation();
+    var FieldVisualistions = new List<XIQSVisualisation>();
+    if (Model.QSDefinition != null)
+    {
+        Visulistations = Model.QSDefinition.Visualisation;
+
+        if (Model.QSDefinition.QSVisualisations != null)
+        {
+            FieldVisualistions = Model.QSDefinition.QSVisualisations;
+        }
+    }
+    var FormClass = string.Empty;
+    if (Visulistations != null)
+    {
+        if (Visulistations.XiVisualisationNVs != null)
+        {
+            FormClass = Visulistations.XiVisualisationNVs.Where(m => m.sName.ToLower() == "FormClass".ToLower()).Select(m => m.sValue).FirstOrDefault();
+        }
+    }
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+}
+
+<div class="infobox-left">
+    <div class="infobox-left__wrapper">
+        <div class="questionset-section">
+            @{ var Step = Model.Steps.Values.Where(m => m.bIsCurrentStep == true).FirstOrDefault();
+                var StepDef = Model.QSDefinition.Steps.Values.Where(m => m.ID == Step.FKiQSStepDefinitionID).FirstOrDefault();}
+            <div id="Step_@StepDef.ID" data-name="Step_Info">
+                @if (!string.IsNullOrEmpty(StepDef.sDisplayName))
+            {
+                    <h3 class="questionset-header">@StepDef.sDisplayName</h3>
+                }
+                @if (Step.Sections != null && Step.Sections.Values.Count() > 0)
+            {
+                var Sections = Step.Sections.Values.ToList();
+                if (Sections != null && Sections.Count() > 0)
+                {
+                    foreach (var items in Sections)
+                    {
+                        var SecDef = StepDef.Sections.Values.Where(m => m.ID == items.FKiStepSectionDefinitionID).FirstOrDefault();
+                        if (!string.IsNullOrEmpty(SecDef.sName))
+                        {
+                                <h3 class="questionset-header">@SecDef.sName</h3>
+                            }
+                            if (((EnumSemanticsDisplayAs)SecDef.iDisplayAs).ToString() == EnumSemanticsDisplayAs.XIComponent.ToString())
+                            {
+                                <div id="Section_@SecDef.ID" data-name="Section_Info">
+                                    <div id="Component-@SecDef.ID" data-type="Component" data-name="Component-@SecDef.ID">
+                                        @{ Html.RenderAction("LoadComponentByID", "XIComponents", new { iXIComponentID = SecDef.iXIComponentID, sGUID = ViewBag.sGUID, nParams = new List<CNV>(), sName = string.Empty, sType = "QSStepSection", ID = SecDef.XIGUID, iInstanceID = Step.XIGUID, sContext = string.Empty, iQSIID = Model.ID }); }
+                                        @if (SecDef.QSLinks != null)
+                                        {
+                                            foreach (var qslink in SecDef.QSLinks)
+                                            {
+                                                foreach (var link in qslink.Value.XiLink.Values)
+                                                {
+                                                    if (link.sType.ToLower() == "button")
+                                                    {
+                                                        <button type="button" class="btn btn-theme" onclick="XIRun(this,'@link.FKiXILInkID', 0, '@ViewBag.sGUID', null, false, 0, '@Model.QSDefinition.ID')">@link.sName</button>
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                    
+                                </div>
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (((EnumSemanticsDisplayAs)StepDef.iDisplayAs).ToString() == EnumSemanticsDisplayAs.XIComponent.ToString())
+                                                {
+                                                    @*<div id="Component-@StepDef.ID" data-type="Component"  data-name="Component-@StepDef.ID">*@
+                { Html.RenderAction("LoadComponentByID", "XIComponents", new { iXIComponentID = StepDef.iXIComponentID, sGUID = ViewBag.sGUID, nParams = new List<CNV>(), sName = string.Empty, sType = "QSStepSection", ID = StepDef.XIGUID, iInstanceID = Step.XIGUID, sContext = string.Empty, iQSIID = Model.ID }); }
+                @*</div>*@
+
+                                                }
+                                            }
+            </div>
+
+
+            @*@if (Step.nFieldInstances.Count() > 0 || Step.nSectionInstances.Count() > 0)
+                {*@
+            <div class="form-group">
+                @if (StepDef.bIsSaveNext)
+                {
+                    <div class="form-btn">
+                        @*<input type="button" class="btn btn-success" value="Save" id="QSSaveBtn" accesskey="n" />*@
+                        <button type="button" class="btn btn-success" accesskey="s" onclick="fncRunQSStepAction('SaveNext', this)">Save & Next</button>
+                    </div>
+                }
+                @if (StepDef.bIsSave)
+                {
+                    <div class="form-btn">
+                        <button type="button" class="btn btn-success" accesskey="s" onclick="fncRunQSStepAction('Save', this)">Save</button>
+                    </div>
+                }
+                @if (StepDef.bIsBack)
+                {
+                    <div class="form-btn">
+                        <button type="button" class="btn btn-success" onclick="fncGetPreviousStep(this)" accesskey="b">Back</button>
+                    </div>
+                }
+                @if (StepDef.bIsSaveClose)
+                {
+                    <div class="form-btn">
+                       
+                       <button type="button" class="btn btn-success" accesskey="s" onclick="fncRunQSStepAction('SaveClose', this)">Save & Close</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div id="my_dialog"></div>
+<script>
+    $(document).ready(function () {
+        QuestionSet = @Html.Raw(Json.Encode(Model));
+        $(".questionset-section input[type=radio]:checked").each(function() {
+            var sShowField = $(this).attr('data-show');
+            var sHideField = $(this).attr('data-hide');
+            var parentName = 'qsfield';
+            if(sShowField && sShowField.length>0){
+                var childObj1 = $('[name="'+sShowField+'"]');
+                fncHideShowFromHTMLTree(parentName, childObj1[0], 'show');
+            }
+            if(sHideField && sHideField.length>0){
+                var childObj2 = $('[name="'+sHideField+'"]');
+                fncHideShowFromHTMLTree(parentName, childObj2[0], 'hide');
+            }
+        });
+    });
+</script>
+
+

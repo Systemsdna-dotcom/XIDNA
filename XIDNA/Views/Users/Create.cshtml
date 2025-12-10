@@ -1,0 +1,32 @@
+﻿@model XIDNA.Models.RegisterViewModel
+@using XIDNA.Models
+@{ Layout = "~/Views/Shared/_PopupLayout.cshtml";}
+
+<section class="content-header hedr">
+    <h1> Add User </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> User Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="box padding10Tab">
+            <div class="innerborder">
+                <div class="box-body col-md-3" id="test2">
+                    <h5>Available Roles</h5>
+                    <div id="UserMainTree" class="tree">
+                        @Html.Partial("~/Views/Users/GroupTree.cshtml", @Model.Group)
+                    </div>
+                </div>
+                <div id="addClass" class="col-md-9">
+                    <div class="condata">
+                        <p>
+                            @Html.Partial("~/Views/Users/CreateEmployee.cshtml", @Model)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>

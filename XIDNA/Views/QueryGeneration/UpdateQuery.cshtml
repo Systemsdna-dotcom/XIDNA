@@ -1,0 +1,582 @@
+﻿@model XIDNA.Models.Reports
+
+@*@{
+        Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    }*@
+<h2>Update Query</h2>
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+    var clicked = "";
+    var groupclicked = "";
+    var orderclicked = "";
+    $(document).ready(function () {
+        $("#btnLeft").click(function () {
+            var i, j;
+
+            var selectedItem = $("#rightValues option:selected");
+            $("#leftValues").append(selectedItem);
+            for (i = 0; j = selectedItem[i]; i++) {
+                var res = $("#generatedquery").val();
+                $("#generatedquery").val('');
+                $("#generatedquery").prepend(", " + selectedItem[i].text + res);
+            }
+        });
+
+        $("#btnRight").click(function () {
+
+            var i, j;
+
+            var selectedItem = $("#leftValues option:selected");
+            $("#rightValues").append(selectedItem);
+            for (i = 0; j = selectedItem[i]; i++) {
+                var res = $("#generatedquery").val();
+                var res1 = res.replace((', ' + selectedItem[i].text), "");
+
+                $("#generatedquery").val('');
+                $("#generatedquery").append(res1);
+            }
+
+        });
+
+        $('input#value').change(function () {
+            var selectedItem = $("#value").val();
+            var res = $("#whereclause option:selected").val();
+
+
+            if (clicked == "clicked") {
+                if (res != 'Id') {
+                    var res = $("#generatedquery").val();
+                    var separators = ["=", ">", "<", ">=", ">="];
+                    var res3 = (res.split(" AND ")[0]);
+                    var res2 = (res.split(" AND ")[1]);
+                    var res1 = (res2.split(new RegExp(separators.join('|'))))[1];
+                    var res5 = (res2.split(res1))[0];
+                    var res4 = res1.replace(res1, selectedItem);
+                    $("#generatedquery").val('');
+                    if (res5 != " ") {
+                        $("#generatedquery").append(res3 + " AND " + res5 + " " + "'" + res4 + "'");
+                    }
+                    else {
+                        $("#generatedquery").append(res3 + " AND " + res2 + " " + "'" + res4 + "'");
+                    }
+                    //$("#generatedquery").append("'" + selectedItem + "'");
+                }
+                else {
+                    var res = $("#generatedquery").val();
+                    var separators = ["=", ">", "<", ">=", ">="];
+                    var res3 = (res.split(" AND ")[0]);
+                    var res2 = (res.split(" AND ")[1]);
+                    var res1 = (res2.split(new RegExp(separators.join('|'))))[1];
+                    var res5 = (res2.split(res1))[0];
+                    var res4 = res1.replace(res1, selectedItem);
+                    $("#generatedquery").val('');
+                    if (res5 != " ") {
+                        $("#generatedquery").append(res3 + " AND " + res5 + +" " + res4);
+                    }
+                    else {
+                        $("#generatedquery").append(res3 + " AND " + res2 + " " + res4);
+                    }
+                    //$("#generatedquery").append(" " + selectedItem);
+                }
+            }
+            else {
+                if (res != 'Id') {
+                    var res = $("#generatedquery").val();
+                    var separators = ["=", ">", "<", ">=", ">="];
+                    var res1 = (res.split(new RegExp(separators.join('|'))))[1];
+                    var res2 = res.replace(res1, '');
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(res2 + " " + "'" + selectedItem + "'");
+                }
+                else {
+                    var res = $("#generatedquery").val();
+                    var separators = ["=", ">", "<", ">=", ">="];
+                    var res1 = (res.split(new RegExp(separators.join('|'))))[1];
+                    var res2 = res.replace(res1, '');
+                    $("#generatedquery").val("");
+                    $("#generatedquery").append(res2 + " " + selectedItem);
+                }
+            }
+        });
+        $("#addwhere").click(function () {
+            $('#whereclause').val("0");
+            $('.query').val("0");
+            $('#value').val("0");
+            clicked = "clicked";
+        })
+        $('select#groupby').change(function () {
+            var selectedItem = $("#groupby").val();
+
+            if (groupclicked == "clicked") {
+
+                var res = $("#generatedquery").val();
+                var res5 = res.split(" GROUP BY ")[0];
+                var res1 = res.split(" GROUP BY ")[1];
+                var res2 = res1.split(',');
+                if (res2[1] != undefined) {
+                    var res3 = res2[1].replace(res2[1], selectedItem)
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(res5 + " GROUP BY " + res2[0] + ', ' + res3);
+                }
+                else {
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(res + ', ' + selectedItem);
+                }
+            }
+            else {
+                var res = $("#generatedquery").val();
+                var res1 = res.split(" GROUP BY ")[0];
+                $("#generatedquery").val('');
+                $("#generatedquery").append(res1 + " GROUP BY " + selectedItem);
+            }
+        })
+        $("#addgroup").click(function () {
+            $('#groupby').val("0");
+            groupclicked = "clicked";
+        })
+        $('select#orderfeild').change(function () {
+
+            var selectedItem = $("#orderfeild").val();
+            var res = $("#generatedquery").val();
+            if (orderclicked == "clicked") {
+                var str2 = "ASC";
+                var str3 = "DESC"
+                if (res.indexOf(str2) != -1) {
+                    var res4 = str2;
+                }
+                else {
+                    var res4 = str3;
+                }
+                var i, j;
+                var saperators = ["ASC", "DESC"]
+                var res1;
+                for (i = 0; j = saperators[i]; i++) {
+                    if (((res).split(saperators[i]))[1] != undefined) {
+                        res1 = ((res).split(saperators[i]))[1];
+                    }
+                }
+                // var res1 = ((res).split("ASC" || "DESC"))[1];
+                if (res1 != "") {
+                    var res2 = res1.replace(res1, selectedItem)
+                    var res3;
+                    for (i = 0; j = saperators[i]; i++) {
+
+                        var hgf = res.indexOf(saperators[i]);
+                        if (res.indexOf(saperators[i]) != -1) {
+                            res3 = ((res).split(saperators[i]))[0];
+                        }
+
+                    }
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(res3 + res4 + " ," + res2);
+                }
+                else {
+
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(res + " ," + selectedItem);
+                }
+            }
+            else {
+                var res = $("#generatedquery").val();
+                var res1 = res.split(" ORDER BY ")[0];
+                $("#generatedquery").val('');
+                $("#generatedquery").append(res1 + " ORDER BY " + selectedItem);
+                // $("#generatedquery").append(" ORDER BY " + selectedItem);
+            }
+        })
+        $('select#ordertype').change(function () {
+
+            var selectedItem = $("#ordertype").val();
+            var res = $("#generatedquery").val();
+            if (orderclicked == "clicked") {
+
+                var res = $("#generatedquery").val();
+                var i, j;
+                var saperators = ["ASC", "DESC"]
+                var res1;
+                var res7;
+                for (i = 0; j = saperators[i]; i++) {
+                    if (((res).split(saperators[i]))[1] != undefined) {
+                        res1 = ((res).split(saperators[i]))[1];
+                        res7 = ((res).split(saperators[i]))[0];
+                    }
+                }
+                var str2 = "ASC";
+                var str3 = "DESC"
+                if (res.indexOf(str2) != -1) {
+
+                    var res6 = str2;
+                }
+                else {
+
+                    var res6 = str3;
+                }
+
+
+                if (res1.indexOf(str2) != -1) {
+
+                    var res4 = selectedItem;
+                }
+                else {
+
+                    var res4 = selectedItem;
+                }
+                var res8;
+                for (i = 0; j = saperators[i]; i++) {
+                    if (((res1).split(saperators[i]))[1] != undefined) {
+                        res8 = ((res).split(saperators[i]))[0];
+                    }
+                    else
+                        res8 = res1;
+                }
+                if (res1 == "") {
+
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(res7 + " " + res4);
+                }
+                else {
+
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(res7 + res6 + res8 + " " + res4);
+                }
+            }
+            else {
+                var res1 = res.replace("ASC", "").replace("DESC", "")
+                $("#generatedquery").val('');
+                $("#generatedquery").append(res1 + " " + selectedItem);
+            }
+        })
+        $("#addorder").click(function () {
+            $('#orderfeild').val("0");
+            $('#ordertype').val("0");
+            orderclicked = "clicked";
+        })
+        $("#reset").click(function () {
+            $("select").val("0");
+            $("textarea").val("");
+            $('input[type=text]').val("");
+            $("#leftValues").empty();
+            $("#viewquery").empty();
+        })
+        $("#preview").click(function () {
+            var selectedItem = $("#generatedquery").val();
+            var edited = selectedItem.replace(/^,/, '');
+            $("#viewquery").append(" SELECT " + edited);
+        })
+        $("#Save").click(function () {
+
+            var selectedItem = $("#generatedquery").val();
+            var edited = selectedItem.replace(/^,/, '');
+            $("#generatedquery").val('');
+            $("#generatedquery").append(" SELECT " + edited);
+            var querygenerated = $('#generatedquery').val();
+            var selectfields = querygenerated.match("SELECT(.*)FROM");
+            var fromfields = querygenerated.match("FROM(.*)Where");
+            var wherefields = querygenerated.match("Where(.*)GROUP BY");
+            var groupfields = querygenerated.match("GROUP BY(.*)ORDER BY");
+            var orderfields = querygenerated.split("ORDER BY")[1];
+            $("#selectedfields").val(selectfields[1]);
+            $("#fromfields").val(fromfields[1]);
+            $("#wherefields").val(wherefields[1]);
+            $("#groupfields").val(groupfields[1]);
+            $("#orderfields").val(orderfields);
+            //var sdf =($("#querygenerate").serialize());
+            $.ajax({
+                url: '@Url.Action("CreateQuery", "QueryGeneration")',
+                type: 'POST',
+                datatype: 'JSON',
+                data: $('#querygenerate').serialize(),
+                success: function (data) {
+                    //alert('Successfully Sent');
+                    window.location.href = '@Url.Action("Index", "QueryGeneration")'
+                },
+                error: function (data) {
+                },
+            });
+        })
+        $("#cancel").click(function(){
+            $("#frm").hide();
+        });
+        @*if('@Model.ID'!=0)
+        {
+            $("#buisinessobj").val('@Model.FromBos');
+        }*@
+    })
+    $(function () {
+        $('select#whereclause').on('change', function () {
+            var selectedItem = $("#whereclause option:selected");
+            var res = selectedItem.text();
+            if (clicked == "clicked") {
+
+                var res = $("#generatedquery").val();
+                var res1 = res.split(" AND ")[0];
+                var res2 = res.split(/AND(.+)?/)[1];
+                if (res2 != undefined) {
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(res1 + " AND " + res2 + " AND " + selectedItem.text());
+                }
+                else {
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(res1 + " AND " + selectedItem.text());
+                }
+                //$("#generatedquery").append(" AND " + res);
+            }
+            else {
+                var res = $("#generatedquery").val();
+                var res1 = res.split(" Where ")[0];
+                $("#generatedquery").val('');
+                $("#generatedquery").append(res1 + " Where " + selectedItem.text());
+                // $("#generatedquery").append(" Where " + res);
+            }
+
+        });
+    })
+
+    $(function () {
+        $('select.buisiness').on('change', function () {
+            var res = $("#generatedquery").val();
+            var selectedItem = $(this, "option:selected").val();
+            var res1 = res.split(" FROM ")[0];
+            $("#generatedquery").val('');
+            $("#generatedquery").append(res1 + " FROM " + selectedItem);
+        });
+    })
+    $(function () {
+        $('select.query').on('change', function () {
+
+            var selectedItem = $(this, "option:selected").val();
+            var res = $("#generatedquery").val();
+            var separators = ["=", ">", "<", ">=", ">="];
+            if (clicked == "clicked") {
+                var res1 = res.split("AND")[1];
+                var res3 = (res1.split(new RegExp(separators.join('|'))))[0];
+                var res4 = res.split("AND")[0];
+                $("#generatedquery").val('');
+                $("#generatedquery").append(res4 + " AND " + res3 + " " + selectedItem);
+                // $("#generatedquery").append(" " + selectedItem);
+
+            }
+            else {
+                var res1 = (res.split(new RegExp(separators.join('|'))))[0];
+                $("#generatedquery").val('');
+                $("#generatedquery").append(res1 + " " + selectedItem);
+            }
+            //$("#generatedquery").append(" " + selectedItem);
+        });
+    })
+</script>
+
+
+
+
+@Html.AntiForgeryToken()
+<h4>Provide ur Info.</h4>
+<hr />
+
+<div class="form-horizontal" id="frm">
+    @Html.ValidationSummary(true)
+
+
+
+    @*@Html.ListBoxFor(model => model.AvailableSelected, new MultiSelectList(Model.AvailableFeatures, "AttributeID", "Name", Model.AvailableSelected), new { @class = "task availableTasks", @id = "aFeatures" })*@
+    <div class="form-group">
+        <label class="control-label col-sm-2">Select Buisiness Object<span style="color: #ff0000;">*</span></label>
+        <div class="col-xs-3">
+            <select id="buisinessobj" class="buisiness" name="FromBos">
+                <option value="0">--Select--</option>
+                <option value="Leads">Leads</option>
+                <option value="Users">Users</option>
+                <option value="Clients">Clients</option>
+                <option value="Customers">Customers</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <span>
+            <label class="control-label col-sm-2">Available Feilds<span style="color: #ff0000;">*</span></label>
+            <div class="col-xs-1">
+                <select id="rightValues" size="5" multiple>
+                    @*<option value="--Select--">--Select--</option>*@
+                    <option value="Id">Id</option>
+                    <option value="Name">Name</option>
+                    <option value="PhoneNo">PhoneNo</option>
+                    <option value="Email">Email</option>
+                    <option value="Address">Address</option>
+                </select>
+            </div>
+
+        </span>
+        <span>
+            <div class="col-xs-1" style="margin-left:150px;">
+                <input type="button" id="btnRight" value="&lt;&lt;" />
+                <input type="button" id="btnLeft" value="&gt;&gt;" />
+            </div>
+        </span>
+        <span>
+            <label class="control-label col-sm-2">Selected Fields<span style="color: #ff0000;">*</span></label>
+            <div class="col-xs-1">
+                <select id="leftValues" size="5" multiple></select>
+            </div>
+        </span>
+
+
+    </div>
+
+    <div class="form-group">
+        <span>
+            <label class="control-label col-sm-2">Where Clause<span style="color: #ff0000;">*</span></label>
+            <div class="col-xs-1">
+                <select id="whereclause">
+                    <option value="0">--Select--</option>
+                    <option value="Id">Id</option>
+                    <option value="Name">Name</option>
+                    <option value="PhoneNo">PhoneNo</option>
+                    <option value="Email">Email</option>
+                    <option value="Address">Address</option>
+                </select>
+            </div>
+        </span>
+        <span>
+            <label class="control-label col-sm-2">Select Operator<span style="color: #ff0000;">*</span></label>
+            <div class="col-xs-1">
+                <select id="selectope" class="query">
+                    <option value="0">--Select--</option>
+                    <option value="=">=</option>
+                    <option value=">">></option>
+                    <option value="<"><</option>
+                    <option value=">=">>=</option>
+                    <option value="<="><=</option>
+
+                </select>
+            </div>
+        </span>
+        <span>
+            <label class="control-label col-md-2">Value<span style="color: #ff0000;">*</span></label>
+            <div class="col-xs-1">
+                <input type="text" id="value" />
+            </div>
+        </span>
+        <span>
+            <div class="col-xs-2">
+                <input type="button" id="addwhere" value="Add More" class="">
+            </div>
+        </span>
+    </div>
+
+    <div class="form-group">
+        <span>
+            <label class="control-label col-sm-2">Group By</label>
+            <div class="col-xs-3">
+                <select id="groupby">
+                    <option value="0">--Select--</option>
+                    <option value="Id">Id</option>
+                    <option value="Name">Name</option>
+                    <option value="PhoneNo">PhoneNo</option>
+                    <option value="Email">Email</option>
+                    <option value="Address">Address</option>
+                </select>
+            </div>
+        </span>
+
+        <span>
+            <input type="button" id="addgroup" value="Add More" class="">
+        </span>
+
+    </div>
+    <div class="form-group">
+        <span>
+            <label class="control-label col-sm-2">Order Field</label>
+            <div class="col-xs-1">
+                <select id="orderfeild">
+                    <option value="0">--Select--</option>
+                    <option value="Id">Id</option>
+                    <option value="Name">Name</option>
+                    <option value="PhoneNo">PhoneNo</option>
+                    <option value="Email">Email</option>
+                    <option value="Address">Address</option>
+                </select>
+            </div>
+        </span>
+        <span>
+            <label class="control-label col-sm-2">Order Type</label>
+            <div class="col-xs-1">
+                <select id="ordertype" class="">
+                    <option value="0">--Select--</option>
+                    <option value=" "> </option>
+                    <option value="ASC">ASC</option>
+                    <option value="DESC">DESC</option>
+                </select>
+            </div>
+        </span>
+        <span>
+            <div class="col-xs-1">
+                <input type="button" id="addorder" value="Add More" class="">
+            </div>
+        </span>
+
+        <form id="querygenerate">
+            <div class="form-group">
+                <label class="control-label col-sm-2">Query Name</label>
+                <div class="col-xs-3">
+                    <input type="text" id="" name="Name">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2">Generated Query<span class="redfont-color">*</span></label>
+                <div class="col-xs-3">
+                    <textarea id="generatedquery" style="width:500px; height:200px;" name="Query"></textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+
+                <div class="col-xs-3">
+                    <input type="hidden" id="selectedfields" name="SelectFields">
+                </div>
+            </div>
+            <div class="form-group">
+
+                <div class="col-xs-3">
+                    <input type="hidden" id="fromfields" name="FromBos">
+                </div>
+            </div>
+            <div class="form-group">
+
+                <div class="col-xs-3">
+                    <input type="hidden" id="wherefields" name="WhereFields">
+                </div>
+            </div>
+            <div class="form-group">
+
+                <div class="col-xs-3">
+                    <input type="hidden" id="groupfields" name="GroupFields">
+                </div>
+            </div>
+            <div class="form-group">
+
+                <div class="col-xs-3">
+                    <input type="hidden" id="orderfields" name="OrderFields">
+                </div>
+            </div>
+
+        </form>
+        <span id="viewquery" style="width:300px; height:150px;margin-left:50px;">
+    </div>
+
+
+    </span>
+    <div>
+        <input type="button" id="Save" value="Save" class="">
+        <input type="button" id="cancel" value="Cancel" class="">
+        <input type="button" id="reset" value="Reset" class="">
+        <input type="button" id="preview" value="Preview Query" class="">
+    </div>
+
+</div>
+
+
+
+
+
+

@@ -1,0 +1,154 @@
+﻿@model XIDNA.ViewModels.VMOrganization
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#contacteditform").hide();
+        $('#Cancel1').click(function () {
+            window.close();
+        });
+
+        $("#backcon").click(function () {
+            $("#viecon").show();
+            $("#contacteditform").hide();
+            $("#generaldetails").removeClass('active');
+            $("#contactdetails").addClass('active');
+            $("#generalview").hide();
+            $("#viewcontactgen").show();
+            $("#generaldetails").removeClass('disabled');
+            @*var id = parseInt('@Model.OrganizationID');
+            $.ajax({
+                url: '@Url.Action("GetOrganizationContacttoView", "Organization")',
+                type: 'GET',
+                datatype: 'JSON',
+                data: { orgid: id },
+                success: function (data) {
+                    $("#viecon").show();
+                    $("#contacteditform").hide();
+                    $("#generaldetails").removeClass('active');
+                    $("#contactdetails").addClass('active');
+                    $("#generalview").hide();
+                    $("#viewcontactgen").show();
+                    $("#generaldetails").removeClass('disabled');
+                },
+                error: function (data) {
+                },
+            });*@
+        })
+    })
+</script>
+<style>
+    .Textvalue {
+        margin-top: 7px;
+    }
+
+    .danger {
+        color: red;
+    }
+</style>
+@Html.ValidationSummary(true)
+<div id="viecon">
+    <div class="form-group">
+        <label for="inputName" class="col-sm-2 control-label">Name</label>
+        <div class="col-sm-4 Textvalue">
+            @Html.HiddenFor(m => m.ID)
+            @Html.DisplayFor(model => model.ConName)
+
+        </div>
+
+    </div>
+    <div class="form-group">
+        <label for="inputName" class="col-sm-2 control-label">Phone</label>
+        <div class="col-sm-4 Textvalue">
+            @Html.DisplayFor(model => model.ConPhone)
+        </div>
+
+    </div>
+    <div class="form-group">
+        <label for="inputName" class="col-sm-2 control-label">Email</label>
+        <div class="col-sm-4 Textvalue">
+            @Html.DisplayFor(model => model.ConEmail)
+        </div>
+
+    </div>
+    <div class="form-group">
+        <label for="inputName" class="col-sm-2 control-label">Address</label>
+        <div class="col-sm-4 Textvalue">
+            @Html.DisplayFor(model => model.ConAddress)
+        </div>
+    </div>
+</div>
+<div id="contacteditform" class="col-xs-12">
+    @using (Ajax.BeginForm("AddOrganizationContact", "Organization", new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnConSuccess" }, new { @class = "form-horizontal", @id = "Confrm" }))
+    {
+        @Html.ValidationSummary(true)
+        @Html.HiddenFor(m => m.ConID, new { @value = Model.ConID })
+        @Html.HiddenFor(m => m.ConOrganizationID, new { @id = "ConOrganizationID" })
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.ConName, new { @Name = "ConName", @placeholder = "Enter Name", @class = "form-control", @maxlength = "30" })
+            </div>
+            <div class="col-sm-7 errormsg">
+                @Html.ValidationMessageFor(m => m.ConName, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Phone Number<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.ConPhone, new { @Name = "ConPhone", @placeholder = "Enter Phone", @class = "form-control", @maxlength = "30" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.ConPhone, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Email<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.ConEmail, new { @Name = "ConEmail", @placeholder = "Enter Email", @class = "form-control", @maxlength = "30" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.ConEmail, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Address<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.ConAddress, new { @Name = "ConAddress", @placeholder = "Enter Address", @class = "form-control", @maxlength = "30" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.ConAddress, null, new { @class = "red" })
+            </div>
+        </div>
+
+
+
+        <div class="form-group">
+            <div class="col-sm-10">
+                <button type="submit" class="btn btn-theme" name="Todo" value="Submit" id="save">Update</button>
+                <button type="button" class="btn btn-theme" id="backcon">Back</button>
+                <button type="button" class="btn btn-theme decline" id="Cancel1">Cancel</button>
+            </div>
+        </div>
+    }
+</div>
+<div class="dialog-box EditOrgDlg" title="Confirm Message" style="background-color:white;"></div>
+
+<script>
+    function OnConSuccess() {
+        $(".EditOrgDlg").html('Organization Details Updated Successfully!');
+        $(".EditOrgDlg").dialog({
+            title: "Organization",
+            modal: true,
+            buttons: [
+            {
+                text: "Ok",
+                click: function () {
+                    opener.location.reload();
+                    window.close();
+                }
+            }
+            ]
+        });
+    }
+</script>

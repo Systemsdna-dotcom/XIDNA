@@ -1,0 +1,908 @@
+﻿@model XIDNA.Models.Reports
+
+
+@*<h2>Add Query</h2>*@
+
+<script type="text/javascript">
+
+    var orderclicked = "";
+    var where = "";
+    var group = "";
+    var order = "";
+    var list = [];
+
+    $(document).ready(function () {
+        $("#Querygen").hide();
+        $("#sel").hide();
+        $("#wher").hide();
+        $("#grou").hide();
+        $("#orde").hide();
+        $("#intope").show();
+        $("#stringope").hide();
+        $("#whereope").hide();
+       
+        $("#btnLeft").click(function () {
+            var i, j;
+            var selectedItem = $("#rightValues option:selected");
+            $("#leftValues").append(selectedItem);
+            for (i = 0; j = selectedItem[i]; i++) {
+                var res = $("#generatedquery").val();
+                $("#generatedquery").val('');
+                $("#generatedquery").prepend(", " + (selectedItem[i].text).toUpperCase() + res);
+                list.push(selectedItem[i].value);
+                $("#selectrightfields").val(list);
+
+            }
+        });
+
+        $("#btnRight").click(function () {
+
+            var i, j;
+            var selectedItem = $("#leftValues option:selected");
+            $("#rightValues").append(selectedItem);
+            for (i = 0; j = selectedItem[i]; i++) {
+                var res = $("#generatedquery").val();
+                var res1 = res.replace((', ' + (selectedItem[i].text).toUpperCase()), "");
+                $("#generatedquery").val('');
+                $("#generatedquery").append(res1);
+            }
+
+        });
+        $("#addwhere").click(function () {
+            $('#whereclause').val("--Select--");
+            $("#selectope").val("--Select--");
+            $("#selectstringope").val("--Select--");
+            $('#value').val("");
+            clicked = "clicked";
+            $("#whereope").show();
+        })
+        $("#whereclause").change(function () {
+
+            var res = $("#whereclause :selected").val();
+            var final = res.split("-")[1];
+            if (final == "INT") {
+                $("#intope").show();
+                $("#stringope").hide();
+            }
+            else {
+                $("#intope").hide();
+                $("#stringope").show();
+
+            }
+
+        })
+        $("#okwhere").click(function () {
+
+            var rowCount = $('#myDataTable tr').length;
+            var res = $("#whereclause :selected").val();
+            var final = res.split("-")[1];
+            if (final == "INT") {
+                var res9 = $("#selectope :selected").text();
+            }
+            else {
+                var res9 = $("#selectstringope :selected").text();
+            }
+            var WhereFielddata = {
+                where: $("#whereclause :selected").text(),
+                selectoperator: res9,
+                inputvalue: $("#value").val(),
+            }
+            var col = '<td>' + (WhereFielddata.where).toUpperCase() + '</td>';
+            col = col + '<td>' + WhereFielddata.selectoperator + '</td>'
+            if (final == "INT")
+                col = col + '<td>' + WhereFielddata.inputvalue + '</td>'
+            else
+                col = col + '<td>' + "'" + WhereFielddata.inputvalue + "'" + '</td>'
+
+            col = col + '<td>' + ("<button id='remove' class='savebtn btn btn-theme' onclick='deletewhereRow(this)'>Remove</button>"); +'</td>'
+
+            var row = '<tr>' + col + '</tr>';
+            $('#myDataTable').append(row);
+
+            var text = $("#buisiness :selected").text();
+            var result = $("#generatedquery").val();
+            var selectfields = result.split("FROM")[0];
+            if (rowCount == 1) {
+                var res = $("#generatedquery").val();
+                var afterpart = res.split("GROUP BY")[1];
+                if (final == "INT")
+                    where = " Where " + (WhereFielddata.where).toUpperCase() + " " + WhereFielddata.selectoperator + " " + WhereFielddata.inputvalue;
+                else
+                    where = " Where " + (WhereFielddata.where).toUpperCase() + " " + WhereFielddata.selectoperator + " " + "'" + WhereFielddata.inputvalue + "'";
+                if (afterpart != undefined) {
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(selectfields + "FROM" + text + where + " GROUP BY " + " " + afterpart);
+                    $("#generatedquery1").val('');
+                    $("#generatedquery1").append(selectfields + "FROM" + text + where + " GROUP BY " + " " + afterpart);
+                }
+                else {
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(selectfields + "FROM" + " " + text + where);
+                    $("#generatedquery1").val('');
+                    $("#generatedquery1").append(selectfields + "FROM" + " " + text + where);
+                }
+
+            }
+            else {
+
+                var selectedwhereope = $("#whereoperators :selected").text();
+                var res = $("#generatedquery").val();
+                var afterpart = res.split("GROUP BY")[1];
+                where = where + " " + selectedwhereope + " " + (WhereFielddata.where).toUpperCase() + " " + WhereFielddata.selectoperator + " " + WhereFielddata.inputvalue;
+                if (afterpart != undefined) {
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + " GROUP BY " + afterpart);
+
+                }
+                else {
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where);
+                }
+            }
+
+
+        })
+        $("#addgroup").click(function () {
+            $('#groupby').val("--Select--");
+            groupclicked = "clicked";
+        })
+        $("#okgroup").click(function () {
+            var rowCount = $('#myGroupTable tr').length;
+            var GroupFielddata = {
+                group: $("#groupby :selected").text(),
+            }
+            var col = '<td>' + (GroupFielddata.group).toUpperCase() + '</td>';
+            col = col + '<td>' + ("<button id='remove' class='savebtn btn btn-theme' onclick='deleteRow(this)'>Remove</button>"); +'</td>'
+            var row = '<tr>' + col + '</tr>';
+            $('#myGroupTable').append(row);
+            var text = $("#buisiness :selected").text();
+            var result = $("#generatedquery").val();
+            var selectfields = result.split("FROM")[0];
+            if (rowCount == 1) {
+                group = " GROUP BY " + (GroupFielddata.group).toUpperCase();
+                var res = $("#generatedquery").val();
+                var afterpart = res.split("ORDER BY")[1];
+                if (afterpart != undefined) {
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + group + " ORDER BY " + afterpart);
+                }
+                else {
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + group);
+                }
+            }
+            else {
+                group = group + " ," + (GroupFielddata.group).toUpperCase();
+                var res = $("#generatedquery").val();
+                var afterpart = res.split("ORDER BY")[1];
+                if (afterpart != undefined) {
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + group + " ORDER BY " + afterpart);
+                }
+                else {
+                    $("#generatedquery").val('');
+                    $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + group);
+                }
+
+            }
+        })
+        $("#addorder").click(function () {
+            $('#orderfeild').val("--Select--");
+            $('#ordertype').val("0");
+            orderclicked = "clicked";
+        })
+        $("#okorder").click(function () {
+            var rowCount = $('#myOrderTable tr').length;
+            var OrderFielddata = {
+                order: $("#orderfeild :selected").text(),
+                ordertype: $("#ordertype :selected").text(),
+            }
+
+            var col = '<td>' + (OrderFielddata.order).toUpperCase() + '</td>';
+            col = col + '<td>' + OrderFielddata.ordertype + '</td>'
+            col = col + '<td>' + ("<button id='remove' class='savebtn btn btn-theme' onclick='deleteorderRow(this)'>Remove</button>"); +'</td>'
+            var row = '<tr>' + col + '</tr>';
+            $('#myOrderTable').append(row);
+
+            var text = $("#buisiness :selected").text();
+            var result = $("#generatedquery").val();
+            var selectfields = result.split("FROM")[0];
+            if (rowCount == 1) {
+                order = " ORDER BY " + (OrderFielddata.order).toUpperCase() + " " + OrderFielddata.ordertype;
+                var res = $("#generatedquery").val();
+                $("#generatedquery").val('');
+                $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + group + order);
+            }
+            else {
+                order = order + " ," + (OrderFielddata.order).toUpperCase() + " " + OrderFielddata.ordertype;
+                var res = $("#generatedquery").val();
+                $("#generatedquery").val('');
+                $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + group + order);
+            }
+        })
+        $("#reset").click(function () {
+            $("select").val("0");
+            $("textarea").val("");
+            $('input[type=text]').val("");
+            $("#leftValues").empty();
+            $("#viewquery").empty();
+        })
+        $("#preview").click(function () {
+            var selectedItem = $("#generatedquery").val();
+            var edited = selectedItem.replace(/^,/, '');
+            $("#viewquery").append(" SELECT " + edited);
+        })
+        $("#Save").click(function () {
+           
+            var name = $("#nameq").val();
+            $("#nameque").val(name);
+            var selectedItem = $("#generatedquery").val();
+            var edited = selectedItem.replace(/^,/, '');
+            $("#generatedquery").val('');
+            $("#generatedquery").append(" SELECT " + edited);
+            var querygenerated = $('#generatedquery').val();
+            var selectfields = querygenerated.match("SELECT(.*)FROM");
+            var orderfields = querygenerated.split("ORDER BY")[1];
+            if (orderfields == undefined) {
+                var groupfields = querygenerated.split("GROUP BY")[1];
+            }
+            else {
+                var groupfields = querygenerated.match("GROUP BY(.*)ORDER BY");
+            }
+            if (groupfields == null && orderfields == undefined) {
+                var wherefields = querygenerated.split("Where")[1];
+            }
+            else if (groupfields == null) {
+                var wherefields = querygenerated.match("Where(.*)ORDER BY");
+            }
+            else {
+                var wherefields = querygenerated.match("Where(.*)GROUP BY");
+            }
+            if (wherefields == null && orderfields != undefined && groupfields == null) {
+                var fromfields = querygenerated.match("FROM(.*)ORDER BY");
+            }
+            else if (wherefields == null && groupfields != null && orderfields == undefined) {
+                var fromfields = querygenerated.match("FROM(.*)GROUP BY");
+            }
+            else if (wherefields != null) {
+                var fromfields = querygenerated.match("FROM(.*)Where");
+            }
+            else if (wherefields == null && groupfields != null && orderfields != undefined) {
+                var fromfields = querygenerated.match("FROM(.*)GROUP BY");
+            }
+            else if (wherefields == null && orderfields == undefined && groupfields == null) {
+
+                var fromfields = querygenerated.split("FROM")[1];
+            }
+            $("#selectedfields").val(selectfields[1]);
+
+            if (wherefields == null && (orderfields != undefined || groupfields != null)) {
+                $("#fromfields").val(fromfields[1]);
+            }
+            else if (wherefields != null) {
+                $("#fromfields").val(fromfields[1]);
+            }
+            else {
+                $("#fromfields").val(fromfields);
+            }
+
+            if (wherefields != null && (groupfields != null || orderfields != undefined)) {
+                $("#wherefields").val(wherefields[1]);
+            }
+            else {
+                $("#wherefields").val(wherefields);
+            }
+
+            if (groupfields != null && orderfields != undefined) {
+                $("#groupfields").val(groupfields[1]);
+            }
+            else {
+                $("#groupfields").val(groupfields);
+            }
+            if (orderfields != undefined) {
+                $("#orderfields").val(orderfields);
+            }
+
+            $.ajax({
+                url: '@Url.Action("CreateQuery", "QueryGeneration")',
+                type: 'POST',
+                datatype: 'JSON',
+                data: $('#querygenerate').serialize(),
+                success: function (data) {
+                    //alert('Successfully Sent');
+                    window.location.href = '@Url.Action("Index", "QueryGeneration")'
+                },
+                error: function (data) {
+                },
+            });
+        })
+        $("#cancel").click(function () {
+            $("#frm").hide();
+        });
+    })
+    function deleteRow(r) {
+
+        var z = r.parentNode.parentNode.rowIndex;
+        document.getElementById("myGroupTable").deleteRow(z);
+        var text5 = (r.parentNode.parentNode.innerText);
+        var text1 = text5.split("Remove")[0];
+        var genquery = $("#generatedquery").val();
+        var text2 = genquery.split(text1)[0];
+        var text4 = genquery.split(text1)[1];
+
+        var text = $("#buisiness :selected").text();
+
+        var selectfields = genquery.split("FROM")[0];
+        var afterpart = genquery.split("ORDER BY")[1];
+        var res = group;
+        var final = res.replace(text1, '')
+        var finalq = final.replace(/,\s*$/, '');
+        group = finalq;
+
+        if (afterpart != undefined) {
+            //var sss = group.replace(/\s/g, '')
+            //if (sss == "GROUPBY")
+            //{
+            //    group = "";
+            //}
+
+
+            $("#generatedquery").val('');
+            $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + group + " ORDER BY " + afterpart);
+        }
+        else {
+            //var sss = group.replace(/\s/g, '')
+            //if (sss == "GROUPBY")
+            //    group = "";
+
+            $("#generatedquery").val('');
+            $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + group);
+        }
+
+        var count = $('#myGroupTable tr').length;
+        if (count == 0) {
+            $('#myGroupTable').empty();
+        }
+    }
+    function deletewhereRow(r) {
+        var genquery = $("#generatedquery").val();
+        var z = r.parentNode.parentNode.rowIndex;
+        document.getElementById("myDataTable").deleteRow(z);
+        var text5 = (r.parentNode.parentNode.innerText);
+        var text1 = text5.split("Remove")[0]
+        var separators = ["=", ">", "<", ">=", ">=", "IN", "NOT IN", "ISNULL", "NOT NULL", "STARTS WITH", "NOT STARTS WITH", "CONTAINS", "NOT CONTAINS", "LIKE"];
+        var appenders = ["AND", "OR", "AND NOT", "OR NOT"]
+        var i, j, m, n, colspace, sape;
+        for (i = 0; j = separators[i]; i++) {
+
+            if (text1.split(separators[i])[1] != null) {
+                m = text1.split(separators[i])[1];
+                n = text1.split(m)[0];
+                colspace = n.split(separators[i])[0];
+                sape = n.split(colspace)[1];
+            }
+            //if (m != undefined) {
+            //    if (m.indexOf(appenders[i])[1] != null) {
+            //        if (m.indexOf(separators[i]) != -1) {
+            //            sape = separators[i];
+            //        }
+            //    }
+            //}
+            //if (genquery.indexOf(separators[i]) != -1) {
+            //    sape = separators[i];
+            //}
+
+        }
+        var text2 = m.replace(m, " " + m)
+        var columnspace = colspace.replace(colspace, colspace + " ")
+        var text3 = (columnspace + "" + sape + " " + m)
+
+        var count = $('#myDataTable tr').length;
+        if (count == 0) {
+            $('#myDataTable').empty();
+        }
+        var text = $("#buisiness :selected").text();
+        var selectfields = genquery.split("FROM")[0];
+        var afterpart = genquery.split("GROUP BY")[1];
+        var afterorderpart = genquery.split("ORDER BY")[1];
+        var res = where;
+        var final = res.replace(text3, '')
+        where = final;
+        //var sss = where.replace(/\s/g, '')
+        //var after = sss.split("Where")[1];
+        //var saperators = ["AND" , "OR" , "AND NOT" , "OR NOT"];
+        //var i, j;
+
+        //if (sss == "Where")
+        //{
+        //    where = "";
+        //}
+        //else if (after != undefined) {
+
+        //    //for (i = 0; j = appenders[i]; i++) {
+        //        if (where.split("Where")[1] != "") {
+        //            where = (where.split("Where")[1]);
+        //        }
+        //    //}
+        //}
+        //else
+        //{
+        //    for (i = 0; j = saperators[i]; i++)
+        //    {
+        //        if (where.split(saperators[i])[0]!=undefined)
+        //     where = where.split(saperators[i])[0];
+        //    }
+
+        //}
+        if (afterpart == undefined && afterorderpart != undefined) {
+            $("#generatedquery").val('');
+            $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + order);
+        }
+
+        else if (afterpart != undefined && afterorderpart == undefined) {
+            $("#generatedquery").val('');
+            $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + group);
+        }
+        else {
+            $("#generatedquery").val('');
+            $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + group + order);
+        }
+
+    }
+    function deleteorderRow(r) {
+
+        var i = r.parentNode.parentNode.rowIndex;
+        document.getElementById("myOrderTable").deleteRow(i);
+        var text = (r.parentNode.parentNode.innerText);
+        var text1 = text.split("Remove")[0];
+        var str6 = "ASC"
+        var str7 = "DESC"
+        if (text1.indexOf(str6) != -1) {
+            var res8 = text1.replace(str6, " " + str6);
+        }
+        else {
+            var res8 = text1.replace(str7, " " + str7);
+        }
+        var genquery = $("#generatedquery").val();
+        var text2 = genquery.split(res8)[0];
+        var text4 = genquery.split(res8)[1];
+        //if (text2[text2.length - 1] == ",") {
+        //    var res4 = text2.replace(/,\s*$/, '');
+        //    $("#generatedquery").val('');
+        //    $("#generatedquery").append(res4 + text4);
+        //}
+
+        //else {
+        //    var str3 = "ORDER BY"
+        //    if (text2.indexOf(str3) != -1)
+        //        var res4 = text2.replace(str3, '');
+        //    $("#generatedquery").val('');
+        //    $("#generatedquery").append(res4 + text4);
+        //}
+        var text = $("#buisiness :selected").text();
+        var selectfields = genquery.split("FROM")[0];
+        var res = order;
+        var final = res.replace(res8, '')
+        var finalq = final.replace(/,\s*$/, '');
+        order = finalq;
+        $("#generatedquery").val('');
+        $("#generatedquery").append(selectfields + "FROM" + " " + text + " " + where + group + order);
+        var count = $('#myOrderTable tr').length;
+        if (count == 0) {
+            $('#myOrderTable').empty();
+        }
+    }
+    $(function () {
+
+        $('select#buisiness').on('change', function () {
+
+            var res = $("#generatedquery").val();
+            var selectedItem = $(this, "option:selected").val();
+            var text = $("#buisiness :selected").text();
+            var res1 = res.split(" FROM ")[0];
+            $("#generatedquery").val('');
+            $("#generatedquery").append(res1 + " FROM " + text);
+            $.ajax({
+                url: '@Url.Action("GetAvaialbleFields", "QueryGeneration")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { BOID: selectedItem },
+                success: function (data) {
+
+                    $("#rightValues").html(""); // clear before appending new list
+                    $("#whereclause").html("<option>--Select--</option>");
+                    $("#groupby").html("<option>--Select--</option>");
+                    $("#orderfeild").html("<option>--Select--</option>");
+                    $.each(data, function (i, availableval) {
+                        if (availableval.IsVisible == true) {
+                            $("#rightValues").append(
+                            $('<option></option>').val(availableval.Name + "-" + availableval.Type).html(availableval.Name));
+                        }
+                        if (availableval.IsWhere == true) {
+                            $("#whereclause").append(
+                            $('<option></option>').val(availableval.Name + "-" + availableval.Type).html(availableval.Name));
+                        }
+                        if (availableval.IsGroupBy == true) {
+                            $("#groupby").append(
+                            $('<option></option>').val(availableval.BOID).html(availableval.Name));
+                        }
+                        if (availableval.IsOrderBy == true) {
+                            $("#orderfeild").append(
+                            $('<option></option>').val(availableval.BOID).html(availableval.Name));
+                        }
+                    });
+                },
+                error: function (data) {
+
+                }
+            });
+        });
+
+        $('#queryc').click(function () {
+            $("#query").show();
+            $("#wher").hide();
+            $("#grou").hide();
+            $("#orde").hide();
+            $("#sel").hide();
+            $("#Querygen").hide();
+       
+        });
+        $('#select').click(function () {
+            $("#sel").show();
+            $("#wher").hide();
+            $("#grou").hide();
+            $("#orde").hide();
+            $("#query").hide();
+            $("#Querygen").show();
+          
+        });
+        $('#where').click(function () {
+            $("#wher").show();
+            $("#grou").hide();
+            $("#orde").hide();
+            $("#sel").hide();
+            $("#query").hide();
+            $("#Querygen").show();
+         
+        });
+        $('#group').click(function () {
+            $("#grou").show();
+            $("#orde").hide();
+            $("#sel").hide();
+            $("#wher").hide();
+            $("#query").hide();
+            $("#Querygen").show();
+            
+        });
+        $('#order').click(function () {
+            $("#orde").show();
+            $("#sel").hide();
+            $("#wher").hide();
+            $("#grou").hide();
+            $("#query").hide();
+            $("#Querygen").show();
+          
+        });
+    })
+</script>
+
+
+
+
+@Html.AntiForgeryToken()
+@*<hr />*@
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="nav-tabs-custom">
+
+                        <div class="nav-tabs-custom">
+                            <ul class="nav nav-tabs">
+                                <li id="queryc" class="active"><a href="" data-toggle="tab">Query</a></li>
+                                <li id="select"><a href="" data-toggle="tab">Select Fields</a></li>
+                                <li id="where"><a href="" data-toggle="tab">Where Fields</a></li>
+                                <li id="group"><a href="" data-toggle="tab">Group Fields</a></li>
+                                <li id="order"><a href="" data-toggle="tab">Order Fields</a></li>
+                            </ul>
+
+
+
+                            <div class="tab-content">
+                                @Html.ValidationSummary(true)
+                                <div class="active tab-pane" id="query">
+                                    <form class="form-horizontal">
+                                        <div class="form-group">
+                                            <label for="inputName" class="col-sm-2 control-label">Title</label>
+                                            <div class="col-sm-4">
+                                                <input type="text" class="form-control"name="Name" id="nameq" placeholder="Name">
+                                            </div>
+                                        </div>
+                                       
+                                        <div class="form-group">
+                                            <label for="inputEmail" class="col-sm-2 control-label">Business Object</label>
+                                            <div class="col-sm-4">
+                                                @Html.DropDownListFor(model => model.ID, new SelectList(ViewBag.columnlist
+                                      , "BOID", "Name", 0), "---Select---", new { @class = "form-control", @id = "buisiness" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="inputName" class="col-sm-2 control-label">Category</label>
+                                            <div class="col-sm-4">
+                                                <select class="form-control">
+                                                    <option>1</option>
+                                                    <option>2</option>
+                                                    <option>3</option>
+                                                    <option>4</option>
+                                                    <option>5</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="inputSkills" class="col-sm-2 control-label">Type</label>
+                                            <div class="col-sm-4">
+                                                <select class="form-control">
+                                                    <option>1</option>
+                                                    <option>2</option>
+                                                    <option>3</option>
+                                                    <option>4</option>
+                                                    <option>5</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        @*<div class="form-group">
+                                            <div class="col-sm-offset-2 col-sm-10">
+                                                <button type="submit" class="btn btn-theme">Save & Continue</button>
+                                                <button type="submit" class="btn btn-theme decline">Cancel</button>
+                                            </div>
+                                        </div>*@
+                                    </form>
+                                </div>
+                                <div class="tab-pane" id="sel">
+                                    <h6>Title - BO - Category - Type</h6>
+                                    <div class="box_filters">
+                                        <div class="feature-box col-md-5">
+                                            <h4>Available Fields</h4>
+                                            <select id="rightValues" size="8" multiple class="task availableTasks form-control"></select>
+                                            </div>
+                                        <div class="arrows_div col-md-2">
+                                            <div>
+                                                <button class="" type="button" id="btnLeft"> <img src="~/Content/images/arrow-slider-right.png"> </button>
+                                                <br>
+                                                <button class="" id="btnRight" type="button"> <img src="~/Content/images/arrow-slider-left.png"> </button>
+                                            </div>
+                                        </div>
+                                        <div class="feature-box col-md-5">
+                                            <h4>Selected Fields</h4>
+                                            <select id="leftValues" size="8" multiple class="task availableTasks form-control"></select>
+                                        </div>
+                                    </div>
+
+                                    </div>
+                                <div class="tab-pane" id="wher">
+                                    <h6>Title - BO - Category - Type</h6>
+                                    <form>
+                                        @*<span id="whereope">
+                                            <label class="col-sm-2">Operators<span style="color: #ff0000;">*</span></label>
+                                            <div class="col-sm-3 groupname">
+                                                @Html.DropDownList("sort", (IEnumerable<SelectListItem>)ViewData["WhereAppend"], "--Select--", new { @class = "form-control", @id = "whereoperators" })
+                                            </div>
+                                        </span>*@
+                                        <div class="form-group col-md-3">
+                                            <label for="exampleInputEmail1">Select Field</label>
+
+                                            @Html.DropDownListFor(model => model.ID, new SelectList(ViewBag.columnlist
+                                            , "BOID", "Name", 0), "---Select---", new { @class = "form-control", @id = "whereclause" })
+                                        </div>
+
+                                        <div class="form-group col-md-3" id="intope">
+                                            <label for="exampleInputPassword1">Operator</label>
+                                            @Html.DropDownList("sort", (IEnumerable<SelectListItem>)ViewData["IntOperators"], "--Select--", new { @class = "form-control", @id = "selectope" })
+
+                                        </div>
+
+
+                                        <div class="form-group col-md-3" id="stringope">
+                                            <label for="exampleInputPassword1">Operator</label>
+
+                                            @Html.DropDownList("sort", (IEnumerable<SelectListItem>)ViewData["StringOperators"], "--Select--", new { @class = "form-control", @id = "selectstringope" })
+
+                                        </div>
+                                        <div class="form-group col-md-3">
+                                            <label for="exampleInputPassword1">Value</label>
+                                            <input type="text" class="form-control" id="value" placeholder="Enter Value">
+                                        </div>
+                                        <div class="form-group col-md-3 ttb_bt">
+                                            <input type="button" id="okwhere" class="btn btn-theme" value="OK">
+                                            <input type="button" id="addwhere" class="btn btn-theme" value="Add More">
+                                         
+                                        </div>
+                                    </form>
+                                        <div class="tab_scroll">
+                                            <table id="myDataTable" class="table table-bordered table-striped" >
+                                                <thead>
+                                                    <tr>
+                                                        <th>Clause</th>
+                                                        <th>Operator</th>
+                                                        <th>Value</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                            <div class="row"> </div>
+                                            </div>
+                                 
+                                </div>
+
+                                <div class="tab-pane" id="grou">
+                                    <h6>Title - BO - Category - Type</h6>
+                                    <form>
+                                        <div class="form-group col-md-3">
+                                            <label for="exampleInputEmail1">Select Field</label>
+                                            <select id="groupby" size="5" multiple class="form-control"></select>
+                                        </div>
+                                        <div class="form-group col-md-3 ttb_bt">
+                                            @*<button type="submit" class="btn btn-theme">Save</button>*@
+                                            <input type="button" id="okgroup" class="btn btn-theme" value="OK">
+                                            <input type="button" id="addgroup" class="btn btn-theme" value="Add More">
+                                        </div>
+                                    </form>
+                                        <div class="tab_scroll">
+                                            <table id="myGroupTable" class="table table-bordered table-striped">
+                                               
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Clause</th>
+                                                            <th>Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody></tbody>
+                                                </table>
+                                            </div>
+                        
+                                        </div>
+                                       
+                                <div class="tab-pane" id="orde">
+                                    <h6>Title - BO - Category - Type</h6>
+                                    <form>
+                                        <div class="form-group col-md-3">
+                                            <label class="exampleInputEmail1">Order Field</label>
+                                            @Html.DropDownListFor(model => model.ID, new SelectList(ViewBag.columnlist
+                                                    , "BOID", "Name", 0), "---Select---", new { @class = "form-control", @id = "orderfeild" })
+
+                                        </div>
+
+                                        <div class="form-group col-md-3">
+                                            <label class="exampleInputEmail1">Order Type</label>
+
+                                            <select id="ordertype" class="form-control">
+                                                <option value="0">--Select--</option>
+                                                <option value=" "> </option>
+                                                <option value="ASC">ASC</option>
+                                                <option value="DESC">DESC</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-3 ttb_bt">
+                                            @*<button type="submit" class="btn btn-theme">Save</button>*@
+                                         
+                                            <input type="button" id="okorder" class="btn btn-theme" value="OK">
+                                            <input type="button" id="addorder" class="btn btn-theme" value="Add More">
+                                         
+                                        </div>
+                                    </form>
+                                    <div class="tab_scroll">
+                                        <table id="myOrderTable" class="table table-bordered table-striped">
+                                            
+                                                <thead>
+                                                    <tr>
+                                                        <th>Clause</th>
+                                                        <th>Type</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+                                
+                                       </div>
+                                <div class="col-xs-12 txt_tab"id="Querygen">
+                                    <h4>Generated Query</h4>
+                                    <form id="querygenerate">
+                                        <div class="form-group">
+                                            @*<label for="inputName" class="col-sm-2 control-label">Query Name</label>*@
+                                            <div class="col-sm-4">
+                                                <input type="hidden" class="form-control" name="Name" id="nameque" placeholder="Name">
+                                            </div>
+                                        </div>
+                                        
+                                       
+                                        <textarea id="generatedquery" class="form-control" rows="4" name="Query"></textarea>
+
+
+                                        <div class="form-group">
+                                            <div class="col-sm-3 groupname">
+                                                <input type="hidden" id="selectedfields" name="SelectFields" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <div class="col-sm-3 groupname">
+                                                <input type="hidden" id="fromfields" name="FromBos" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <div class="col-sm-3 groupname">
+                                                <input type="hidden" id="wherefields" name="WhereFields" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <div class="col-sm-3 groupname">
+                                                <input type="hidden" id="groupfields" name="GroupFields" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <div class="col-sm-3 groupname">
+                                                <input type="hidden" id="orderfields" name="OrderFields" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <div class="col-sm-3 groupname">
+                                                <input type="hidden" id="selectrightfields" name="selectrightfields" class="form-control">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-offset-2 col-sm-10 groupname">
+                                                <input type="button" id="Save" value="Save" class="savebtn btn btn-theme">
+                                                <input type="button" id="cancel" value="Cancel" class="savebtn btn btn-theme decline">
+                                                <input type="button" id="reset" value="Reset" class="savebtn btn btn-theme reverse">
+                                                <input type="button" id="preview" value="Preview Query" class="savebtn btn btn-theme">
+                                            </div>
+                                        </div>
+                                    </form>
+
+
+                                </div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="viewquery" style="width:300px; height:150px;margin-left:50px;">
+        </div>
+</section>
+    
+        @*<div class="form-group">
+            <label class="col-sm-2">Query Name</label>
+            <div class="col-sm-3 groupname">
+                <input type="text" id="" name="Name" class="form-control">
+            </div>
+        </div>*@
+        @*<div class="form-group">
+            <label class="col-sm-2">Generated Query<span class="redfont-color">*</span></label>
+            <div class="col-sm-3 groupname">
+                <textarea id="generatedquery" style="width:500px; height:200px;" name="Query" class="form-control"></textarea>
+            </div>
+        </div>*@
+        
+   
+
+
+
+
+
+
+
+
+
+
+

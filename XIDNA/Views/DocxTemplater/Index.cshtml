@@ -1,0 +1,131 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<body>
+    @* <button onclick="generatedoc()" >Generate document</button>*@
+    @using (Html.BeginForm("CopyConvertDoctoPDF", "DocxTemplater", FormMethod.Post, new { @enctype = "multipart/form-data", @id = "MyForm" }))
+    {/*ConvertDoctoPDF PdffromDocx CopyConvertDoctoPDF*/
+        <table border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td>
+                    Please select File
+                </td>
+                <td>
+                    <input type="file" name="file" value="" id="myFile" multiple accept=".DOCX,.docx,.odt,.doc" />
+                </td>
+                <td></td>
+            </tr>
+        </table>
+        <button value="submit" id="pdfDownload">Export PDF</button>
+    }  
+    @*<div >
+            <input id="attachment" type="file" multiple accept=".DOCX,.docx,.odt,.doc" />
+            <br />
+            <div>
+                <button id="addFileButton" type="button" class="btn btn-primary" onclick="download('pdf')">Upload</button>
+            </div>
+        </div>*@
+    <div class="col-md-6 form-control">
+        <span>ID </span>
+        <input typeof="text" id="GettingID" />
+        <button id="template" type="button" class="btn btn-primary" onclick="template('HTML')">HTMLTemplate</button>
+        <button id="template" type="button" class="btn btn-primary" onclick="template('JSON')">JSONTemplate</button>
+        <button id="template" type="button" class="btn btn-primary" onclick="template('XML')">XMLTemplate</button>
+    </div>
+
+    <div class="col-md-6 form-control">
+        <textarea id="TextAareaResult" style="position: relative;  width: 650px;  float: left;  height: 300px;"></textarea>
+
+        <textarea id="returnview" style="position: relative;  width: 650px;  float: right;  height: 300px;"></textarea>
+        <button onclick="download('save')">Save</button>
+        <button onclick="download('docx')">.DOC Download</button>
+        <button onclick="download('xml')">.XML Download</button>
+        <button onclick="download('Template')">TextFileDownload</button>
+        <button onclick="download('Conversion')">Merging Data</button>
+    </div>
+    <div>
+        <div id="ResultView"></div>
+    </div>
+</body>
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/jqueryval")
+@Scripts.Render("~/bundles/bootstrap")
+
+@*<script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.21.2/docxtemplater.js"></script>
+    <script src="~/Scripts/docxtemplater.js"></script>*@
+<script src="https://unpkg.com/pizzip@3.0.6/dist/pizzip.js"></script>
+@*<script src="~/Scripts/pizzip.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.js"></script>
+    <script src="https://unpkg.com/pizzip@3.0.6/dist/pizzip-utils.js"></script>*@
+<script>
+    var sType = "";
+    function download(filename, text) {
+        debugger;
+        // text = $('#TextAareaResult').val();
+        text = $('#returnview').val();
+        if (filename == "Template") {
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+            else if(filename=="save"){
+            $.ajax({
+                    url: '@Url.Action("CreateNewWordDocument", "DocxTemplater")',
+                    data: { stype: sType,ID:$('#GettingID').val() },
+                   // datatype: "json",
+                   // type: "get",
+                    success: function (data) {
+                    alert("Data Successfully saved in sever path")
+                    }
+                });
+            
+            }
+            else if (filename == "Conversion") {
+                $.ajax({
+                    url: '@Url.Action("GenerateDocument", "DocxTemplater")',//DataConversion
+                    data: { TemplateType: $('#TextAareaResult').val(), TemplateID: $('#GettingID').val() },
+                     datatype: "json",
+                     type: "get",
+                    success: function (data) {
+                        // alert("Data Successfully saved in sever path")
+                        $('#ResultView').html(data.oResult);
+                    }
+                });
+
+            }
+            else if(filename=="pdf") {
+                var file_data = $("#attachment").prop("files")[0];
+                window.location.href = '@Url.Action("DownloadNewWordDocument", "DocxTemplater")?file=' + file_data; // CreateNewWordDocument
+            }
+        else {
+            window.location.href = '@Url.Action("DownloadNewWordDocument", "DocxTemplater")?sType=' + sType + '&ID=' + $('#GettingID').val() + '&DocType=' + filename; // CreateNewWordDocument
+        }
+    }
+    function template(Type) {
+        sType = Type
+        debugger;
+        $('#returnview').html('');
+        $.ajax({
+            url: "@Url.Action("GenerateDocument", "DocxTemplater")",
+            data: { TemplateType: Type, TemplateID: $('#GettingID').val() },
+            dataType: "json",
+            type: "GET",
+            success: function (data) {
+                debugger;
+                var result = data;
+                $('#TextAareaResult').val(data.sCode);
+                $('#returnview').val(data.oResult);
+                $('#ResultView').html(data.oResult);
+                //$('#ResultView').html(JSON.stringify(data.oResult))[0].innerHTML;
+                //$('#returnview').innerHTML=data.oResult;
+            }
+        });
+    }
+    
+</script>

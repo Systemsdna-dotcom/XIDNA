@@ -1,0 +1,641 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="urn:https://ipfconnect.bnpparibas-pf.co.uk" elementFormDefault="qualified" targetNamespace="urn:https://ipfconnect.bnpparibas-pf.co.uk" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="LiveRateQuoteRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:HeaderWithCredential" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="LiveRateQuoteRequestType" type="tns:LiveRateQuoteRequestType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="HeaderWithCredential">
+    <xs:complexContent mixed="false">
+      <xs:extension base="tns:Header">
+        <xs:sequence>
+          <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="UserCredential" type="tns:UserCredential" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="Header">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="ClientCode" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="ShopCode" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="CostCentre" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="UserId" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="SystemType" type="tns:Enums.SystemType" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PartnerTransactionToken" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="TransactionRef" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="Enums.SystemType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Undefined" />
+      <xs:enumeration value="Easicredit" />
+      <xs:enumeration value="Ecommerce" />
+      <xs:enumeration value="Oam" />
+      <xs:enumeration value="QuickQuote" />
+      <xs:enumeration value="Telesales" />
+      <xs:enumeration value="OnlineInstore" />
+      <xs:enumeration value="Ipf" />
+      <xs:enumeration value="IpfAssisted" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="UserCredential">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Username" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Password" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="LiveRateQuoteRequestType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="LiveRateRequestFlag" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="LiveRateQuoteResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:Header" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="LiveRateQuoteResponseType" nillable="true" type="tns:ArrayOfRateQuote" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Errors" nillable="true" type="tns:Error" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ArrayOfRateQuote">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="LiveRates" type="tns:RateQuote" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="RateQuote">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="CreditProductCode" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Apr" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Term" type="xs:nonNegativeInteger" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="InsuranceType" type="tns:Enums.InsuranceType" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="RopRateType" type="tns:Enums.RopRateType" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="MinDepositRate" type="xs:float" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="SelloutRate" type="xs:decimal" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="Enums.InsuranceType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Undefined" />
+      <xs:enumeration value="PersonalLine" />
+      <xs:enumeration value="CommercialLine" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Enums.RopRateType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Undefined" />
+      <xs:enumeration value="ProRata" />
+      <xs:enumeration value="ShortPeriod" />
+      <xs:enumeration value="MinimumAndDeposit" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Error">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Code" type="xs:int" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Description" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="NewBusinessRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:HeaderWithCredential" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="NewBusinessRequestType" type="tns:NewBusinessRequestType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="NewBusinessRequestType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Application" type="tns:Application" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Policy" type="tns:Policy" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Applicant" type="tns:Applicant" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Application">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BrokerReference" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="AccountNumber" nillable="true" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="InsuranceType" type="tns:Enums.InsuranceType" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="IsRenewal" type="xs:boolean" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="AllowSearchAuthorisation" type="xs:boolean" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="IsCustomerPresent" type="xs:boolean" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="HasCustomerDeclaration" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Policy">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PolicyInceptionDate" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PolicyRenewalDate" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="TotalCashPrice" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Deposit" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="CreditProductCode" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Term" type="xs:int" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="PreferredPaymentDay" type="xs:int" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="PolicyPremiumAmount" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="BrokerCreditFeeAmount" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BrokerCreditFeeDescription" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="BrokerFeeAmount" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BrokerFeeAmountDescription" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="AddOnAmount" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="AddOnAmountDescription" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="DiscountAmount" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="DiscountAmountDescription" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PremiumDescription" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="PolicyType" type="tns:Enums.PolicyType" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PolicyNumber" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="InsuranceCompany" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="RopRateType" type="tns:Enums.RopRateType" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="IsEdiFlag" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="Enums.PolicyType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Undefined" />
+      <xs:enumeration value="Home" />
+      <xs:enumeration value="Motor" />
+      <xs:enumeration value="Other" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Applicant">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Customer" type="tns:Customer" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Payment" type="tns:Payment" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Bank" type="tns:BankAccount" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Marketing" type="tns:Marketing" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Commercial" type="tns:Commercial" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Income" type="tns:Income" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Affordability" type="tns:Affordability" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Trading" type="tns:Trading" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Customer">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Title" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="FirstName" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="LastName" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="DateOfBirth" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Nationality" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="CountryOfBirth" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Email" nillable="true" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="PolicyholderName" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Address" type="tns:Address" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="YearsAtAddress" type="xs:int" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PreviousAddress" type="tns:Address" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Telephone" type="tns:Telephone" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Employment" type="tns:Employment" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Address">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="HouseName" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="HouseNumber" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="StreetName" nillable="true" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Townland" nillable="true" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="PostTown" nillable="true" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="County" nillable="true" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="PostCode" nillable="true" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="AddressLineOne" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Telephone">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="MobileNumber" nillable="true" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="PhoneNumber" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Employment">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="EmploymentStatus" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="EmploymentLevel" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="IndustrySector" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="EmploymentSector" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Payment">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="IsJointAccount" type="xs:boolean" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="IsApplicantAccount" type="xs:boolean" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ThirdPartyAccountName" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="ThirdPartyApplicantAddress" type="tns:Address" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="BankAccount">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BankAccountNumber" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BankSortCode" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Iban" nillable="true" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Bic" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Marketing">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="IsMarketingOptInEmail" type="xs:boolean" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="IsMarketingOptInSms" type="xs:boolean" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="IsMarketingOptInPost" type="xs:boolean" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="IsMarketingOptInPhone" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Commercial">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="BusinessType" type="tns:Enums.CustomerBusinessType" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Partnership" type="tns:Partnership" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="LimitedCompany" type="tns:LimitedCompany" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="Enums.CustomerBusinessType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Undefined" />
+      <xs:enumeration value="LimitedCompany" />
+      <xs:enumeration value="Partnership" />
+      <xs:enumeration value="SoleTrader" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="Partnership">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="CompanyName" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BusinessAddress" type="tns:Address" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="DateEstablished" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="HasCcj" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BusinessPhoneNumber" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BusinessEmail" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Trading" type="tns:CommercialTrading" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ExceedsThreePartnerShips" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PartnerOne" type="tns:Partner" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PartnerTwo" type="tns:Partner" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PartnerThree" type="tns:Partner" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PartnerFour" type="tns:Partner" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CommercialTrading">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="TradeOutsideUk" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Partner">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="FirstName" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="LastName" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PartnerAddress" type="tns:Address" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="YearsAtAddress" type="xs:int" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PreviousAddress" type="tns:Address" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PhoneNumber" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="DateOfBirth" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Nationality" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="CountryOfBirth" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="LimitedCompany">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="CompanyName" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="RegistrationNumber" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="TradingAddress" type="tns:Address" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BusinessEmail" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BusinessPhoneNumber" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="DirectorOneAuthSignature" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="DirectorTwoAuthSignature" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="DirectorOneDob" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="DirectorOneHomeAddress" type="tns:Address" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="DirectorOneCountryOfBirth" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="DirectorTwoDob" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="DirectorTwoHomeAddress" type="tns:Address" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="DirectorTwoCountryOfBirth" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Trading" type="tns:CommercialTrading" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Income">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="NetMonthlyIncome" type="xs:decimal" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Affordability">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="NetMonthlyIncome" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="SpousePartnerNetMonthyIncome" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="MonthlyMortgageRentRepayment" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="MaritalStatus" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="ResidentialStatus" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="NumberOfDependants" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Trading">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PersonalTrading" type="tns:PersonalTrading" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PersonalTrading">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="TradeOutsideUk" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="TradingName" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="NewBusinessResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:Header" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="NewBusinessResponseType" nillable="true" type="tns:NewBusinessResponseType" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Errors" nillable="true" type="tns:Error" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="NewBusinessResponseType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BrokerReference" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="AccountNumber" nillable="true" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Decision" type="tns:Enums.Decision" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Pdf" nillable="true" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ResponseStatus" type="tns:Enums.ResponseStatus" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="Enums.Decision">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Undefined" />
+      <xs:enumeration value="Accepted" />
+      <xs:enumeration value="Declined" />
+      <xs:enumeration value="AcceptInPrincipal" />
+      <xs:enumeration value="Refer" />
+      <xs:enumeration value="NotComplete" />
+      <xs:enumeration value="Void" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Enums.ResponseStatus">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Undefined" />
+      <xs:enumeration value="Success" />
+      <xs:enumeration value="Fail" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="MidTermAdjustmentRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:HeaderWithCredential" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="MidTermAdjustmentRequestType" type="tns:MidTermAdjustmentRequestType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="MidTermAdjustmentRequestType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BrokerReference" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="AccountNumber" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="FundingDifference" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="IsApplyPremium" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="MtaReasonDescription" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="MtaFeeAmount" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="IsEdiFlag" type="xs:boolean" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PolicyNumber" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Affordability" type="tns:Affordability" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="MidTermAdjustmentResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:Header" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="MidTermAdjustmentResponseType" nillable="true" type="tns:MidTermAdjustmentResponseType" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Errors" nillable="true" type="tns:Error" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="MidTermAdjustmentResponseType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Decision" type="tns:Enums.Decision" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ResponseStatus" type="tns:Enums.ResponseStatus" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CancellationRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:HeaderWithCredential" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="CancellationRequestType" type="tns:CancellationRequestType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CancellationRequestType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BrokerReference" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="AccountNumber" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ReturnOfPremiumValue" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="CancellationReasonType" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PolicyCancellationDate" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="InsurerReturnOfPremiumValue" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="RopDeductionAmount" type="xs:decimal" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CancellationResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:Header" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="CancellationResponseType" nillable="true" type="tns:CancellationResponseType" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Errors" nillable="true" type="tns:Error" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CancellationResponseType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ResponseStatus" type="tns:Enums.ResponseStatus" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PolicyStatusRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:HeaderWithCredential" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PolicyStatusRequestType" type="tns:PolicyStatusRequestType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PolicyStatusRequestType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BrokerReference" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="AccountNumber" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="PolicyStatusType" type="tns:Enums.PolicyStatusType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="Enums.PolicyStatusType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Undefined" />
+      <xs:enumeration value="PolicyCancelled" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="PolicyStatusResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:Header" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="PolicyStatusResponseType" nillable="true" type="tns:PolicyStatusResponseType" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Errors" nillable="true" type="tns:Error" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PolicyStatusResponseType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ResponseStatus" type="tns:Enums.ResponseStatus" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ServiceStatusRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:HeaderWithCredential" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="ServiceStatusRequestType" type="tns:ServiceStatusRequestType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ServiceStatusRequestType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ProvideStatus" type="xs:boolean" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ServiceStatusResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:Header" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ServiceStatusResponseType" nillable="true" type="tns:ServiceStatusResponseType" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Errors" nillable="true" type="tns:Error" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="ServiceStatusResponseType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="IsServiceAvailable" type="xs:boolean" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Maintenance" nillable="true" type="tns:Maintenance" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Maintenance">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="MaintenanceStart" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="MaintenanceEnd" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerAddressRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:HeaderWithCredential" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="EditCustomerAddressRequestType" type="tns:EditCustomerAddressRequestType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerAddressRequestType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BrokerReference" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="AccountNumber" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Address" nillable="true" type="tns:Address" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerAddressResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:Header" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="EditCustomerAddressResponseType" nillable="true" type="tns:EditCustomerAddressResponseType" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Errors" nillable="true" type="tns:Error" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerAddressResponseType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ResponseStatus" type="tns:Enums.ResponseStatus" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerBankRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:HeaderWithCredential" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="EditCustomerBankRequestType" type="tns:EditCustomerBankRequestType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerBankRequestType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BrokerReference" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="AccountNumber" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Bank" nillable="true" type="tns:BankAccount" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerBankResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:Header" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="EditCustomerBankResponseType" nillable="true" type="tns:EditCustomerBankResponseType" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Errors" nillable="true" type="tns:Error" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerBankResponseType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ResponseStatus" type="tns:Enums.ResponseStatus" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerEmailRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:HeaderWithCredential" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="EditCustomerEmailRequestType" type="tns:EditCustomerEmailRequestType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerEmailRequestType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BrokerReference" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="AccountNumber" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Email" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerEmailResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:Header" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="EditCustomerEmailResponseType" nillable="true" type="tns:EditCustomerEmailResponseType" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Errors" nillable="true" type="tns:Error" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerEmailResponseType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ResponseStatus" type="tns:Enums.ResponseStatus" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerPaymentDayRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:HeaderWithCredential" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="EditCustomerPaymentDayRequestType" type="tns:EditCustomerPaymentDayRequestType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerPaymentDayRequestType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BrokerReference" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="AccountNumber" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="PreferredPaymentDay" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerPaymentDayResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:Header" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="EditCustomerPaymentDayResponseType" nillable="true" type="tns:EditCustomerPaymentDayResponseType" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Errors" nillable="true" type="tns:Error" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerPaymentDayResponseType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ResponseStatus" type="tns:Enums.ResponseStatus" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerPhoneRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:HeaderWithCredential" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="EditCustomerPhoneRequestType" type="tns:EditCustomerPhoneRequestType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerPhoneRequestType">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="BrokerReference" type="xs:string" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="AccountNumber" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Telephone" nillable="true" type="tns:Telephone" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerPhoneResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:Header" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="EditCustomerPhoneResponseType" nillable="true" type="tns:EditCustomerPhoneResponseType" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Errors" nillable="true" type="tns:Error" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="EditCustomerPhoneResponseType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ResponseStatus" type="tns:Enums.ResponseStatus" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PartnerQuoteRequest">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:HeaderWithCredential" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PartnerQuoteRequestType" type="tns:PartnerQuoteRequestType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PartnerQuoteRequestType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="PolicyPremiumAmount" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Deposit" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="CreditProductCode" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PartnerQuoteResponse">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Header" type="tns:Header" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="PartnerQuoteResponseType" nillable="true" type="tns:PartnerQuoteResponseType" />
+      <xs:element minOccurs="0" maxOccurs="unbounded" form="unqualified" name="Errors" nillable="true" type="tns:Error" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="PartnerQuoteResponseType">
+    <xs:sequence>
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="PolicyPremiumAmount" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Deposit" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="CreditAmount" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="CreditProductCode" type="xs:string" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="Apr" type="xs:decimal" />
+      <xs:element minOccurs="0" maxOccurs="1" form="unqualified" name="Term" type="xs:nonNegativeInteger" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="ChargeForCredit" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="TotalAmountPayable" type="xs:decimal" />
+      <xs:element minOccurs="1" maxOccurs="1" form="unqualified" name="InstalmentAmount" type="xs:decimal" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>

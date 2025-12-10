@@ -1,0 +1,150 @@
+﻿@model IEnumerable<XIDNA.ViewModels.VMKPIResult>
+<script>
+    $(function () {
+        $('#easypiechart-teal').easyPieChart({
+            scaleColor: false,
+            barColor: '#6894dd'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-orange').easyPieChart({
+            scaleColor: false,
+            barColor: '#58c8b9'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-red').easyPieChart({
+            scaleColor: false,
+            barColor: '#e7957c'
+        });
+    });   
+
+    $(function () {
+        $('#easypiechart-blue').easyPieChart({
+            scaleColor: false,
+            barColor: '#f2c35f'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-pink').easyPieChart({
+            scaleColor: false,
+            barColor: '#ed7de4'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-litonrg').easyPieChart({
+            scaleColor: false,
+            barColor: '#f3a086'
+        });
+    });
+
+
+    $(function () {
+        $('#chart-topicon-purple').easyPieChart({
+            scaleColor: false,
+            barColor: '#a47ae9'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-rose').easyPieChart({
+            scaleColor: false,
+            barColor: '#ed5565'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-lightyl').easyPieChart({
+            scaleColor: false,
+            barColor: '#f3dd65'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-drakred').easyPieChart({
+            scaleColor: false,
+            barColor: '#ed5565'
+        });
+    });
+    @*$(document).ready(function () {
+        $("#close").click(function () {
+            var r = $("#Row2").sortable("toArray");
+            var order = "";
+            for (i = 0; i < r.length; i++) {
+                order = order + r[i] + ", ";
+            }
+            order = order.slice(0, -2);
+            $.ajax({
+                url: '@Url.Action("close", "Inbox")',
+                type: 'GET',
+                data: {UserID: parseInt(@Model.FirstOrDefault().UserID), Row: "Row2", ColOrder: order  },
+                contentType: "application/json; charset=utf-8",
+                datatype: 'JSON',
+                cache: false,
+                success: function (data) {
+                },
+                error: function (data) {
+                }
+            });
+        })
+    })*@
+
+</script>
+<style>
+    
+</style>
+<section class="content-header hedr">
+    <h1 class="TabPreview"> Tab Preview </h1>
+</section>
+<div class="ibox float-e-margins">
+        <div class="noborder">
+            <div class="row">
+                @foreach (var items in Model)
+                {
+                    <div class="col-md-2 graph-bg nlpd">
+                        <div class="panel">
+                            <div class="panel-body easypiechart-panel">
+                                <div class="easypiechart col-md-offset-2" id=@items.KPICircleColor data-percent=@items.KPIPercent>
+                                    <div class=@items.KPIIconColor><i class='@items.KPIIcon' aria-hidden="true"></i></div>
+                                    <span class="percent blue" id="NewLeadSpan">@items.KPIValue</span>
+                                </div>
+                                <h5 class="text-center">@items.Name</h5>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+
+</div>
+
+@*<div class="noborder">
+        <div class="row">
+    <div class="ibox-content">
+        <div class="statistic-box">
+            <div class="row">
+                <div class="col-md-2 graph-bg nlpd">
+                    <div class="panel">
+                        @foreach (var items in @Model)
+                        {
+                            <div class="row">
+                                <div class="panel-body easypiechart-panel">
+                                    <div class="easypiechart col-md-offset-2" id=@items.KPICircleColor data-percent=@items.KPIPercent>
+                                        <div class=@items.KPIIconColor><i class='@items.KPIIcon' aria-hidden="true"></i></div>
+                                        <span class="percent blue" id="NewLeadSpan">@items.KPIValue</span>
+                                    </div>
+                                    <h5 class="text-center">@items.Name</h5>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>   *@

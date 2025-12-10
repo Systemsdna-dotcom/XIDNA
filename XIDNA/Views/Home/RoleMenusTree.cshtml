@@ -1,0 +1,322 @@
+﻿@model XICore.XIRoleMenu
+
+@{
+    //Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    var oMenus = ViewBag.Menus;
+}
+
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="form-group">
+                        <div class="col-md-2" id="RoleIDs">
+                            <label for="inputEmail" class="gn">Select the Role</label>
+                            @if (Model.Roles != null)
+            {
+                                @Html.DropDownListFor(model => model.RoleID, new SelectList(Model.Roles, "Value", "text"), new { @class = "form-control", @id = "Roles" })
+                            }
+                        </div>
+                        <div class="col-md-2" id="sRootName">
+                            <label for="inputName" class="gn">RootName</label>
+                            <input type="text" class="form-control" name="RootName" id="RootName" placeholder="Enter RootName">
+                        </div>
+                        <br />
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-theme" id="AddRoot" name="AddButton" value="Add Root" disabled>Create Root</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="col-xs-3">
+                        <div id="NewMenuTree" class="tree"></div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <input type="button" class="btn btn-theme" id="SaveMenus" value="Save" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var RoleID = 0;
+    var RootName = "";
+    var sRoleName = "";
+    var SelectedNodes = new Array();
+    $(document).ready(function () {
+        $('#NewMenuTree').hide();
+        $('#SaveMenus').hide();
+        var ModelGroups = @Html.Raw(Json.Encode(Model.GroupIDs));
+        var jsondata = [];
+        var Nodes = @Html.Raw(Json.Encode(oMenus));
+        if(Nodes && Nodes!=null && Nodes.length > 0){
+            var j=0;
+            for (var i = 0; i < Nodes.length; i++) {
+                item = {}
+                item["id"] = Nodes[i].ID
+                if(Nodes[i].ParentID == "#"){
+                    item["parent"] ="#";
+                }
+                else{
+                    item["parent"] =Nodes[i].ParentID;
+                }
+                item["text"] = Nodes[i].Name;
+                item["ActionType"] = Nodes[i].ActionType;
+                item["MenuController"] = Nodes[i].MenuController;
+                item["MenuAction"] = Nodes[i].MenuAction;
+                item["XiLinkID"] = Nodes[i].XiLinkID;
+                item["StatusTypeID"] = Nodes[i].StatusTypeID;
+                jsondata.push(item);
+            }
+            if(jsondata.length>0){
+                var jsonString = JSON.stringify(jsondata);
+                createJSTree(JSON.parse(jsonString));
+            }
+        }
+        $('#RoleIDs').change(function(){
+            debugger
+            RoleID = $('#Roles').val();
+            sRoleName = $('#Roles :selected').text();
+            $('#RootName').val('');
+            RootName = "";
+            //showHideTree();
+            $('#NewMenuTree').show();
+            $('#SaveMenus').show();
+        });
+
+        $('#sRootName').change(function(){
+            debugger
+            RootName = $('#RootName').val();
+            $('#AddRoot').removeAttr('disabled');
+            //showHideTree();
+        });
+    });
+
+    function createJSTree(UIjsondata) {
+        $('#NewMenuTree').jstree({
+            "core": {
+                "themes": {
+                    "variant": "large",
+                    "icons": false,
+                },
+                "check_callback": true,
+                'data': UIjsondata,
+            },
+            "checkbox": {
+                "keep_selected_style": false,
+            },
+            "plugins": ["contextmenu","themes","html_data", "ui", "checkbox"],
+            "dnd": {},
+            "contextmenu": {
+                "items": function ($node) {
+                    var tree = $("#NewMenuTree").jstree(true);
+                    return {
+                        "Create": {
+                            "separator_before": false,
+                            "separator_after": true,
+                            "label": "Create",
+                            action: function (obj) {
+                                var ID = 0;
+                                var ParentID = obj.reference[0].id.replace(/[A-Za-z#$_-]/g, "");
+                                var flag = 0;
+                                if (RoleID > 0) {
+                                    flag = 1;
+                                }
+                                if (flag) {
+                                    $.ajax({
+                                        type: 'POST',
+                                        url: '@Url.Action("CreateandRenameMenu", "Home")',
+                                        data: { ParentID: ParentID, Name: 'New Menu', RoleID: RoleID, Type:'Create' },
+                                        cache: false,
+                                        dataType: 'json',
+                                        success: function (data) {
+                                            $node = tree.create_node($node, { text: 'New Menu', type: 'default', id: data });
+                                            tree.deselect_all();
+                                            tree.select_node($node);
+                                        }
+                                    });
+                                }
+                            }
+                        },
+                        "Rename": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Rename",
+                            "action": function (obj) {
+                                var ID = 0;
+                                var Id = obj.reference[0].id.replace(/[A-Za-z#$_-]/g, "");
+                                tree.edit($node, null, function (node, status) {
+                                    if (node.original.text != node.text) {
+                                        RenameAndCreateToDB($node, "Rename");
+                                        //window.opener.location.reload();
+                                    }
+                                });
+                            }
+                        },
+                        "Remove": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Remove",
+                            "action": function (obj) {
+                                $("#AlertDialog").html(" Are you sure you want ot delete ? ");
+                                $("#AlertDialog").dialog({
+                                    title: " Delete Menu ",
+                                    buttons: {
+                                        "Yes": function () {
+                                            tree.delete_node($node);
+                                            DeleteMenu($node);
+                                            $(this).dialog("close");
+                                        },
+                                        "No": function () {
+                                            $(this).dialog("close");
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                        //"AddDetails": {
+                        //    "separator_before": false,
+                        //    "separator_after": false,
+                        //    "label": "Add Details",
+                        //    "action": function (obj) {
+                        //        var CheckNode = CheckIfMain($node);
+                        //        if (CheckNode == '1') {
+                        //            AddDetails($node);
+                        //        }
+                        //    }
+                        //}
+                    };
+                }
+            },
+        })
+
+        $("#NewMenuTree").bind("changed.jstree",
+    function (e, data) {
+        SelectedNodes.push(data.node.id);
+        //GetReportToUsers()
+    });
+    }
+
+    function GetReportToUsers() {
+        debugger
+        var oMenuParams = [];
+        var selectedNode = $('#NewMenuTree').jstree(true).get_selected(true);
+        var FullPath = $('#NewMenuTree').jstree().get_path($('#NewMenuTree').jstree("get_selected")[0])
+        //var RootName = FullPath[0];
+        for (i = 0; i < selectedNode.length; i++) {
+            var ID =selectedNode[i].id;
+            var Name =selectedNode[i].text;
+            var ParentID =selectedNode[i].original.parent;
+            oMenuParams.push({"ID": ID,"Name":Name,"ParentID":ParentID,"RootName":RootName,"RoleID":RoleID,"RoleName":sRoleName});
+        }
+        var model = {oMenuParams:oMenuParams};
+        $.ajax({
+            type: "POST",
+            contentType: 'application/json; charset=utf-8',
+            url: '@Url.Action("oXIMenusParams", "Home")',
+            datatype: 'json',
+            cache: false,
+            async: true,
+            data:JSON.stringify({oMenuParams:oMenuParams, RootName:RootName, iRoleID:RoleID, RoleName:sRoleName}),
+            success: function (data) {
+                @*if(data != null)
+                {
+                   // location.reload(true);
+                    $.ajax({
+                        type: "POST",
+                        contentType: 'application/json; charset=utf-8',
+                        url: '@Url.Action("GetRoleMenusTree", "Home")',
+                        datatype: 'json',
+                        cache: false,
+                        async: true,
+                        data: JSON.stringify({RootName:RootName, iRoleID:RoleID}),
+                        success: function (Menus) {
+                            debugger
+                            if(Menus != null)
+                            {
+                                for(j=0;j<Menus.length;j++)
+                                {
+                                    var GroupID = Menus[j];
+                                    $('#NewMenuTree').jstree('select_node', GroupID);
+                                }
+                            }
+                        }
+                    });
+                }*@
+            }
+        });
+    }
+    $('#AddRoot').click(function () {
+        if(RoleID > 0 && (typeof RootName !== undefined && RootName != ""))
+        {
+            $('#NewMenuTree').show();
+        }
+        else
+        {
+            $('#NewMenuTree').hide();
+        }
+        var ParentID = '#';
+        if (RootName != '') {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddTreeNode", "Home")',
+                cache: false,
+                data: { Name: RootName, RoleID: RoleID, ParentID: ParentID, SelectedNodes: SelectedNodes },
+                dataType: 'json',
+                success: function (data) {
+                    window.location.href = '@Url.Action("RoleMenusTree", "Home")';
+                    showHideTree();
+                }
+            });
+        }
+    });
+    function showHideTree(){
+        if(RoleID > 0 && (typeof RootName !== undefined && RootName != ""))
+        {
+            $('#NewMenuTree').show();
+        }
+        else
+        {
+            $('#NewMenuTree').hide();
+        }
+    }
+    function RenameAndCreateToDB($node, action) {
+        var ID = $node.id;
+        var Name = $node.text;
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("CreateandRenameMenu", "Home")',
+            data: { Name: Name, ID: ID, Type: action },
+            cache: false,
+            dataType: 'json',
+            success: function (data) { }
+        });
+    }
+    function DeleteMenu($node) {
+        var ID = $node.id;
+        var Name = $node.text;
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("DeleteTreeMenu", "Home")',
+            data: { Name: Name, ID: ID },
+            cache: false,
+            dataType: 'json',
+            success: function (data) { }
+        });
+    }
+
+    $('#SaveMenus').click(function(){
+        GetReportToUsers()
+    });
+
+</script>
+
+<div id="AlertDialog"></div>

@@ -1,0 +1,1079 @@
+﻿@model XIDNA.Models.Sections
+@using XIDNA.ViewModels
+@{
+    int KPICircle = (Int32)Enum.Parse(typeof(EnumDisplayTypes), EnumDisplayTypes.KPICircle.ToString());
+    int BarChart = (Int32)Enum.Parse(typeof(EnumDisplayTypes), EnumDisplayTypes.BarChart.ToString());
+    int PieChart = (Int32)Enum.Parse(typeof(EnumDisplayTypes), EnumDisplayTypes.PieChart.ToString());
+    int LineGraph = (Int32)Enum.Parse(typeof(EnumDisplayTypes), EnumDisplayTypes.LineChart.ToString());
+    int ViewRecord = (Int32)Enum.Parse(typeof(EnumDisplayTypes), EnumDisplayTypes.ViewRecord.ToString());
+    int ResultList = (Int32)Enum.Parse(typeof(EnumDisplayTypes), EnumDisplayTypes.ResultList.ToString());
+}
+<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#AnotherTab').click(function () {
+            $("#TabForm *").removeAttr("disabled");
+            $('#AddSection').hide();
+            $.ajax({
+                url: '@Url.Action("GetAllRanks", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { Category: "Lead Popup" },
+                success: function (data) {
+                    if (data.length > 0) {
+                        $('#Rank').empty();
+                        for (i = 0; i < data.length; i++) {
+                            $('#Rank').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>')
+                        }
+                    }
+                },
+                error: function (data) { }
+            });
+        });
+        $('#URL').hide();
+        $('#LeadPopupFields').show();
+        $('#IsBespoke').change(function () {
+            if ($(this).prop('checked') == true) {
+                $('#URL').show();
+                $('#UrlText').val("");
+                $('#LeadPopupFields').hide();
+            } else {
+                $('#URL').hide();
+                $('#LeadPopupFields').show();
+            }
+        });
+        if ('@Model.IsBespoke' == "True") {
+            $('#LeadPopupFields').hide();
+            $('#URL').show();
+        }
+        else {
+            $('#URL').hide();
+            $('#LeadPopupFields').show();
+            if('@Model.Reports'){
+                var Reports =@Html.Raw(Json.Encode(Model.Reports));
+
+                if (Reports.length > 0 && Reports!=null) {
+                    $('#ReportError').empty();
+                    $('#Reports').html('<option value="">--Select--</option>');
+                    for (i = 0; i < Reports.length; i++) {
+                        $('#Reports').append('<option value="' + Reports[i].value + '">' + Reports[i].text + '</option>');
+                    }
+                }
+                $('#Reports').val('@Model.ReportID');
+            }
+        }
+        if('@Model.DisplayAs'=="@ViewRecord"){
+            $('#IsCreate').prop('disabled',true);
+        }
+        else if('@Model.DisplayAs'=="@ResultList"){
+            $('.ButtonCheckboxes input').prop('disabled', false);
+        }
+        else{
+            $('.ButtonCheckboxes input').prop('disabled', true);
+        }
+        $('#NoReport').hide();
+        $('#DisplayAs').change(function () {
+            var classid = $('#ClassID :selected').val();
+            var displayas = $('#DisplayAs :selected').val();
+            //var SectionVal = $('#Sections :selected').val();
+            if(displayas=="@ResultList"){
+                $('.ButtonCheckboxes input').prop('disabled', false);
+            }
+            else if(displayas=="@ViewRecord"){
+                $('#IsView').prop('disabled',false);
+                $('#IsEdit').prop('disabled',false);
+                $('#IsCreate').prop('disabled',true);
+            }
+            else{
+                $('.ButtonCheckboxes input').prop('disabled', true);
+            }
+            if (classid != 0 && displayas != "") {
+                GetQueries(displayas, classid);
+            }
+        });
+        $('#ClassID').change(function () {
+            var classid = $('#ClassID :selected').val();
+            var displayas = $('#DisplayAs :selected').val();
+            //var tab = $('#Tab').val();
+            if (classid != 0 && displayas != "") {
+                GetQueries(displayas, classid);
+            }
+        });
+        function GetQueries( displayas, classid) {
+            $.ajax({
+                url: '@Url.Action("GetQueriesByTypeForSection", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { DisplayAs: displayas, ClassType: classid },
+                success: function (data) {
+                    if (data.length > 0) {
+                        $('#ReportError').empty();
+                        $('#Reports').html('<option value="">--Select--</option>');
+                        for (i = 0; i < data.length; i++) {
+                            $('#Reports').append('<option value="' + data[i].value + '">' + data[i].text + '</option>');
+                        }
+                    }
+                    else {
+                        $('#NoReport').show();
+                        $('#Reports').html('<option value="">--Select--</option>');
+                        $('#ReportError').empty();
+                        $('#ReportError').append('(No 1-Clicks For This Selection)');
+                    }
+                },
+                error: function (data) { }
+            });
+        }
+        $('#SectionMappingGrid').show();
+        $('.feature-box ul').on('click', 'li', function () {
+            var name = $(this).attr('name');
+            $('.feature-box ul').each(function (i, li) {
+                $('li').removeClass('selected');
+            })
+            $(this).toggleClass('selected');
+        });
+        $('.Boxes').on('click', 'li', function () {
+            var name = $(this).attr('name');
+            $('.Boxes ul').each(function (i, li) {
+                $('li').removeClass('selected');
+            })
+            $(this).toggleClass('selected');
+        });
+        $(".arrows_div").on('click', 'button.LeftBtn', function () {
+            var ul = $(this).attr('name');
+            var selectedItem = $("ul[id=" + ul + "] .selected").text();
+            if (selectedItem.length != 0) {
+                $("ul[id=" + ul + "] li:contains(" + selectedItem + ")").remove();
+            }
+            else {
+                $(".EditsecDlg").html('Please Map Correctly');
+                $(".EditsecDlg").dialog({
+                    title: "Mapping",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "Ok",
+                           click: function () {
+                               $(".EditsecDlg").dialog("close");
+
+                           }
+                       }
+                    ]
+                });
+            }
+        });
+        $(".arrows_div").on('click', 'button.RightBtn', function () {
+            var added;
+            var AllLists = $('.Boxes ul');
+            var selectedItem = $("#leftValues .selected").text();
+            if(selectedItem){
+                for(i=0;i<AllLists.length;i++){
+                    var ul = AllLists[i].attributes;
+                    for(j=0;j<ul.length;j++){
+                        if(ul[j].name=="id"){
+                            var ulid = ul[j].nodeValue;
+                        }
+                    }
+                    if (selectedItem.length != 0) {
+                        var AllLis = $("ul[id=" + ulid + "] li");
+                        AllLis.each(function (idx, li) {
+                            var text = $(li).text();
+                            if(text == selectedItem){
+                                added = 1;
+                            }
+                        });
+                        if(added !=1){
+                            $("ul[id=" + ulid + "]").append('<li>'+selectedItem+'</li>');
+                        }
+                        added=0;
+                    }
+                    else {
+                        $(".EditsecDlg").html('Please Map Correctly');
+                        $(".EditsecDlg").dialog({
+                            title: "Mapping",
+                            modal: true,
+                            buttons: [
+                               {
+                                   text: "Ok",
+                                   click: function () {
+                                       $(".EditsecDlg").dialog("close");
+
+                                   }
+                               }
+                            ]
+                        });
+                    }
+                }
+            }
+            else{
+                $(".EditsecDlg").html('Please Select Field');
+                $(".EditsecDlg").dialog({
+                    title: "Mapping",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "Ok",
+                           click: function () {
+                               $(".EditsecDlg").dialog("close");
+
+                           }
+                       }
+                    ]
+                });
+            }
+        });
+        $('#SaveField').click(function () {
+            var sections = new Array();
+            var fields = new Array();
+            var Vifields = new Array();
+            var Edfields = new Array();
+            var Crfields = new Array();
+            var IsVOpt = $('#IsViewOpt').val();
+            var IsEOpt = $('#IsEditOpt').val();
+            var IsCOpt = $('#IsCreateOpt').val();
+            var Viewlis = $('#ViewrightValues li');
+            if(IsVOpt=="True"){
+                for(i=0;i<Viewlis.length;i++){
+                    Vifields.push(Viewlis[i].textContent);
+                }
+            }
+            var Editlis = $('#EditrightValues li');
+            if(IsEOpt=="True"){
+                for(i=0;i<Editlis.length;i++){
+                    Edfields.push(Editlis[i].textContent);
+                }
+            }
+            var Createlis = $('#CreaterightValues li');
+            if(IsCOpt=="True"){
+                for(i=0;i<Createlis.length;i++){
+                    Crfields.push(Createlis[i].textContent);
+                }
+            }
+            //var listItems = $('.Boxes ul');
+            //for (i = 0; i < listItems.length; i++) {
+            //    var single = listItems[i].attributes;
+            //    for (j = 0; j < single.length; j++) {
+            //        if (single[j].name == "data-id") {
+            //            var sectionid = single[j].nodeValue;
+            //            sections.push(sectionid);
+            //        }
+            //    }
+            //    var ul = listItems[i];
+            //}
+            //for (i = 0; i < listItems.length; i++) {
+            //    var ul = listItems[i];
+            //    var id = ul.attributes;
+            //    for (j = 0; j < id.length; j++) {
+            //        if (id[j].name == "id") {
+            //            var names = "";
+            //            var field = id[j].nodeValue;
+            //            var Items = $('#' + field + ' li');
+            //            for (k = 0; k < Items.length; k++) {
+            //                var field = Items[k];
+            //                names = names + field.textContent + ", ";
+            //            }
+            //            if (Items.length > 0) {
+            //                names = names.slice(0, -2);
+            //            }
+            //            else {
+            //                names = null;
+            //            }
+            //        }
+            //    }
+            //    fields.push(names);
+            //}
+            var tabid = $('#TabID').val();
+            var tab1clickid = $('#Tab1ClickID').val();
+            var Save;
+            if(Vifields.length>0|| Edfields.length>0|| Crfields.length>0){
+                Save = true;
+            }
+            else{
+
+            }
+            if (Save==true) {
+                var type = $('#SecCretionType').val();
+                $.ajax({
+                    url: '@Url.Action("SaveSectionFields", "Popup")',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "JSON",
+                    cache: false,
+                    data: JSON.stringify({
+                        TabID: tabid,
+                        ID: tab1clickid,
+                        SectionIDs: sections,
+                        ViFields: Vifields,
+                        EdFields:Edfields,
+                        CrFields:Crfields,
+                        Type:type
+                    }),
+                    success: function (data) {
+                        $('#SectionMappingGrid').hide();
+                        $("#TabsSectionForm *").removeAttr("disabled", "disabled")
+                        if(data=="Edit"){
+                            $('#EditForm').hide();
+                        }
+                        $(".EditsecDlg").html('Section Fields Assigned Successfully!');
+                        $(".EditsecDlg").dialog({
+                            title: "Sections",
+                            modal: true,
+                            buttons: [
+                               {
+                                   text: "OK",
+                                   click: function () {
+                                       $(".EditsecDlg").dialog("close");
+                                   }
+                               }
+                            ]
+                        });
+                    },
+                    error: function (data) { }
+                });
+            }
+            else {
+                $(".EditsecDlg").html('Please Map Fields!');
+                $(".EditsecDlg").dialog({
+                    title: "Sections",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "OK",
+                           click: function () {
+                               $(".EditsecDlg").dialog("close");
+                           }
+                       }
+                    ]
+                });
+            }
+
+        });
+        if ('@Model.Type' == "Create" || '@Model.Type' == "FormCreate" || '@Model.Type' == "EditCreate"){
+            $('#SectionMappingGrid').hide();
+            $('.ButtonCheckboxes input').prop('disabled',false);
+        }
+        else{
+            var ReportId = '@Model.ReportID';
+            if ('@Model.ReportType' == "@EnumDisplayTypes.ViewRecord.ToString()" || '@Model.ReportType'=="@EnumDisplayTypes.ResultList.ToString()") {
+                var ViewFields = '@Model.ViewFields';
+                var CreateFields = '@Model.CreateFields';
+                var EditFields = '@Model.EditFields';
+                if('@Model.IsView'=='True'){
+                    $('.ViewFieldsBox').show();
+                    $('#ViewArrows').show();
+                    $('#IsViewOpt').val('True');
+                }
+                else{
+                    $('.ViewFieldsBox').hide();
+                    $('#ViewArrows').hide();
+                    $('#IsViewOpt').val('False');
+                }
+                if('@Model.IsCreate'=='True'){
+                    $('.CreateFieldsBox').show();
+                    $('#CreateArrows').show();
+                    $('#IsCreateOpt').val('True');
+                }
+                else{
+                    $('.CreateFieldsBox').hide();
+                    $('#CreateArrows').hide();
+                    $('#IsCreateOpt').val('False');
+                }
+                if('@Model.IsEdit'=='True'){
+                    $('.EditFieldsBox').show();
+                    $('#EditArrows').show();
+                    $('#IsEditOpt').val('True');
+                }
+                else{
+                    $('.EditFieldsBox').hide();
+                    $('#EditArrows').hide();
+                    $('#IsEditOpt').val('False');
+                }
+                //var height = (100 * nooffields) +(30 * nooffields) + "px !important";
+                //$('#leftValues').attr('style', 'height: '+height+'');
+
+                var Fields = @Html.Raw(Json.Encode(Model.TabPreview.Fields));
+                $('#TabID').val('@Model.TabID');
+                $('#Tab1ClickID').val('@Model.TabPreview.ID');
+                if(Fields!=null){
+                    if(Fields.length>0){
+                        $('#SectionMappingGrid').show();
+                        $('#leftValues').empty();
+                        for (i = 0; i < Fields.length; i++) {
+                            $('#leftValues').append('<li name="name' + [i] + '">' + Fields[i] + '</li>');
+                        }
+                    }
+                }
+                else{
+                    $('#SectionMappingGrid').hide();
+                    $('#SectionPreview').html('<h4>No Fields Assigned For Mapping</h4>');
+                }
+                if(ViewFields){
+                    $('#ViewrightValues').empty();
+                    var vfields = ViewFields.split(/[\s,]+/);
+                    for(i=0;i<vfields.length;i++){
+                        $('#ViewrightValues').append('<li value="'+vfields[i]+'">'+vfields[i]+'</li>');
+                    }
+                }
+                if(CreateFields){
+                    $('#CreaterightValues').empty();
+                    var cfields = CreateFields.split(/[\s,]+/);
+                    for(i=0;i<cfields.length;i++){
+                        $('#CreaterightValues').append('<li value="'+cfields[i]+'">'+cfields[i]+'</li>');
+                    }
+                }
+                if(EditFields){
+                    $('#EditrightValues').empty();
+                    var efields = EditFields.split(/[\s,]+/);
+                    for(i=0;i<efields.length;i++){
+                        $('#EditrightValues').append('<li value="'+efields[i]+'">'+efields[i]+'</li>');
+                    }
+                }
+            }
+            else if ('@Model.ReportType' == "@EnumDisplayTypes.KPICircle.ToString()") {
+                $('#SectionMappingGrid').hide();
+                $.ajax({
+                    url: '@Url.Action("GetKPICircleResult", "Popup")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    data: { ReportID: ReportId },
+                    success: function (data) {
+                        $('#SectionPreview').html(data);
+                    },
+                    error: function (data) { }
+                });
+            }
+            else if ('@Model.ReportType' == "@EnumDisplayTypes.PieChart.ToString()") {
+                $('#SectionMappingGrid').hide();
+                $.ajax({
+                    url: '@Url.Action("GetPieChartResult", "Popup")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    data: { ReportID: ReportId },
+                    success: function (data) {
+                        $('#SectionPreview').html(data);
+                    },
+                    error: function (data) { }
+                });
+            }
+            else if ('@Model.ReportType' == "@EnumDisplayTypes.BarChart.ToString()") {
+                $('#SectionMappingGrid').hide();
+                $.ajax({
+                    url: '@Url.Action("GetBarChartResult", "Popup")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    data: { ReportID: ReportId},
+                    success: function (data) {
+                        $('#SectionPreview').html(data);
+                    },
+                    error: function (data) { }
+                });
+            }
+            else if ('@Model.ReportType' == "@EnumDisplayTypes.LineChart.ToString()") {
+                $('#SectionMappingGrid').hide();
+                $.ajax({
+                    url: '@Url.Action("GetLineGrpahResult", "Popup")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    data: { ReportID: ReportId },
+                    success: function (data) {
+                        $('#SectionPreview').html(data);
+                    },
+                    error: function (data) { }
+                });
+            }
+            else if ('@Model.ReportType' == "@EnumDisplayTypes.Bespoke.ToString()") {
+                $('#SectionMappingGrid').hide();
+                $('#TabsSectionForm')[0].reset();
+                $('#URL').hide();
+                $('#LeadPopupFields').show();
+            }
+        }
+    });
+</script>
+<style>
+    .SectionsListTable th, .SectionsListTable td {
+        padding: 2px 10px;
+    }
+
+    .SectionsListTable {
+        margin-bottom: 10px;
+    }
+
+    .ButtonCheckboxes label {
+        margin-right: 10px;
+    }
+
+    .MappingArrows {
+        padding-top: 90px;
+    }
+
+    .selected {
+        background-color: #367fa9;
+        color: #fff !important;
+    }
+
+    #SectionMapping ul {
+        min-height: 100px;
+        height: auto;
+    }
+
+    .Boxes h4 {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .Arrows {
+        padding-top: 50px;
+        padding-bottom: 18px;
+    }
+
+    #SectionMappingGrid .box_filters ul {
+        min-height: 100px;
+        height: auto;
+    }
+
+    #SectionMappingGrid .arrows_div {
+        padding-top: 25px;
+    }
+
+    #ReportError {
+        font-size: 11px;
+        color: red;
+    }
+
+    #EditrightValues, #CreaterightValues, #ViewrightValues {
+        background: #3a3a3a;
+    }
+</style>
+<div class="row">
+    <div id="AddSection" class="col-md-6">
+
+        @if (@Model.Type == "Create" || @Model.Type == "EditCreate" || @Model.Type == "Edit")
+        {
+
+        }
+        else
+        {
+            @*<input class="savebtn btn btn-primary btn2 pull-right" type="button" id="AnotherTab" value="Add Another Tab" />*@
+        }
+        @if (@Model.Type == "Create" || @Model.Type == "FormCreate" || @Model.Type == "EditCreate")
+        {
+            @*<h4 id="AddHeading">Add Section</h4>*@
+        }
+        else
+        {
+            @*<h4 id="AddHeading">Edit Section</h4>*@
+        }
+
+        @using (Ajax.BeginForm("SaveSection", "Popup", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnSectionComplete" }, new { @id = "TabsSectionForm", @class = "form-horizontal" }))
+        {
+            @Html.ValidationSummary(true);
+                                         if (@Model.Type == "Create" || @Model.Type == "FormCreate" || @Model.Type == "EditCreate")
+                                         {
+                                            @Html.HiddenFor(m => m.Type, new { @Value = "Create", @id = "SecCretionType" })
+                                            @Html.HiddenFor(m => m.ID, new { @Value = 0 })
+                                            @Html.HiddenFor(m => m.TabID)
+                                         }
+                                         else
+                                         {
+                                            @Html.HiddenFor(m => m.Type, new { @Value = "Edit", @id = "SecCretionType" })
+                                            @Html.HiddenFor(m => m.ID)
+                                            @Html.HiddenFor(m => m.TabID)
+                                         }
+                                        <div class="form-group">
+                                            <div class="col-md-7">
+                                                <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                                @Html.TextBoxFor(model => model.Name, new { @placeholder = "Section Name", @class = "form-control", @id = "SecName" })
+                                            </div>
+                                            <div class="col-sm-5 taberrormsg">
+                                                @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-7">
+                                                <label for="inputEmail" class="gn">Rank<span class="danger">*</span></label>
+                                                @Html.DropDownListFor(m => m.Rank, new SelectList(Model.SectionRanks, "Value", "text"), new { @class = "form-control", @id = "SecRank" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-7">
+                                                @Html.CheckBoxFor(m => m.IsBespoke, new { @id = "IsBespoke" })
+                                                @Html.Label("IsBespoke", "IsBespoke")
+                                            </div>
+                                        </div>
+                                        <div id="URL">
+                                            <div class="form-group">
+                                                <div class="col-md-7">
+                                                    <label for="inputEmail" class="gn">URL<span class="danger">*</span></label>
+                                                    @Html.TextBoxFor(model => model.URL, new { @placeholder = "Enter URL", @class = "form-control", @id = "UrlText" })
+                                                </div>
+                                                <div class="col-sm-5 taberrormsg">
+                                                    @Html.ValidationMessageFor(m => m.URL, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-7">
+                                                    @Html.RadioButtonFor(model => model.RefreshType, "Page", new { id = "PageRefresh", @checked = "checked" })
+                                                    @Html.Label("Page Refresh", "Page Refresh")
+                                                    @Html.RadioButtonFor(model => model.RefreshType, "Section", new { id = "SectionRefresh" })
+                                                    @Html.Label("Section Refresh", "Section Refresh")
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="LeadPopupFields">
+                                            <div class="form-group" id="Classes">
+                                                <div class="col-md-7">
+                                                    <label for="inputEmail" class="gn">Class<span class="danger">*</span></label>
+                                                    @Html.DropDownListFor(m => m.ClassID, new SelectList(Model.Classes, "value", "text"), "--Select--", new { @class = "form-control", @id = "ClassID" })
+                                                </div>
+                                                <div class="col-sm-5 taberrormsg">
+                                                    @Html.ValidationMessageFor(m => m.ClassID, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-7">
+                                                    <label for="inputEmail" class="gn">Display<span class="danger">*</span></label>
+                                                    @Html.DropDownListFor(m => m.DisplayAs, new SelectList(new List<Object>{
+                                   new { key= "" , value = "--Select--" },
+                       new { key= "80" , value = "View Record" },
+                       new { key= "50" , value = "Result List" },
+                       new { key= "10", value = "KPI Circle" },
+                       new { key= "20", value = "KPI Pie Chart" },
+                       new { key= "30", value = "KPI Bar Chart" },
+                       new { key= "40", value = "KPI Line Graph" },
+                            }, "key", "Value"), new { @class = "form-control", @id = "DisplayAs" })
+                                                </div>
+                                                <div class="col-sm-5 taberrormsg">
+                                                    @Html.ValidationMessageFor(m => m.DisplayAs, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-sm-10 ButtonCheckboxes">
+                                                @Html.CheckBoxFor(m => m.IsView, new { @id = "IsView" })
+                                                @Html.Label("IsView", "IsView")
+                                                @Html.CheckBoxFor(m => m.IsEdit, new { @id = "IsEdit" })
+                                                @Html.Label("IsEdit", "IsEdit")
+                                                @Html.CheckBoxFor(m => m.IsCreate, new { @id = "IsCreate" })
+                                                @Html.Label("IsCreate", "IsCreate")
+                                                @*<input type="checkbox" id="IsView" name="IsView" /> IsView
+                                                    <input type="checkbox" id="IsEdit" name="IsEdit" /> IsEdit
+                                                    <input type="checkbox" id="IsCreate" name="IsCreate" /> IsCreate*@
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-7">
+                                                    <label for="inputEmail" class="gn">1-Click Query<span class="danger">*</span><span id="ReportError"></span></label>
+                                                    @Html.DropDownListFor(model => model.ReportID, new SelectList(new List<Object> { }), "--Select--", new { @class = "form-control", @id = "Reports" })
+                                                </div>
+                                                <div class="col-sm-5 taberrormsg">
+                                                    @Html.ValidationMessageFor(m => m.ReportID, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-7">
+                                                <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                                @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "SecStatus" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-10">
+                                                <button type="submit" class="btn btn-theme" id="SaveSection">Save</button>
+                                                <button type="button" class="btn btn-theme decline" id="CancelSection">Cancel</button>
+                                            </div>
+                                        </div>
+        }
+    </div>
+</div>
+<div class="row">
+    <div id="FieldsMapping" class="col-md-12 m-b-15">
+        <div id="SectionMappingGrid">
+            <input type="hidden" id="IsViewOpt" />
+            <input type="hidden" id="IsCreateOpt" />
+            <input type="hidden" id="IsEditOpt" />
+            <div class="box_filters">
+                <div class="feature-box col-xs-5">
+                    <h4>Available Fields</h4>
+                    <ul class="list1 task availableTasks form-control" id="leftValues" style="max-height:345px!important;height:400px!important;overflow-y:auto"></ul>
+                </div>
+                <div class="col-xs-7">
+                    <div id="ViewArrows" class="arrows_div col-xs-2">
+                        <div style="padding-top: 40px;">
+                            <button class="btn btn-rr RightBtn" type="button" name="ViewrightValues"><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+                            <br />
+                            <button class="btn btn-ll LeftBtn" type="button" name="ViewrightValues"><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div class="ViewFieldsBox feature-box col-xs-10">
+                        <div class="Boxes">
+                            <h4>View Fields</h4>
+                            <ul id="ViewrightValues" data-id="View" class="AssignedFields list2 task form-control" style="max-height:150px;overflow-y: auto"></ul>
+                        </div>
+                    </div>
+                    <div id="CreateArrows" class="arrows_div col-xs-2">
+                        <div style="padding-top: 40px;">
+                            <button class="btn btn-rr RightBtn" type="button" name="CreaterightValues"><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+                            <br />
+                            <button class="btn btn-ll LeftBtn" type="button" name="CreaterightValues"><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div class="CreateFieldsBox feature-box col-xs-10">
+                        <div class="Boxes">
+                            <h4>Create Fields</h4>
+                            <ul id="CreaterightValues" data-id="Create" class="AssignedFields list1 task form-control" style="max-height:150px;overflow-y: auto"></ul>
+                        </div>
+                    </div>
+                    <div id="EditArrows" class="arrows_div col-xs-2">
+                        <div style="padding-top: 40px;">
+                            <button class="btn btn-rr RightBtn" type="button" name="EditrightValues"><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+                            <br />
+                            <button class="btn btn-ll LeftBtn" type="button" name="EditrightValues"><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div class="EditFieldsBox feature-box col-xs-10">
+                        <div class="Boxes">
+                            <h4>Edit Fields</h4>
+                            <ul id="EditrightValues" data-id="Edit" class="AssignedFields list2 task form-control" style="max-height:150px;overflow-y: auto"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="TabID" name="TabID" class="form-control">
+            <input type="hidden" id="Tab1ClickID" name="Tab1ClickID" class="form-control">
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <button type="button" class="btn btn-theme" id="SaveField">Save</button>
+                    <button type="button" class="btn btn-theme decline" id="CancelMapping">Cancel</button>
+                </div>
+            </div>
+        </div>
+        <div id="SectionPreview"></div>
+    </div>
+</div>
+@if (@Model.Type == "Create" || @Model.Type == "FormCreate")
+{
+    <div class="SectionsListTable col-md-12">
+        @{
+    Html.RenderAction("GetSectionsByTab", "Popup", new { TabID = @Model.TabID });
+        }
+    </div>
+}
+<div class="dialog-box EditsecDlg" title="Confirm Message" style="background-color:white;"></div>
+
+<script>
+    function OnSectionComplete(e) {
+        if (e.Type == "Create") {
+            $('#TabsSectionForm #Reports').empty();
+            $('#TabsSectionForm #Reports').append('<option value="">--Select--</option>');
+        }
+        $('#ViewrightValues').empty();
+        $('.ButtonCheckboxes input').prop('checked',false);
+        $('#CreaterightValues').empty();
+        $('#SectionMappingGrid').hide();
+        $('#EditrightValues').empty();
+        var ReportId = e.ReportID;
+        var ClassId = e.ClassID;
+        var ViewFields = e.ViewFields;
+        var CreateFields = e.CreateFields;
+        var EditFields = e.EditFields;
+        var Fields = e.Fields;
+        if (e.ReportType == "@EnumDisplayTypes.ViewRecord.ToString()" || e.ReportType=="@EnumDisplayTypes.ResultList.ToString()") {
+            //$('#FieldsMapping').html('');
+            $('#SectionPreview').hide();
+            if(Fields!=null && Fields.length>0){
+                if(e.IsView==true){
+                    $('.ViewFieldsBox').show();
+                    $('#ViewArrows').show();
+                    $('#IsViewOpt').val("True");
+                }
+                else{
+                    $('.ViewFieldsBox').hide();
+                    $('#ViewArrows').hide();
+                    $('#IsViewOpt').val("False");
+                }
+                if(e.IsCreate==true){
+                    $('.CreateFieldsBox').show();
+                    $('#CreateArrows').show();
+                    $('#IsCreateOpt').val("True");
+                }
+                else{
+                    $('.CreateFieldsBox').hide();
+                    $('#CreateArrows').hide();
+                    $('#IsCreateOpt').val("False");
+                }
+                if(e.IsEdit==true){
+                    $('.EditFieldsBox').show();
+                    $('#EditArrows').show();
+                    $('#IsEditOpt').val("True");
+                }
+                else{
+                    $('.EditFieldsBox').hide();
+                    $('#EditArrows').hide();
+                    $('#IsEditOpt').val("False");
+                }
+            }
+            //var height = (100 * nooffields) +(30 * nooffields) + "px !important";
+            //$('#leftValues').attr('style', 'height: '+height+'');
+
+            if(e.IsEdit==true||e.IsCreate==true||e.IsView==true)
+            {
+                if(Fields!=null && Fields.length>0){
+                    $("#TabsSectionForm *").attr("disabled", "disabled").off('click');
+                }
+                else{
+                    $('#SectionPreview').html('<h4>No Fields Assigned For Mapping</h4>');
+                    $('#SectionPreview').show();
+                }
+                //$('#SectionMappingGrid').show();
+            }
+            else{
+                $('#SectionPreview').hide();
+            }
+            var Sections = e.TabSections;
+            var data = e;
+            $('#TabID').val(e.TabID);
+            $('#Tab1ClickID').val(e.ID);
+            if(Fields!=null){
+                if(Fields.length>0){
+                    $('#leftValues').empty();
+                    for (i = 0; i < Fields.length; i++) {
+                        $('#leftValues').append('<li name="name' + [i] + '">' + Fields[i] + '</li>');
+                    }
+                }
+            }
+            if(ViewFields){
+                $('#ViewrightValues').empty();
+                var vfields = ViewFields.split(/[\s,]+/);
+                for(i=0;i<vfields.length;i++){
+                    $('#ViewrightValues').append('<li value="'+vfields[i]+'">'+vfields[i]+'</li>');
+                }
+            }
+            if(CreateFields){
+                $('#CreaterightValues').empty();
+                var cfields = CreateFields.split(/[\s,]+/);
+                for(i=0;i<cfields.length;i++){
+                    $('#CreaterightValues').append('<li value="'+cfields[i]+'">'+cfields[i]+'</li>');
+                }
+            }
+            if(EditFields){
+                $('#EditrightValues').empty();
+                var efields = EditFields.split(/[\s,]+/);
+                for(i=0;i<efields.length;i++){
+                    $('#EditrightValues').append('<li value="'+efields[i]+'">'+efields[i]+'</li>');
+                }
+            }
+        }
+        else if (e.ReportType == "@EnumDisplayTypes.KPICircle.ToString()") {
+            //$("#TabsSectionForm *").attr("disabled", "disabled").off('click');
+            $.ajax({
+                url: '@Url.Action("GetKPICircleResult", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { ReportID: ReportId },
+                success: function (data) {
+                    $('#SectionPreview').html(data);
+                },
+                error: function (data) { }
+            });
+        }
+        else if (e.ReportType == "@EnumDisplayTypes.PieChart.ToString()") {
+            //$("#TabsSectionForm *").attr("disabled", "disabled").off('click');
+            $.ajax({
+                url: '@Url.Action("GetPieChartResult", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { ReportID: ReportId },
+                success: function (data) {
+                    $('#SectionPreview').html(data);
+                },
+                error: function (data) { }
+            });
+        }
+        else if (e.ReportType == "@EnumDisplayTypes.BarChart.ToString()") {
+            //$("#TabsSectionForm *").attr("disabled", "disabled").off('click');
+            $.ajax({
+                url: '@Url.Action("GetBarChartResult", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { ReportID: ReportId},
+                success: function (data) {
+                    $('#SectionPreview').html(data);
+                },
+                error: function (data) { }
+            });
+        }
+        else if (e.ReportType == "@EnumDisplayTypes.LineChart.ToString()") {
+            //$("#TabsSectionForm *").attr("disabled", "disabled").off('click');
+            $.ajax({
+                url: '@Url.Action("GetLineGrpahResult", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { ReportID: ReportId },
+                success: function (data) {
+                    $('#SectionPreview').html(data);
+                },
+                error: function (data) { }
+            });
+        }
+        else if (e.ReportType == "@EnumDisplayTypes.Bespoke.ToString()") {
+            $('#TabsSectionForm')[0].reset();
+            $('#URL').hide();
+            $('#LeadPopupFields').show();
+        }
+        else {
+            $('#SectionPreview').html('<h4>No Fields Assigned For Mapping</h4>');
+        }
+        @*else if (e.ReportType == "Result List") {
+            $.ajax({
+                url: '@Url.Action("GetQueryPreview", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { ReportID: ReportId },
+                success: function (data) {
+                    $('#SectionMappingGrid').html(data);
+                },
+                error: function (data) { }
+            });
+        }*@
+
+        $('#LeadPopupFields').show();
+        $('#LeadPopupFields select').val('');
+        $('.taberrormsg').val('');
+        var tabid = parseInt('@Model.TabID');
+        var secid = parseInt(e.ID);
+        $.ajax({
+            url: '@Url.Action("GetSectionsByTab", "Popup")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            cache: false,
+            data: { TabID: tabid },
+            success: function (data) {
+                $('.SectionsListTable').html(data);
+            },
+            error: function (data) { }
+        });
+        $('#SecName').val("");
+        $('#IsBespoke').prop('checked', false);
+        $('#UrlText').val("")
+        $('#URL').hide();
+        if (e.Type == "Create") {
+            var Tab = '@Model.TabID';
+            $('#SecName').val('');
+            $("#SectionsList").load('@Url.Action("GetSectionsForEdit", "Popup", new { TabID = @Model.TabID })');
+            $.ajax({
+                url: '@Url.Action("GetAllSecRanks", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { TabID: Tab },
+                success: function (data) {
+                    if (data.length > 0) {
+                        $('#SecRank').empty();
+                        for (i = 0; i < data.length; i++) {
+                            $('#SecRank').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>')
+                        }
+                    }
+                },
+                error: function (data) { }
+            });
+        }
+        else {
+            var tabid = '@Model.TabID';
+            //$('#EditForm').hide();
+            $("#SectionsList").load('@Url.Action("GetSectionsForEdit", "Popup", new { TabID = @Model.TabID })');
+            $.ajax({
+                url: '@Url.Action("GetAllTabSections", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { TabID: tabid },
+                success: function (data) {
+                    if (data.length > 0) {
+                        $('#EditDropDown').show();
+                        $('#TabSections').empty();
+                        $('#TabSections').append('<option value="">--Select--</option>')
+                        for (i = 0; i < data.length; i++) {
+                            $('#TabSections').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>')
+                        }
+                    }
+                },
+                error: function (data) { }
+            });
+        }
+        @*$(".EditsecDlg").html('Section Added/Edited Successfully! <br/>Do You Want To Add/Edit Sections?');
+        $(".EditsecDlg").dialog({
+            title: "Tabs",
+            modal: true,
+            buttons: [
+               {
+                   text: "Yes",
+                   click: function () {
+                       $(".EditsecDlg").dialog("close");
+
+                   }
+               },
+            {
+                text: "No",
+                click: function () {
+                    $(".EditsecDlg").dialog("close");
+                    $(".EditsecDlg").html('Do You Want To Assign 1-Clicks To This Tab?');
+                    $(".EditsecDlg").dialog({
+                        title: "Tabs",
+                        modal: true,
+                        buttons: [
+                           {
+                               text: "Yes",
+                               click: function () {
+                                   $(".EditsecDlg").dialog("close");
+                                   if (tabid > 0) {
+                                       var url = "@Url.Action("AssignReportsFromTab", "Popup")?TabID=" + tabid+"&SectionID="+secid;
+                                       window.open(url, 'Assign1Click', "scrollbars=1,resizable=1,width=1400, height=700,left=0,top=0");
+                                   }
+                                   window.close();
+                               }
+                           },
+                        {
+                            text: "No",
+                            click: function () {
+                                window.close();
+                            }
+                        }
+                        ]
+                    });
+                }
+            }
+            ]
+        });*@
+    }
+    $('#CancelSection').click(function () {
+        window.close();
+    });
+    $('#CancelMapping').click(function () {
+        window.close();
+    });
+</script>

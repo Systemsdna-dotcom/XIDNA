@@ -1,0 +1,133 @@
+﻿@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+<script>
+
+        $(document).ready(function () {
+            var popups = new Array();
+            var newpopups = new Array();
+            var editpopups = new Array();
+            var prepopups = new Array();
+            var table = $('#BOPropertyList').dataTable({
+                //"bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Url.Action("GetBOPropertyList", "BusinessObjects")",
+                "aaSorting": [[1, 'desc']],
+                "aoColumns": [
+                {},
+                                 {
+                                     "sName": "ID",
+                                     "visible": false
+                                 },
+                                {
+                                    "sName": "Name"
+                                },
+                                {
+                                    "sName": "Status"
+                                },
+                                {}
+                ],
+                "columnDefs": [
+                  {
+                      "targets": [3],
+                      "createdCell": function (td, cellData, rowData, row, col) {
+                          if (cellData == 10)
+                              $(td).replaceWith('<td>Active</td>')
+                          else
+                              $(td).replaceWith('<td>Inactive</td>')
+                      }
+                  }
+                ],
+                "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+
+                    $('td:eq(3)', nRow).html('<a class="EditBtn"  href="#" data-url="@Url.Action("EditBOProperty", "BusinessObjects")?ID=' + aData[1] + '" data-ajax-update="#QueryPreview"  data-ajax-method="POST" data-ajax="true">Edit</a>');                    
+                    return nRow;
+                }
+            });
+            $('#BOPropertyList').on('click', 'a.PreviewBtn', function () {
+                var url = $(this).attr('data-url');
+                if (prepopups.length > 0) {
+                    for (i = 0; i < prepopups.length; i++) {
+                        prepopups[i].close();
+                    }
+                }
+                var preview = window.open(url, '_blank', "scrollbars=1,resizable=1,width=1400, height=700,left=0,top=0");
+                prepopups.push(preview);
+                popups.push(preview);
+            })
+            $('#BOPropertyList').on('click', 'a.EditBtn', function () {
+                var url = $(this).attr('data-url');
+                if (editpopups.length > 0) {
+                    for (i = 0; i < editpopups.length; i++) {
+                        editpopups[i].close();
+                    }
+                }
+                var edit = window.open(url, '_blank', "scrollbars=1,resizable=1,width=1400, height=700,left=0,top=0");
+                editpopups.push(edit);
+                popups.push(edit);
+            })
+            $('#BOPropertyBtn').on('click', 'input', function (e) {
+                e.preventDefault();
+                var url = $(this).attr('data-url');
+                if (newpopups.length > 0) {
+                    for (i = 0; i < newpopups.length; i++) {
+                        newpopups[i].close();
+                    }
+                }
+                var newquery = window.open(url, '_blank', "scrollbars=1,resizable=1,width=1400, height=700,left=0,top=0");
+                newpopups.push(newquery);
+                popups.push(newquery);
+            });
+            //window.onunload = function () {
+            //    if (popups.length == 0) return;
+            //    for (i = 0; i < popups.length; i++) {
+            //        popups[i].close();
+            //    }
+            //};
+        });
+</script>
+<section class="content-header hedr">
+    <h1> BO Property Management </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i>BO Property</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="row">
+                    <div class="col-xs-12 tree_btn" id="BOPropertyBtn">
+                        <input class="savebtn btn btn-theme btn2 pull-right" type="button" value="Add Property" data-url="@Url.Action("BOPropertyForm", "BusinessObjects")" />
+                    </div>
+
+                </div>
+
+                <div id="BOGrid" class="col-xs-12">
+                    <div id="box-body">
+                        <div class="tab_scroll main-table">
+                            <div class="dataTables_wrapper no-footer table-responsive">
+                                <table class="table table-bordered table-striped dataTable" id="BOPropertyList">
+                                    <thead>
+                                        <tr role="row">
+                                            <th>S.No</th>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Status</th>
+                                            <th>Edit</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody></tbody>
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

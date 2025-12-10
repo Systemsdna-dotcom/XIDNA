@@ -1,0 +1,160 @@
+﻿@*XIDynaware Code*@
+@model XICore.XIDScript
+@{ 
+    var sScrptId = ViewBag.sScrptId;
+}
+<script>
+    $(document).ready(function () {
+        fncLoadEditor('@sScrptId');
+    });
+</script>
+<div class="XIEditor">
+    @*<div class="col-sm-4">
+            <input type="button" class="XiSemanticTab active  btn btn-theme" value="XISementics" onclick="ShowOrHideDivs('XiSemanticTab', 'XiGrid')" />
+            <input type="button" class="XiStepsTab btn btn-theme" value="Steps" onclick="ShowOrHideDivs('XiStepsTab', 'XiForm')" />
+            <input type="button" class="XiStagesTab btn btn-theme" value="Stages" onclick="ShowOrHideDivs('XiStagesTab', 'XiStage')" />
+        </div>*@
+    @using (Ajax.BeginForm("SaveBOScript", "XIInterpreter", new AjaxOptions { HttpMethod = "POST" }, new { @id = "BOScriptForm", @class = "form-horizontal" }))
+    {
+        <input type="hidden" name="ID" value="@Model.ID" />
+        if (Model.FKiBOID > 0 && Model.FKiBOAttributeID > 0)
+        {
+            <input type="hidden" name="FKiBOID" value="@Model.FKiBOID" />
+            <input type="hidden" name="FKiBOAttributeID" value="@Model.FKiBOAttributeID" />
+            <div class="form-group">
+                <div class="col-md-4">
+                    <label for="inputEmail" class="gn">BO: @Model.sBOName</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-4">
+                    <label for="inputEmail" class="gn">Attribute: @Model.sAttrName</label>
+                </div>
+            </div>
+        }
+        <div class="form-group">
+            <div class="col-md-4">
+                <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                <input type="text" name="sName" class="form-control" placeholder="Enter Name Here" value="@Model.sName" />
+            </div>
+        </div>
+        @*<div class="form-group">
+                <div class="col-md-4">
+                    <label for="inputEmail" class="gn">Description<span class="danger">*</span></label>
+                    <textarea name="sDescription" class="form-control" placeholder="Enter Description Here" rows="3" cols="50">@Model.sDescription</textarea>
+                </div>
+            </div>*@
+        <div class="form-group">
+            <div class="col-md-4">
+                <label for="inputEmail" class="gn">Language<span class="danger"></span></label>
+                <select class="form-control" name="sLanguage">
+                    <option value="">Please Select</option>
+                    @foreach (var items in Model.ddlLanguages)
+                    {
+                        if (items.text == Model.sLanguage)
+                        {
+                            <option value="@items.text" selected>@items.text</option>
+                        }
+                        else
+                        {
+                            <option value="@items.text">@items.text</option>
+                        }
+
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-4">
+                <label for="inputEmail" class="gn">Category<span class="danger"></span></label>
+                <select class="form-control" name="sCategory">
+                    <option value="">Please Select</option>
+                    @foreach (var items in Model.ddlScriptCategory)
+                    {
+                        if (items.text == Model.sCategory)
+                        {
+                            <option value="@items.text" selected>@items.text</option>
+                        }
+                        else
+                        {
+                            <option value="@items.text">@items.text</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-4">
+                <label for="inputEmail" class="gn">Type<span class="danger"></span></label>
+                <select class="form-control" name="sType">
+                    <option value="">Please Select</option>
+                    @foreach (var items in Model.ddlScriptTypes)
+                    {
+                        if (items.text == Model.sType)
+                        {
+                            <option value="@items.text" selected>@items.text</option>
+                        }
+                        else
+                        {
+                            <option value="@items.text">@items.text</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-4">
+                <label for="inputEmail" class="gn">Classification<span class="danger"></span></label>
+                <select class="form-control" name="sClassification">
+                    <option value="">Please Select</option>
+                    @foreach (var items in Model.ddlScriptClassification)
+                    {
+                        if (items.text == Model.sClassification)
+                        {
+                            <option value="@items.text" selected>@items.text</option>
+                        }
+                        else
+                        {
+                            <option value="@items.text">@items.text</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-4">
+                <label for="inputEmail" class="gn">Level<span class="danger"></span></label>
+                <select class="form-control" name="sLevel">
+                    <option value="">Please Select</option>
+                    @foreach (var items in Model.ddlScriptLevels)
+                    {
+                        if (items.text == Model.sLevel)
+                        {
+                            <option value="@items.text" selected>@items.text</option>
+                        }
+                        else
+                        {
+                            <option value="@items.text">@items.text</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-12">
+                <label for="inputEmail" class="gn">Script<span class="danger">*</span></label>
+                <textarea type="text" name="sScript" class="form-control" rows="300" cols="300" id="Editor-@sScrptId" placeholder="Enter Script Here">@Model.sScript</textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-10">
+                <input type="button" name="New" class="btn btn-theme" value="New" onclick="fncAddNewScript('@sScrptId')" />
+                <input type="submit" name="submit" class="btn btn-theme" value="Validate" />
+                <input type="submit" name="submit" class="btn btn-theme" value="Save" />
+                <input type="button" name="Merge" class="btn btn-theme" value="Merge" onclick="fncMergeScriptParams('@sScrptId')" />
+                @*<input type="button" name="Copy" class="btn btn-theme" value="Copy" />*@
+                <button type="button" class="btn btn-theme decline" id="ScriptFrmCancel">Cancel</button>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,64 @@
+﻿@model XIDNA.ViewModels.VMOneClicks
+@using XIDNA.ViewModels
+@using XISystem
+@{
+    if (Model.PreviewType != "ERun")
+    {
+        //Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    }
+}
+
+@{int i = 0;}
+@if (Model.Clicks.Count > 0)
+{
+    foreach (var items in Model.Clicks)
+    {
+        if (Model.ReportTypes[i] == EnumDisplayTypes.ResultList.ToString() || Model.ReportTypes[i] == EnumDisplayTypes.ViewRecord.ToString())
+        {
+            Html.RenderAction("ReportResult", "Inbox", new { QueryID = items[0], PageIndex = 1, ResultIn = "Run", BaseID = i });
+            i++;
+        }
+        else if (Model.ReportTypes[i] == EnumDisplayTypes.KPICircle.ToString())
+        {
+            //Html.RenderAction("GetKPICircleResult", "Inbox", new { ReportID = items[0] });
+            i++;
+        }
+        else if (Model.ReportTypes[i] == EnumDisplayTypes.PieChart.ToString())
+        {
+            Html.RenderAction("GetPieChart", "XiLink", new { ReportID = items[0], Query = "", ResultIn = "Run" });
+            i++;
+        }
+        else if (Model.ReportTypes[i] == EnumDisplayTypes.BarChart.ToString())
+        {
+            Html.RenderAction("GetBarChart", "XiLink", new { ReportID = items[0], Query = "", ResultIn = "Run" });
+            i++;
+        }
+        else if (Model.ReportTypes[i] == EnumDisplayTypes.LineChart.ToString())
+        {
+            Html.RenderAction("GetLineGraph", "XiLink", new { ReportID = items[0], Query = "", ResultIn = "Run" });
+            i++;
+        }
+        else if (Model.ReportTypes[i] == EnumDisplayTypes.Summary.ToString())
+        {
+            Html.RenderAction("Index", "Reports", new { ReportID = items[0], Query = "", ResultIn = "Run" });
+            i++;
+        }
+        else if (Model.ReportTypes[i] == EnumDisplayTypes.Grid.ToString())
+        {
+            //Html.RenderAction("LoadComponentByID", "XIComponents", new { iXIComponentID = Model.XIComponentID, sGUID = "", nParams = Model.nParams, sName = "", sType = "", ID = 0, iInstanceID = 0, sContext = "", iQSIID = 0 });
+            Html.RenderAction("LoadComponentByID", "XIComponents", new { iXIComponentID = Model.XIComponentID, sGUID = "", nParams = Model.nParams.Select(m => new CNV { sName = m.sName, sValue = m.sValue }).ToList(), sName = "", sType = "", ID = 0, iInstanceID = 0, sContext = "", iQSIID = 0 });
+            i++;
+        }
+        else
+        {
+            Html.RenderAction("ToDataTable", "Inbox", new { ReportID = items[0], Name = Model.ReportNames[i], Type = "Email" });
+            i++;
+        }
+    }
+}
+else
+{
+    <section class="content-header hedr">
+        <h1>No Result</h1>
+    </section>
+}

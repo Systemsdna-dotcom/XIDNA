@@ -1,0 +1,788 @@
+﻿@model XIDNA.Models.ContentEditors
+@{
+    string content = string.Empty;
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    var ModelPropertiesList = ViewBag.ModelList as List<XIDNA.ViewModels.VMDropDown>;
+    var ModelClasslist = ViewBag.ModelName as List<XIDNA.ViewModels.VMDropDown>;
+}
+<script src="~/Scripts/JQuery/jQuery-2.1.4.min.js"></script>
+<script src="~/Scripts/JQuery/jquery-ui.js"></script>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="http://cdn.ckeditor.com/4.5.7/standard-all/ckeditor.js"></script>
+<script src="~/Scripts/ckfinder/ckfinder.js"></script>
+<script src="~/ckeditor/adapters/jquery.js"></script>
+@*<script src="//tinymce.cachefly.net/4.0/tinymce.min.js"></script>*@
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#TempName').change(function () {
+            var Name = $(this).val();
+            var Category = $('#Category').val();
+            @*if (Name && Category > 0) {
+                $.ajax({
+                    url: '@Url.Action("IsExistsTitle", "Content")',
+                    type: 'POST',
+                    datatype: 'json',
+                    //contentType: "application/json; charset=utf-8",
+                    data: { Name: Name, ID: '@Model.ID', Category: Category },
+                    cache: false,
+                    success: function (data) {
+                        if (data) {
+                            $('#NameError').html("");
+                        } else {
+                            $('#NameError').html("<span class='error'>This title is already used. Enter another title.</span>");
+                        }
+
+                    },
+                    error: function (data) {
+                    },
+                });
+            }*@
+        });
+        $('#BOs').change(function () {
+            var Bo = $(this).val();
+            var Category = $('#Category').val();
+            if (Bo > 0) {
+                $.ajax({
+                    url: '@Url.Action("GetBoMailFields", "Content")',
+                    type: 'POST',
+                    datatype: 'json',
+                    //contentType: "application/json; charset=utf-8",
+                    data: { BOID: Bo, },
+                    cache: false,
+                    success: function (data) {
+                        $('#Feild').empty();
+                        $('#Feild').append('<option>--Select--</option>');
+                        for (i = 0; i < data.result.length; i++) {
+                            $('#Feild').append('<option value=' + data.result[i].Value + '>' + data.result[i].text + '</option>');
+                        }
+                        $('#ModelList').empty();
+                        $('#ModelList').append('<option>--Select--</option>');
+                        for (i = 0; i < data.ModelList.length; i++) {
+                            $('#ModelList').append('<option value=' + data.ModelList[i].Value + '>' + data.ModelList[i].text + '</option>');
+                        }
+                    },
+                    error: function (data) {
+                    },
+                });
+            }
+        });
+        $('#ModelList').change(function () {//ListFields
+            var ModelName = $(this).val();
+            if (ModelName != "") {
+                $("#DDL_ListFields").show();
+            }
+            else {
+                var feild = $(':selected', this).text();
+                CKEDITOR.instances['Content'].insertText("{" + "{" + feild + "}" + "}");
+                $("#DDL_ListFields").hide();
+            }
+            $.ajax({
+                url: '@Url.Action("GetModelListFields", "Content")',
+                type: 'POST',
+                datatype: 'json',
+                //contentType: "application/json; charset=utf-8",
+                data: { ModelPropertListName: ModelName, },
+                cache: false,
+                success: function (data) {
+                    $('#ListFields').empty();
+                    $('#ListFields').append('<option>--Select--</option>');
+                    for (i = 0; i < data.length; i++) {
+                        $('#ListFields').append('<option value=' + data[i].Type + '>' + data[i].text + '</option>');
+                    }
+                },
+                error: function (data) {
+                },
+            });
+        });
+
+        $('#SMSContent').hide();
+        $('#Category').on('change', function () {
+            var Category = $(this).val();
+            var TypeC = $('#TypeC').val();
+            var Name = $('#TempName').val();
+            if (Category == 2) {
+                $('#EmailImages').hide();
+                $('#EmailContent').hide();
+                $('#SMSContent').show();
+            }
+            else {
+                $('#EmailImages').show();
+                $('#SMSContent').hide();
+                $('#EmailContent').show();
+            }
+            if (Category == 3) {
+                $('#TypesDiv').hide();
+            }
+            @*if (Name && Category > 0) {
+                $.ajax({
+                    url: '@Url.Action("IsExistsTitle", "Content")',
+                    type: 'POST',
+                    datatype: 'json',
+                    //contentType: "application/json; charset=utf-8",
+                    data: { Name: Name, TypeC: TypeC, ID: '@Model.ID', Category: Category },
+                    cache: false,
+                    success: function (data) {
+                        if (data) {
+                            $('#NameError').html("");
+                        } else {
+                            $('#NameError').html("<span class='error'>This title is already used. Enter another title.</span>");
+                        }
+
+                    },
+                    error: function (data) {
+                    },
+                });
+            }*@
+
+        });
+        $('#ListFields').change(function () {
+            var ModelClass = $('#ModelList option:selected').text();
+            // if ($(this).val() != 0) {
+            var feild = $(':selected', this).text();
+            // str = feild.replace(/(\r\n|\n|\r)/gm, "");
+            CKEDITOR.instances['Content'].insertText("{" + "{" + ModelClass + "}" + "}.{" + "{" + feild + "}" + "}");
+            // }
+        });
+        $('#Feild').change(function () {
+            if ($(this).val() != 0) {
+                var feild = $(':selected', this).text();
+                // str = feild.replace(/(\r\n|\n|\r)/gm, "");
+                CKEDITOR.instances['Content'].insertText("{" + "{" + feild + "}" + "}");
+            }
+        });
+        $('#datefield').change(function () {
+            var datefield = $(':selected', this).text();
+            // str = feild.replace(/(\r\n|\n|\r)/gm, "");
+            CKEDITOR.instances['Content'].insertText("(" + "(" + datefield + ")" + ")");
+        });
+        $('#Cancel').click(function () {
+            window.close();
+            @*window.location.href = '@Url.Action("GetContentList", "Content")'*@
+        });
+        $('.imagecheckbox').change(function () {
+            if ($(this).is(':checked')) {
+                var path = $(this).attr('data-path');
+                if ($(this).prop('checked') == true) {
+                    CKEDITOR.instances['Content'].insertHtml('<img src="../Content/images/' + path + '"/>');
+                }
+                else {
+                    $('#Content').val($('#Content').val().replace('<img src="../XIDynaware/Content/images/' + path + '"/>', ''));
+                }
+                $('.imagecheckbox').removeAttr("checked");
+                $(this).prop('checked', true);
+            }
+            else {
+                $(this).prop('checked', false);
+            }
+        });
+
+        $("#GenerateContent").click(function () {
+            var iTemplateID = @Model.ID;
+            var sBOName = $('#BOs option:selected').text();
+            $("#TextEditordialog").dialog({
+                width: 1005, height: 626, modal: true, autoOpen: false,
+                open: function(event, ui) {
+                    tinymce.remove('textarea#TextEditordialog');
+                //debugger;
+                    tinymce.init({
+                        selector: 'textarea#TextEditordialog',
+                    menubar:false,
+                    statusbar: false,
+                    branding: false,
+                    toolbar: 'formatselect | bold italic strikethrough forecolor backcolor | alignleft aligncenter alignright alignjustify  | numlist bullist outdent indent | removeformat | mybutton mybutton2',
+                    setup: function (editor) {
+                        editor.ui.registry.addButton('mybutton', {
+                            text: 'Source Code',
+                            onAction: function () {
+                                //debugger;
+                                $("#TextEditorNewDialog").dialog({
+                                    width: 1005, height: 610, modal: true, //autoOpen: false,
+                                    buttons : {
+                                        "Submit" : function ()
+                                        {
+                                            var ExistContent = tinymce.get("TextEditordialog");
+                                            var ModifyContent = $("#TextEditorNewDialog").val();
+                                            ExistContent.setContent(ModifyContent);
+                                            $('#MyContent').val(ExistContent.setContent(ModifyContent));
+                                            $("#TextEditorNewDialog").dialog("close");
+                                        },
+                                        "Cancel" : function ()
+                                        {
+                                            $("#TextEditorNewDialog").dialog("close");
+                                        }
+                                    }
+                                });
+                                //$("#TextEditorNewDialog").dialog("open");
+                            }
+                        });
+                        editor.ui.registry.addButton('mybutton2', {
+                            text:'Generate',
+                            //disabled: true,
+                            onAction: function (){
+                                //debugger;
+                                var iTemplateID = @Model.ID;
+                                var sBOName = $('#BOs option:selected').text();
+                                var about=escape(content);
+                                var ExistContent = tinymce.get("TextEditordialog");
+                                var ModifyContent = $("#TextEditorNewDialog").val();
+                                ExistContent.setContent(ModifyContent);
+                              var abc=  $('#MyContent').val(ExistContent.setContent(ModifyContent));
+                                $.ajax({
+                                    url: '@Url.Action("SendEmailTemplateMail", "Content")',
+                                    type: 'POST',
+                                    contentType: "application/json; charset=utf-8",
+                                    datatype: 'json',
+                                    //data: JSON.stringify({ i1ClickID: parseInt(i1ClickID), sAutoText: SearchText, sField: FieldPlace }),
+                                    data: JSON.stringify({ iPolicyID: 127, iTemplateID: iTemplateID,sBOName:sBOName,sHtmlContent:content,iQSInstanceID:556 }),
+                                    cache: false,
+                                    success: function (data) {
+                                        $("#TextEditordialog").dialog("close");
+                                        return true;
+                                    },
+                                    error: function (data) {
+                                        return false;
+                                    },
+                                });
+                            },
+                            //onSetup: function (buttonApi) {
+                            //    var editorEventCallback = function (eventApi) {
+                            //        buttonApi.setDisabled(eventApi.element.nodeName.toLowerCase() === 'time');
+                            //    };
+                            //    editor.on('NodeChange', editorEventCallback);
+                            //    /* onSetup should always return the unbind handlers */
+                            //    return function (buttonApi) {
+                            //        editor.off('NodeChange', editorEventCallback);
+                            //    };
+                            //}
+                        });
+                    }
+                });
+            },
+            buttons: {
+                Close: function () {
+                    $(this).dialog('close');
+                }
+            }
+        });
+            $("#TextEditordialog").dialog("open");
+        });
+    });
+</script>
+
+<style>
+    .subnav {
+        margin-bottom: 10px;
+    }
+
+    .gn {
+        font-weight: bold;
+    }
+
+    .errorval {
+        padding-top: 30px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Add Template </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Template Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    @using (Ajax.BeginForm("PostContent", "Content", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Result", OnSuccess = "OnComplete" }, new { @class = "form-horizontal", @target = "_blank", @id = "frm" }))
+    {
+                @*@using (Html.BeginForm("PostContent", "Content", FormMethod.Post, new { @class = "form-horizontal", @id = "frm" }))*@
+                @Html.ValidationSummary(true)
+if (@Model.ID == 0)
+{
+
+}
+else
+{
+                @Html.HiddenFor(m => m.ID)
+}
+                @*@Html.HiddenFor(m=>m.Category)*@
+//@Html.HiddenFor(m=>m.OrganizationID)
+                <div id="clear-text">
+                    @if (Model.FKiApplicationID == 0)
+    {
+                <div class="form-group" id="XIFKiApplicationDDL">
+                    <div class="col-md-2">
+                        <label for="inputEmail" class="gn"> Application <span class="danger">*</span></label>
+                        <select class="form-control" id="ApplicationID" name="FKiApplicationID">
+                            <option value="0">--Select--</option>
+                            @foreach (var items in Model.ddlApplications)
+            {
+                if (Model.FKiApplicationID == items.Value)
+                {
+                    <option selected value="@items.Value">@items.text</option>
+}
+else
+{
+                <option value="@items.Value">@items.text</option>
+}
+}
+                        </select>
+                    </div>
+                </div>
+}
+else
+{
+                <input type="hidden" id="ApplicationID" name="FKiApplicationID" value="@Model.FKiApplicationID" />
+}
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">Cateory<span class="danger">*</span></label>
+                            <select class="form-control" name="Category" id="Category">
+                                <option value="">--Select--</option>
+                                <option value="10">Email</option>
+                                <option value="20">EDI</option>
+                                <option value="30">PDF</option>
+                                <option value="40">NonMerging Documents</option>
+                                <option value="50">Notifications</option>
+                                <option value="60">XML</option>
+                                <option value="80">Signature</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+                    <div class="form-group ShowHideTemplateHeader">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">TemplateHeader<span class="danger"></span></label>
+                            @Html.TextAreaFor(m => m.sTemplateHeader, new { @placeholder = "Enter TemplateHeader", @class = "form-control headerField", @rows = 4, @cols = 10 })
+                            @*<input type="text" name="sTemplateHeader" placeholder="Enter TemplateHeader" class="form-control headerField" rows="4" cols="20"/>*@
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">Title<span class="danger">*</span></label>
+                            <input type="text" name="Name" class="form-control" id="TempName" placeholder="Template Title" />
+                        </div>
+                        <div class="col-md-5 errorval">
+                            <span class="error_label" id="NameError"></span>
+                        </div>
+                    </div>
+                    <div class="form-group" id="TypesDiv">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">Type<span class="danger">*</span></label>
+                            <select class="form-control" name="Type" id="Type">
+                                <option value="">--Select--</option>
+                                @foreach (var items in Model.TypeList)
+                {
+                    <option value=@items.Value>@items.text</option>
+}
+                            </select>
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+                    <div class="form-group" id="ParentDiv">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">Parent</label>
+                            <select class="form-control" name="iParentID" id="ParentID">
+                                <option value="">--Select--</option>
+                                @foreach (var items in Model.ddlParentList)
+                {
+                    <option value=@items.Key>@items.Value</option>
+}
+                            </select>
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">BO<span class="danger"></span></label>
+                            <select class="form-control" name="BO" id="BOs">
+                                <option value="0">--Select--</option>
+                                @foreach (var items in Model.BOList)
+                {
+                    if (Model.BO == items.Value)
+                    {
+                        <option selected value=@items.Value>@items.text</option>
+    }
+    else
+    {
+                <option value=@items.Value>@items.text</option>
+}
+}
+                            </select>
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">Model<span class="danger"></span></label>
+                            <select class="form-control" id="ModelClass">
+                                @*<option value="0">--Select--</option>*@
+                                @foreach (var items in ModelClasslist)
+                {
+                    <option value=@items.Type>@items.text</option>
+}
+                            </select>
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">Model List<span class="danger"></span></label>
+                            <select class="form-control" id="ModelList">
+                                <option value="0">--Select--</option>
+                                @foreach (var items in ModelPropertiesList)
+                {
+                    <option value=@items.Type>@items.text</option>
+}
+                            </select>
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+                    <div class="form-group" style="display:none" id="DDL_ListFields">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">List fields<span class="danger"></span></label>
+                            <select class="form-control" id="ListFields"></select>
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">Data<span class="danger"></span></label>
+                            <select class="form-control" name="SContent" id="Feild">
+                                <option value="0">--Select--</option>
+                                @foreach (var items in Model.ContentList)
+                {
+                    <option value=@items.Expression>@items.text</option>
+}
+                            </select>
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            @Html.CheckBoxFor(m => m.bIsHavingAttachments)
+                            <label for="inputEmail" class="gn">IsHavingAttachment</label>
+                        </div>
+                        <div class="col-md-5 errorval">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            @Html.CheckBoxFor(m => m.bIsPaswordProtected, new { @id = "chkPwdProtected" })
+                            <label for="inputEmail" class="gn">IsPaswordProtected</label>
+                        </div>
+                        <div class="col-md-2 errorval">
+                        </div>
+                    </div>
+                    <div class="form-group ShowHideSurNamepwd" style="display:none;">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">SurNamePasswordRange<span class="danger"></span></label>
+                            <input type="text" name="iSurNamePasswordRange" placeholder="Enter SurNamePasswordRange" class="form-control surnamepwdrng" />
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+                    <div class="form-group ShowHideDOBPwd" style="display:none;">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">DOBPasswordRange<span class="danger"></span></label>
+                            <input type="text" name="iDOBPasswordRange" placeholder="Enter DOBPasswordRange" class="form-control dobpwdrng" />
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">TypeofPDF<span class="danger">*</span></label>
+                            <select class="form-control TypeofPDFddl" name="iTypeofPDF" id="Categorys">
+                                <option value="">--Select--</option>
+                                <option value="10">iTextSharp</option>
+                                <option value="20">ironpdf</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+                    <div class="form-group ShowHideFields">
+                        <div class="col-md-2">
+                            <label for="inputEmail" class="gn">CSSFileName<span class="danger"></span></label>
+                            <input type="text" name="sCSSFileName" placeholder="Enter CSSFileName" class="form-control pdfField" />
+                        </div>
+                        <div class="col-md-2 errorval">
+                            <span class="error_label"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-12">
+                            <button type="button" class="btn btn-theme" id="GenerateContent">Contnet</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-12">
+                            <button type="button" class="btn btn-theme" id="GenerateDocument">Send</button>
+                            <button type="button" class="btn btn-theme" id="GenerateTemplate">Generate</button>
+                            <button type="button" class="btn btn-theme" id="AddandGenerateTemplate">Add and Generate</button>
+                        </div>
+                    </div>
+
+                    @*<div class="form-group">
+            <div class="col-md-2">
+                <label for="inputEmail" class="gn">Dates<span class="danger"></span></label>
+                <select class="form-control" name="DateField" id="datefield">
+                    <option value="">--Select--</option>
+                    <option value="1">Today</option>
+                    <option value="2">Tomorrow</option>
+                    <option value="3">Yesterday</option>
+                </select>
+            </div>
+            <div class="col-md-2 errorval">
+                <span class="error_label"></span>
+            </div>
+        </div>*@
+                    @if (Model.Images.Count() > 0)
+    {
+                <div class="form-group" id="EmailImages">
+                    <div class="col-md-12">
+                        <label for="inputEmail" class="gn">Images<span class="danger"></span></label>
+                        <div class="form-group">
+                            @foreach (var items in Model.Images)
+            {
+                <div class="OrgImage col-md-1">
+                    <input type="checkbox" id="@items.Value" data-path="@items.text" class="col-md-2 imagecheckbox" name="TempImg" />
+                    <img src="~/Content/images/@items.text" width="100" height="70" />
+                </div>
+}
+                        </div>
+                    </div>
+                </div>
+}
+
+                @*<div class="form-group" id="EmailContent">
+        <div class="col-md-12">
+            <label for="inputEmail" class="gn">Content<span class="danger">*</span></label>
+            @Html.TextAreaFor(m => m.Content, new { id = "Content", name = "Content" })
+        </div>
+    </div>*@
+                @*<div class="form-group" id="SMSContent">
+        <div class="col-md-12">
+            <label for="inputEmail" class="gn">Content<span class="danger">*</span></label>
+            @Html.TextAreaFor(m => m.Content, new { @id = "SMSContent", @Name = "SMSContent", @class = "form-control", @rows = 4 })
+        </div>
+    </div>*@
+                @*<script>
+        CKEDITOR.plugins.addExternal('simplebox', 'http://sdk.ckeditor.com/samples/assets/plugins/simplebox/', 'plugin.js');
+        CKEDITOR.config.colorButton_colors;
+        var editor = CKEDITOR.replace('Content', {
+            extraPlugins: 'simplebox,colorbutton,colordialog,indentblock',
+            contentsCss: [
+            'http://sdk.ckeditor.com/samples/assets/plugins/simplebox/styles/contents.css',
+            'http://cdn.ckeditor.com/4.5.7/standard-all/contents.css'
+            ],
+            height: 300
+        });
+        CKEDITOR.editorConfig = function (config) {
+            config.indentOffset = 4;
+            config.indentUnit = 'px';
+        };
+        CKFinder.setupCKEditor(editor, '../../ckfinder');
+    </script>*@
+                </div>
+                <div class="bottom">
+                    <input type="submit" id="Save" value="Save" class="btn btn-large btn-theme visible-desktop">
+                    <button type="button" class="btn btn-theme reverse" id="TempReset">Reset</button>
+                    <input type="button" id="Cancel" value="Cancel" class="btn btn-large btn-theme decline visible-desktop">
+                </div>
+                <div>
+                    <textarea id="TextEditordialog" name="Content" title="Content" style="display:none;">@Model.Content</textarea>
+                    @Html.HiddenFor(m => m.Content, new { id = "MyContent", name = "Content" })
+
+                    <textarea id="TextEditorNewDialog" name="Content" class="dialog-box" style="display:none;">@Model.Content</textarea>
+                    @Html.HiddenFor(m => m.Content, new { id = "MyContent1", name = "Content" })
+                </div>
+                    }
+                </div>
+                </div>
+        </div>
+    </div>
+
+</section>
+<div id="Preview"></div>
+<div id="SaveTempDlg" class="dialog" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    $(document).ready(function () {
+
+        $('.ShowHideFields').hide();
+        $('.ShowHideTemplateHeader').hide();
+
+        $('#TempReset').click(function () {
+            $('#frm')[0].reset();
+            $('#Content').val('');
+            $('#SMSContent').val('');
+        });
+
+        $('.TypeofPDFddl').change(function(){
+            if($(this).val()==20){
+                $('.ShowHideFields').show();
+            }
+            else{
+                $('.pdfField').val('');
+                $('.ShowHideFields').hide();
+            }
+        })
+
+        $('#Category').change(function(){
+            if($(this).val()==20){
+                $('.ShowHideTemplateHeader').show();
+            }
+            else{
+                $('.headerField').val('');
+                $('.ShowHideTemplateHeader').hide();
+            }
+        })
+
+        $('#chkPwdProtected').change(function(){
+            if($(this).is(":checked")){
+                $('.ShowHideSurNamepwd').show();
+                $('.ShowHideDOBPwd').show();
+            }
+            else
+            {
+                $('.surnamepwdrng').val('');
+                $('.dobpwdrng').val('');
+                $('.ShowHideSurNamepwd').hide();
+                $('.ShowHideDOBPwd').hide();
+            }
+        })
+
+        //$(document.body).on('change','.SHType', function(){
+        //        if($(this).val()==10){
+        //            $('.ShowHideFields').show();
+        //        }
+        //})
+
+        $('#Save').click(function (){
+            var content = tinymce.get("TextEditordialog").getContent();
+            $('#MyContent').val(content);
+            alert($('#MyContent').val(content));
+            alert($('#MyNewContent').val(content));
+        });
+
+        jQuery(function ($) {
+            $('#frm').validate({
+                debug: true,
+                rules: {
+                    //SContent: {
+                    //    required: true,
+                    //},
+                    //DateField: {
+                    //    required: true,
+                    //},
+                    Category: {
+                        required: true,
+                    },
+                    Type: {
+                        required: true,
+                    },
+                    Name: {
+                        required: true,
+                        minlength: 3,
+                        maxlength: 50,
+                        regx: /^[a-zA-Z ]+$/,
+                        remote: {
+                            url: "@Url.Action("IsExistsTitle","Content")",
+                            type: "post",
+                            async: false,
+                            data: {
+                                Category: function () {
+                                    if ($("#Category").text() == "--Select--") {
+                                        return 0;
+                                    }
+                                    else
+                                        return $("#Category").val()
+                                },
+                                Name: function () {
+                                    return $("#TempName").val()
+                                },
+                                ID: '@Model.ID'
+                            },
+                            complete: function (data) {
+                                //handle failed validation
+                            }
+                        },
+                    },
+                    //Content: {
+                    //    required: true,
+                    //},
+                },
+                messages: {
+                    //SContent: {
+                    //    required: "Please Select Content",
+                    //},
+                    //DateField: " Please Enter Date Fields ",
+                    //DateField: {
+                    //    required: " Please Select DateField",
+                    //},
+                    Category: {
+                        required: " Please Select Category",
+                    },
+                    Type: {
+                        required: " Please Select Type",
+                    },
+                    Name: {
+                        required: " Please Enter Title",
+                        minlength: "Enter Atleast 3 characters",
+                        maxlength: "Only 128 Characters Allowed",
+                        regx: "Only alphabet allowed",
+                        remote: "Title already exists"
+                    },
+                    //Content: {
+                    //    required: " Please Enter Some Content Before Saving",
+                    //},
+                },
+                errorPlacement: function (error, element) {
+                    $(element).closest('div').next('div').find('.error_label').html(error);
+                },
+            });
+        });
+
+        $.validator.addMethod("regx", function (value, element, regexpr) {
+            return regexpr.test(value);
+        }, "Please enter a valid mobile number.");
+    });
+
+    function OnComplete(e) {
+        if (e == true) {
+            opener.location.reload();
+            CustomMessage(e.ResponseMessage, e.Status);
+        }
+        else {
+            opener.location.reload();
+            CustomMessage(e.ResponseMessage, e.Status);
+        }
+    }
+</script>
+

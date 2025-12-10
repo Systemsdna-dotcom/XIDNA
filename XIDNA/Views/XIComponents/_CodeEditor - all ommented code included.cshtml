@@ -1,0 +1,690 @@
+﻿@{
+var sBO = @TempData["sBO"].ToString();
+}
+<div class="editor_dialog">
+    <div class="editor_body">
+@if(sBO.ToLower() == "bcoethcontract" ){<h1 class="editor_title">Public contract</h1>}
+else{<h1 class="editor_title">Audit Contract</h1>}
+        
+        @* <code class="line_hover_dialog">Lorem Ipsum is simply dummy text</code> *@
+        <ol class="breadcrumb">
+            <li><a href="#">Client</a></li>
+            <li><a href="#">GitContract</a></li>
+            <li class="active">Editor</li>
+<li><span onclick="fncShowGraph()">Graph</span></li>
+        </ol>
+        <div class="editor-frame">
+            <div class="loading editor">
+                <div class="progress progress-striped active">
+                    <div class="bar"></div>
+                </div>
+            </div>
+            <div id="editor"></div>
+            <div class="line_hover">
+                <ul>
+                    <li>
+                        <a href="#">
+                            <i class="left-icon issue icon-exclamation"></i>
+                            <div class="desc-item">Issue<p class="m-0 small">unhandled zero value</p></div>
+                            <span class="label label-danger ml-auto">Critical</span>
+                        </a>
+                        <div class="line_hover_details">
+                            <div>
+                                <span>Edit</span><span>Line No. 5</span>
+                            </div>
+                            <h6>Note <i class="icon-note"></i></h6>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+                            <div class="line_hover_tabs">
+                                <!-- Nav tabs -->
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
+                                    <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Profile</a></li>
+                                    <li role="presentation"><a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">Messages</a></li>
+                                    <li role="presentation"><a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a></li>
+                                </ul>
+                                <!-- Tab panes -->
+                                <div class="tab-content">
+                                    <div role="tabpanel" class="tab-pane active" id="home">home content</div>
+                                    <div role="tabpanel" class="tab-pane" id="profile">profile content</div>
+                                    <div role="tabpanel" class="tab-pane" id="messages">messages content</div>
+                                    <div role="tabpanel" class="tab-pane" id="settings">settings content</div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="left-icon issue icon-exclamation"></i>
+                            <div class="desc-item">Issue<p class="m-0 small">Not validated to ERC 20</p></div>
+                            <span class="label label-warning ml-auto">High</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="left-icon task icon-check"></i>
+                            <div class="desc-item">Task<p class="m-0 small">Check external document</p></div>
+                            <span class="label label-success ml-auto">Low</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="left-icon note icon-note"></i>
+                            <div class="desc-item">Note<p class="m-0 small">Better if we have additional checks...</p></div>
+                            <span class="label label-warning ml-auto">High</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="left-icon note icon-note"></i>
+                            <div class="desc-item">Note<p class="m-0 small">Copied from contract...</p></div>
+                            <span class="label label-success ml-auto">Low</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div id="myModal" class="modal modal-dialog-center" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" id="txtComment"></textarea>
+                        <input type="hidden" id="iLineNo" />
+                        <br />
+                        <button type="button" class="btn btn-secondary" id="closeModalBtn">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="saveComment()">Create Notes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @* <div class="container">
+        <div class="editor row">
+            <h1>XIDNA Code Editor</h1>
+            <div class="span9" style="width:100%;height:100%">
+                <div class="editor-frame">
+                    <div class="loading editor">
+                        <div class="progress progress-striped active">
+                            <div class="bar"></div>
+                        </div>
+                    </div>
+                    <div id="editor"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr /> *@
+    @* <div class="editor_right_panel">
+        <p>Line Number : <span class="font-weight-bold">10</span></p>
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#meta" aria-controls="project" role="tab" data-toggle="tab">Meta</a></li>
+            <li role="presentation"><a href="#chat" aria-controls="profile" role="tab" data-toggle="tab">Chat</a></li>
+            <li role="presentation"><a href="#artifacts" aria-controls="profile" role="tab" data-toggle="tab">Artifacts</a></li>
+        </ul>
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="meta">
+                <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="headingOne">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                Notes<span>500</span></a><!--data-parent="#accordion"-->
+                            </h4>
+                        </div>
+                        <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                            <form class="search-accord d-flex my-1">
+                                <input type="text" class="form-control" placeholder="Search here" id="">
+                                <button class="btn btn-outline">Add</button>
+                            </form>
+                            <ul class="list-group sub-menu">
+                                <li class="list-group-item"><a>Lorem Ipsum is simply</a></li>
+                                <li class="list-group-item"><a>One itmus ac facilin</a></li>
+                                <li class="list-group-item"><a>Second eros</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="headingTwo">
+                            <h4 class="panel-title">
+                                <a class="collapsed" role="button" data-toggle="collapse" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">Task<span>2</span></a><!--data-parent="#accordion"-->
+                            </h4>
+                        </div>
+                        <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                            <form class="search-accord d-flex my-1">
+                                <input type="text" class="form-control" placeholder="Search here" id="">
+                                <button class="btn btn-outline">Add</button>
+                            </form>
+                            <ul class="list-group sub-menu">
+                                <li class="list-group-item"><a>Lorem Ipsum is simply</a></li>
+                                <li class="list-group-item"><a>One itmus ac facilin</a></li>
+                                <li class="list-group-item"><a>Second eros</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="headingThree">
+                            <h4 class="panel-title">
+                            <a class="collapsed" role="button" data-toggle="collapse" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">Issues<span>20</span></a><!--data-parent="#accordion"-->
+                            </h4>
+                        </div>
+                        <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                            <form class="search-accord d-flex my-1">
+                                <input type="text" class="form-control" placeholder="Search here" id="">
+                                <button class="btn btn-outline">Add</button>
+                            </form>
+                            <ul class="list-group sub-menu">
+                                <li class="list-group-item"><a>Lorem Ipsum is simply</a></li>
+                                <li class="list-group-item"><a>One itmus ac facilin</a></li>
+                                <li class="list-group-item"><a>Second eros</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading" role="tab" id="headingFour">
+                            <h4 class="panel-title">
+                            <a class="collapsed" role="button" data-toggle="collapse" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">checks<span>20</span></a><!--data-parent="#accordion"-->
+                            </h4>
+                        </div>
+                        <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+                            <form class="search-accord d-flex my-1">
+                                <input type="text" class="form-control" placeholder="Search here" id="">
+                                <button class="btn btn-outline">Add</button>
+                            </form>
+                            <ul class="list-group sub-menu">
+                                <li class="list-group-item"><a>Lorem Ipsum is simply</a></li>
+                                <li class="list-group-item"><a>One itmus ac facilin</a></li>
+                                <li class="list-group-item"><a>Second eros</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="chat">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s</div>
+            <div role="tabpanel" class="tab-pane" id="artifacts">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s</div>
+        </div>
+    </div> *@
+    
+    @*<div class="container" style="margin-top:100px;">
+            <div class="diff-editor row">
+                      <h1>Diffentiate XIDNA Editor</h1>
+
+                    <div class="span9">
+                    <div class="diff-editor-frame">
+                        <div class="loading diff-editor">
+                            <div class="progress progress-striped active">
+                                    <div class="bar"></div>
+                                </div>
+                            </div>
+                         <div id="diff-editor"></div>
+                        </div>
+                    </div>
+                </div>
+        </div>*@
+</div>
+<div class="contractchart" style="display:none;">@{Html.RenderPartial("~/Views/XIComponents/_ContractChart.cshtml");}</div>
+@* <style>
+    .editor {
+        height: calc(100vh - 100px);
+    }
+
+    #editor {
+        height: calc(100vh - 100px);
+    }
+
+    .diff-editor {
+        height: calc(50vh - 50px);
+    }
+
+    #diff-editor {
+        height: calc(50vh - 50px);
+    }
+</style> *@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link href="~/Content/lineicons/css/simple-line-icons.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://platformfactory.in/BlockChain/Content/css/skins/blockchainone.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
+@* <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> *@
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
+@* <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> *@
+<script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
+<script>
+
+    $(function () {
+        //'use strict';
+        require.config({
+            baseUrl: 'https://microsoft.github.io/monaco-editor/node_modules/monaco-editor/min/'
+        });
+
+        var editor = null, diffEditor = null;
+
+        $(document).ready(function () {
+            //$('#myModal').prop('hidden', true);
+            //alert(TempData["Id"]);
+            require(['vs/editor/editor.main'], function () {
+                var MODES = (function () {
+                    var modesIds = monaco.languages.getLanguages().map(function (lang) {
+                        console.log(lang)
+                        return lang.id;
+                    });
+                    modesIds.sort();
+                    return modesIds.map(function (modeId) {
+                        return {
+                            modeId: modeId,
+                            sampleURL: 'https://microsoft.github.io/monaco-editor/index/samples/sample.' + modeId + '.txt'
+                        };
+                    });
+                })();
+
+                //Loading Solidity based editor
+                loadSample(MODES[75]);
+
+
+
+
+                //Loading file comparision file lhs and rhs
+                //loadDiffSample();
+
+                //diffEditor.updateOptions({
+                //	renderSideBySide: false,
+                //});
+            });
+
+            window.onresize = function () {
+                if (editor) {
+                    editor.layout();
+                }
+                if (diffEditor) {
+                    diffEditor.layout();
+                }
+            };
+        });
+        
+        function loadSample(mode) {
+            $.ajax({
+                type: 'POST',
+                //url: mode.sampleURL,
+                url: '/BlockChain/XIComponents/Get_ContractContent?Id='+@TempData["Id"] +'&sBO='+'@TempData["sBO"]',
+                //url:'http://oneplatformfactory.com/Whatsapp_API/Api/QSAPI/GetCodeEditorData?Id='+@TempData["Id"],
+                //url: 'https://raw.githubusercontent.com/smartcontractkit/chainlink/develop/contracts/src/v0.5/Median.sol',
+                dataType: 'text',
+                beforeSend: function () {
+                    $('.loading.editor').show();
+                    editor = monaco.editor.create(document.getElementById('editor'), {
+                        glyphMargin: true,
+                        //value: '\n\nHover over this text',
+                        //contextmenu: false,
+                        language: 'mySpecialLanguage',
+                    });
+                    monaco.languages.registerHoverProvider("sol", {
+                        provideHover: function (model, position) {
+                            return {
+                                range: new monaco.Range(
+                                    1,
+                                    1,
+                                    model.getLineCount(),
+                                    model.getLineMaxColumn(model.getLineCount())
+                                ),
+                                @* options: {
+                                    isWholeLine: true,
+                                    linesDecorationsClassName: 'myLineDecoration'
+                                }, *@
+                                contents: [
+                                    @* {
+                                        value: "XIDNA Modal"
+                                    }, *@
+                                    {
+                                        isTrusted: true,
+                                        supportHtml: true,
+                                        value: `<div data-hover="line_hover"> <ul> <li> <a href="#"> <i data-left-icon="left-icon" data-icon="issue"></i> <div data-desc="desc-item">Issue<p class="m-0 small">unhandled zero value</p></div><span data-label="label" data-label-danger="label-danger">Critical</span> </a> <div data-hover-details="line_hover_details"> <div> <span>Edit</span><span>Line No. 5</span> </div><h6>Note <i class="icon-note"></i></h6> <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p></div></li><li> <a href="#"> <i data-left-icon="left-icon" data-icon="issue"></i> <div data-desc="desc-item">Issue<p class="m-0 small">Not validated to ERC 20</p></div><span data-label="label" data-label-warning="label-warning">High</span> </a> </li><li> <a href="#"> <i data-left-icon="left-icon" data-icon="task"></i> <div data-desc="desc-item">Task<p class="m-0 small">Check external document</p></div><span data-label="label" data-label-success="label-success">Low</span> </a> </li><li> <a href="#"> <i data-left-icon="left-icon" data-icon="note"></i> <div data-desc="desc-item">Note<p class="m-0 small">Better if we have additional checks...</p></div><span data-label="label" data-label-warning="label-warning">High</span> </a> </li><li> <a href="#"> <i data-left-icon="left-icon" data-icon="note"></i> <div data-desc="desc-item">Note<p class="m-0 small">Copied from contract...</p></div><span data-label="label" data-label-success="label-success">Low</span> </a> </li></ul> </div>`,
+                                    },
+                                ],
+                            };
+                        },
+                    });
+
+                    //monaco.languages.register({ id: 'mySpecialLanguage' });
+
+                    @* monaco.languages.registerHoverProvider("mySpecialLanguage", {
+                        provideHover: function (model, position) {
+                            return {
+                                range: new monaco.Range(1, 1, model.getLineCount(), model.getLineMaxColumn(model.getLineCount())),
+                                contents: [
+                                    { value: "**SOURCE**" },
+                                    {
+                                        value:
+                                            "body content",
+                                    },
+                                ],
+                            };
+                        },
+                    }); *@
+                    // Create the Hover
+                    monaco.languages.registerHoverProvider("mySpecialLanguage", {
+                        provideHover: function() {
+                            debugger
+                        return {
+                            range: new monaco.Range(textPosition.lineNumber, 1, textPosition.lineNumber, 1),
+                            contents: [
+                            { value: "**Documentation String**" },
+                            { value: "```plain/text\n" + data + "\n```" }
+                            ]
+                        };
+                        }
+                    });
+                    //Add Custom Lable/Actions
+                    editor.addAction({
+                        // An unique identifier of the contributed action.
+                        id: 'my-unique-id',
+                        // A label of the action that will be presented to the user.
+                        label: 'Capture Line Number',
+                        // An optional array of keybindings for the action.
+                        keybindings: [
+                            monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10,
+                            // chord
+                            monaco.KeyMod.chord(
+                                monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK,
+                                monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM
+                            )
+                        ],
+                        // A precondition for this action.
+                        precondition: null,
+
+                        // A rule to evaluate on top of the precondition in order to dispatch the keybindings.
+                        keybindingContext: null,
+
+                        contextMenuGroupId: 'navigation',
+
+                        contextMenuOrder: 1.5,
+
+                        // Method that will be executed when the action is triggered.
+                        // param editor The editor instance is passed in as a convenience
+                        run: function (ed) {
+                           // alert("i'm running => " + ed.getPosition());
+                        }
+                    });
+
+                    editor.addAction({
+                        // An unique identifier of the contributed action.
+                        id: 'add-comment-id',
+
+                        // A label of the action that will be presented to the user.
+                        label: 'Add New Notes',
+
+                        // An optional array of keybindings for the action.
+                        keybindings: [
+                            monaco.KeyMod.CtrlCmd | monaco.KeyCode.F2,
+                            // chord
+                            monaco.KeyMod.chord(
+                                monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK,
+                                monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM
+                            )
+                        ],
+
+                        // A precondition for this action.
+                        precondition: null,
+
+                        // A rule to evaluate on top of the precondition in order to dispatch the keybindings.
+                        keybindingContext: null,
+
+                        contextMenuGroupId: 'navigation',
+
+                        contextMenuOrder: 1.6,
+
+                        // Method that will be executed when the action is triggered.
+                        // param editor The editor instance is passed in as a convenience
+                            run: function (ed) {
+                            //debugger
+                            //console.log(ed);
+                            
+                                //alert("i'm running => " + ed.getPosition());
+                                $('#iLineNo').val(ed.getPosition().lineNumber);                           
+                                //$('#myModal').prop('hidden', false);
+                                $('#myModal').modal('show')
+                                //$('#myModal').css({'display': 'block'});
+                        }
+                    });
+
+                    // Mouse events
+                    editor.onMouseMove(function (e) {
+                       //console.log('mousemove - ' + e.target.toString());
+                        //console.log(e.target.toString());
+                        //debugger
+                       // console.log(e.target.position['lineNumber']);
+                        @* $('.summery_Table tr').each(function () {
+                            alert($(this))
+                            $(this).find('td').each(function () {
+                                alert($(this).text())
+                                alert(e.target.position['lineNumber'])
+                                if ($(this).hasClass("one-1q-field-ilinenumber"))
+                                    if ($(this).text() == e.target.position['lineNumber']) {
+                                        alert(e.target.position['lineNumber']);
+                                    }
+
+                            });
+                        }); *@
+                                   
+                                   //if(e.target && e.target != null && e.target.length > 0){
+                                   @*if(e.target){
+                                        if(e.target.element['clientHeight']>0){
+                                            //console.log(e.target.position['lineNumber']);
+                                            
+                                            //$(this).closest('.view-line').append('<div>hellow</div>');
+                                            
+                                            $('.line_hover').show();
+                                            //var offset = $(this).offset();
+                                            console.log(e.target.element['clientWidth'] +'-'+e.target.element['clientHeight']);
+
+                                            //var left = e.target.position['lineNumber'];
+                                            //var top = e.target.position['lineNumber'];
+
+                                            var left = e.target.pageX;
+                                            var top = e.target.pageY;
+
+                                            //var left = e.target.element['clientWidth'] - $('#editor').offset().left;
+                                            //var top = e.target.element['clientHeight'] - $('#editor').offset().top;
+                                            var theHeight = $('.line_hover').height();
+                                            var theWidth = $('.line_hover').width();
+                                            
+                                            //$('.line_hover').css('left', (150-left) + 'px');
+                                            //$('.line_hover').css('top', (top+100)  +'px');
+
+                                            $('.line_hover').css('left', (left + theWidth) + 'px');
+                                            $('.line_hover').css('top', (top + theHeight) +'px');
+                                        }
+                                    } *@
+                                   @* var offset = $(this).offset(); *@
+                                    @* var left = e.pageX;
+                                    var top = e.pageY;
+                                    var theHeight = $('.line_hover').height();
+                                    var theWidth = $('.line_hover').width();
+                                    
+                                    //$('.line_hover').css('left', (left+10) + 'px');
+                                    //$('.line_hover').css('top', (top-(theHeight/2)-10) + 'px');
+                                    $('.line_hover').css('left', (left - theWidth - 50) + 'px');
+                                    //$('.line_hover').css('top', 0 + 'px');
+                                    $('.line_hover').css('bottom', (50) + 'px'); *@
+                                    /*if (e !== null && e.target !== null && self.settings.hoverShowSource === true && e.target.position !== null) {
+                                        debugger
+                                        tryCompilerSelectLine(e.target.position.lineNumber);
+                                        $('.line_hover').show();
+                                    }*/
+                    });
+                    editor.onMouseDown(function (e) {
+                        //console.log('mousedown - ' + e.target.toString());
+                        //console.log(e.target);
+                    });
+                    editor.onContextMenu(function (e) {
+                        //console.log('contextmenu - ' + e.target.toString());
+                        //console.log(e.target);
+                    });
+                    editor.onMouseLeave(function (e) {
+                       // console.log('mouseleave');
+                        //console.log(e.target);
+                        $('.line_hover').hide();
+                    });
+
+                    // add key event
+                    editor.addCommand(monaco.KeyCode.F9, function () {
+                        alert('F9 pressed!');
+                    });                    
+                },
+                error: function () {
+                    if (editor) {
+                        if (editor.getModel()) {
+                            editor.getModel().dispose();
+                        }
+                        editor.dispose();
+                        editor = null;
+                    }
+                    $('.loading.editor').fadeOut({ duration: 200 });
+                    $('#editor').empty();
+                    $('#editor').append('<p class="alert alert-error">Failed to load ' + mode.modeId + ' sample</p>');
+                }
+            }).done(function (data) {
+                if (!editor) {
+                    $('#editor').empty();
+                    editor = monaco.editor.create(document.getElementById('editor'), {
+                        model: null,
+                    });
+                }
+                var oldModel = editor.getModel();
+                var newModel = monaco.editor.createModel(data, mode.modeId);
+                editor.setModel(newModel);
+                if (oldModel) {
+                    oldModel.dispose();
+                }
+                $('.loading.editor').fadeOut({ duration: 300 });
+            });
+        }
+
+        function loadDiffSample() {
+
+            var onError = function () {
+                $('.loading.diff-editor').fadeOut({ duration: 200 });
+                $('#diff-editor').append('<p class="alert alert-error">Failed to load diff editor sample</p>');
+            };
+            
+            $('.loading.diff-editor').show();
+
+            var lhsData = null, rhsData = null, jsMode = null;
+
+            $.ajax({
+                type: 'GET',
+                url: 'https://microsoft.github.io/monaco-editor/index/samples/diff.lhs.txt',
+                dataType: 'text',
+                error: onError
+            }).done(function (data) {
+
+                lhsData = data;
+                onProgress();
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: 'https://microsoft.github.io/monaco-editor/index/samples/diff.rhs.txt',
+                dataType: 'text',
+                error: onError
+            }).done(function (data) {
+                rhsData = data;
+                onProgress();
+            });
+
+            function onProgress() {
+                if (lhsData && rhsData) {
+                    diffEditor = monaco.editor.createDiffEditor(document.getElementById('diff-editor'), {
+                        enableSplitViewResizing: true
+                    });
+
+                    var lhsModel = monaco.editor.createModel(lhsData, 'text/javascript');
+                    var rhsModel = monaco.editor.createModel(rhsData, 'text/javascript');
+
+                    diffEditor.setModel({
+                        original: lhsModel,
+                        modified: rhsModel
+                    });
+
+                    $('.loading.diff-editor').fadeOut({ duration: 300 });
+                }
+            }
+        }
+    })
+
+    $('#closeModalBtn').on('click',function(){
+        $('#myModal').modal('hide')
+    })    
+
+    function saveComment() {
+debugger
+        var sComment = $('#txtComment').val();
+        var iLineNo = $('#iLineNo').val();
+        var dataS = {
+            "sComment": sComment,
+            "iLineNo": iLineNo,
+            "iGitFileID": @TempData["Id"],
+            "sBO": '@TempData["sBO"]'
+        };
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            url: ("/BlockChain/XIComponents/saveComment"),
+            data: JSON.stringify(dataS),
+            cache: false,
+            async: true,
+            dataType: 'JSON',
+            success: function (data) {
+		$("#txtComment").val("");
+                $('#myModal').modal('hide');
+            }, error: function (er) {
+                debugger
+            }
+        })
+    }
+function fncShowGraph(){
+debugger
+					var DialogDivID = 'contractchart';
+                                        var windowclose = '<i class="windowClose fa fa-times" onclick="fncdialogclose(this, ' + false + ', &quot;' + DialogDivID + '&quot;)"></i>';
+                                        //$('.' + DialogDivID).html('');
+                                        $("." + DialogDivID).dialog({
+                                            title: 'Search Result',
+                                            //modal: true,
+                                            height: screen.height-350,
+                                            width: screen.width-300,
+                                            //position: { my: 'center center', at: 'left top+400' },
+                                            open: function () {
+                                                $(this).parent().promise().done(function () {
+                                                    $(this).children('.ui-dialog-titlebar').append('<div class="dialogIcons">' + windowclose + '</div>');
+                                                })
+                                            }
+                                        });
+}
+</script>
+<script>
+    @* $(document).find('.line_hover_dialog, .view-line').hover(function(e) {
+        debugger
+        var offset = $(this).offset();
+        var left = e.pageX;
+        var top = e.pageY;
+        var theHeight = $('.line_hover').height();
+        var theWidth = $('.line_hover').width();
+        $('.line_hover').show();
+        //$('.line_hover').css('left', (left+10) + 'px');
+        //$('.line_hover').css('top', (top-(theHeight/2)-10) + 'px');
+        $('.line_hover').css('left', (left - theWidth - 50) + 'px');
+        //$('.line_hover').css('top', 0 + 'px');
+        $('.line_hover').css('bottom', (50) + 'px');
+    });
+    $('.line_hover_dialog').parent().find('.line_hover').mouseenter(function (e) {
+        $('.line_hover').show();
+    });
+    $('.line_hover_dialog').mouseleave(function (e) {
+        $(this).parent().find('.line_hover').hide();
+    });
+    $('.line_hover_dialog').parent().find('.line_hover').mouseleave(function (e) {
+        $('.line_hover').hide();
+    }); *@
+</script>
+

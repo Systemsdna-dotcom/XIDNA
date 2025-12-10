@@ -1,0 +1,102 @@
+﻿
+@model XIDNA.Models.cBODisplay
+@{
+    var oBOInstance = Model.BOInstance;
+    var oVisualisations = Model.Visualisations;
+}
+<div class="FAComponentForm col-md-12 no-padding">
+    <form class="@ViewBag.Context.Replace(" ","")">
+        @foreach (var items in oBOInstance.NVPairs.Where(m => m.bDirty == true).ToList())
+        {
+            if (items.sName.ToLower() != "id")
+            {
+                <div class="form-group">
+                    <div class="col-md-4 no-padding">
+                        <label for="inputEmail" class="gn">@oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()</label>
+                        @if (!string.IsNullOrEmpty(items.sValue))
+                        {
+                            @Html.TextAreaFor(m => items.sValue, new { @Name = items.sName, @class = "form-control", @style = "padding:1px 5px;", @rows = 5, @cols = 10, @disabled = "disabled", @id = "FAComponent" })
+                        }
+                        else
+                        {
+                            @Html.TextAreaFor(m => items.sValue, new { @Name = items.sName, @class = "form-control", @style = "padding:1px 5px;", @rows = 5, @cols = 10, @id = "FAComponent" })
+                        }
+                    </div>
+                    <div class="col-sm-4">
+                        @if (!string.IsNullOrEmpty(items.sValue))
+                        {
+                            <button type="button" class="btn btn-theme" id="FAChangeBtn">Change</button>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </form>        
+</div>
+
+<script>
+    function SaveComponent(sGUID, sContext) {        
+        var GUID = sGUID;
+        //var Context = fncGetContextFromHTMLTree('LayoutGUID', this);
+        var oBOInstance = @Html.Raw(Json.Encode(Model.BOInstance));
+        var formData = JSON.parse(JSON.stringify(jQuery('.'+sContext.replace(/ /g, '')).serializeArray()))
+        if(formData.length>0 && oBOInstance){
+            var Dialog = [];
+            var i, j, titleid = [];
+            for (i = 0, j = formData.length; i < j; i++) {
+                Dialog.push({ sName: formData[i].name, sValue: formData[i].value });
+            }
+            for (k = 0; k < Dialog.length ; k++) {
+                for (m = 0; m < oBOInstance.NVPairs.length; m++) {
+                    if (Dialog[k].sName == oBOInstance.NVPairs[m].sName) {
+                        oBOInstance.NVPairs[m].sValue = Dialog[k].sValue
+                    }
+                }
+            }
+            var pvalue = {
+                oBOInstance: oBOInstance,
+                sGUID: sGUID,
+                sContext: sContext
+            }
+            $.ajax({
+                url: SaveEditBOURL,
+                //url: '@Url.Action("EditData", "XiLink")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: JSON.stringify(pvalue),
+                success: function (data) {
+                    if (data != "Failure") {
+                        var IsSuccess = true;
+                        var Error = "";
+                        var Scripts = data.Definition.BOScripts;
+                        for (i = 0; i < Scripts.length; i++) {
+                            if (!Scripts[i].IsSuccess) {
+                                var sBoName = data.Definition.Name;
+                                var sFieldName = Scripts[i].sFieldName;
+                                for (j = 0; j < Scripts[i].ScriptResults.length; j++) {
+                                    if (Scripts[i].ScriptResults[j].iType == 30) {
+                                        $('span.' + sBoName + "-" + sFieldName).html(Scripts[i].ScriptResults[j].sUserError);
+                                        IsSuccess = false;
+                                        CustomMessage("", null);
+                                        //Error = Error + Scripts[i].ScriptResults[j].sMessage + "<br/>";
+                                    }
+                                }
+                            }
+                        }
+                        if (IsSuccess) {
+                            CustomMessage("Data saved successfully", true);
+                            $('.FieldErrMsg').html('');
+                        }
+                    }
+                    else {
+                        CustomMessage("Error occured. Please check", false);
+                    }
+                },
+                error: function (data) {
+                }
+            });
+        }
+    };
+</script>

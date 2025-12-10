@@ -1,0 +1,71 @@
+﻿@model XIDNA.ViewModels.LineGraph
+@{
+    var val = Json.Encode(Model);
+}
+
+
+<script>
+    $(document).ready(function () {
+        var val = generatedata();
+        var name = "Lead Data";
+        var name2 = "Data Values";
+        var value = val;
+        var value2 = [500, 250, 220, 220, 220];
+        var obj = {
+            "data1": value,
+        };
+        var chart = c3.generate({
+            size: {
+                width: 380,
+                height: 280
+            },
+            data: {
+                columns: [
+                 [name].concat(obj.data1)
+                ]
+            }
+        });
+    });
+    function generatedata() {
+        var allvalues = @Html.Raw(Json.Encode(Model));
+        var Data = allvalues.Data;
+        var value = new Array();
+        for(i=0;i<Data.length;i++){
+            value.push(Data[i]);
+        }
+        return value;
+    }
+</script>
+<style>
+    #LineGraphData{
+        margin-top:30px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Tab Preview </h1>
+</section>
+<div class="col-md-8" id="LineGraphData">
+    @if (Model.SectionName != null)
+    {
+        <div class="panel panel-default">
+            @if (Model.SectionName != null)
+            {
+                <div class="panel-heading usericon Lead1">
+                    <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#@Model.SectionName.Replace(" ","")@Model.TabID">
+                        <h4 class="panel-title">@Model.SectionName</h4>
+                    </a>
+                </div>
+            }
+            <div class="panel-collapse collapse in" id=@Model.SectionName.Replace(" ","")@Model.TabID>
+                <div class="panel-body LeadContent" style="min-height:300px">
+                    <div id="chart"></div>
+                </div>
+
+            </div>
+        </div>
+    }
+    else
+    {
+        <div id="chart"></div>
+    }
+</div>

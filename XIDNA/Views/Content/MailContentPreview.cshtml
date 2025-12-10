@@ -1,0 +1,20 @@
+﻿@model XIDNA.ViewModels.VMNewLeads
+
+@{
+    ViewBag.Title = "ContentList";
+    //Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var res = ("@Model.Content").replace("&lt;", "<").replace("&gt;", ">");
+        document.getElementById("contentprev").value = res;
+    })
+</script>
+
+    <div class="col-sm-12" style="padding-left:0px!important;">
+
+        <textarea id="contentprev" class="form-control" rows="4" style="background:none"></textarea>
+       
+    </div>
+

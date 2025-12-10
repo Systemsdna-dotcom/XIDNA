@@ -1,0 +1,129 @@
+﻿
+@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Globalization;
+
+@{
+    XIQuoteReportData ReportData = new XIQuoteReportData();
+    if (Model.oContent.ContainsKey(XIConstant.QuoteReportDataComponent))
+    {
+        ReportData = (XIQuoteReportData)Model.oContent[XIConstant.QuoteReportDataComponent];
+        if (ReportData == null)
+        {
+            ReportData = new XIQuoteReportData();
+        }
+
+    }
+    var sTabGUID = Guid.NewGuid().ToString();
+}
+
+<div id="Report-@ReportData.ID" class="table-clean table-responsive">
+    @*<div><strong>@ReportData.ShowAs</strong></div>*@
+    <p class="chart-title">@ReportData.QueryName</p>
+    <div class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-body" style="padding:0px;">
+                        @if (ReportData.ReportList.Count > 0)
+                        {
+                            //foreach (var item in ReportData.listofReport.FirstOrDefault())
+                            //{
+                            var item = ReportData.ReportList.FirstOrDefault();
+                            var acx = item.Value.Attributes.Select(j => j.Value.sName).ToList();
+                            <div class="table-clean table-responsive">
+                                <table class="table table-striped custom-table table-condensed table-hover tablesorter dataTable tablelook" id="OnClickResult-@sTabGUID">
+                                    <thead id="tThead-@ReportData.ID">
+                                        <tr>
+                                                @foreach (var list in acx)
+                                                {
+                                                    <th style="text-align:center;">@list</th>
+                                                }
+                                            </tr>
+                                    </thead>
+                                    <tbody id="tData-@ReportData.ID">
+                                        @*@foreach (var item1 in ReportData.ReportList)
+                                            {
+                                                var sxcd = item1.Value.Attributes.Select(j => j.Value).ToList();
+
+                                                <tr>
+                                                    @foreach (var list in sxcd)
+                                                    {
+                                                        <td>@list.sValue</td>
+                                                    }
+                                                </tr>
+                                            }*@
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        //debugger;
+        var Type=false;
+        var JsonData=@Html.Raw(Json.Encode(ReportData));
+        fncReportdata(JsonData,Type);
+        TimeInterval(JsonData);
+    });
+    function TimeInterval(JsonData){
+        var interval1 = setInterval(function () {
+            if(JsonData!=null || JsonData!=undefined){
+                var ReportID= $('#Report-'+JsonData.ID);
+                if(ReportID.length>0){
+                    HeatMap(JsonData.ID);
+                }
+                var LayoutID= $('#RefreshPopup-'+JsonData.LayoutID);
+                if(LayoutID.length>0){
+                    $('#RefreshPopup-'+JsonData.LayoutID).trigger('click');
+                }
+            }
+        }, 100000);
+    }
+    $('#OnClickResult-@sTabGUID').unbind().on('click', 'tr', function (e) {
+         // debugger;
+        var cellindex=e.target.cellIndex;
+        // get the value of the matching header
+        var headerVal = $(this).closest( "table" ).find( "thead > tr > th" ).eq( cellindex ).html();
+        var HeadVal=headerVal.replace("+","").split("-");
+        var HeadVal0=HeadVal[0];
+        var HeadVal1=HeadVal[1];
+        var ClassName=$( this ).closest('tr').find('td:first').text();
+        //var ColIndex = $('th', this).index(e.target);
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+        var oCompDJ = @Html.Raw(Json.Encode(Model.oDefintion));
+        var o1ClickDJ ={
+            IsRowClick : '@ReportData.IsRowClick',
+            RowXiLinkID : '@ReportData.RowXiLinkID',
+            BOID : '@ReportData.BOID',
+        }
+        var InputParams=[];
+        var param1 = {};
+        param1["sName"] = '{XIP|Header0}';
+        param1["sValue"] = HeadVal0;
+        InputParams.push(param1);
+        var param2 = {};
+        param2["sName"] = '{XIP|Header1}';
+        if(HeadVal1==undefined){
+            param2["sValue"] = "1000000000";
+        }
+        else{
+            param2["sValue"] = HeadVal1;
+        }
+        InputParams.push(param2);
+        var param3 = {};
+        param3["sName"] = '{XIP|ClassName}';
+        param3["sValue"] = ClassName;
+        InputParams.push(param3);
+        if('@ReportData.IsRowClick'=="True"){
+            XILinkLoadJson(o1ClickDJ.RowXiLinkID, sGUID, InputParams);
+        }
+    });
+</script>

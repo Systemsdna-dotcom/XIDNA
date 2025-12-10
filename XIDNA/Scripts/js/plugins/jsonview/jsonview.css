@@ -1,0 +1,106 @@
+body {
+/* 	font-family: 'Open Sans';
+	font-size: 16px;
+	background-color: #fff;
+	color: #808080;
+	box-sizing: border-box; */
+}
+
+.line {
+	margin: 4px 0;
+	display: flex;
+	justify-content: flex-start;
+}
+
+.caret-icon {
+	width: 18px;
+	text-align: center;
+	cursor: pointer;
+}
+
+.empty-icon {
+	width: 18px;
+}
+
+.json-type {
+	margin-right: 4px;
+	margin-left: 4px;
+}
+
+.json-key {
+	color: #444;
+	margin-right: 4px;
+	margin-left: 4px;
+}
+
+.json-index {
+	margin-right: 4px;
+	margin-left: 4px;
+}
+
+.json-separator {
+
+}
+
+.json-value {
+	margin-left: 8px;
+}
+
+.json-number {
+	color: #f9ae58;
+}
+
+.json-boolean {
+	color: #ec5f66;
+}
+
+.json-string {
+	color: #86b25c;
+}
+
+.json-size {
+	margin-right: 4px;
+	margin-left: 4px;
+}
+
+.hide {
+	display: none;
+}
+
+/* //////////////////Custom Classes/////////////////////// */
+.json-container{font-size: 14px !important;}
+.json-container .line{
+	position: relative;
+    height: auto;
+    padding-bottom: 0;
+}
+/* .json-container .fa-caret-right:before,.json-container .fa-caret-down:before{display: none;} */
+.json-container .fa-caret-right,.json-container .fa-caret-down{border-width: 0 !important;}
+.json-container .fa-caret-right:before,.json-container .fa-caret-down:before{
+	position: absolute;
+    /* content: "\f0d7"; */
+    left: 3px;
+    top: 3px;
+}
+
+.json-container .fa-caret-right:before{content: "\f0fe";}
+.json-container .fa-caret-down:before{content: "\f146";}
+
+.json-container .empty-icon:before {
+    position: relative;
+    content: "";
+    display: block;
+    border-left: 1px dotted #808080;
+    height: 100%;
+    top: -11px;
+    left: -10px;
+}
+.json-container .empty-icon:after {
+    position: absolute;
+    content: "";
+    border-bottom: 1px dotted #808080;
+    width: 15px;
+    display: block;
+    bottom: 8px;
+    left: -10px;
+}

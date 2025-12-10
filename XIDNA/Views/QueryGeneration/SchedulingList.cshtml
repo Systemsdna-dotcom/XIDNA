@@ -1,0 +1,129 @@
+﻿@model List<int>
+
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        var popups = new Array();
+        var editpopups = new Array();
+        var table = $('#Schedulerstbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Html.Raw(Url.Action("GetSchedulersList", "QueryGeneration", new { ID = Model[0], OrgID = Model[1] }))",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+        {},
+                            {
+                                "sName": "ID",
+                                "visible": false
+                            },
+                             {
+                                 "sName": "User",
+                             },
+                            {
+                                "sName": "Organization",
+                                "visible": false
+                            },
+                            {
+                                "sName": "Report",
+                                "visible": false
+                            },
+                            {
+                                "sName": "Period",
+                            },
+                            {
+                                "sName": "Time",
+                            },
+                            {
+                                "sName": "Type",
+                            },
+                            {
+                                "sName": "Status",
+                            },
+                            {}
+            ],
+            "columnDefs": [
+                  {
+                      "targets": [8],
+                      "createdCell": function (td, cellData, rowData, row, col) {
+                          if (cellData == 10)
+                              $(td).replaceWith('<td>Active</td>')
+                          else
+                              $(td).replaceWith('<td>Inactive</td>')
+                      }
+                  }
+            ],
+            //"fnRowCallback": function (nRow, aData, iDisplayIndex) {
+            //    $('td:eq(6)', nRow).html('<input type="button" class="EditScheduler btn btn-theme btn-xs" id=' + aData[3] + ' data-id="' + aData[1] + '" value="Edit"/>');
+            //    return nRow;
+            //}
+        });
+        $('#Schedulerstbl').on('click', 'input.EditScheduler', function () {
+            var ids = $(this).attr('id');
+            var data = ids.split('-');
+            var ID = $(this).attr('data-id');
+            $('#SchedulerID').val(ID);
+            //$('#TargetUsers').append('<option value="' + data[0] + '">' + User + '</option>')
+            $('#UserID').val(data[0]);
+            $('#TargetPeriod').val(data[2]);
+            $('#Time').val(data[3]);
+            $('#AlertType').val(data[4]);
+            if (data[4] == "Email") {
+                $('#SMSTemplates').hide();
+                $('#EmailTemplates').show();
+                $('#EmailTemplateID').val(data[5]);
+            }
+            else if (data[4] = "SMS") {
+                $('#EmailTemplates').hide();
+                $('#SMSTemplates').show();
+                $('#SMSTemplateID').val(data[6]);
+            }
+            else {
+                $('#SMSTemplates').hide();
+                $('#EmailTemplates').hide();
+            }
+            $('#StatusTypeID').val(data[7]);
+        })
+    });
+</script>
+<section class="content-header hedr">
+    <h1> Scheduling Management </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Scheduling</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div id="BOGrid" class="box-body">
+                    <div class="table-clean">
+                        <table id="Schedulerstbl" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>S.No</th>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Organization</th>
+                                    <th>Report</th>
+                                    <th>Period</th>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

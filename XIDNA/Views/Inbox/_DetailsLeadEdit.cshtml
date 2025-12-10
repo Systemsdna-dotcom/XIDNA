@@ -1,0 +1,109 @@
+﻿@model IEnumerable<XIDNA.ViewModels.VMQueryPreview>
+@using XIDNA.ViewModels
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var type = '@Model.FirstOrDefault().PreviewType';
+        var data = @Html.Raw(Json.Encode(Model));
+        var tabid, sectionid;
+        for(i=0;i<data.length;i++){
+            tabid = data[i].SectionsData[0].TabID;
+            sectionid = data[i].SectionsData[0].SectionID;
+            $('.EditRecordForm-'+sectionid+tabid).hide();
+            $('.CreateRecordForm-'+sectionid+tabid).hide();
+        }
+    });
+</script>
+<style>
+    .leftpd{
+        padding-left:10px !important;
+    }
+    #FieldError{
+        color:red;
+        font-size:11px;
+    }
+    .field-validation-valid {
+        color: red;
+    }
+</style>
+@foreach (var items in Model.OrderBy(m => m.Rank))
+{
+    if (items.PreviewType == "View Record")
+    {
+        <div class="ViewRecordForm-@items.SectionsData[0].SectionID@items.SectionsData[0].TabID">
+            @{
+        if (items.SectionsData[0].ViewFieldsData != null && items.SectionsData[0].ViewFieldsData.Count() > 0)
+        {
+            Html.RenderAction("GetViewRecordDetails", "Inbox", new { Data = items.SectionsData });
+        }
+            }
+        </div>
+
+    <div class="EditRecordForm-@items.SectionsData[0].SectionID@items.SectionsData[0].TabID">
+        @{
+            if (items.SectionsData[0].EditFieldsData != null && items.SectionsData[0].EditFieldsData.Count() >0)
+            {
+                Html.RenderAction("GetEditRecordDetails", "Inbox", new { Data = items.SectionsData });
+            }
+        }
+    </div>
+    <div class="CreateRecordForm-@items.SectionsData[0].SectionID@items.SectionsData[0].TabID">
+        @{
+        if (items.SectionsData[0].CreateFields != null && items.SectionsData[0].CreateFields.Count() > 0)
+        {
+            Html.RenderAction("GetCreateRecordDetails", "Inbox", new { Data = items.SectionsData });
+        }
+        }
+    </div>
+    }
+    else if (items.PreviewType == "KPI Circle")
+    {
+        Html.RenderPartial("_KPICircles", items.KpiCircle);
+    }
+    else if (items.PreviewType == "KPI Pie Chart")
+    {
+        List<VMKPIResult> KpiResult = new List<VMKPIResult>();
+        User models = new User();
+        models.Type = "Tabs";
+        models.TabID = Model.FirstOrDefault().popup.TabID;
+        models.DDLClassValue = Model.FirstOrDefault().popup.ClassID;
+        models.SectionName = items.SectionName;
+        models.ReportID = items.ReportID;
+        models.PieData = items.PieData;
+        models.QueryName = items.QueryName;
+        Html.RenderPartial("_KPIPieChart", models);
+    }
+    else if (items.PreviewType == "KPI Bar Chart")
+    {
+        List<VMKPIResult> KpiResult = new List<VMKPIResult>();
+        User models = new User();
+        models.Type = "Tabs";
+        models.TabID = Model.FirstOrDefault().popup.TabID;
+        models.DDLClassValue = Model.FirstOrDefault().popup.ClassID;
+        models.SectionName = items.SectionName;
+        models.ReportID = items.ReportID;
+        models.BarData = items.BarData;
+        models.QueryName = items.QueryName;
+        Html.RenderPartial("_KPIBarChart", models);
+    }
+    else if (items.PreviewType == "Bespoke")
+    {
+        Html.RenderPartial("_Bespoke", items.SectionsData);
+    }
+    else if (items.PreviewType == "KPI Line Graph")
+    {
+        items.LineGraph.QueryName = items.QueryName;
+        Html.RenderPartial("_LineGraph", items.LineGraph);
+    }
+    else if (items.PreviewType == "Result List")
+    {
+        Html.RenderPartial("_QueryPreviewFromForm", items);
+    }
+}
+
+<div id="LeadEditDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script type="text/javascript">
+    $('#leadcancel').click(function(){
+        window.close();
+    });
+</script>

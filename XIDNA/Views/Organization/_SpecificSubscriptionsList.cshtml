@@ -1,0 +1,80 @@
+﻿@model List<int>
+
+<script>
+
+        $(document).ready(function () {
+            var popups = new Array();
+            var table = $('#Spesubtbl').dataTable({
+                "paging": true,
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Html.Raw(Url.Action("SpecificSubscriptionsList", "Organization", new{OrgID=Model[0], SourceID=Model[1]}))",
+                "aaSorting": [[1, 'desc']],
+                "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+                "autoWidth": false,
+                "aoColumns": [
+                {},
+                                 {
+                                     "sName": "ID",
+                                     "visible": false
+                                 },
+                                {
+                                    "sName": "Subscription"
+                                },
+                                {
+                                    "sName": "Organization",
+                                    "visible": false
+                                },
+                                {
+                                    "sName": "LocationCode"
+                                },
+                                {
+                                    "sName": "Source"
+                                },
+                                {
+                                    "sName": "Class"
+                                },
+                                {
+                                    "sName": "LeadCost"
+                                },
+                                {
+                                    "sName": "Email"
+                                },
+                                {
+                                    "sName": "PostCode"
+                                },
+                               {
+                                    "sName": "RenewalDate"
+                               },
+                ],
+            });
+        });
+</script>
+
+
+<div id="SubscriptionGrid">
+    <div id="box-body">
+        <div class="table-clean">
+            <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="Spesubtbl">
+                <thead>
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th>ID</th>
+                        <th>Subscription</th>
+                        <th>Organization</th>
+                        <th>Location Code</th>
+                        <th>Source</th>
+                        <th>Class</th>
+                        <th>Lead Cost</th>
+                        <th>Email</th>
+                        <th>Post Code</th>
+                        <th>Renewal Date</th>
+                    </tr>
+                </thead>
+
+                <tbody></tbody>
+
+            </table>
+        </div>
+    </div>
+</div>

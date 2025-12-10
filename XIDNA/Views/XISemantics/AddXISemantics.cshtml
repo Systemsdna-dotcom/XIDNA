@@ -1,0 +1,309 @@
+﻿@model XIDNA.Models.cQSDefinition
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    int iXISemanticID = Model.ID;
+}
+
+<section class="content-header hedr">
+    @if (Model.ID == 0)
+    {
+        <h1> Add XISematics Settings </h1>
+    }
+    else
+    {
+        <h1> Edit XISematics Settings </h1>
+    }
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> XISematics Settings</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+
+<div class="col-md-12">
+    <input type="button" class="XiSemanticTab active  btn btn-theme" value="XISementics" onclick="ShowOrHideDivs('XiSemanticTab', 'XiGrid')" />
+    <input type="button" class="XiStepsTab btn btn-theme" value="Steps" onclick="ShowOrHideDivs('XiStepsTab', 'XiForm')" />
+    @*<input type="button" class="XiNavigationsTab btn btn-theme" value="Navigations" onclick="ShowOrHideDivs('XiNavigationsTab', 'XiGroup')" />*@
+    <input type="button" class="XiStagesTab btn btn-theme" value="Stages" onclick="ShowOrHideDivs('XiStagesTab', 'XiStage')" />
+</div>
+
+<div class="form-group col-md-12">
+    <div id="addClass">
+        <div id="XiGrid" class="m-t-b-15" style="display:none">
+            <section class="content">
+                <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+                </div>
+                <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+                </div>
+                <div class="row">
+                    <div class="box">
+                        <div class="box-body">
+                            <div class="innerborder">
+                                @* SaveBO *@
+                                @using (Ajax.BeginForm("CreateXISemantics", "XISematics", new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "XISemanticsForm", @class = "form-horizontal" }))
+                                {
+                                    @Html.ValidationSummary(true);
+                                    @Html.HiddenFor(m => m.ID)
+                                    <div id="clear-text">
+                                        @if (Model.FKiApplicationID == 0)
+                                        {
+                                            <div class="form-group" id="XIFKiApplicationDDL">
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn"> Application <span class="danger">*</span></label>
+                                                    <select class="form-control" id="ApplicationID" name="FKiApplicationID">
+                                                        <option value="0">--Select--</option>
+                                                        @foreach (var items in Model.ddlApplications)
+                                                        {
+                                                            if (Model.FKiApplicationID == items.Value)
+                                                            {
+                                                                <option selected value="@items.Value">@items.text</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@items.Value">@items.text</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" id="ApplicationID" name="FKiApplicationID" value="@Model.FKiApplicationID" />
+                                        }
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                                @Html.TextBoxFor(model => model.sName, new { @placeholder = "Enter Name Here", @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-4 taberrormsg">
+                                                @Html.ValidationMessageFor(m => m.sName, null, new { @class = "red" })
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">Description<span class="danger">*</span></label>
+                                                @Html.TextAreaFor(model => model.sDescription, new { @placeholder = "Enter Description Here", @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-4 taberrormsg">
+                                                @Html.ValidationMessageFor(m => m.sDescription, null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                        @*<div class="form-group">
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn">Layout<span class="danger"></span></label>
+                                                    @Html.DropDownListFor(m => m.iLayoutID, new SelectList(Model.ddlLayouts, "Value", "text"), new { @class = "form-control", @id= "XiLayoutsDDL" })
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input type="button" class="btn btn-theme btn-xs" value="Map" onclick="XiLayoutManager('XiLayout', 'Add')" />
+                                                </div>
+                                            </div>*@
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">XIVisualisation<span class="danger"></span></label>
+                                                @Html.DropDownListFor(m => m.iVisualisationID, new SelectList(Model.ddlXIVisualisations, "Value", "text"), new { @class = "form-control" })
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">Save Type<span class="danger"></span></label>
+                                                @Html.DropDownListFor(m => m.SaveType, new SelectList(new List<Object>{
+                                               new { key= "Save as Populated" , value = "Save as Populated" },
+                       new { key= "Save at End" , value = "Save at End" }
+                    }, "key", "Value"), new { @class = "form-control" })
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">Mode<span class="danger"></span></label>
+                                                @Html.DropDownListFor(m => m.sMode, new SelectList(new List<Object>{
+                                               new { key= "Popup" , value = "Popup" },
+                       new { key= "QuestionSet" , value = "QuestionSet" }
+                    }, "key", "Value"), new { @class = "form-control" })
+                                            </div>
+                                        </div>
+
+                                        @*<div class="form-group">
+                                                <div class="col-md-3">
+                                                    @Html.CheckBoxFor(m => m.bIsTemplate)
+                                                    <label for="inputEmail" class="gn">Is Template<span class="danger"></span></label>
+                                                </div>
+                                            </div>*@
+                                        @*<div class="form-group">
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn">HTML Page<span class="danger"></span></label>
+                                                    @Html.TextBoxFor(model => model.sHTMLPage, new { @placeholder = "Enter HTML Page", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-4 taberrormsg">
+                                                    @Html.ValidationMessageFor(m => m.sHTMLPage, null, new { @class = "red" })
+                                                </div>
+                                            </div>*@
+
+                                        <div class="form-group">
+                                            <div class="col-md-3 IsContextObject">
+                                                @Html.CheckBoxFor(m => m.bIsContextObject)
+                                                <label for="inputEmail" class="gn">Is ContextObject<span class="danger"></span></label>
+                                            </div>
+                                            <input type="hidden" name="bIsContextObject" id="IsContextObject" />
+                                        </div>
+                                        <div id="ddlParamScript">
+                                            <div class="form-group">
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn">XIParameters<span class="danger"></span></label>
+                                                    @Html.DropDownListFor(m => m.FKiParameterID, new SelectList(Model.ddlXIParameters, "Value", "text"), new { @class = "form-control" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn">XIStructures<span class="danger"></span></label>
+                                                    @Html.DropDownListFor(m => m.FKiBOStructureID, new SelectList(Model.ddlXIStructures, "Value", "text"), new { @class = "form-control" })
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">Source<span class="danger"></span></label>
+                                                @Html.DropDownListFor(m => m.FKiOriginID, new SelectList(Model.ddlSourceList, "Value", "text"), new { @class = "form-control" })
+                                            </div>
+                                        </div>
+
+                                        @*<div class="form-group">
+                                            <div class="col-md-3 IsContextObject">
+                                                @Html.CheckBoxFor(m => m.bIsQSTraceStage)
+                                                <label for="inputEmail" class="gn">Is TraceStage<span class="danger"></span></label>
+                                            </div>
+                                        </div>*@
+
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                                @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control" })
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <div class="col-sm-10">
+                                                <input type="submit" class="btn btn-theme" value="Save" />
+                                                <button type="button" class="btn btn-theme decline" id="CancelBO">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div id="XiForm" class="m-t-b-15" style="display:none">
+            @{
+                Html.RenderAction("GridStepDetails", "XISemantics", new { iXISemanticID = iXISemanticID });
+            }
+        </div>
+        @*<div id="XiGroup" class="m-t-b-15" style="display:none">
+                @{
+                    Html.RenderAction("GridNavigationDetails", "XISemantics", new { iXISemanticID = iXISemanticID });
+                }
+            </div>*@
+
+        <div id="XiStage" class="m-t-b-15" style="display:none">
+            @{
+                Html.RenderAction("XIQSStageDetails", "XISemantics", new { iXISemanticID = iXISemanticID });
+            }
+        </div>
+
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#ddlParamScript').hide();
+        if(@Model.FKiParameterID > 0 || @Model.FKiBOStructureID > 0)
+        {
+            $('#ddlParamScript').show();
+        }
+        ShowOrHideDivs('XiSemanticTab', 'XiGrid');
+        if(@Model.ID == 0)
+        {
+            $('.XiStepsTab').prop('disabled', true);
+            //$('.XiNavigationsTab').prop('disabled', true);
+            $('.XiStagesTab').prop('disabled',true);
+        }
+        $('#CancelBO').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#XISemanticsForm')[0].reset();
+            $('#XISemanticsForm .taberrormsg').find('span').html('');
+        });
+    })
+    function OnFormBegin() {
+        $('#XISemanticsForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+    var iXISemanticID = 0;
+
+    function OnComplete(e) {
+        iXISemanticID = e.ID;
+        $('#XISemanticsForm').unblock();
+        //$('#XISemanticsForm')[0].reset();
+        $('#XISemanticIDForStep').attr('data-xisemanticid', e.ID);
+        $('#XISemanticIDForStage').attr('data-xisemanticids', e.ID);
+        $('#FKiQSDefStageID').val(e.ID);
+        $('.XiStepsTab').prop('disabled', false);
+        $('.XiStagesTab').prop('disabled',false);
+        CustomMessage(e.ResponseMessage, e.Status);
+        opener.window.location.reload();
+    }
+
+    function ShowOrHideDivs(LiClass, DivID) {
+        $('#XiGrid').hide();
+        $('#XiForm').hide();
+        $('#XiStage').hide();
+        //$('#XiGroup').hide();
+        $('.XiSemanticTab').removeClass('active');
+        //$('.XiNavigationsTab').removeClass('active');
+        $('.XiStepsTab').removeClass('active');
+        $('.XiStagesTab').removeClass('active');
+        $('#' + DivID).show();
+        $('.' + LiClass).addClass('active');
+    }
+
+    var StepID = $('#XISemanticIDForStep').attr('data-xisemanticid', iXISemanticID);
+
+    @*$(document).on('click', 'button#RefreshStepBtn', function () {
+        @ViewBag.BOID = @Model;
+        $('#XiForm').load('@Url.Action("GridStepDetails", "XISemantics")?ID=@ViewBag.BOID');
+    });*@
+
+    $('.IsContextObject').change(function(){
+        if($('#bIsContextObject').is(':checked'))
+        {
+            $("#IsContextObject").val("True");
+            $('#ddlParamScript').show();
+        }
+        else
+        {
+            $("#IsContextObject").val("False");
+            $('#ddlParamScript').hide();
+            $("#FKiParameterID")[0].selectedIndex = 0;
+            $("#FKiBOStructureID")[0].selectedIndex = 0;
+        }
+    });
+
+</script>
+<style>
+    .BOTabs li {
+        cursor: pointer;
+    }
+</style>

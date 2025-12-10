@@ -1,0 +1,200 @@
+﻿@model XICore.XIDefinitionBase
+@using XICore
+@using XISystem
+
+@if (Model.oContent != null)
+{
+    if (Model.oContent.ContainsKey(XIConstant.ContentXILink))
+    {
+        <div class="conXiLink">            
+            @{var oXILinkD = (XILink)Model.oContent[XIConstant.ContentXILink];}
+            @if (oXILinkD.oContent.ContainsKey(XIConstant.ContentDialog))
+            {
+                <span>XiLink-@oXILinkD.XiLinkID</span><br />
+                var oDialogDef = (XIDefinitionBase)oXILinkD.oContent[XIConstant.ContentDialog];
+                var oDialogD = (XIDDialog)oDialogDef.oContent[XIConstant.ContentDialog];
+                if (oDialogD.oContent != null)
+                {
+                    <div class="conDialog">
+                        <span>Dialog-@oDialogD.ID</span><br />
+                        @if (oDialogD.oContent.ContainsKey(XIConstant.ContentLayout))
+                        {
+                            var oLayoutDef = (XIDefinitionBase)oDialogD.oContent[XIConstant.ContentLayout];
+                            var oLayoutD = (XIDLayout)oLayoutDef.oContent[XIConstant.ContentLayout];
+                            if (oLayoutD != null && oLayoutD.LayoutMappings != null)
+                            {
+                                <div class="conLayout">
+                                    <span>Layout-@oLayoutD.ID</span><br />
+                                    @foreach (var items in oLayoutD.LayoutMappings)
+                                    {
+                                        var oDiv = oLayoutD.LayoutDetails.Where(m => m.PlaceHolderID == items.PlaceHolderID).FirstOrDefault();
+                                        <div id="@oDiv.PlaceholderUniqueName" class="@oDiv.PlaceholderClass">
+                                            @if (items.oContent != null)
+                                            {
+                                                if (items.oContent.ContainsKey(XIConstant.ContentXIComponent))
+                                                {
+                                                    <div class="conComponent">
+                                                        @{ var oCompDef = (XIDefinitionBase)items.oContent[XIConstant.ContentXIComponent];
+                                                            var oXICompD = (XIDComponent)oCompDef.oContent[XIConstant.ContentXIComponent];
+                                                            if (oXICompD.oContent.ContainsKey(XIConstant.ContentQuestionSet))
+                                                            {
+                                                                XIDQS oQSD = new XIDQS();
+                                                                oQSD = (XIDQS)oXICompD.oContent[XIConstant.ContentQuestionSet];
+                                                                if (oQSD.oContent.ContainsKey(XIConstant.ContentStep))
+                                                                {
+                                                                    <span>@oXICompD.sName-@oQSD.ID</span><br />
+                                                                    XIDefinitionBase oXILI = new XIDefinitionBase();
+                                                                    oXILI = (XIDefinitionBase)oQSD.oContent[XIConstant.ContentStep];
+                                                                    { Html.RenderPartial("_XIPreviewContent", oXILI); }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <span>@oXICompD.sName</span><br />
+                                                            }
+                                                        }
+                                                    </div>
+                                                            }
+                                                            else if (items.oContent.ContainsKey(XIConstant.ContentXILink))
+                                                            {
+                                                                XIDefinitionBase oXILI = new XIDefinitionBase();
+                                                                oXILI = (XIDefinitionBase)items.oContent[XIConstant.ContentXILink];
+                                                                { Html.RenderPartial("_XIPreviewContent", oXILI); }
+                                                            }
+                                                            else if (items.oContent.ContainsKey(XIConstant.ContentHTML))
+                                                            {
+                                                                <div class="conHTML">
+                                                                    <span>HTML</span><br />
+                                                                    @{ Html.Raw(items.HTMLCode); }
+                                                                </div>
+
+                                                                            }
+                                                                            else if (items.oContent.ContainsKey(XIConstant.ContentStep))
+                                                                            {
+                                                                                XIDefinitionBase oXILI = new XIDefinitionBase();
+                                                                                oXILI = (XIDefinitionBase)items.oContent[XIConstant.ContentStep];
+                                                                                { Html.RenderPartial("_XIPreviewContent", oXILI); }
+                                                                            }
+                                                                        }
+                                        </div>
+                                                                        }
+                                </div>
+
+                                                                                }
+                                                                            }
+
+                    </div>
+
+
+                                                                                }
+                                                                            }
+                                                                            else if (oXILinkD.oContent.ContainsKey(XIConstant.ContentXIComponent))
+                                                                            {
+                                                                                var oCompDef = (XIDefinitionBase)oXILinkD.oContent[XIConstant.ContentXIComponent];
+                                                                                var oXICompD = (XIDComponent)oCompDef.oContent[XIConstant.ContentXIComponent];
+                                                                                <div class="conComponent">
+                                                                                    <span>@oXICompD.sName</span><br />
+                                                                                </div>
+
+                                                                                //{ Html.RenderAction("LoadComponent", "XIComponents", new { iXIComponentID = oXICompD.ID, nParams = oXICompD.Params, sGUID = Model.sGUID }); }
+                                                                            }
+
+        </div>
+
+                                                                            }
+                                                                            else if (Model.oContent.ContainsKey(XIConstant.ContentStep))
+                                                                            {
+                                                                                <div class="conStep">
+                                                                                    @{var oStepDef = (XIDQSStep)Model.oContent[XIConstant.ContentStep];
+                                                                                        <span>Step-@oStepDef.ID</span>
+                                                                                        if (oStepDef.oContent.ContainsKey(XIConstant.ContentLayout))
+                                                                                        {
+                                                                                            XIDefinitionBase oXILI = new XIDefinitionBase();
+                                                                                            var oXILayout = (XIDefinitionBase)oStepDef.oContent[XIConstant.ContentLayout];
+                                                                                            oXILI.oContent[XIConstant.ContentLayout] = oXILayout;
+                                                                                            { Html.RenderPartial("_XIPreviewContent", oXILI); }
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            if (oStepDef.Sections != null && oStepDef.Sections.Count() > 0)
+                                                                                            {
+                                                                                                foreach (var oSec in oStepDef.Sections.Values)
+                                                                                                {
+                                                                                                    if (oSec.oContent.ContainsKey(XIConstant.ContentXIComponent))
+                                                                                                    {
+                                                                                                        var oCompDef = (XIDefinitionBase)oSec.oContent[XIConstant.ContentXIComponent];
+                                                                                                        var oXICompD = (XIDComponent)oCompDef.oContent[XIConstant.ContentXIComponent];
+                                                                                                            <div class="conComponent">
+                                                                                                                <span>@oXICompD.sName</span><br />
+                                                                                                            </div>
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+
+                                                                                        }
+                                                                                    }
+                                                                                </div>
+                                                                                        }
+                                                                                        else if (Model.oContent.ContainsKey(XIConstant.ContentLayout))
+                                                                                        {
+                                                                                            var oLayoutD = (XIDLayout)Model.oContent[XIConstant.ContentLayout];
+                                                                                            <div class="conLayout">
+                                                                                                <span>Layout-@oLayoutD.ID</span><br />
+                                                                                                @foreach (var items in oLayoutD.LayoutMappings)
+                                                                                                {
+                                                                                                    var oDiv = oLayoutD.LayoutDetails.Where(m => m.PlaceHolderID == items.PlaceHolderID).FirstOrDefault();
+                                                                                                    <div id="@oDiv.PlaceholderUniqueName" class="@oDiv.PlaceholderClass">
+                                                                                                        @if (items.oContent != null)
+                                                                                                        {
+                                                                                                            if (items.oContent.ContainsKey(XIConstant.ContentXIComponent))
+                                                                                                            {
+                                                                                                                <div class="conComponent">
+                                                                                                                    @{ var oCompDef = (XIDefinitionBase)items.oContent[XIConstant.ContentXIComponent];
+                                                                                                                        var oXICompD = (XIDComponent)oCompDef.oContent[XIConstant.ContentXIComponent];
+                                                                                                                        if (oXICompD.oContent.ContainsKey(XIConstant.ContentQuestionSet))
+                                                                                                                        {
+                                                                                                                            <span>@oXICompD.sName</span><br />
+                                                                                                                            XIDQS oQSD = new XIDQS();
+                                                                                                                            oQSD = (XIDQS)oXICompD.oContent[XIConstant.ContentQuestionSet];
+                                                                                                                            if (oQSD.oContent.ContainsKey(XIConstant.ContentStep))
+                                                                                                                            {
+                                                                                                                                XIDefinitionBase oXILI = new XIDefinitionBase();
+                                                                                                                                oXILI = (XIDefinitionBase)oQSD.oContent[XIConstant.ContentStep];
+                                                                                                                                { Html.RenderPartial("_XIPreviewContent", oXILI); }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                        else
+                                                                                                                        {
+                                                                                                                            <span>@oXICompD.sName</span><br />
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                </div>
+                                                                                                                        }
+                                                                                                                        else if (items.oContent.ContainsKey(XIConstant.ContentXILink))
+                                                                                                                        {
+                                                                                                                            XIDefinitionBase oXILI = new XIDefinitionBase();
+                                                                                                                            oXILI = (XIDefinitionBase)items.oContent[XIConstant.ContentXILink];
+                                                                                                                            { Html.RenderPartial("_XIPreviewContent", oXILI); }
+                                                                                                                        }
+                                                                                                                        else if (items.oContent.ContainsKey(XIConstant.ContentHTML))
+                                                                                                                        {
+                                                                                                                            <div class="conHTML">
+                                                                                                                                <span>HTML</span><br />
+                                                                                                                                @{ Html.Raw(items.HTMLCode); }
+                                                                                                                            </div>
+
+                                                                                                                                        }
+                                                                                                                                        else if (items.oContent.ContainsKey(XIConstant.ContentStep))
+                                                                                                                                        {
+                                                                                                                                            XIDefinitionBase oXILI = new XIDefinitionBase();
+                                                                                                                                            oXILI = (XIDefinitionBase)items.oContent[XIConstant.ContentStep];
+                                                                                                                                            { Html.RenderPartial("_XIPreviewContent", oXILI); }
+                                                                                                                                        }
+
+                                                                                                                                    }
+                                                                                                    </div>
+                                                                                                                                    }
+                                                                                            </div>
+                                                                                                                                            }
+
+                                                                                                                                        }

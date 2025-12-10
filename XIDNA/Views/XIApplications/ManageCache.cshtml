@@ -1,0 +1,144 @@
+﻿@model XIDNA.ViewModels.VM_CacheData
+@{
+    var sType = ViewBag.sType;
+    if (!string.IsNullOrEmpty(sType) && sType == "Load")
+    {
+
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    }
+}
+
+<section class="content-header hedr">
+    <h1> Cache Management </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Cache Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="col-xs-3">
+                <div id="Cachetree"></div>
+            </div>
+        
+
+        <div class="col-xs-9">
+            <div class="box">
+                <div class="box-body" id="CachContainer">
+                    <!----Partial Page here ---->
+                    @{Html.RenderPartial("_CacheList", Model);}
+                </div>
+            </div>
+        </div>
+		</div>
+    </div>
+</div>
+
+<script>
+    var cachetype=0;
+    $(document).on("click", ".RemoveCacheBtn", function () {
+        var skey = $(this).attr('id').split('$')[1];
+        var cachetype = $(this).attr('data-Cachetype');
+        fncRemoveCache(skey, cachetype);
+    });
+
+    $(document).ready(function () {
+    });// end for ready
+
+    $(function () {
+        $('#Cachetree').jstree({
+            "core": {
+                "themes": {
+                    "variant": "large"
+                },
+                "check_callback": true,
+                "data": [{
+                    id: "id0",
+                    parent: "#",
+                    text: "Cache",
+                },
+                {
+                    id: "id1",
+                    parent: "id0",
+                    text: "Application Level"
+                },
+                {
+                    id: "id2",
+                    parent: "id0",
+                    text: "User Level"
+                }
+
+                ]
+            },
+            "state": { "key": "TreeStrctr" },
+            "types": {
+                "#": {
+                    "valid_children": ["default"]
+                },
+                "default": {
+                    "valid_children": ["default", "presentation"],
+                    "icon": "fa fa-folder fc-theme"
+                },
+                "demo": {
+                    "icon": "fa fa-folder-open"
+                }
+            },
+            "plugins": ["types"],
+            "dnd": {},
+        }).bind("loaded.jstree", function (event, data) {
+            $(this).jstree("open_all");
+        }).on("changed.jstree", function (event, data) {
+            // Changed event here
+            var tageid = data.node.id;
+             cachetype = tageid.replace(/[^\d.]/g, '');
+            fncLoadCacheData(cachetype);
+        });
+
+
+    });
+
+    function fncLoadCacheData(val) {
+        // call Ajax here CachContainer
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("CachePartial", "XIApplications")',
+            data: { cachetype: val },
+            cache: false,
+            async: false,
+            dataType: 'html',
+            success: function (data) {
+                if (data != null) {
+                    $("#CachContainer").html(data);
+                }
+            },
+            error: function (response) {
+            }
+        }); // end for ajax
+    }
+
+
+
+    function fncRemoveCache(skey, Type) {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("RemoveCacheByKey", "XIApplications")',
+            data: { skey: skey, cachetype: Type },
+            cache: false,
+            async: false,
+            dataType: 'json',
+            success: function (data) {
+                // trigger table once after removing the data
+                fncLoadCacheData(cachetype);
+            },
+            error: function (response) {
+            }
+        }); // end for ajax
+    }
+
+
+</script>

@@ -1,0 +1,212 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Globalization;
+
+@{
+    XIGraphData oXIGraph = new XIGraphData();
+    if (Model.oContent.ContainsKey(XIConstant.PieChartComponent))
+    {
+        oXIGraph = (XIGraphData)Model.oContent[XIConstant.PieChartComponent];
+        if (oXIGraph == null)
+        {
+            oXIGraph = new XIGraphData();
+        }
+        XIInfraCache oCache = new XIInfraCache();
+    }
+}
+<script>
+    $(document).ready(function () {
+    var JsonData = @Html.Raw(Json.Encode(oXIGraph));
+        fncDevicepieChart(JsonData);
+        var idname = '';
+        $("#PieChartGraphClose-" + idname).click(function () {
+            var Type = $(this).attr('data-Type');
+            var Name = $(this).attr('data-name');
+            $('input[data-id=' + Name + ']').prop('checked', false);
+            var visibility = $(this).closest('.portlet').attr('data-id');
+            visibility = visibility.replace("true", "false");
+            $(this).closest('.portlet').attr('data-id', visibility);
+            $(this).closest('.portlet').hide();
+            var Rows = $('.sortable').find('.portlet');
+            var ReportIDs = new Array();
+            for (i = 0; i < Rows.length; i++) {
+                var Row = Rows[i].attributes;
+                for (j = 0; j < Row.length; j++) {
+                    if (Row[j].name == "data-id") {
+                        id = Row[j].nodeValue;
+                    }
+                }
+                var type = id.split('-')[0];
+                if (type == "Row") {
+                    var ids = "";
+                    var circles = $('.KPICircles');
+                    for (k = 0; k < circles.length; k++) {
+                        var circle = circles[k].attributes;
+                        for (l = 0; l < circle.length; l++) {
+                            if (circle[l].name == "data-id") {
+                                ids = ids + circle[l].nodeValue + ",";
+                            }
+                        }
+                    }
+                    ids = ids.substring(0, ids.length - 1);
+                    id = "{" + ids + "}"
+                }
+                ReportIDs.push(id);
+                var RowData = {
+                    ColOrder: ReportIDs, UserID: parseInt(@oXIGraph.UserID)
+                }
+            }
+            $.ajax({
+                url: '@Url.Action("SaveColSettings", "Inbox")',
+                type: 'POST',
+                data: JSON.stringify(RowData),
+                contentType: "application/json; charset=utf-8",
+                datatype: 'JSON',
+                cache: false,
+                success: function (data) {
+                },
+                error: function (data) {
+                }
+            });
+        })
+        @*$('#@oXIGraph.QueryName.Replace(" ", "_")-ddlClassPieChart').change(function () {
+            var ClassValue = $('#@oXIGraph.QueryName.Replace(" ", "_")-ddlClassPieChart').val();
+            var DateValue = $('#@oXIGraph.QueryName.Replace(" ", "_")-ddlDatePieChart').val();
+            $.ajax({
+                url: '@Url.Action("GetPieChart", "Inbox")',
+                type: 'GET',
+                cache: false,
+                async: false,
+                contentType: 'application/json; charset=utf-8',
+                data: { ReportID: '@oXIGraph.ID', ClassValue: ClassValue, DateValue: DateValue },
+                success: function (data) {
+                    //fncDeviceChart(data);
+                }
+            });
+        });
+        $('#@oXIGraph.QueryName.Replace(" ", "_")-ddlDatePieChart').change(function () {
+            var ClassValue = $('#@oXIGraph.QueryName.Replace(" ", "_")-ddlClassPieChart').val();
+            var DateValue = $('#@oXIGraph.QueryName.Replace(" ", "_")-ddlDatePieChart').val();
+            $.ajax({
+                url: '@Url.Action("GetPieChart", "Inbox")',
+                type: 'GET',
+                cache: false,
+                async: false,
+                contentType: 'application/json; charset=utf-8',
+                data: { ReportID: '@oXIGraph.ID', ClassValue: ClassValue, DateValue: DateValue },
+                success: function (data) {
+                    fncDeviceChart(data);
+                }
+            });
+        });*@
+        @*var id = "#Piechart-@oXIGraph.QueryName.Replace(" ","_")";
+        html2canvas($(id), {
+            onrendered: function (canvas) {
+                // canvas is the final rendered <canvas> element
+                var myImage = canvas.toDataURL("image/png");
+                var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
+                window.open(myImage);
+                window.location.href = image;
+                document.getElementById(id).innerHTML = "<img src='" + myImage + "'>";
+            }
+        });*@
+    });
+
+
+
+</script>
+@*<style>
+        .c3-legend-item text {
+            color: white;
+        }
+    </style>*@
+<div>
+    <!-- <div style="text-align: right"><label>Last Updated:-<strong>@oXIGraph.sLastUpdated</strong></label></div> -->
+    @if (oXIGraph.Type != "Dashboard" && oXIGraph.Type != "Run")
+    {
+        if (oXIGraph.SectionName != null)
+        {
+            <div class="panel panel-default">
+                @if (oXIGraph.SectionName != null)
+                {
+                    <div class="panel-heading usericon Lead1">
+                        <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#@oXIGraph.SectionName.Replace(" ","")@oXIGraph.TabID">
+                            <h4 class="panel-title">@oXIGraph.SectionName</h4>
+                        </a>
+                    </div>
+                }
+                <div class="panel-collapse collapse in" id=@oXIGraph.SectionName.Replace(" ","")@oXIGraph.TabID>
+                    <div class="panel-body LeadContent">
+                        <div class="statistic-box">
+                            <div class="row text-center">
+                                <div id="Piechart-@oXIGraph.TabID@oXIGraph.SectionName.Replace(" ","")"></div>
+                                @*<div class="col-lg-6">
+                                        <canvas id="1Pie-@Model.TabID@Model.SectionName.Replace(" ","")" width="115" height="115"></canvas>
+                                        <h5>Leads By Source</h5>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <canvas id="2Pie-@Model.TabID@Model.SectionName.Replace(" ","")" width="115" height="115"></canvas>
+                                        <h5>Leads By Class</h5>
+                                    </div>*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <!-- <div class="PieChartGraph content-block">
+            <p class="chart-title">@oXIGraph.QueryName</p>
+            <div class="pull-right box-tools form-inline">
+                @if (oXIGraph.Type != "Run")
+                {
+                    @Html.DropDownList("ddlPieChart", new SelectList(@oXIGraph.ClassDDL, "Value", "text", ""), "-Class-", new { @class = "form-control PieClassDropDown", @id = oXIGraph.QueryName.Replace(" ", "_") + "-ddlClassPieChart" })
+                    @Html.DropDownList("ddlDatePieChart", new SelectList(@oXIGraph.DateDDL, "Value", "text", ""), "-Date-", new { @class = "form-control PieDateDropDown", @id = oXIGraph.QueryName.Replace(" ", "_") + "-ddlDatePieChart" })
+                    <button class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove" id="PieChartGraphClose-@oXIGraph.QueryName.Replace(" ","_")" data-type="PieChart" data-name="@oXIGraph.QueryName.Replace(" ","_")"><i class="fa fa-times"></i></button>
+                } -->
+        <!--@*<a href="#" class="btn-minimize btn-default"><i class="fa fa-angle-down"></i></a>*@
+        <a href="#" class="btn-close btn-default" id="PieChartGraphClose-@oXIGraph.QueryName.Replace(" ","_")" data-type="PieChart" data-name="@oXIGraph.QueryName.Replace(" ","_")"><i class="fa fa-close"></i></a>-->
+
+        <!-- </div>
+            <div class="PieChartData">
+                @if (oXIGraph.Type != "Run")
+                {
+                    <div id="Piechart-@oXIGraph.ReportID"></div>
+                }
+                else
+                {
+                    <div id="Piechart-@oXIGraph.ReportID"></div>
+                }
+            </div>
+        </div> -->
+
+        <div class="container-fluid">
+            <div class="box">
+                <div class="box-header">
+                    <span>@oXIGraph.QueryName <span class="pull-right small">Last Updated:-<strong>@oXIGraph.sLastUpdated</strong></span></span>
+                    @if (oXIGraph.Type != "Run")
+                {
+                        @Html.DropDownList("ddlPieChart", new SelectList(@oXIGraph.ClassDDL, "Value", "text", ""), "-Class-", new { @class = "form-control PieClassDropDown", @id = oXIGraph.QueryName.Replace(" ", "_") + "-ddlClassPieChart" })
+                        @Html.DropDownList("ddlDatePieChart", new SelectList(@oXIGraph.DateDDL, "Value", "text", ""), "-Date-", new { @class = "form-control PieDateDropDown", @id = oXIGraph.QueryName.Replace(" ", "_") + "-ddlDatePieChart" })
+                        <button class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove" id="PieChartGraphClose-@oXIGraph.QueryName.Replace(" ","_")" data-type="PieChart" data-name="@oXIGraph.QueryName.Replace(" ","_")"><i class="fa fa-times"></i></button>
+                    }
+                </div>
+                <div class="box-body">
+                    <div class="PieChartData">
+                        @if (oXIGraph.Type != "Run")
+                        {
+                            <div id="Piechart-@oXIGraph.ReportID" class="chartSize"></div>
+                        }
+                        else
+                        {
+                            <div id="Piechart-@oXIGraph.ReportID" class="chartSize"></div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

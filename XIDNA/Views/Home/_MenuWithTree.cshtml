@@ -1,0 +1,487 @@
+﻿@model XIDNA.Models.RightMenuTrees
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<section class="content-header hedr">
+    @*@if (Model.ID > 0)
+    {
+    <h1> Edit Group Details </h1>
+    }
+    else
+    {*@
+
+    <h1> Create Menu </h1>
+    @*}*@
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Menu Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <section>
+        <div class="row">
+            <div class="box">
+                <div class="box-body">
+                    <div id="SourceForm" class="tab-pane innerborder">
+                        <form class="form-horizontal">
+                            <div id="clear-text">
+                                <div class="form-group" id="OrgDetails">
+                                    <div class="col-md-5">
+                                        <label for="inputEmail" class="gn">Organisation<span class="danger">*</span></label>
+                                        @if (Model.Organisations != null)
+                                        {
+                                        @Html.DropDownListFor(model => model.OrgID, new SelectList(Model.Organisations
+                                        , "Value", "text"), "--Select--", new { @class = "form-control", @id = "Org" })
+                                        }
+
+                                    </div>
+                                    <div class="col-md-5 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.OrgID, null, new { @class = "red" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="DisplayRole" style="display:none">
+                                    <div class="col-md-5">
+                                        <label for="inputEmail" class="gn">Select the Role</label>
+                                        @*<select class="form-control" id="Roles"></select>*@
+                                        @Html.DropDownListFor(model => model.RoleID, new SelectList("Value", "text"), "--Select--", new { @class = "form-control", @id = "Roles" })
+                                    </div>
+                                </div>
+                                <div class="form-group" id="CreateRoot" style="display:none">
+                                    <div class="col-md-5">
+                                        <label for="inputEmail" class="gn"> Main Menu Name<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(model => model.Name, new { @placeholder = "Enter Menu name", @class = "form-control", @id = "RootName" })
+                                    </div>
+                                    <div class="col-md-5 taberrormsg">
+                                        <div class="errormessage col-sm-5" id="splerror" style="color:red;"></div>
+                                        <div class="errormessage col-sm-5" id="error" style="color:red;"></div>
+                                        @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="button" class="btn btn-theme" value="Save" id="SaveMenu" />
+                                    <button type="button" class="btn btn-theme decline" id="MenuCancel">Cancel</button>
+
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#Org').val('');
+        $('#MenuCancel').click(function(){
+            window.close();
+        });
+        if((@Model.OrgID>0)&&(@Model.RoleID>0))
+        {
+            $('#Org').val(@Model.OrgID);
+            $('#Roles').val(@Model.RoleID);
+            $('#RootName').val(@Model.RootName);
+        }
+
+        $("#Org").change(function () {
+            var selectedText = $(this).find("option:selected").text();
+            var selectedValue = $(this).val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetRolesForMenu", "Home")',
+                data: { OrgName: selectedText, OrgID: selectedValue },
+                cache: false,
+                dataType: 'JSON',
+                success: function (data) {
+                    $('#Roles').empty();
+                    $("#DisplayRole").show();
+                    if (data != null) {
+                        $("#Roles").append("<option value='0'>--Select--</option>");
+                        for (var i = 0; i < data.length; i++) {
+                            $("#Roles").append("<option value=" + data[i].Value + ">" + data[i].text + "</option>")
+                        }
+                    }
+                }
+            });
+        });
+
+        $("#Roles").change(function()
+        {
+            $("#CreateRoot").show();
+            $("#CreateRoot").val('');
+        });
+
+        $("#SaveMenu").click(function () {
+            var OrgID = $('#Org').val();
+            var RoleID = $('#Roles').val();
+            var RootName = $("#RootName").val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("IsExistsRoot", "Home")',
+                data: { ID:0, RootName:RootName,OrgID:OrgID,RoleID:RoleID },
+                cache: false,
+                dataType: 'JSON',
+                success: function (result) {
+                    if (result == false) {
+                        $('#error').show();
+                        $("#splerror").hide();
+                        $('#error').empty();
+                        $('#error').append("Root Name Already Exists");
+                    }
+                    else{
+                        $('#error').empty()
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("SaveMenuDetails", "Home")',
+                            data:JSON.stringify({ 'OrgID': OrgID, 'RootName': RootName, 'RoleID': RoleID }),
+                            cache: false,
+                            async: true,
+                            contentType: "application/json; charset=utf-8",
+                            dataType: 'json',
+                            success: function (data) {
+                                if(data.ID > 0 )
+                                {
+                                    if (data != null) {
+                                        var jsondata = [];
+                                        var ID = data.MenuID;
+                                        var Parent = data.ParentID;
+                                        var text = data.Name;
+                                        item = {}
+                                        item["id"] = ID;
+                                        item["parent"] = Parent;
+                                        item["text"] = text;
+                                        //item["children"] = "true";
+                                        jsondata.push(item);
+                                        var jsonString = JSON.stringify(jsondata);
+                                        //var jsonString = jsondata[0];
+                                    }
+                                    else {
+                                        //No tree
+                                    }
+                                    createJSTree(JSON.parse(jsonString));
+                                    //createJSTree(jsonString);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+
+<div id="MainDiv">
+    <div id="jstree" class="col-md-4"></div>
+    <div id="AddDetails" class="col-md-6"></div>
+    @*<div class="span2">
+        <a href='@Url.Action("AddMenuGroupForm", "Home")' class="savebtn btn btn-primary btn-xs" />Add Group</a>
+    </div>*@
+</div>
+<script type="text/javascript">
+
+    function createJSTree(jsondata) {
+        $('#jstree').jstree({
+            "core": {
+                "themes": {
+                    "variant" : "large"
+                },
+                //"check_callback": function (op, node, par, pos, more) {
+                //    if ((op === "move_node") && (par.id === null)) {
+                //        return false;
+                //    }
+                //    return true;
+                //},
+                "check_callback": true,
+                'data': jsondata,
+                //'data' : function (jsondata) {
+                //    return { 'id' : jsondata.id };
+                //}
+                //'data' : [
+                //   { "id" : jsondata.id, "parent" : "#", "text" : jsondata.text },
+                //]
+            },
+            "plugins": ["contextmenu", "dnd"],
+            "dnd": {},
+            "contextmenu": {
+                "items": function ($node) {
+                    var tree = $("#jstree").jstree(true);
+                    return {
+                        "Create": {
+                            "separator_before": false,
+                            "separator_after": true,
+                            "label": "Create",
+                            action: function (obj) {
+                                var ID = 0;
+                                //SaveToDB($node, 'create', obj);
+                                var RootName = $("#RootName").val();
+                                var iRoleID = $('#Roles').val();
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("SaveMenuTreeDetails", "Home")',
+                                    data: {RootNode:RootName, ParentNode: '', NodeID: '', NodeTitle: 'New Menu', Type:'create',iRoleID:iRoleID},
+                                    cache: false,
+                                    dataType: 'json',
+                                    success: function (data) {
+                                        if(parseInt(data)>0){
+                                            ID = parseInt(data);
+                                            $node = tree.create_node($node, { text: 'New Menu', type: 'default',id:ID });
+                                            tree.deselect_all();
+                                            tree.select_node($node);
+                                            var ParentID = $("#" + $node).parent().parent().attr('id');
+                                            var NodeTitle = $(null + $node).text();
+                                            $.ajax({
+                                                type: 'POST',
+                                                url: '@Url.Action("SaveMenuTreeDetails", "Home")',
+                                                data: {ID:parseInt(data), ParentNode: ParentID, NodeID: '', Type:'create',iRoleID:iRoleID},
+                                                cache: false,
+                                                dataType: 'json',
+                                                success: function (result) {
+                                                    if(parseInt(result)>0){
+
+                                                    }
+                                                    else{
+                                                        alert('Error Occurred');
+                                                    }
+                                                }
+                                            });
+                                        }
+                                        else{
+                                            alert('Error Occurred');
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                        "Rename": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Rename",
+                            "action": function (obj) {
+                                var CheckNode = CheckIfMain($node);
+                                if (CheckNode == '1') {
+                                    tree.edit($node, null, function (node, status) {
+                                        if (node.original.text != node.text) {
+                                            RenameAndSaveToDB($node, "rename");
+                                        }
+                                    });
+                                }
+
+                            }
+                        },
+                        "Remove": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Remove",
+                            "action": function (obj) {
+                                var CheckNode = CheckIfMain($node);
+                                if (CheckNode == '1') {
+                                    tree.delete_node($node);
+                                    DeleteNodeDetails($node, "delete");
+                                }
+                            }
+                        },
+                        "AddDetails": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Add Details",
+                            "action": function (obj) {
+                                var CheckNode = CheckIfMain($node);
+                                if (CheckNode == '1') {
+                                    AddDetails($node);
+                                }
+                            }
+                        }
+                    };
+                }
+            },
+        }).bind("move_node.jstree", function (e, data) {
+            DragAndDropNodes(data)
+        }).bind("loaded.jstree", function (event, data) {
+            $(this).jstree("close_all");
+        });
+
+    }
+
+
+    function DragAndDropNodes(data) {
+        var NodeID = data.node.id;
+        var OldParentID = data.old_parent;
+        var NewParentID = data.parent;
+        var old_position = data.old_position;
+        var position = data.position;
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("DragAndDropNodes", "Home")',
+            data: { NodeID: NodeID, OldParentID: OldParentID, NewParentID: NewParentID, Oldposition: old_position, Newposition: position },
+            cache: false,
+            dataType: 'json',
+            success: function (data) { }
+        });
+    }
+    //check if main node "Add Menu"
+    function CheckIfMain($node)
+    {
+        var NodeID = $node.id;
+        if (NodeID == "MainPrnt") {
+            return 0;
+        }
+        else {
+            return 1;
+        }
+
+    }
+    //Save the details..
+    function SaveToDB(NodeID, action, obj) {
+        var ID = 0;
+        var RootName = $("#RootName").val();
+        var ParentID = $(null + NodeID).parent().parent().attr('id');
+        var NodeTitle = $(null + NodeID).text();
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("SaveMenuTreeDetails", "Home")',
+            data: {RootNode:RootName, ParentNode: ParentID, NodeID: NodeID, NodeTitle: NodeTitle, Type:action},
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                ID = parseInt(data);
+                $('#jstree').jstree(true).set_id(obj.node,ID);
+            }
+        });
+        return ID;
+    }
+    //rename and save the details
+    function RenameAndSaveToDB($node, action) {
+        var RootName = $("#RootName").val();
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        if (NodeID != "MainPrnt") {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SaveMenuTreeDetails", "Home")',
+                data: { RootNode:RootName,ParentNode: ParentID, NodeID: NodeID, NodeTitle: NodeTitle, Type: action },
+                cache: false,
+                dataType: 'json',
+                success: function (data) { }
+            });
+        }
+        else {
+
+        }
+    }
+    //delete
+    function DeleteNodeDetails($node, action) {
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ChildrnID = "";
+        for (var i = 0; i < ChldnID.length; i++)
+        {
+            var chldID = ChldnID[i];
+            ChildrnID = chldID + "," + ChildrnID;
+
+        }
+        var ChildrnIDs = ChildrnID.substring(0, ChildrnID.length - 1);
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        var iRoleID = $('#Roles').val();
+        if (NodeID != "MainPrnt") {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("DeleteNodeDetails", "Home")',
+                data: { ParentNode: ParentID, NodeID: NodeID, ChildrnIDs: ChildrnIDs, Type: action ,iRoleID:iRoleID},
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    //you can also remove this... as client side has the details and on load we are displaying above
+                    if (data != null) {
+                        var jsondata = [];
+                        item = {}
+                        item["id"] = "MainPrnt";
+                        item["parent"] = null;
+                        item["text"] = "Add Menu";
+                        jsondata.push(item);
+
+                        for (var i = 0; i < data.length; i++) {
+                            var ID = data[i].MenuID;
+                            var Parent = data[i].ParentID;
+                            var text = data[i].Name;
+
+                            item = {}
+                            item["id"] = ID;
+                            item["parent"] = Parent;
+                            item["text"] = text;
+                            jsondata.push(item);
+
+                        }
+                        var jsonString = JSON.stringify(jsondata);
+                    }
+                    else {
+                        jsonString = [
+                           { "id": "MainPrnt", "parent": null, "text": "Add" }
+                        ];
+                    }
+                    //call function to recreate tree
+                    //createJSTree(JSON.parse(jsonString));
+                    //$('#jstree').jstree(true).settings.core.data = jsonString;
+                    //$('#jstree').jstree(true).refresh();
+                }
+            });
+        }
+        else {
+
+        }
+    }
+
+    //Add details form
+    function AddDetails($node) {
+        var AddPopups = [];
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        var iRoleID = $('#Roles').val();
+        if (NodeID != "MainPrnt") {
+            var ID = $(this).attr('id');
+            //if (AddPopups.length > 0) {
+            //    for (i = 0; i < AddPopups.length; i++) {
+            //        AddPopups[i].close();
+            //    }
+            //}
+            //var AddDetails = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddDetailsForMenu", "Home")',
+                data: { ParentNode: ParentID, NodeID: NodeID ,iRoleID:iRoleID},
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    //with (AddDetails.document) {
+                    //    open();
+                    //    write(data);
+                    //    close();
+                    //}
+                    //AddPopups.push(AddDetails);
+                    //AddDetails.moveTo(0, 0);
+                    if(data!=null)
+                    {
+                        $("#AddDetails").empty();
+                        $("#AddDetails").append(data);
+                    }
+                }
+            });
+        }
+        else {
+
+        }
+    }
+</script>

@@ -1,0 +1,16 @@
+﻿@model XIDNA.ViewModels.VMOrganization
+
+<form class="form-horizontal">
+    <div class="form-group">
+        <label for="inputName" class="col-sm-2 control-label">Organization Classes</label>
+        <div class="col-sm-4 Textvalue">
+            @foreach (var items in Model.ClassIDs)
+            {
+                @Html.DisplayFor(m => items.Split('-')[1])<br />
+            }
+        </div>
+
+    </div>
+    
+</form>
+

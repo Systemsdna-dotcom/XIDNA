@@ -1,0 +1,171 @@
+﻿@model XIDNA.Models.BOProperty
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        $('#FieldType').change(function () {
+            if ($(this).val() == "VARCHAR") {
+                $('#Length').prop("disabled", false);
+            }
+            else {
+                $('#Length').prop("disabled", true);
+            }
+        });
+        if ('@Model.IsWhere' == "True") {
+            $('#IsExpression').prop('disabled', true);
+        }
+        if ('@Model.IsExpression' == "True") {
+            $('#IsWhere').prop('disabled', true);
+        }
+        $('#IsWhere').change(function () {
+            if ($(this).prop('checked') == true) {
+                $('#IsExpression').prop('disabled', true);
+            }
+            else {
+                $('#IsExpression').prop('disabled', false);
+            }
+        });
+        $('#IsExpression').change(function () {
+            if ($(this).prop('checked') == true) {
+                $('#IsWhere').prop('disabled', true);
+            }
+            else {
+                $('#IsWhere').prop('disabled', false);
+            }
+        });
+    });
+</script>
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+<section class="content-header hedr">
+    @if (Model.ID > 0)
+    {
+        <h1> Edit Property </h1>
+    }
+    else
+    {
+        <h1> Add Property </h1>
+    }
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Property</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="col-xs-4">
+                    @using (Ajax.BeginForm("SaveProperty", "BusinessObjects", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnComplete" }, new { @id = "PropertyForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.ID)
+                        if (@Model.ID == 0)
+                        {
+                            @Html.HiddenFor(m => m.CType, new { @Value = "Create" })
+                        }
+                        else
+                        {
+                            @Html.HiddenFor(m => m.CType, new { @Value = "Edit" })
+                        }
+                        <div id="clear-text">
+                            <div class="form-group">
+                                <div class="col-md-7">
+                                    <label for="inputEmail" class="gn"> Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.Name, new { @placeholder = "Enter Property name", @class = "form-control", @id = "PropertyName" })
+                                </div>
+                                <div class="col-md-5 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-7">
+                                    @Html.CheckBoxFor(m => m.IsWhere, new { @id = "IsWhere" })
+                                    <label for="inputEmail" class="gn">Is Where</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-7">
+                                    @Html.CheckBoxFor(m => m.IsExpression, new { @id = "IsExpression" })
+                                    <label for="inputEmail" class="gn">Is Expression</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-7">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                                               new { key= 20 , value = "Inactive" }
+                                               }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="submit" class="btn btn-theme" value="Save" />
+                                <button type="submit" class="btn btn-theme decline" id="PropertyCancel">Cancel</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="col-md-8" id="Operations"></div>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="dialog-box SaveBOPrptyDlg" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    function OnComplete(e) {
+        if ('@Model.ID' == 0) {
+            $('#PropertyForm')[0].reset();
+            opener.location.reload();
+            $(".SaveBOPrptyDlg").html('Property Added Successfully!</br> Do You Want To Add More?');
+            $(".SaveBOPrptyDlg").dialog({
+                title: "BO Property",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Yes",
+                       click: function () {
+                           $(".SaveBOPrptyDlg").dialog("close");
+                       }
+                   },
+                   {
+                       text: "No",
+                       click: function () {
+                           $(".SaveBOPrptyDlg").dialog("close");
+                           window.close();
+                       }
+                   }
+                ]
+            });
+        }
+        else {
+            $('#PropertyForm')[0].reset();
+            opener.location.reload();
+            $(".SaveBOPrptyDlg").html('Property Edited Successfully!');
+            $(".SaveBOPrptyDlg").dialog({
+                title: "BO Property",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Ok",
+                       click: function () {
+                           $(".SaveBOPrptyDlg").dialog("close");
+                           window.close();
+                       }
+                   }
+                ]
+            });
+        }
+    }
+    $('#PropertyCancel').click(function () {
+        window.close();
+    });
+</script>
+

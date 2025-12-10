@@ -1,0 +1,91 @@
+﻿@model XIDNA.Models.cXIComponents
+@{
+//Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        var Type; var GUID;
+        var Component = @Html.Raw(Json.Encode(Model));
+        if ('@ViewBag.IsValueset' == "False"){
+            $("#XICParams").dialog({
+                //modal: true,
+                width: 600
+            });
+        }
+        if('@ViewBag.IsValueSet'=="True"){
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("XIComponentExecute", "XIComponents")',
+                data: JSON.stringify(Component),
+                contentType: 'application/json;',
+                dataType: 'html',
+                traditional: true,
+                success: function (data) {
+                    $('#ComponentContent_@Model.ID').html(data);
+                }
+            });
+        }
+        $(document.body).off().on('click', 'a.jstree-anchor', function () {
+            GUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            var BOName = $(this).attr('id').split('_')[0];
+            var iInstanceID = $(this).attr('id').split('_')[1];
+            var OnClickComponentID = 0;
+            var OutputArea = "";
+            for(i=0;i<Component.XIComponentParams.length;i++){
+                if(Component.XIComponentParams[i].sName == "OnClick"){
+                    OnClickComponentID = Component.XIComponentParams[i].sValue;
+                }
+            }
+            for(i=0;i<Component.XIComponentParams.length;i++){
+                if(Component.XIComponentParams[i].sName == "Node Click"){
+                    OutputArea = Component.XIComponentParams[i].sValue;
+                }
+            }            
+
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("SetXIParams", "XIComponents")',
+                data: {iInstanceID:iInstanceID, sBOName :BOName, sGUID:GUID},
+                contentType: 'application/json;',
+                dataType: 'html',
+                traditional: true,
+                success: function (data) {
+                    if(OnClickComponentID >0){
+                        $.ajax({
+                            type: 'GET',
+                            url: '@Url.Action("LoadComponentByID", "XIComponents")',
+                            data: {iXIComponentID:OnClickComponentID, sGUID: GUID},
+                            contentType: 'application/json;',
+                            dataType: 'html',
+                            traditional: true,
+                            success: function (data) {
+                                Type = "XILoad";
+                                $('#'+OutputArea+'-'+GUID).html(data);
+                                //$('#ComponentParamsDialog').html(data);
+                                //$("#ComponentParamsDialog").dialog({
+                                //    //modal: true,
+                                //    width: 600
+                                //});
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    });
+
+    function LoadComponent(){
+
+    }
+</script>
+
+<div id="ComponentContent_@Model.ID">
+
+</div>
+
+@{
+    if (ViewBag.IsValueset == "False")
+    {
+        Html.RenderPartial("_LoadComponentParams", Model);
+    }
+}

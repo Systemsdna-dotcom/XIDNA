@@ -1,0 +1,50 @@
+﻿@model IEnumerable<XIDNA.ViewModels.VMDashReports>
+
+<section class="content-header hedr">
+    <h1> Status Report </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Reports</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="row">
+                </div>
+                <div id="box-body" class="content col-xs-12">
+                    <div class="tab_scroll main-table">
+                        <div class="dataTables_wrapper no-footer table-responsive">
+                            <table class="table table-bordered table-striped dataTable">
+                                <thead>
+                                    <tr>
+                                        <td></td>
+                                        @foreach (var items in Model.FirstOrDefault().Headings)
+                                        {
+                                            <td>@items</td>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var items in Model)
+                                    {
+                                        <tr>
+                                            <td>@items.Status</td>
+                                            @foreach (var val in items.Counts)
+                                            {
+                                                <td>@val</td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,75 @@
+﻿@{
+    Layout = null;
+}
+
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="row">
+                </div>
+                <div class="box-body">
+                    <div class="table-clean">
+                        <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="example">
+                            <thead>
+                                <tr role="row">
+                                    <th>S.No</th>
+                                    <th>Name</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>Definitions</td>
+                                    <td><input type="button" name="CacheClear" onclick="fncClearCache('Definition')" value="Clear" class="btn btn-theme btn-xs" /></td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>Scripts</td>
+                                    <td><input type="button" name="CacheClear" onclick="fncClearCache('XIScript')" value="Clear" class="btn btn-theme btn-xs" /></td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>Parameters</td>
+                                    <td><input type="button" name="CacheClear" onclick="fncClearCache('Parameters')" value="Clear" class="btn btn-theme btn-xs" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function fncClearCache(sKey) {
+        var sKey = sKey;
+        $("#Remove").dialog({
+            title: "Are you sure you want to delete ? ",
+            buttons: {
+                "Yes": function () {
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("CacheClear", "Home")',
+                        data: { sKey: sKey },
+                        contentType: 'application/json;',
+                        dataType: 'json',
+                        success: function (data) {
+
+                        }
+                    });
+                    $(this).dialog("close");
+                },
+                "No": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+
+</script>
+
+<div id="Remove"></div>

@@ -1,0 +1,284 @@
+﻿@{
+//Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<div class="row">
+    <div class="col-sm-12">
+        <div class="row row-gutter6">
+            <div class="col-sm-7 gutter6">
+                <div class="box mailbox-container">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Inbox</h3>
+                        <div class="box-tools mail-search">
+                            <div class="has-feedback">
+                                <input type="text" class="form-control input-sm" placeholder="Search Mail">
+                                <span class="glyphicon glyphicon-search form-control-feedback"></span>
+                            </div>
+                        </div><!-- /.box-tools -->
+                    </div><!-- /.box-header -->
+                    <div class="box-body no-padding">
+                        <div class="mailbox-controls">
+                            <!-- Check all button -->
+                            <button class="btn btn-default btn-sm checkbox-toggle"><i class="fa fa-square-o"></i></button>
+                            <div class="btn-group">
+                                <button class="btn btn-default btn-sm"><i class="fa fa-trash-o"></i></button>
+                                <button class="btn btn-default btn-sm"><i class="fa fa-reply"></i></button>
+                                <button class="btn btn-default btn-sm"><i class="fa fa-share"></i></button>
+                            </div><!-- /.btn-group -->
+                            <button class="btn btn-default btn-sm"><i class="fa fa-refresh"></i></button>
+                            <div class="pull-right">
+                                1-50/200
+                                <div class="btn-group">
+                                    <button class="btn btn-default btn-sm"><i class="fa fa-chevron-left"></i></button>
+                                    <button class="btn btn-default btn-sm"><i class="fa fa-chevron-right"></i></button>
+                                </div><!-- /.btn-group -->
+                            </div><!-- /.pull-right -->
+                        </div>
+                        <div class="table-responsive mailbox-messages">
+                            <table class="table table-hover table-striped">
+                                <tbody>
+                                    <tr>
+                                        <td class="mailbox-check tick">
+                                            <label class="label-wrapper">
+                                                <input type="checkbox">
+                                                <i class="check"></i>
+                                            </label>
+                                        </td>
+                                        <td class="mailbox-star"><a href="#"><i class="fa fa-star text-yellow"></i></a></td>
+                                        <td class="mailbox-name unread"><a href="read-mail.html">Naresh</a></td>
+                                        <td class="mailbox-subject unread">Subject title gose here...</td>
+                                        <td class="mailbox-attachment"></td>
+                                        <td class="mailbox-date">5 mins ago</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="mailbox-check">
+                                            <label class="label-wrapper">
+                                                <input type="checkbox">
+                                                <i class="check"></i>
+                                            </label>
+                                        </td>
+                                        <td class="mailbox-star"><a href="#"><i class="fa fa-star-o text-yellow"></i></a></td>
+                                        <td class="mailbox-name read"><a href="read-mail.html">User name</a></td>
+                                        <td class="mailbox-subject read"><i class="fa fa-paperclip"></i> <span class="label label-bg-green"> Trying</span> to find a solution to this problem...</td>
+                                        <td class="mailbox-attachment"></td>
+                                        <td class="mailbox-date">28 mins ago</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="mailbox-check">
+                                            <label class="label-wrapper">
+                                                <input type="checkbox">
+                                                <i class="check"></i>
+                                            </label>
+                                        </td>
+                                        <td class="mailbox-star"><a href="#"><i class="fa fa-star-o text-yellow"></i></a></td>
+                                        <td class="mailbox-name read"><a href="read-mail.html">User name</a></td>
+                                        <td class="mailbox-subject read"><i class="fa fa-paperclip"></i> <span class="label label-bg-skyblue">Trying</span> to find a solution to this problem...</td>
+                                        <td class="mailbox-attachment"></td>
+                                        <td class="mailbox-date">11 hours ago</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="mailbox-check">
+                                            <label class="label-wrapper">
+                                                <input type="checkbox">
+                                                <i class="check"></i>
+                                            </label>
+                                        </td>
+                                        <td class="mailbox-star"><a href="#"><i class="fa fa-star text-yellow"></i></a></td>
+                                        <td class="mailbox-name unread"><a href="read-mail.html">User name</a></td>
+                                        <td class="mailbox-subject unread">Trying to find a solution to this problem...</td>
+                                        <td class="mailbox-attachment"></td>
+                                        <td class="mailbox-date">15 hours ago</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="mailbox-check">
+                                            <label class="label-wrapper">
+                                                <input type="checkbox">
+                                                <i class="check"></i>
+                                            </label>
+                                        </td>
+                                        <td class="mailbox-star"><a href="#"><i class="fa fa-star text-yellow"></i></a></td>
+                                        <td class="mailbox-name read"><a href="read-mail.html">User name</a></td>
+                                        <td class="mailbox-subject read"><i class="fa fa-paperclip"></i>Trying to find a solution to this problem...</td>
+                                        <td class="mailbox-attachment"></td>
+                                        <td class="mailbox-date">Yesterday</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="mailbox-check tick">
+                                            <label class="label-wrapper">
+                                                <input type="checkbox">
+                                                <i class="check"></i>
+                                            </label>
+                                        </td>
+                                        <td class="mailbox-star"><a href="#"><i class="fa fa-star-o text-yellow"></i></a></td>
+                                        <td class="mailbox-name read"><a href="read-mail.html">User name</a></td>
+                                        <td class="mailbox-subject read"><i class="fa fa-paperclip"></i> <span class="label label-bg-orange">Trying</span> to find a solution to this problem...</td>
+                                        <td class="mailbox-attachment"></td>
+                                        <td class="mailbox-date">2 days ago</td>
+                                    </tr>
+                                </tbody>
+                            </table><!-- /.table -->
+                        </div><!-- /.mail-box-messages -->
+                    </div><!-- /.box-body -->
+                    <div class="box-footer no-padding">
+                        <div class="mailbox-controls">
+                            <!-- Check all button -->
+                            <button class="btn btn-default btn-sm checkbox-toggle"><i class="fa fa-square-o"></i></button>
+                            <div class="btn-group">
+                                <button class="btn btn-default btn-sm"><i class="fa fa-trash-o"></i></button>
+                                <button class="btn btn-default btn-sm"><i class="fa fa-reply"></i></button>
+                                <button class="btn btn-default btn-sm"><i class="fa fa-share"></i></button>
+                            </div><!-- /.btn-group -->
+                            <button class="btn btn-default btn-sm"><i class="fa fa-refresh"></i></button>
+                            <div class="pull-right">
+                                1-50/200
+                                <div class="btn-group">
+                                    <button class="btn btn-default btn-sm"><i class="fa fa-chevron-left"></i></button>
+                                    <button class="btn btn-default btn-sm"><i class="fa fa-chevron-right"></i></button>
+                                </div><!-- /.btn-group -->
+                            </div><!-- /.pull-right -->
+                        </div>
+                    </div>
+                </div><!-- /. box -->
+            </div>
+            <div class="col-sm-5 gutter6">
+                <div class="box readmail-container">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Subject title here...</h3>
+                        <div class="box-tools pull-right" style="top: 20px;">
+                            <a href="#" class="btn btn-box-tool fc-white" data-toggle="tooltip" title="Previous"><i class="fa fa-chevron-left"></i></a>
+                            <a href="#" class="btn btn-box-tool fc-white" data-toggle="tooltip" title="Next"><i class="fa fa-chevron-right"></i></a>
+                        </div>
+                    </div><!-- /.box-header -->
+                    <div class="box-body no-padding">
+                        <div class="mailbox-read-info">
+                            <h5><span class="mailbox-read-time pull-right">20 Aug. 2018 11:03 PM</span></h5>
+                            <h3>Naresh / Subject title here...</h3>
+                        </div>
+                        <div class="mailbox-read-message">
+                            <p>Hello User,</p>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore</p>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum doloreLorem ipsum dolor sit amet, consectetur adipiscing elit,</p>
+                            <p>sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                            <p>Thanks,<br>XYZ</p>
+                        </div><!-- /.mailbox-read-message -->
+                    </div><!-- /.box-body -->
+                    <div class="box-footer">
+                        <ul class="mailbox-attachments clearfix">
+                            <li>
+                                <div class="mailbox-attachment-info">
+                                    <div class="row row-gutter6">
+                                        <div class="col-sm-7 gutter6">
+                                            <span class=""><i class="fa fa-file-pdf-o"></i></span>
+                                            <a href="#" class="mailbox-attachment-name">
+                                                <i class="fa fa-paperclip"></i> Sep2018-report.pdf
+                                                <span class="mailbox-attachment-size">1,245 KB</span>
+                                            </a>
+                                        </div>
+                                        <div class="col-sm-5 gutter6">
+                                            <ul class="list-inline text-right">
+                                                <li class="">
+                                                    <a href="#" class="btn btn-default btn-xs">Share</a>
+                                                </li>
+                                                <li class="">
+                                                    <a href="#" class="btn btn-default btn-xs">View</a>
+                                                </li>
+                                                <li class="">
+                                                    <a href="#" class="btn btn-default btn-xs"><i class="fa fa-cloud-download"></i></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="mailbox-attachment-info">
+                                    <div class="row row-gutter6">
+                                        <div class="col-sm-7 gutter6">
+                                            <span class=""><i class="fa fa-file-pdf-o"></i></span>
+                                            <a href="#" class="mailbox-attachment-name">
+                                                <i class="fa fa-paperclip"></i> Sep2018-report.pdf
+                                                <span class="mailbox-attachment-size">1,245 KB</span>
+                                            </a>
+                                        </div>
+                                        <div class="col-sm-5 gutter6">
+                                            <ul class="list-inline text-right">
+                                                <li class="">
+                                                    <a href="#" class="btn btn-default btn-xs">Share</a>
+                                                </li>
+                                                <li class="">
+                                                    <a href="#" class="btn btn-default btn-xs">View</a>
+                                                </li>
+                                                <li class="">
+                                                    <a href="#" class="btn btn-default btn-xs"><i class="fa fa-cloud-download"></i></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="mailbox-attachment-info">
+                                    <div class="row row-gutter6">
+                                        <div class="col-sm-7 gutter6">
+                                            <span class=""><i class="fa fa-file-pdf-o"></i></span>
+                                            <a href="#" class="mailbox-attachment-name">
+                                                <i class="fa fa-paperclip"></i> Sep2018-report.pdf
+                                                <span class="mailbox-attachment-size">1,245 KB</span>
+                                            </a>
+                                        </div>
+                                        <div class="col-sm-5 gutter6">
+                                            <ul class="list-inline text-right">
+                                                <li class="">
+                                                    <a href="#" class="btn btn-default btn-xs">Share</a>
+                                                </li>
+                                                <li class="">
+                                                    <a href="#" class="btn btn-default btn-xs">View</a>
+                                                </li>
+                                                <li class="">
+                                                    <a href="#" class="btn btn-default btn-xs"><i class="fa fa-cloud-download"></i></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="mailbox-attachment-info">
+                                    <div class="row row-gutter6">
+                                        <div class="col-sm-7 gutter6">
+                                            <span class=""><i class="fa fa-file-pdf-o"></i></span>
+                                            <a href="#" class="mailbox-attachment-name">
+                                                <i class="fa fa-paperclip"></i> Sep2014-report.pdf
+                                                <span class="mailbox-attachment-size">1,245 KB</span>
+                                            </a>
+                                        </div>
+                                        <div class="col-sm-5 gutter6">
+                                            <ul class="list-inline text-right">
+                                                <li class="">
+                                                    <a href="#" class="btn btn-default btn-xs">Share</a>
+                                                </li>
+                                                <li class="">
+                                                    <a href="#" class="btn btn-default btn-xs">View</a>
+                                                </li>
+                                                <li class="">
+                                                    <a href="#" class="btn btn-default btn-xs"><i class="fa fa-cloud-download"></i></a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div><!-- /.box-footer -->
+                    <div class="box-footer">
+                        <div class="pull-right">
+                            <button class="btn btn-default"><i class="fa fa-reply"></i> Reply</button>
+                            <button class="btn btn-default"><i class="fa fa-share"></i> Forward</button>
+                        </div>
+                        <button class="btn btn-default"><i class="fa fa-trash-o"></i> Delete</button>
+                        <button class="btn btn-default"><i class="fa fa-print"></i> Print</button>
+                    </div><!-- /.box-footer -->
+                </div><!-- /. box -->
+            </div>
+        </div>
+    </div>
+</div>

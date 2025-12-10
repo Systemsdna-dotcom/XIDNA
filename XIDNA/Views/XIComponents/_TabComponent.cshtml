@@ -1,0 +1,381 @@
+﻿
+@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using Newtonsoft.Json;
+
+
+@{
+    string strName = "Tabs";
+    List<XIDStructure> Tabs = new List<XIDStructure>();
+    var sMode = string.Empty;
+    string sErrorMessage = string.Empty;
+    if (Model.oContent.ContainsKey(XIConstant.TabComponent))
+    {
+        Tabs = (List<XIDStructure>)Model.oContent[XIConstant.TabComponent];
+        if (Tabs == null)
+        {
+            Tabs = new List<XIDStructure>();
+        }
+        else if (Tabs.Count() > 0)
+        {
+            strName = Tabs.FirstOrDefault().sCode.Replace(" ", "") + Guid.NewGuid().ToString().Substring(0, 8);
+            sMode = Tabs.FirstOrDefault().sMode;
+        }
+    }
+    if (Tabs != null && Tabs.Count() > 0)
+    {
+        sErrorMessage = Tabs.FirstOrDefault().sErrorMessage;
+    }
+}
+<style>
+    /*.nav-tabs.tab-line,
+    .tab-content {
+        display: inline;
+    }*/
+</style>
+
+@*<script src="~/Content/plugins/tabScroll/jquery.scrolling-tabs.js"></script>
+    <script src="~/Content/plugins/tabScroll/st-demo.js"></script>*@
+<link href="@Url.Content("~/Content/plugins/tabScroll/scrolltabs.css")" rel="stylesheet" />
+@if (!string.IsNullOrEmpty(sErrorMessage))
+{
+    <h4>@sErrorMessage</h4>
+}
+else if (!string.IsNullOrEmpty(sMode) && sMode.ToLower() == "nonbo")
+{
+    <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+            @{ int i = 0;}
+            @foreach (var tab in Tabs.Where(x => x.StatusTypeID == 10).OrderBy(m => m.ID))
+            {
+                if (tab.FKiParentID != "#")
+                {
+                    <li class="dropdown user user-menu">
+                        @if (tab.sName == "Upload")
+                        {
+                            <a class="dropdown-toggle UpldCIFDoc ciftab" onclick="fncUpLoadDocument(this)" data-name="@tab.sName" lguid="6e" data-parentid="" data-buildingid="" data-foldername="/" data-vbatchid="">@tab.sName</a>
+                        }
+                        else if (tab.sName == "History")
+                        {
+                            <a class="dropdown-toggle UpldCIFDoc ciftab" onclick="fncLoadDocHistory(this)" data-name="@tab.sName" lguid="6e" data-parentid="" data-buildingid="" data-foldername="/" data-vbatchid="">@tab.sName</a>
+                        }
+                        else if (tab.sName == "View")
+                        {
+                            <a class="dropdown-toggle UpldCIFDoc ciftab" onclick="fncViewDocument(this)" data-name="@tab.sName" lguid="6e" data-parentid="" data-buildingid="" data-foldername="/" data-vbatchid="">@tab.sName</a>
+                        }
+                        else if (tab.sName == "Download")
+                        {
+                            <a class="dropdown-toggle UpldCIFDoc ciftab" onclick="fncDownloadDocument(this)" data-name="@tab.sName" lguid="6e" data-parentid="" data-buildingid="" data-foldername="/" data-vbatchid="">@tab.sName</a>
+                        }
+                        else if (tab.sName == "Comments")
+                        {
+                            <a class="dropdown-toggle UpldCIFDoc ciftab" onclick="fncLoadDocHistory(this, 'comments')" data-name="@tab.sName" lguid="6e" data-parentid="" data-buildingid="" data-foldername="/" data-vbatchid="">@tab.sName</a>
+                        }
+                        else
+                        {
+                            if (i == 0)
+                            {
+                                <a class="tabbtn" role="tab" data-toggle="tab" data-load="true" onclick="LoadStep('@tab.sMode', '@tab.sOutputArea', @tab.FKi1ClickIDXIGUID, '@tab.sBO', @tab.iInstanceID, @tab.BOID, false, '@tab.sName', this, '@tab.FKiStepDefinitionID','@tab.FKiVisualisationID')" data-name="@tab.sName">@tab.sName</a>
+                            }
+                            else
+                            {
+                                <a class="tabbtn" role="tab" data-toggle="tab" onclick="LoadStep('@tab.sMode', '@tab.sOutputArea', @tab.FKi1ClickIDXIGUID, '@tab.sBO', @tab.iInstanceID, @tab.BOID, false, '@tab.sName', this, '@tab.FKiStepDefinitionID','@tab.FKiVisualisationID')" data-name="@tab.sName">@tab.sName</a>
+                            }
+
+                        }
+                    </li>
+                }
+                i++;
+            }
+
+        </ul>
+    </div>
+}
+else
+{
+    <div class="nav-tabs-custom">
+        <ul class="nav nav-tabs tab-line tab-Scroll" id="Tabs-@strName">
+            @{ int i = 0;}
+            @foreach (var tab in Tabs.Where(x => x.StatusTypeID == 10).OrderBy(m => m.iOrder))
+            {
+                @*<li><a class="tabbtn" role="tab" data-toggle="tab" onclick="ShowTabContent('@tab.sMode', '@tab.sOutputContent', @tab.i1ClickID, '@tab.sBO.Trim()', @tab.iInstanceID, this)" data-name="@tab.sName">@tab.sName</a></li>*@
+                if (i == 0)
+                {
+                    <li class="tab_selected">
+                       <a class="tabbtn" role="tab" data-toggle="tab" data-load="true" onclick="LoadStep('@tab.sMode', '@tab.sOutputContent', '@tab.i1ClickIDXIGUID', '@tab.sBO.Trim()', @tab.iInstanceID, @tab.BOID, true, '@tab.sName', this, '@tab.FKiStepDefinitionIDXIGUID','@tab.FKiVisualisationID')" data-name="@tab.sName">@tab.sName</a></li>
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(tab.sBO))
+                    {
+                        tab.sBO = string.Empty;
+                    }
+                    <li><a class="tabbtn" role="tab" data-toggle="tab" onclick="LoadStep('@tab.sMode', '@tab.sOutputContent', '@tab.i1ClickIDXIGUID', '@tab.sBO.Trim()', @tab.iInstanceID, @tab.BOID, false, '@tab.sName', this, '@tab.FKiStepDefinitionIDXIGUID','@tab.FKiVisualisationID')" data-name="@tab.sName">@tab.sName</a></li>
+                }
+
+                i++;
+            }
+        </ul>
+    </div>
+}
+<script>
+    $(document).ready(function () {
+        var sMode = '@sMode';
+        if (sMode && sMode.toLowerCase() == 'nonbo') {
+            var Status = $('.slctpro').attr('data-appstatus');
+            var sFolder = $('.slctpro').attr('data-foldername');
+        }
+    });
+    var jCompDef = '@Html.Raw(Json.Encode(Model.oDefintion))';
+    function LoadTabContent(TabResultType, Output, i1ClickID, sBO, iInstanceID, This) {
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', This);
+        $.ajax({
+            url: "@Url.Action("LoadTabContent","XiLink")",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            datatype: "HTML",
+            cache: false,
+            async: false,
+            data: JSON.stringify({ sGUID: sGUID, TabResultType: TabResultType, i1ClickID: i1ClickID, sBO: sBO, iInstanceID: iInstanceID }),
+            success: function (data) {
+                $('#PopTabs li').removeClass('active')
+                $(This).closest('li').addClass('active');
+                $('#' + Output).html(data);
+            },
+            error: function (data) {
+                //alert(data);
+            }
+        });
+    }
+
+    var ConfigParams;
+    function ShowTabContent(TabResultType, Output, i1ClickID, sBO, iInstanceID, _this) {
+        debugger
+        var CurrentBOName;
+        var CurrentBOType;
+        var Current1Click;
+        var CurrentInstanceID;
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+        var QSInfo = fncQSInfoFromHTMLTree(_this);
+        var iQSID = QSInfo[0].sValue;
+        // debugger
+        var ComponentName = fncGetComponentNameFromHTMLTree('Component', _this);
+        var CurrentGUID = sGUID;
+        var StepID = QSInfo[2].sValue;;
+        fncGetComponentParamsByStep(StepID).then(function (ConfigParams) {
+            //debugger
+            var InputParams = [];
+            Current1Click = i1ClickID;
+            CurrentBOType = TabResultType;
+            CurrentBOName = sBO;
+            for (var i = 0; i < ConfigParams.length; i++) {
+                //debugger
+                if (ConfigParams[i].sName.toLowerCase() == "Tabclickparamname".toLowerCase()) {
+                    var WrapperParms = {};
+                    WrapperParms["sName"] = ConfigParams[i].sValue;
+                    WrapperParms["sValue"] = "XIC|null";
+                    var param2 = {};
+                    param2["sName"] = '{XIP|ActiveBO}';
+                    param2["sValue"] = CurrentBOName;
+                    InputParams.push(param2);
+                    var param3 = {};
+                    param3["sName"] = 'BO';
+                    param3["sValue"] = CurrentBOName;
+                    InputParams.push(param3);
+                    var param4 = {};
+                    param4["sName"] = '{XIP|i1ClickID}';
+                    param4["sValue"] = Current1Click;
+                    InputParams.push(param4);
+                    var param5 = {};
+                    param5["sName"] = 'CurrentBOType';
+                    param5["sValue"] = CurrentBOType;
+                    InputParams.push(param5);
+                    //var param6 = {};
+                    //param6["sName"] = 'ParentInsID';
+                    //param6["sValue"] = ParentInsID;
+                    //InputParams.push(param6);
+                    var param7 = {};
+                    param7["sName"] = 'iInstanceID';
+                    param7["sValue"] = iInstanceID;
+                    InputParams.push(param7);
+
+                    WrapperParms["nSubParams"] = InputParams;
+                }
+            }
+            //debugger
+            var NewParams = [];
+            NewParams.push(WrapperParms);
+            //fncUpdateXIParams(ComponentName, sGUID, CurrentGUID, NewParams, Output).then(function (status) {
+            //
+            //    if (TabResultType == "Multiple") {
+            //        //LoadSubnodeStep(sGUID, "Step5 with 1-click Component", iQSID, 0, Output);
+            //        LoadSubnodeStep(sGUID, "Step5 with Layout", iQSID, 0, Output);
+            //    }
+            //    else if (TabResultType == "Single") {
+            //        LoadSubnodeStep(sGUID, "Step4 with BO Component", iQSID, 0,Output);
+            //    }
+            //    else if (TabResultType == "Repeater") {
+            //        LoadSubnodeStep(sGUID, "Step with Repeater Component", iQSID, 0,Output);
+            //    }
+            //});
+
+
+            fncUpdateXIParams(ComponentName, sGUID, CurrentGUID, NewParams).then(function (data) {
+                if (data != null && typeof data !== 'undefined') {
+                    TriggerComponent(sGUID, ComponentName, data, Output).then(function (ID) {
+                        if (TabResultType == "Multiple") {
+                            LoadSubnodeStep(sGUID, "Step with 1-Click Component", iQSID, 0, Output);
+                        }
+                        else if (TabResultType == "Single") {
+                            LoadSubnodeStep(sGUID, "Step with BO Component", iQSID, 0, Output);
+                        }
+                        else if (TabResultType == "Repeater") {
+                            LoadSubnodeStep(sGUID, "Step with Repeater Component", iQSID, 0, Output);
+                        }
+
+                    });
+
+                }
+
+            });
+        })
+
+    }
+
+    function LoadStep(TabResultType, Output, i1ClickID, sBO, iInstanceID, iBODID, bIsMainBO, sTabName, _this, iStepID, iVisualID) {
+        debugger;
+        var sLayoutType = "Dialog";
+        var _uidialog = fncgetDialogFromHTMLTree('dialog', _this);
+        if (_uidialog == null || (_uidialog && _uidialog.length == 0)) {
+            sLayoutType = "inline-layout";
+            _uidialog = fncgetInlineLayoutFromHTMLTree('inline-layout', _this);
+        }
+        $(_uidialog).find('#' + Output).find('.conStep').each(function (j, obj) {
+            $(this).hide();
+        });
+        if (Output && Output.length > 0) {
+            $(_uidialog).find('#' + Output).append('<div class="loader"></div>');
+        }
+        var bISLoaded = false;
+        var bLoad = $(_this).attr('data-load');
+        if (bLoad && bLoad == 'true') {
+            bISLoaded = true;
+        }
+        if (bIsMainBO) {
+            iBODID = 0;
+        }
+        if (bISLoaded == false) {
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+            var iQSDID = fncGetQSIDFromHTMLTree('QuestionSet', _this);
+            var JParams = JSON.parse(jCompDef).Params;
+            for (var i = 0; i < JParams.length; i++) {
+                //debugger
+                var InputParams = [];
+                if (JParams[i].sName.toLowerCase() == "Tabclickparamname".toLowerCase()) {
+                    var WrapperParms = {};
+                    WrapperParms["sName"] = JParams[i].sValue;
+                    WrapperParms["sValue"] = "XIC|null";
+                    var param2 = {};
+                    param2["sName"] = '{XIP|ActiveBO}';
+                    param2["sValue"] = sBO;
+                    InputParams.push(param2);
+                    var param3 = {};
+                    param3["sName"] = 'BO';
+                    param3["sValue"] = sBO;
+                    InputParams.push(param3);
+                    var param4 = {};
+                    param4["sName"] = '{XIP|i1ClickID}';
+                    param4["sValue"] = i1ClickID;
+                    InputParams.push(param4);
+                    var param5 = {};
+                    param5["sName"] = 'CurrentBOType';
+                    param5["sValue"] = TabResultType;
+                    InputParams.push(param5);
+                    var param7 = {};
+                    param7["sName"] = 'iInstanceID';
+                    param7["sValue"] = iInstanceID;
+                    InputParams.push(param7);
+                    var param8 = {};
+                    param8["sName"] = '{XIP|iVisualID}';
+                    param8["sValue"] = iVisualID;
+                    InputParams.push(param8);
+
+                    WrapperParms["nSubParams"] = InputParams;
+                }
+            }
+            var NewParams = [];
+            NewParams.push(WrapperParms);
+            fncUpdateXIParams("", sGUID, sGUID, NewParams).then(function (data) {
+                //var QSID = $('#QSID').attr('data-value'); //1141;
+                var DefaultStep = '';
+                if (sTabName == "Risk") {
+                    //DefaultStep = "Step with Level3 Layout";
+                    iStepID = "Step with Level3 Layout";
+                    iBODID = -1;
+                }
+                if (iStepID == 0 || iStepID == '00000000-0000-0000-0000-000000000000') {
+                    if (TabResultType == "Multiple") {
+                        iStepID = "Step with 1-Click Component";
+                    }
+                    else if (TabResultType == "Single") {
+                        iStepID = "Step with BO Component";
+                    }
+                    else if (TabResultType == "Grid") {
+                        iStepID = "Step with Grid Component";
+                    }
+                }
+                $.ajax({
+                    contentType: 'application/json; charset=utf-8',
+                    url: '@Url.Action("LoadStep", "XiLink")',
+                    datatype: 'json',
+                    cache: false,
+                    async: true,
+                    //data: { sStep: DefaultStep, iQSID: iQSDID, i1ClickID: i1ClickID, sDefaultStep: DefaultStep, iInstanceID: iInstanceID, sGUID: sGUID },
+                    data: { sStep: iStepID, iQSID: iQSDID, i1ClickID: i1ClickID, sDefaultStep: iStepID, iInstanceID: iInstanceID, sGUID: sGUID },
+                    success: function (oStepI) {
+
+                        debugger
+                        //if (sTabName != "Kpi") { $(_this).attr('data-load', 'true'); }
+                        $(_this).attr('data-load', 'true');
+                        fncRenderStepContent(oStepI, '#' + Output, "tab" + sTabName.replace(/ /g, '_'), null, _uidialog).then(function (ConfigParams) {
+                            $(_uidialog).find('#' + Output).find('.loader').remove();
+                            fncLoadScroll(_uidialog, sLayoutType);
+                        });
+                        //if (Output != 'undefined') {
+                        //    $('#' + Output).html(StepData);
+                        //}
+                        
+                    }
+                })
+            });
+        }
+        else {
+            if (sTabName == "Risk") {
+                iBODID = -1;
+            }
+            sIdentity = "QSStep_" + "tab" + sTabName.replace(/ /g, '_');
+            if (bIsMainBO) {
+                sIdentity = "QSStep_0";
+            }
+            //if (iBODID == 0) {
+            //    $(_uidialog).find('#' + Output).find('div[data-value="' + iStepID + '"]').show();
+            //}
+            //else {
+            //$(_uidialog).find('#' + Output).find('div[data-value="' + iStepID + '"]').show();
+                $(_uidialog).find('#' + Output).find('div[data-identity="' + sIdentity + '"]').show();
+                $(_uidialog).find('#' + Output).find('div[data-identity="' + sIdentity + '"]').find('div[data-identity="QSStep_0"]').show();
+                $(_uidialog).find('#' + Output).find('div[data-identity="' + sIdentity + '"]').find('div[data-identity="QSStep_tree0"]').show();
+                //$(_uidialog).find('#' + Output).find('.conStep').show();
+                $(_uidialog).find('#' + Output).find('.loader').remove();
+            //}
+
+        }
+    }
+</script>
+
+<script src="~/Content/plugins/tabScroll/jquery.scrolltabs.js"></script>
+<script src="~/Content/plugins/tabScroll/jquery.mousewheel.js"></script>
+<script>
+    $('#Tabs-@strName').scrollTabs();
+</script>

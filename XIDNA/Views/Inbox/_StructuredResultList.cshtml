@@ -1,0 +1,72 @@
+﻿@model XIDNA.ViewModels.VMResultList
+
+<script>
+    $(document).ready(function () {
+        if ('@Model.ResultListDisplayType' == 1) {
+            var table = $('#ReportResultList').dataTable({
+                "paging": true,
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Html.Raw(Url.Action("GetReportResult", "Inbox", new {ReportID=Model.ReportID, SearchText=Model.SearchText, SearchType=Model.SearchType }))",
+                "aaSorting": [[1, 'desc']],
+                "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+                "autoWidth": false,
+            });
+        }
+    });
+</script>
+
+@if (Model.SearchType == "Quick")
+{
+    <section class="content-header hedr">
+
+        @if (Model.QueryIcon != null)
+        {
+            <h1 class="col-md-4"><i class="@Model.QueryIcon" aria-hidden="true"></i> - @Model.QueryName</h1>
+        }
+        else
+        {
+            <h1 class="col-md-4">@Model.QueryName</h1>
+        }
+
+    </section>
+}
+
+
+<div class="table-clean">
+    <table id="ReportResultList" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+        <thead>
+            <tr>
+                @foreach (var items in Model.Headings)
+                {
+                    <th>@items</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.ResultListDisplayType == 0)
+            {
+                foreach (var item in @Model.Rows)
+                {
+                    <tr>
+                        @foreach (var value in item)
+                        {
+                            <td>@value</td>
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+
+
+
+
+
+

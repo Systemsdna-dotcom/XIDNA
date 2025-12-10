@@ -1,0 +1,506 @@
+﻿@model XIDNA.Models.LoginViewModel
+@using XIDNA
+@{
+    var UserCookie = "0";
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["ApplicationPath"];
+    var isCookie = SessionManager.UserCookie;
+    var cookie = Request.Cookies["mhclientportal"];
+    if (isCookie == "0" || cookie == null)
+    {
+        UserCookie = "0";
+        SessionManager.UserCookie = "1";
+    }
+    else
+    {
+        UserCookie = "1";
+    }
+    Layout = null;
+    var AppName = SessionManager.AppName;
+}
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+    <!-- Google Tag Manager -->
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-MVBR6MJ');</script>
+    <!-- End Google Tag Manager -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <title>Motorhomeinsurance.com</title>
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <link rel="icon" type="image/icon" href="~/favicon.ico" sizes="16x16">
+
+    <link type="text/css" href="~/Content/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    <link type="text/css" href="~/Content/fonts/ionicons/css/ionicons.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="~/Content/css/bootstrap.min.css">
+    <link type="text/css" href="~/Content/css/reset.css" rel="stylesheet"> <!-- CSS reset -->
+    <link type="text/css" href="~/Content/css/owlCarousel.css" rel="stylesheet">
+    <link type="text/css" href="~/Content/css/git.css" rel="stylesheet">
+    <!-- <link href="Content/css/custom.css" rel="stylesheet" /> -->
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+          <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    <script src="~/Content/plugins/git-quote/jquery-2.1.4.js"></script>
+    <script src="~/Content/plugins/git-quote/modernizr.js"></script> <!-- Modernizr -->
+    <script src="~/Content/plugins/git-quote/owl-carousel.js"></script>
+    <script src="~/Content/plugins/git-quote/bootstrap.min.js"></script>
+    <script src="~/Content/plugins/git-quote/custom.js"></script>
+</head>
+<body class="homepage">
+    <header id="headerSection">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="Content/images/GIT/logo.png" />
+            </a>
+            <div class="menuNav menu">
+                <ul class="">
+                    <li class="active">
+                        <a class="" href="#">Home</a>
+                    </li>
+                    <li>
+                        <a class="" href="#">Information <i class="fa fa-caret-down"></i></a>
+                        <ul>
+                            <li><a href="#">link</a></li>
+                            <li><a href="#">link</a></li>
+                            <li><a href="#">link</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a class="" href="#">News</a>
+                    </li>
+                    <li>
+                        <a class="" href="#">About us</a>
+                    </li>
+                    <li>
+                        <a class="" href="#">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    <div class="">
+        <div class="page-wrapper">
+            <!-- <section id="sectionBanner">
+                <div class="container relative">
+                    <div class="BannerGetQuoteBtn">
+                        <a href="" class="">Get Quote</a>
+                    </div>
+                    <div class="img-container banner-img">
+                        <img src="Content/images/GIT/home-banner.png" alt="" title="">
+                    </div>
+                </div>
+            </section> -->
+            <section id="sectionBannerContainer" class="">
+                <div class="BannerGetQuoteBtn">
+                    <a href="" class="">Get Quote</a>
+                </div>
+                <div class="img-container banner-bg">
+                    <img src="Content/images/GIT/tempBG.png" alt="" title="">
+                </div>
+            </section>
+            <!-- <section class="sectionPadded">
+                <div class="container text-center">
+                    <div class="sectionHeader">
+                        <h2>Trust the Goods in transit quote</h2>
+                    </div>
+                    <p>Protect your cherished Good in transit quote with specialist insurance. Our panel of insurers offer a variety of features so you can decide the best level of cover for your motorhome. We’ve selected just a few of the many features our insurers have to offer below.</p>
+                </div>
+            </section> -->
+            <section id="sectionLogin" class="sectionPadded">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="sectionHeader">
+                                <h2>Trust the Goods in transit quote</h2>
+                            </div>
+                            <p>Protect your cherished Good in transit quote with specialist insurance. Our panel of insurers offer a variety of features so you can decide the best level of cover for your motorhome. We’ve selected just a few of the many features our insurers have to offer below.</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <div id="HomeLoginForm">
+                                <h4 class="loginTitle">Log in to Motorhomeinsurance.com</h4>
+                                <!-- <form action="" method="post">
+                                    <div class="form-group">
+                                        <h4 class="title">Enter your username</h4>
+                                        <input placeholder="Username" class="form-control" id="UserName" name="UserName" type="text" value="">
+                                    </div>
+                                    <div class="form-group">
+                                        <h4 class="title">Enter your password</h4>
+                                        <input placeholder="Password" autocomplete="off" class="form-control" id="Password" name="Password" oncopy="return false" type="password">
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-sm-6">
+                                            <label class="label-wrapper Remember">
+                                                <input type="checkbox">
+                                                <i class="check"></i>
+                                                Remember me
+                                            </label>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <a class="forgotPassword" href="#">Forgot Password?</a>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-loginForm">Continue</button>
+                                </form> -->
+                                @using (Html.BeginForm("ClientLogin", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post))
+                                    {
+                                    @Html.AntiForgeryToken()
+                                    @Html.ValidationSummary(true)
+                                    <div class="form-group">
+                                        <h4 class="title">Enter your username</h4>
+                                        @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", @Placeholder = "Username" })
+                                    </div>
+                                    <div class="form-group">
+                                        <h4 class="title">Enter your password</h4>
+                                        @Html.PasswordFor(m => m.Password, new { @class = "form-control", @onCopy = "return false", @onDrag = "return false", @onDrop = "return false", @onPaste = "return false", @autocomplete = "off", @Placeholder = "Password" })
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-sm-6">
+                                            <label class="label-wrapper Remember">
+                                                <input type="checkbox" />
+                                                <i class="check"></i>
+                                                Remember me
+                                            </label>
+                                        </div>
+                                        <div class="col-sm-6">
+
+                                            @Ajax.ActionLink("Forgot Password?",
+                                                  "UserForgotPassword", "Account",
+                                                new AjaxOptions
+                                                {
+                                                    UpdateTargetId = "ForgotPwdDiv",
+                                                    InsertionMode = InsertionMode.Replace,
+                                                    HttpMethod = "GET",
+                                                    LoadingElementId = "ajax-loader",
+                                                }, new { @class = "forgotPassword" }
+                                                )
+
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-loginForm">Continue</button>
+                                    }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="sectionPadded">
+                <div class="container InsurerList">
+                    <div id="sectionInsurer" class="owl-carousel">
+                        <div class="item">
+                            <div class="img-container">
+                                <img src="Content/images/GIT/partners/Ark.jpg" alt="" title="">
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="img-container">
+                                <img src="Content/images/GIT/partners/Commercial-express.jpg" alt="" title="">
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="img-container">
+                                <img src="Content/images/GIT/partners/KGM-logo.jpg" alt="" title="">
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="img-container">
+                                <img src="Content/images/GIT/partners/MKS.jpg" alt="" title="">
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="img-container">
+                                <img src="Content/images/GIT/partners/PF.jpg" alt="" title="">
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="img-container">
+                                <img src="Content/images/GIT/partners/policy-plan.jpg" alt="" title="">
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="img-container">
+                                <img src="Content/images/GIT/partners/towergate-insurance.jpg" alt="" title="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="sectionPadded">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-push-6 col-sm-6">
+                            <img src="Content/images/GIT/expert.png" alt="" title="" class="img-responsive" />
+                        </div>
+                        <div class="col-sm-pull-6 col-sm-6">
+                            <div class="inner-column">
+                                <div class="sectionHeader">
+                                    <h2>Trust the Motorhome &amp; Caravan Insurance Experts</h2>
+                                </div>
+                                <p>We work alongside a growing panel of quality insurers to bring you affordable motorhome, caravan and park home insurance. Whether you take out your policy online or speak with our knowledgeable team, we’ll be sure to compare insurer rates to provide you with tailored cover at the very best price.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="sectionProduct" class="sectionPadded p-b-none">
+                <div class="container">
+                    <!-- <div class="sectionHeader">
+                        <h2>Our Products</h2>
+                    </div> -->
+                    <div class="row">
+                        <div class="col-sm-6 col-md-4">
+                            <div class="box-item with-icon">
+                                <div class="box-icn img-container bc-orange with-shadow">
+                                    <img src="Content/images/GIT/GetDetails/GTI.png" alt="" title="" />
+                                </div>
+                                <h3 class="box-title">Key Insurance</h3>
+                                <p class="box-text">Protect against loss, theft or damage of your motorhome keys and other related expenses with Key Cover Insurance.</p>
+                                <a class="readMore">Read more</a>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="box-item with-icon">
+                                <div class="box-icn img-container bc-green with-shadow">
+                                    <img src="Content/images/GIT/GetDetails/TTI.png" alt="" title="" />
+                                </div>
+                                <h3 class="box-title">Breakdown Insurance</h3>
+                                <p class="box-text">Breakdown cover in the UK and Europe to repair your vehicle or take you and your passengers to the nearest suitable garage.</p>
+                                <a class="readMore">Read more</a>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="box-item with-icon">
+                                <div class="box-icn img-container bc-blue with-shadow">
+                                    <img src="Content/images/GIT/GetDetails/BI.png" alt="" title="" />
+                                </div>
+                                <h3 class="box-title">Legal Protection</h3>
+                                <p class="box-text">Legal Protection Cover will help pay for solicitors, legal representation and other expenses in the event of a litigation claim.</p>
+                                <a class="readMore">Read more</a>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="box-item with-icon">
+                                <div class="box-icn img-container bc-purple with-shadow">
+                                    <img src="Content/images/GIT/GetDetails/EBI.png" alt="" title="" />
+                                </div>
+                                <h3 class="box-title">Excess Protection</h3>
+                                <p class="box-text">With our Excess Protection Cover, your excess payment will be reimbursed once your claim is successfully settled.</p>
+                                <a class="readMore">Read more</a>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="box-item with-icon">
+                                <div class="box-icn img-container bc-sky with-shadow">
+                                    <img src="Content/images/GIT/GetDetails/DI.png" alt="" title="" />
+                                </div>
+                                <h3 class="box-title">Excess Protection</h3>
+                                <p class="box-text">With our Excess Protection Cover, your excess payment will be reimbursed once your claim is successfully settled.</p>
+                                <a class="readMore">Read more</a>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="box-item with-icon">
+                                <div class="box-icn img-container bc-pink with-shadow">
+                                    <img src="Content/images/GIT/GetDetails/TI.png" alt="" title="" />
+                                </div>
+                                <h3 class="box-title">Excess Protection</h3>
+                                <p class="box-text">With our Excess Protection Cover, your excess payment will be reimbursed once your claim is successfully settled.</p>
+                                <a class="readMore">Read more</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="sectionPadded">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <img src="Content/images/GIT/umbrella.png" alt="" title="" class="img-responsive whyChoseUsImg" />
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="">
+                                <div class="sectionHeader">
+                                    <h2>Why choose<br />Buymyinsurance.com?</h2>
+                                </div>
+                                <ul class="list-group listing">
+                                    <li>Arrange your Good in Transit, Tools in Transit, Bike, Electric Bike, Drone or Travel insurance cover in minutes using our simple, hassle free online quote and buy system.</li>
+                                    <li>Compare quotes and cover levels from our panel of insurers and tailor your insurance policy to suit your individual needs.</li>
+                                    <li>Manage your policy via our secure online portal - viewing your policy documents and requesting a change has never been easier.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="sectionPadded">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-push-6 col-sm-6">
+                            <img src="Content/images/GIT/Claim.png" alt="" title="" class="img-responsive" />
+                        </div>
+                        <div class="col-sm-pull-6 col-sm-6">
+                            <div class="inner-column">
+                                <div class="sectionHeader">
+                                    <h2>How do I make a claim on<br />my insurance?</h2>
+                                </div>
+                                <p>We work alongside a growing panel of quality insurers to bring you affordable motorhome, caravan and park home insurance. Whether you take out your policy online or speak with our knowledgeable team, we’ll be sure to compare insurer rates to provide you with tailored cover at the very best price.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                    <img src="" alt="" title="" />
+                </div>
+            </section>
+            <section class="sectionPadded sectionNews">
+                <div class="container">
+                    <div class="sectionHeader">
+                        <h2 class="text-center">Latest News</h2>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6 col-md-4">
+                            <div class="box-item">
+                                <div class="box-icn img-container">
+                                    <img src="Content/images/GIT/news/news1.jpg" alt="" title="" />
+                                </div>
+                                <div class="content">
+                                    <div class="date">18th November 2019</div>
+                                    <h3 class="box-title">Memories of caravan holidays gone by</h3>
+                                    <p class="box-text">When ‘Write a news article for the website’ popped up on my task list today, I thought and thought about what to write about. Sure, I could share some useful caravan advice, but I felt</p>
+                                    <a class="readMore">Read more</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="box-item">
+                                <div class="box-icn img-container">
+                                    <img src="Content/images/GIT/news/news2.jpg" alt="" title="" />
+                                </div>
+                                <div class="content">
+                                    <div class="date">11th November 2019</div>
+                                    <h3 class="box-title">Camping and Motorhome Friendly Recipes</h3>
+                                    <p class="box-text">Holidaying in a caravan or motorhome doesn’t mean you need you need to compromise on the food you eat. Many caravans and motorhomes now come equipped with fantastic kitchenettes that house everything you’ll need to</p>
+                                    <a class="readMore">Read more</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4">
+                            <div class="box-item">
+                                <div class="box-icn img-container">
+                                    <img src="Content/images/GIT/news/news3.jpg" alt="" title="" />
+                                </div>
+                                <div class="content">
+                                    <div class="date">4th November 2019</div>
+                                    <h3 class="box-title">Preparing for Park Home living</h3>
+                                    <p class="box-text">When you move to a park home, you will likely be downsizing from your previous property. This means there will be a significant reduction in storage space, so you’ll need to compromise on what belongings</p>
+                                    <a class="readMore">Read more</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center"><a class="btn btn-big">View all</a></div>
+                </div>
+            </section>
+        </div>
+        <footer class="footer page-footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-6 col-sm-3">
+                        <img src="Content/images/GIT/logo.png" alt="" title="" class="footerLogo">
+                    </div>
+                    <div class="col-xs-12 col-sm-9">
+                        <div class="row footMenu">
+                            <div class="col-xs-6 col-sm-4">
+                                <h4 class="col-header">Main Menu</h4>
+                                <ul class="links">
+                                    <li><a href="#">Home</a></li>
+                                    <li><a href="#">Buy My Insurance</a></li>
+                                    <li><a href="#">Touring Caravan Insurance</a></li>
+                                    <li><a href="#">Static Caravan Insurance</a></li>
+                                    <li><a href="#">Park Home Insurance</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-xs-6 col-sm-3">
+                                <h4 class="col-header">Information</h4>
+                                <ul class="links">
+                                    <li><a href="#">About Us</a></li>
+                                    <li><a href="#">Claims</a></li>
+                                    <li><a href="#">News</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-xs-6 col-sm-3">
+                                <h4 class="col-header">Let's Chat</h4>
+                                <ul class="links">
+                                    <li><a href="#">Get a Quote</a></li>
+                                    <li><a href="#">Contact Us</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-xs-6 col-sm-2">
+                                <h4 class="col-header">Account</h4>
+                                <ul class="list-inline">
+                                    <li><a href="#">Login</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="footerInfoline">Buy My Insurance Services is a trading name of Quotemetoday.co.uk Limited of Office 2A, First Floor, 3 Jubilee Way, Whitstable Road, Faversham, Kent, ME13 8GD, registered in the United Kingdom under company number 04668665. Quotemetoday.co.uk Limited is directly authorised and regulated by the Financial Conduct Authority (FCA) under Firm Reference No. 786619. Details of this registration are available on the FCA’s website www.fca.org.uk/register or on 0800 111 6768.</p>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="copyright">© 2019 buymyinsurance.com</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="shortlink">
+                            <a href="#">Accessibility</a> | <a href="#">Privacy Policy</a> | <a href="#">Terms and Conditions</a>
+                        </div>
+                    </div>
+                </div>
+                <p class="cookieLink hidden">This site uses cookies: <span class="fc-white">More Info</span></p>
+            </div>
+        </footer>
+    </div>
+    <!-- ========================================== Page top  Button==================================== -->
+    <a href="javascript:" id="return-to-top" onclick="returnToTop(); return false;"><i class="fa ion-android-arrow-up"></i></a>
+    <!-- // Script -->
+    <script type="text/javascript">
+            /*****************************************/
+            $("#sectionInsurer").owlCarousel({
+                loop: true,
+                //margin:10,
+                nav: false,
+                dots: true,
+                autoplay: true,
+                autoplayTimeout: 10000,
+                responsive: {
+                    0: {
+                        items: 1,
+                        dots: false,
+                    },
+                    600: {
+                        items: 3,
+                        dots: false,
+                    },
+                    1000: {
+                        items: 5,
+                        nav: true,
+                        navText: ["<i class='fa ion-ios-arrow-back'></i>","<i class='fa ion-ios-arrow-forward'></i>"]
+                    }
+                }
+            });
+    </script>
+</body>
+</html>

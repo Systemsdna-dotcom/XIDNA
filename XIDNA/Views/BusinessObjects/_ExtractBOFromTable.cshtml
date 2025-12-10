@@ -1,0 +1,248 @@
+﻿@model  XIDNA.Models.BOs
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        $('#SuccessMsg').hide();
+        $('#ErrorMsg').hide();
+    });
+</script>
+<section class="content-header hedr">
+    @if (Model.BOID == 0)
+    {
+        <h1> Add Business Object </h1>
+    }
+    else
+    {
+        <h1> Edit Business Object </h1>
+    }
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Business Objects</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    @*<div class="alert alert-danger" id="BootstrpChanges" style="display:none;">
+            <div class="change-message">You have unsaved changes.<a href="#" class="close" data-dismiss="alert" aria-label="close">×</a></div>
+        </div>*@
+    <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="alert alert-success" id="BootstrpChangeSuccess" style="display:none;">
+        <strong>Yes!</strong> There are unsaved changes.<a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="alert alert-danger" id="BootstrpChangeError" style="display:none;">
+        <strong>No!</strong> The values are saved.<a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="">
+                    @using (Ajax.BeginForm("SaveExtractedBO", "BusinessObjects", new AjaxOptions { OnBegin = "OnFormBegin", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "BOForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.BOID)
+                        <div id="clear-text">
+                            @if (Model.FKiApplicationID == 0)
+                            {
+                                <div class="form-group" id="XIFKiApplicationDDL">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn"> Application <span class="danger">*</span></label>
+                                        <select class="form-control" id="ApplicationID" name="FKiApplicationID">
+                                            <option value="0">--Select--</option>
+                                            @foreach (var items in Model.ddlApplications)
+                                            {
+                                                if (Model.FKiApplicationID == items.Value)
+                                                {
+                                                    <option selected value="@items.Value">@items.text</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@items.Value">@items.text</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" id="ApplicationID" name="FKiApplicationID" value="@Model.FKiApplicationID" />
+                            }
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.Name, new { @placeholder = "Enter Name Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    <span class="SpecialError"></span>
+                                    @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">XIDataSource<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.iDataSource, new SelectList(Model.DataSources, "Value", "text"), "--Select--", new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Table Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.TableName, new { @placeholder = "Enter Table Name Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    <span class="SpecialError"></span>
+                                    @Html.ValidationMessageFor(m => m.TableName, null, new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Description<span class="danger">*</span></label>
+                                    @Html.TextAreaFor(model => model.Description, new { @placeholder = "Enter Description", @class = "form-control", @rows = 4 })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.Description, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            @*<div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Field Count<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(model => model.FieldCount, new { @placeholder = "Enter BO field count", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.FieldCount, null, new { @class = "red" })
+                                    </div>
+                                </div>*@
+                            <div class="form-group" id="ColumnDiv">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                                   new { key= 10 , value = "Active" },
+                                                   new { key= 20 , value = "InActive" }
+                                                   }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="submit" class="btn btn-theme" id="Save" Name="submitButton" value="Save" />
+                                <button type="submit" class="btn btn-theme" id="NextBtn">Save & Next</button>
+                                @if (Model.BOID == 0)
+                                {
+                                    <button type="button" class="btn btn-theme reverse" id="ResetBoBtn">Reset</button>
+                                }
+                                <button type="button" class="btn btn-theme decline" id="CancelBO">Cancel</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script>
+    var i = 0;
+    var ID = 0;
+    var newpopups = new Array();
+    $(document).ready(function () {
+        if(@Model.BOID>0)
+        {
+            $("form").submit(function( event ) {
+                //check changed values and call converter
+                var formData = JSON.parse(JSON.stringify(jQuery("#BOForm").serializeArray()));
+                var aChangedVals = [];
+                if("@Model.Name"!=aFormVal[1].value)
+                {
+                    aChangedVal.push({ Label: formData[1].name, Value: formData[1].value });
+                }
+                else if("@Model.Description"!=aFormVal[2].value)
+                {
+                    aChangedVal.push({ Label: formData[2].name, Value: formData[2].value });
+                }
+                else if(@Model.StatusTypeID!=aFormVal[3].value)
+                {
+                    aChangedVal.push({ Label: formData[3].name, Value: formData[3].value });
+                }
+            });
+        }
+
+        $('#CancelBO').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#BOForm')[0].reset();
+            $('#BOForm .taberrormsg').find('span').html('');
+        });
+
+        //Poovanna - 22/1/2018
+        $("#NextBtn").on('click', function () {
+            i = 1;
+        });
+    })
+    function OnFormBegin() {
+        $('#BOForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+        var Name = $('#Name').val();
+        var FirstCharacter = Name.charAt(0);
+        if (FirstCharacter == "#") {
+            $('#BOForm').unblock();
+            $('.SpecialError').html('Name should not start with symbol #');
+            return false;
+        }
+        else {
+            $('.SpecialError').html('');
+            return true;
+        }
+    }
+
+    function OnComplete(e) {
+        $("#BootstrpChanges").hide();
+        $('#BOForm').unblock();
+        //$('#BOForm')[0].reset();
+        opener.location.reload();
+        CustomMessage(e.ResponseMessage, e.Status);
+        if(e.Status==false)
+        {
+            $("#BootstrpError").show();
+            $("#BootstrpError").append("<strong>Failure!</strong> OOPS looks like there is some error Or table dosn't exist.");
+            $(function () {
+                setTimeout(function () {
+                    $("#BootstrpError").hide('blind', {}, 500)
+                }, 5000);
+            });
+        }
+        else
+        {
+            ID = e.ID;
+            if(i == 0)
+            {
+                $("#BootstrpAlertSuccess").show();
+                $("#BootstrpAlertSuccess").append("<strong>Success!</strong> The Business Object have been extracted successfully.");
+                $(function () {
+                    setTimeout(function () {
+                        $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                    }, 5000);
+                });
+            }
+            else
+            {
+                //var url = '/BusinessObjects/AssignBOAttributesFromGrid?BOID=' + ID ;
+                $('#BOForm').block({
+                    message: '<h4>Processing..</h4>',
+                    blockMsgClass: 'report-success',
+                });
+                var url = '../BusinessObjects/AssignBOAttributesFromGrid?BOID=' + ID ;
+                window.location.href = url;
+            }
+        }
+    }
+</script>

@@ -1,0 +1,97 @@
+﻿
+@model XIDNA.ViewModels.VMUserConfigurations
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+<section class="content-header hedr">
+    @if (@Model.ID == 0)
+    {
+        <h1> Add UserConfiguration </h1>
+    }
+    else
+    {
+        <h1> Edit UserConfiguration </h1>
+    }
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> User Configuration</a></li>
+        <li class="active"> Home </li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body padding10Tab">
+                <div class="innerborder">
+
+                    @using (Ajax.BeginForm("SaveUserConfigurations", "Home", new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "UserConfigurationForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.ID)
+                        <div id="clear-text">
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn"> Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.Name, new { @placeholder = "Enter Name", @required = "required", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                </div>
+                            </div>
+                           
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                                 new { key= 10 , value = "Active" },
+                                                 new { key= 20 , value = "Inactive" }
+                                                 }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="submit" class="btn btn-theme" value="Save" />
+                                @if (Model.ID == 0)
+                                {
+                                    <button type="reset" class="btn btn-theme reverse" id="Reset">Reset</button>
+                                }
+                                <button type="button" class="btn btn-theme decline" id="Cancel">Cancel</button>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="SaveUserConfig"></div>
+<script>
+    function OnComplete(e)
+    {
+        if (@Model.ID ==0) {
+            $('#SaveUserConfig').unblock();
+            opener.location.reload();
+            CustomMessage(e.ResponseMessage, e.Status);
+        }
+        else
+        {
+            opener.location.reload();
+            CustomMessage(e.ResponseMessage, e.Status);
+        }
+    }
+    $('#Reset').click(function () {
+        $('#UserConfigurationForm')[0].reset();
+    });
+    $('#Cancel').click(function () {
+        window.close();
+    });
+</script>

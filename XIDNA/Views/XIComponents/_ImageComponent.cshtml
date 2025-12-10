@@ -1,0 +1,23 @@
+﻿@model XIDNA.Models.cImageComponent
+@{
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+}
+<script>
+    $(document).ready(function () {
+        $('img').click(function () {
+            var XiLinkID = '@Model.iXILinkID';
+            if (XiLinkID > 0) {
+                XIRun(null,XiLinkID, 0, null, 0, true);
+            }
+        });
+        
+    });
+</script>
+<style>
+    img { cursor: pointer; }
+</style>
+<section class="content">
+    <div class="row">
+        <img src="@PhysicalPath/@Model.sImage" width="100" height="100" />
+    </div>
+</section>

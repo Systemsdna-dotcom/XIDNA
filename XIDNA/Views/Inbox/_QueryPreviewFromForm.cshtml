@@ -1,0 +1,99 @@
+﻿@model XIDNA.ViewModels.VMResultList
+
+<script>
+    $(document).ready(function () {
+        if ('@Model.ResultListDisplayType' == 1) {
+            var table = $('#ReportResultList').dataTable({
+                "paging": true,
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Html.Raw(Url.Action("GetReportResult", "Inbox", new {ReportID=Model.ReportID, SearchText=Model.SearchText, SearchType=Model.SearchType, BaseID=0 }))",
+                "aaSorting": [[1, 'desc']],
+                "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+                "autoWidth": false,
+                @*"fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                    for (i = 0; i < aData.length; i++) {
+                        var stext = '@Model.SearchText'.split(' ');
+                        var tdval = $('td:eq(' + i + ')', nRow).text();
+                        for (j = 0; j < stext.length; j++) {
+                            if (aData[i].toLowerCase().indexOf(stext[j]) >= 0) {
+                                var regex = new RegExp(stext[j], 'gi');
+                                tdval = tdval.replace(regex, '<strong style="color:#d0592e !important;">' + stext[j] + '</strong>');
+                            }
+                        }
+                        $('td:eq(' + i + ')', nRow).html(tdval);
+                    }
+                    return nRow;
+                }*@
+            });
+        }
+        if ('@Model.IsFilterSearch' == "True") {
+            $('#ReportResultList_filter').css({ "display": "none" })
+        }
+    });
+
+</script>
+
+@if (Model.SearchType == "Quick")
+{
+    <section class="content-header hedr">
+
+        @if (Model.QueryIcon != null)
+        {
+            <h1 class="col-md-4"><i class="@Model.QueryIcon" aria-hidden="true"></i> - @Model.QueryName</h1>
+        }
+        else
+        {
+            <h1 class="col-md-4">@Model.QueryName</h1>
+        }
+
+    </section>
+}
+
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="table-clean">
+                        <table id="ReportResultList" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+                            <thead>
+                                <tr>
+                                    @foreach (var items in Model.Headings)
+                                    {
+                                        <th>@items</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.ResultListDisplayType == 0 && Model.Rows.Count() > 0)
+                                {
+                                    foreach (var item in @Model.Rows)
+                                    {
+                                        <tr>
+                                            @foreach (var value in item)
+                                            {
+                                                <td>@value</td>
+                                            }
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+

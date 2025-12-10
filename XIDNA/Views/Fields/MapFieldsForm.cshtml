@@ -1,0 +1,376 @@
+﻿@model IEnumerable<XIDNA.ViewModels.VMDropDown>
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<style>
+    .listbox {
+        height: 200px;
+    }
+
+    #NonClassFields {
+        height: 350px;
+    }
+
+    #ClassFields {
+        height: 350px;
+    }
+
+    #DefaultFields {
+        height: 352px;
+    }
+
+    .selected {
+        background-color: #367fa9;
+        color: #fff !important;
+    }
+
+    #btnLeft {
+        background: none;
+        Border: none;
+    }
+
+    #btnRight {
+        background: none;
+        Border: none;
+    }
+
+    #btnLeftOne {
+        background: none;
+        Border: none;
+    }
+
+    #btnRightOne {
+        background: none;
+        Border: none;
+    }
+
+    #FirstDiv {
+        position: relative;
+        bottom: -70px;
+    }
+
+    #SecondDiv {
+        position: relative;
+        bottom: -198px;
+        ;
+    }
+
+    .TempError {
+        margin-top: 30px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1>Fields Mapping </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i>Field Mapping</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <form class="form-horizontal" id="MappingForm">
+                    <div class="innerborder">
+                        @*<div class="form-group">
+                                <div class="col-md-5">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    <input type="text" class="form-control" id="TempName" name="TempName" placeholder="Enter Name" />
+
+                                </div>
+                                <div class="col-md-2 error TempError">
+                                    <span class="error_label"></span>
+                                </div>
+                            </div>*@
+                        <div class="form-group">
+                            <div class="col-md-5">
+                                <label for="inputEmail" class="gn">Select the Class</label>
+                                <select class="form-control" id="Classes">
+                                    <option value="0">--Select--</option>
+                                    @foreach (var items in Model)
+                                    {
+                                        <option value="@items.Value">@items.text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-sm-7 orgerror">
+                                @*@Html.ValidationMessageFor(m => m.ClassID, null, new { @class = "red" })*@
+                            </div>
+                        </div>
+
+                        <div id="SelectLeadFields">
+                            <div class="box_filters">
+                                <div class="col-md-5">
+                                    @*<div class="col-sm-10 feature-box">
+                                            <label for="inputEmail" class="gn">Non Specific Fields</label>
+                                            <div class="form-group">
+                                                <div class="">
+                                                    <ul class="list1 task availableTasks form-control listbox" id="NonClassFields"></ul>
+                                                </div>
+                                                <div class="col-sm-7 errormsg">
+                                                    @Html.ValidationMessageFor(m => m.Field, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                        </div>*@
+                                    <div class="col-sm-10 feature-box">
+                                        <label for="inputEmail" class="gn">Specific Fields</label>
+                                        <div class="form-group">
+                                            <div class="">
+                                                <ul class="list1 task availableTasks form-control listbox" id="ClassFields"></ul>
+                                            </div>
+                                            <div class="col-sm-7 errormsg">
+                                                @*@Html.ValidationMessageFor(m => m.Field, null, new { @class = "red" })*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="col-md-2" id="MainDiv">
+                                        <div class="arrows_div col-sm-12" id="FirstDiv">
+                                            <div>
+                                                <button class="" type="button" id="btnRight"> <img src="~/Content/images/arrow-slider-right.png"> </button>
+                                                <br>
+                                                <button class="" id="btnLeft" type="button"> <img src="~/Content/images/arrow-slider-left.png"> </button>
+                                            </div>
+                                        </div>
+                                        <div class="arrows_div col-sm-12" id="SecondDiv">
+                                            <div>
+                                                <button class="" type="button" id="btnRightOne"> <img src="~/Content/images/arrow-slider-right.png"> </button>
+                                                <br>
+                                                <button class="" id="btnLeftOne" type="button"> <img src="~/Content/images/arrow-slider-left.png"> </button>
+                                            </div>
+                                        </div>
+                                    </div>*@
+
+                                <div class="col-md-5 feature-box">
+                                    <div class="col-sm-12">
+                                        <label for="inputEmail" class="gn">Source Fields</label>
+                                        <div class="form-group">
+                                            <div class="">
+                                                <ul class="list1 task availableTasks form-control listbox" id="DefaultFields"></ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="HideButton">
+                            <div class="form-group col-md-6" id="Buttons">
+                                <input type="button" class="btn btn-theme" value="Save" id="MapSave">
+                                <input type="button" class="btn btn-theme decline" value="Cancel" id="MapCancel" />
+                            </div>
+                        </div>
+                        <div id="MappedMasterFields"> </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="dialog-box FieldMapping" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    $(document).ready(function () {
+        $('#MapCancel').click(function () {
+            window.close();
+        });
+        $("#SelectLeadFields").hide();
+        $("#HideButton").hide();
+        @*$.ajax({
+            url: '@Url.Action("GetClassTypes", "Fields")',
+            type: 'POST',
+            datatype: 'JSON',
+            cache: false,
+            data: {},
+            success: function (data) {
+                $('#Classes').empty()
+                $('#Classes').append("<option value='0'>--Select--</option>");
+                for (i = 0; i < data.length; i++) {
+                    $('#Classes').append("<option value='" + data[i].Value + "'>" + data[i].text + "</option>");
+                }
+            }
+        });*@
+        $("#Classes").on("change", function () {
+            GetFields();
+        });
+        $('.feature-box ul').on('click', 'li', function () {
+            $('.feature-box ul').each(function (i, li) {
+                $('li').removeClass('selected');
+            })
+            $(this).toggleClass('selected');
+        });
+
+        $("#btnRight").click(function () {
+            var selectedItem = $("#NonClassFields .selected");
+            if (selectedItem.length != 0) {
+                $("#DefaultFields").prepend(selectedItem);
+            }
+        })
+
+        $("#btnLeft").click(function () {
+            var selectedItem = $("#DefaultFields .selected");
+            var names = selectedItem[0].attributes;
+            var SelectType;
+            for (j = 0; j < names.length; j++) {
+                if (names[j].name == "data-type") {
+                    SelectType = names[j].nodeValue;
+                }
+            }
+            if (SelectType == "Lead") {
+                if (selectedItem.length != 0) {
+                    $("#NonClassFields").prepend(selectedItem);
+                }
+            }
+
+        })
+        $("#btnRightOne").click(function () {
+            var selectedItem = $("#ClassFields .selected");
+            if (selectedItem.length != 0) {
+                $("#DefaultFields").prepend(selectedItem);
+            }
+        })
+
+        $("#btnLeftOne").click(function () {
+            var selectedItem = $("#DefaultFields .selected");
+            var names = selectedItem[0].attributes;
+            var SelectType;
+            for (j = 0; j < names.length; j++) {
+                if (names[j].name == "data-type") {
+                    SelectType = names[j].nodeValue;
+                }
+            }
+            if (SelectType == "Extra") {
+                if (selectedItem.length != 0) {
+                    $("#ClassFields").prepend(selectedItem);
+                }
+            }
+        })
+        $('#MapSave').click(function () {
+            //var TempName = $('#TempName').val();
+            var ClassID = $('#Classes').val();
+            var items = [];
+            var DataField = $('input[name=DataField]:checked').val();
+            var ColumnField = $('input[name=ColumnField]:checked').val();
+            var Values = {
+                //Name: TempName,
+                ClsID: ClassID,
+                DataField: DataField,
+                ColumnField: ColumnField
+            }
+            if (DataField.length > 0 && ColumnField.length > 0) {
+                $.ajax({
+                    url: '@Url.Action("SaveMappedLeadFields", "Fields")',
+                    type: 'POST',
+                    datatype: 'JSON',
+                    contentType: "application/json; charset=utf-8",
+                    cache: false,
+                    data: JSON.stringify(Values),
+                    success: function (data) {
+                        GetFields();
+                        $("#SelectLeadFields").hide();
+                        $("#HideButton").hide();
+                        $('#TempName').val('');
+                        $(".FieldMapping").html('Fields Added Successfully!');
+                        $(".FieldMapping").dialog({
+                            title: "Fields Mapping",
+                            modal: true,
+                            buttons: [
+                            {
+                                text: "Ok",
+                                click: function () {
+                                    $(".FieldMapping").dialog("close");
+                                }
+                            }
+                            ]
+                        });
+                    }
+                });
+            }
+        });
+        @*jQuery(function ($) {
+            $('#MappingForm').validate({
+                debug: true,
+                rules: {
+                    TempName: {
+                        required: true,
+                        minlength: 3,
+                        maxlength: 32,
+                        remote: {
+                            url: "@Url.Action("IsExistsTemplateTitle","Fields")",
+                            type: "post",
+                            data: {
+                                Type: "Create",
+                                Name: function () {
+                                    return $("#TempName").val()
+                                },
+                                ClassID: $('#Classes').val()
+                            },
+                            complete: function (data) {
+                                //handle failed validation
+                            }
+                        },
+
+                    },
+                },
+                messages: {
+                    TempName: {
+                        required: " Please Enter Title",
+                        minlength: "Enter Atleast 3 Characters",
+                        maxlength: "Only 32 Characters Allowed",
+                        remote: "Title Already Exists",
+                    },
+                },
+                errorPlacement: function (error, element) {
+                    $(element).closest('div').next('div').find('.error_label').html(error);
+                },
+                submitHandler: function (form) {
+
+                }
+            });
+        });*@
+    });
+    function GetFields() {
+        var ClassID = $('#Classes').val();
+        if (ClassID != 0) {
+            $.ajax({
+                url: '@Url.Action("GetLeadFields", "Fields")',
+                type: 'POST',
+                datatype: 'JSON',
+                cache: false,
+                data: { ClsID: ClassID, Type: "Create" },
+                success: function (data) {
+                    $("#SelectLeadFields").show();
+                    $("#HideButton").show();
+                    //$("#LeadFieldsGrid").show();
+                    $("#NonClassFields").empty();
+                    $('#ClassFields').empty();
+                    $('#DefaultFields').empty();
+                    //for (i = 0; i < data.NonClassFields.length; i++) {
+                    //    $('#NonClassFields').append("<li value='" + data.NonClassFields[i] + "' data-type='Lead'>" + data.NonClassFields[i] + "</li>")
+                    //    }
+                    for (i = 0; i < data.ClassFields.length; i++) {
+                        $('#ClassFields').append("<li value='" + data.ClassFields[i] + "' data-type='Extra'><input type='radio' name='DataField' value='" + data.ClassFields[i] + "'>" + data.ClassFields[i] + "</li>")
+                    }
+                    for (i = 0; i < data.DefaultFields.length; i++) {
+                        $('#DefaultFields').append("<li value='" + data.DefaultFields[i] + "' data-type='Extra'><input type='radio' name='ColumnField' value='" + data.DefaultFields[i] + "'>" + data.DefaultFields[i] + "</li>")
+                    }
+                    //for (i = 0; i < data.ExistingFields.length; i++) {
+                    //    $('li').filter(function () { return $.text([this]) === data.ExistingFields[i]; }).remove();
+                    //}
+
+                }
+            });
+            $.ajax({
+                url: '@Url.Action("GetMappedMasterFields", "Fields")',
+                type: 'POST',
+                datatype: 'html',
+                cache: false,
+                data: { ClassID: ClassID },
+                success: function (data) {
+                    $('#MappedMasterFields').html(data);
+                }
+            });
+        }
+        else {
+            alert("Select Class");
+        }
+    }
+</script>

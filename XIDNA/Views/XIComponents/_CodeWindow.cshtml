@@ -1,0 +1,39 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    List<CNV> oNV = new List<CNV>();
+    string InstanceID = string.Empty;
+    string sBO = string.Empty;
+    string sProjectID = string.Empty;
+    if (Model.oContent.ContainsKey(XIConstant.CodeEditorComponent))
+    {
+        oNV = (List<CNV>)Model.oContent[XIConstant.CodeEditorComponent];
+        InstanceID = oNV.Where(m => m.sName == XIConstant.Param_InstanceID).Select(m => m.sValue).FirstOrDefault();
+        sBO = oNV.Where(m => m.sName == "sBO").Select(m => m.sValue).FirstOrDefault();
+        sProjectID = oNV.Where(m => m.sName == "ProjectID").Select(m => m.sValue).FirstOrDefault();
+    }
+    var LocalGUID = Guid.NewGuid().ToString();
+}
+<script>
+    $(document).ready(function () {
+        fncOpenCodeEditorWindow();
+    });
+    function fncOpenCodeEditorWindow() {
+        var iInstanceID = '@InstanceID';
+        var sBO = '@sBO';
+        //$(_this).closest('tr').find('.one-1q-field-id').text();
+        //var dialClose = '<button type="button" class="ui-dialog-titlebar-close"></button>'
+        var windowclose = '<i class="windowClose fa fa-times" id="modalClose"></i>';
+        ////$('#CodeEditorDiv-@LocalGUID').html('<iframe src="https://platformfactory.in/Blockchain/XIComponents/CodeEditor?Id=' + iInstanceID + '" title="description" width="100%" height="100%" frameborder="0"></iframe>');
+        $('#CodeEditorDiv-@LocalGUID').html('<iframe src="http://localhost:53996/XIComponents/CodeEditor?sBO=' +sBO+'&Id=' + iInstanceID + '" title="description" width="100%" height="100%" frameborder="0"></iframe>');
+
+        //window.open('/Blockchain/XIComponents/CodeEditor?Id=' + iInstanceID, '_blank');
+        $("#modalClose").click(function () {
+            $("#CodeEditorDiv").dialog('close');
+            $("#modalClose").remove();
+            //$("#CodeEditorDiv").dialog('destroy').remove();
+        });
+    }
+</script>
+<div id="CodeEditorDiv-@LocalGUID"></div>

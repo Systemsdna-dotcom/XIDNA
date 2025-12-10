@@ -1,0 +1,60 @@
+﻿@{
+    var sTemplate = ViewBag.sTemplate;
+    var sTemplateName = ViewBag.sTemplateName;
+    var jss = new System.Web.Script.Serialization.JavaScriptSerializer();
+    var jSonstr = jss.Serialize(ViewBag.sJsonStr);
+    var BOID = ViewBag.BOID;
+    var sInstance = ViewBag.sInstance;
+}
+
+<script src="~/Scripts/JQuery/jQuery-2.1.4.min.js"></script>
+<script src="~/Scripts/JQuery/jquery-ui.js"></script>
+<script src="~/Scripts/CommonFunctions.js"></script>
+
+<script type="text/javascript">
+        $(document).ready(function () {
+            debugger;
+            var sJsonObj = JSON.parse(@Html.Raw(jSonstr));
+            //var UserInfoStr = JSON.stringify(userInfo);
+            //console.log(jsnStr);
+            //console.log(jsnStr);
+            var test = JSON.stringify({ "files": [{ "data": sJsonObj, "formats": ["pdf"], "name": "@sTemplateName", "template": "@sTemplate" }], "docxoptions": { "delimiters": { "start": "[[", "end": "]]" }, "paragraphLoop": true, "linebreaks": true } });
+            $.ajax({
+                url: "https://palloma-docify.accessinsurance.co.uk/api/Docify?code=DRnwoafPAXRFqYdyhD/BoajbwDs/nj/6f3elXiKElFSzdXwEroIALw==",
+                type: 'POST',
+                mode: 'cors',
+                cors: true,
+                crossDomain: true,
+                contentType: 'application/json',
+                secure: true,
+                headers: {
+                    "accept": "application/json",
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'DELETE, POST, GET, OPTIONS',
+                    "Access-Control-Allow-Headers": "append,delete,entries,foreach,get,has,keys,set,values,Authorization"
+                },
+                dataType: "json",
+                async: true,
+                data: test,
+                success: function (data) {
+                    debugger
+                    $.ajax({
+                        url: '@Url.Action("ConvertAndSaveAPIResponse", "XiLink")',
+                        type: 'POST',
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        cache: false,
+                        data: JSON.stringify({ APIResponse: data, iInstanceID: '@sInstance', iBOID: '@BOID' }),
+                        success: function (rdata) {
+                        },
+                        error: function (rdata) {
+                        }
+                        });
+                },
+                error: function (data) {
+                    debugger
+                    //alert(data);
+                }
+            });
+        })
+</script>

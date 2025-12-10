@@ -1,0 +1,42 @@
+﻿@model XIDNA.Models.ErrorLogs
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<section class="content-header hedr">
+    <h1> Error Messge </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Error</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    <div class="form-horizontal">
+                        <div class="form-group col-md-12">
+                            <div class="col-sm-3">
+                                <label for="inputEmail" class="gn">Created Date</label>
+                            </div>
+                            <div class="col-sm-9">
+                                @Model.CreatedTime.ToString("dd-MMM-yyyy")
+                            </div>
+                        </div>
+                        <div class="form-group col-md-12">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Error</label>
+                            </div>
+                            <div class="col-sm-9">
+                                @Model.Description
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>

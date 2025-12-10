@@ -1,0 +1,78 @@
+﻿@model List<XIDNA.ViewModels.VMDropDown>
+
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+<script>
+
+    $(document).ready(function () {
+        var orgs =@Html.Raw(Json.Encode(Model))
+        $('#Orgs').html('<option value="">--Select--</option>');
+        for (var i = 0; i < orgs.length; i++) {
+            $('#Orgs').append('<option value=' + orgs[i].Value + '>' + orgs[i].text + '</option>');
+        }
+        $('#Orgs').change(function () {
+            var id = $('#Orgs :selected').val();
+            var orgid = parseInt(id);
+            if (orgid == 0) {
+                $('#RolesTable').empty();
+            } else {
+                $.ajax({
+                    url: '@Url.Action("GetRolesByOrganization", "Inbox")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    data: { OrgID: id },
+                    success: function (data) {
+                        $('#RolesTable').html(data);
+                    },
+                    error: function (data) { }
+                });
+            }
+        });
+    })
+
+</script>
+<style>
+    .subnav {
+        margin-bottom: 10px;
+    }
+
+    #OrgList {
+        position: absolute;
+        top: 0px;
+        left: 350px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1>Users Inbox  Management </h1>
+
+    <div id="OrgList">
+        <div class="form-group">
+            <select id="Orgs" class="form-control"></select>
+        </div>
+    </div>
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i>Inbox</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="row">
+
+                    </div>
+                    <div id="RolesTable"></div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

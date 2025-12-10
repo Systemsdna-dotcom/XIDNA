@@ -1,0 +1,467 @@
+﻿@model XIDNA.ViewModels.VMOrganization
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+}
+<script src="~/Scripts/ajaxfileupload.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#contact").hide();
+        $("#OrgClasses").hide();
+        $('#OrgLocations').hide();
+        $('.OrgCrtCancel').click(function () {
+            window.close();
+        });
+        $("#PostCode").keyup(function () {
+            $(this).val($(this).val().toUpperCase());
+        });
+    })
+    $(function () {
+        $("#UploadImage").change(function () {
+            $("#dvPreview").html("");
+            if (typeof (FileReader) != "undefined") {
+                $("#dvPreview").show();
+                $("#dvPreview").append("<img />");
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#dvPreview img").attr("src", e.target.result);
+                }
+                reader.readAsDataURL($(this)[0].files[0]);
+            }
+        });
+        // $("input").attr("autocomplete", "off");
+    })
+
+</script>
+<style>
+    .orgerror {
+        color: red;
+        margin-top: 30px;
+    }
+
+    .disabled a {
+        color: #777 !important;
+    }
+
+    .danger {
+        color: red;
+    }
+</style>
+
+
+@Html.AntiForgeryToken()
+@*<hr />*@
+<section class="content-header hedr">
+    <h1> Add Organization </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Organization Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="nav-tabs-custom">
+        <ul class="nav nav-tabs">
+            <li id="generaldetails" class="active"><a href="#general">General Details</a></li>
+            <li id="contactdetails" class="disabled"><a href="#contact">Contact Details</a></li>
+            <li id="orgclass" class="disabled"><a href="#OrgClasses">Class Details</a></li>
+            <li id="Locdetails" class="disabled"><a href="#OrgLocations">Location Details</a></li>
+        </ul>
+        </div>
+            <div class="row">
+                    <div class="box">
+                        <div class="box-body">
+                            <div class="nav-tabs-custom innerborder">
+                                <div class="" id="tabs">
+                                    <div class="active tab-pane" id="general">
+                                        @using (Ajax.BeginForm("CreateOrganization", "Organization", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnComplete" }, new { @id = "frm", @class = "form-horizontal" }))
+                                        {
+                                            @Html.ValidationSummary(true)
+                                            @Html.HiddenFor(m => m.Type, new { @Value = "Create" })
+                                            @Html.HiddenFor(m => m.ID, new { @Value = 0 })
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                                    @Html.TextBoxFor(model => model.Name, new { @placeholder = "Enter Name", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Type<span class="danger">*</span></label>
+                                                    @Html.DropDownListFor(model => model.TypeID, new SelectList(new List<Object>{
+                                                                                   new { key= "" , value = "--Select--" },
+                                                                                   new { key= 1 , value = "1" },
+                                                                                   new { key= 2, value = "2" },
+                                                                                   new { key= 3 , value = "3" },
+                                                                                   new { key= 4 , value = "4" },
+                                                                                   new { key= 5 , value = "5" }
+                                                                                }, "key", "Value"), new { @class = "form-control", @id = "Type" })
+
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.TypeID, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Description</label>
+                                                    @Html.TextBoxFor(model => model.Description, new { @id = "Description", @placeholder = "Enter Description", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.Description, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Logo</label>
+                                                    <input type="file" id="UploadImage" name="UploadImage" />
+                                                    <div class=form-group id="dvPreview">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">No. Of Users</label>
+                                                    @Html.TextBoxFor(model => model.NoOfUsers, new { @id = "NoOfUsers", @placeholder = "Enter NoOfUsers", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.NoOfUsers, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn" id="DBLabel">Database Type</label>
+                                                    <div id="dbbuttons">
+                                                        @Html.RadioButtonFor(m => m.DatabaseType, "Common", new { @id = "CommonDB", @Value = "Common", @checked = "checked" }) common
+                                                        @Html.RadioButtonFor(m => m.DatabaseType, "Specific", new { @id = "SpecificDB", @Value = "Specific" }) specific
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Address</label>
+                                                    @Html.TextBoxFor(model => model.Address, new { @id = "Address", @placeholder = "Enter Address", @class = "form-control" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Phone Number<span class="danger">*</span></label>
+                                                    @Html.TextBoxFor(model => model.PhoneNumber, new { @id = "PhoneNumber", @placeholder = "Enter Phone Number", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.PhoneNumber, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Post Code</label>
+                                                    @Html.TextBoxFor(model => model.PostCode, new { @id = "PostCode", @placeholder = "Enter PostCode", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.PostCode, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">WebSite</label>
+                                                    @Html.TextBoxFor(model => model.Website, new { @id = "Website", @placeholder = "Enter Website", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.Website, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Email<span class="danger">*</span></label>
+                                                    @Html.TextBoxFor(model => model.Email, new { @id = "Email", @placeholder = "Enter Email", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.Email, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Password<span class="danger">*</span></label>
+                                                    @Html.PasswordFor(model => model.Password, new { @id = "Password", @placeholder = "Enter Password", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.Password, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Confirm Password<span class="danger">*</span></label>
+                                                    @Html.PasswordFor(model => model.ConfirmPassword, new { @placeholder = "Enter Confirm Password", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.ConfirmPassword, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Status</label>
+                                                    @Html.DropDownListFor(model => model.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                                               new { key= 20, value = "InActive" },
+
+                                            }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <div class="col-sm-10">
+                                                    <button type="submit" class="btn btn-theme" name="Todo" id="saveorg">Save & Continue</button>
+                                                    <button type="button" class="btn btn-theme decline OrgCrtCancel">Cancel</button>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="active tab-pane" id="contact">
+                                        @using (Ajax.BeginForm("AddOrganizationContact", "Organization", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnConSuccess" }, new { @class = "form-horizontal", @id = "frm" }))
+                                        {
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                                    @Html.HiddenFor(m => m.ConOrganizationID, new { @id = "ConOrganizationID" })
+                                                    @Html.TextBoxFor(model => model.ConName, new { @Name = "ConName", @placeholder = "Enter Name", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.ConName, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Phone Number<span class="danger">*</span></label>
+                                                    @Html.TextBoxFor(model => model.ConPhone, new { @Name = "ConPhone", @placeholder = "Enter Phone", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.ConPhone, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Email<span class="danger">*</span></label>
+                                                    @Html.TextBoxFor(model => model.ConEmail, new { @Name = "ConEmail", @placeholder = "Enter Email", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.ConEmail, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Address<span class="danger">*</span></label>
+                                                    @Html.TextBoxFor(model => model.ConAddress, new { @Name = "ConAddress", @placeholder = "Enter Address", @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.ConAddress, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-sm-offset-2 col-sm-10">
+                                                    <button type="submit" class="btn btn-theme" value="Save" id="saveorgcontact">Save</button>
+                                                    <button type="button" class="btn btn-theme decline OrgCrtCancel">Cancel</button>
+                                                </div>
+                                            </div>
+                                        }
+
+                                    </div>
+                                    <div class="active tab-pane" id="OrgClasses">
+                                        @using (Ajax.BeginForm("AddOrganizationClasses", "Organization", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnClassSuccess" }, new { @class = "form-horizontal", @id = "Classfrm" }))
+                                        {
+                                            @Html.HiddenFor(m => m.OrganizationID, new { @id = "OrganizationID" })
+                                            <div class="form-group">
+                                                <div class="col-md-5">
+                                                    <label for="inputEmail" class="gn">Class<span class="danger">*</span></label>
+                                                    @Html.ListBoxFor(model => model.ClassIDs, new MultiSelectList(Model.Classes, "Expression", "Text", Model.Classes), new { size = 10, @class = "form-control", required = "required" })
+                                                </div>
+                                                <div class="col-sm-7 orgerror">
+                                                    @Html.ValidationMessageFor(m => m.ClassIDs, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-sm-10">
+                                                    <button type="submit" class="btn btn-theme">Save</button>
+                                                    <button type="button" class="btn btn-theme decline OrgCrtCancel">Cancel</button>
+                                                </div>
+                                            </div>
+                                        }
+
+                                    </div>
+                                    <div class="active tab-pane" id="OrgLocations">
+                                        @using (Ajax.BeginForm("SaveOrgWithLocation", "Organizations", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnBegin = "OnBegin", OnSuccess = "OnLocSuccess" }, new { @id = "Locationfrm", @class = "form-horizontal" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            @Html.ValidationSummary(true);
+                                            @Html.HiddenFor(m => m.LocID, new { @Value = 0 })
+                                            @Html.HiddenFor(m => m.CreationType, new { @Value = "Create" })
+                                            @Html.HiddenFor(m => m.LocOrganizationID, new { @id = "LocOrganizationID" })
+                                            <div class="form-horizontal">
+
+                                                @* Passing the Hidden values*@
+                                                <div class="form-group">
+                                                    <div class="col-md-3">
+                                                        <label for="inputEmail" class="gn">Location<span class="danger">*</span></label>
+                                                        @Html.TextBoxFor(model => model.Location, new { @placeholder = "Enter location", @class = "form-control", @id = "Location" })
+                                                    </div>
+                                                    <div class="col-sm-7 orgerror">
+                                                        @Html.ValidationMessageFor(m => m.Location, null, new { @class = "red" })
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="col-md-3">
+                                                        <label for="inputEmail" class="gn">Location Code<span class="danger">*</span></label>
+                                                        @Html.TextBoxFor(model => model.LocationCode, new { @placeholder = "Enter location code", @class = "form-control", @id = "LocationCode" })
+                                                    </div>
+                                                    <div class="col-sm-7 orgerror">
+                                                        @Html.ValidationMessageFor(m => m.LocationCode, null, new { @class = "red" })
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="col-md-3">
+                                                        <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                                        @Html.DropDownListFor(m => m.LocStatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="col-md-10">
+                                                        <input type="submit" class="btn btn-theme" value="Save" />
+                                                        <input type="button" class="btn btn-theme decline OrgCrtCancel" value="Cancel" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        <div id="SpecificOrgLocation">
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+    </div>
+    <div class="dialog-box AddOrgDlg" title="Confirm Message" style="background-color:white;"></div>
+    <script>
+        function OnComplete(response) {
+            var data = response;
+            if ($("#UploadImage").val() != "") {
+                $.ajaxFileUpload({
+                    url: '@Url.Action("SaveLogo", "Organization")',
+                    secureuri: false,
+                    type: 'POST',
+                    fileElementId: "UploadImage",
+                    dataType: 'json',
+                    data: {
+                        id: data,
+                        //MainImage: $('#MainImage').val(),
+                    },
+                    success: function (data1) {
+                        $.unblockUI();
+                        $('#generaldetails').removeClass('active');
+                        $('#contactdetails').addClass('active');
+                        $('#contactdetails').removeClass('disabled');
+                        $("#ConOrganizationID").val(data);
+                        $("#general").hide();
+                        $("#contact").show();
+                        $("#OrgClasses").hide();
+                        $('#OrgLocations').hide();
+                    },
+                    error: function (data, status, e) {
+                        $("#ConOrganizationID").val(data.Response);
+                        return alert(response);
+                    }
+                })
+
+            }
+            else {
+                $.unblockUI();
+                $('#generaldetails').removeClass('active');
+                $('#contactdetails').addClass('active');
+                $('#contactdetails').removeClass('disabled');
+                $("#ConOrganizationID").val(data);
+                $("#general").hide();
+                $("#contact").show();
+                $("#OrgClasses").hide();
+                $('#OrgLocations').hide();
+            }
+
+        }
+        function OnConSuccess(e) {
+            $.unblockUI();
+            $("#general").hide();
+            $("#contact").hide();
+            $("#OrgClasses").show();
+            $('#OrgLocations').hide();
+            $('#generaldetails').addClass('disabled');
+            $('#contactdetails').addClass('disabled');
+            $('#contactdetails').removeClass('active');
+            $("#orgclass").removeClass('disabled');
+            $("#orgclass").addClass('active');
+            $("#OrganizationID").val(e);
+        }
+        function OnClassSuccess(e) {
+            $.unblockUI();
+            $("#general").hide();
+            $("#contact").hide();
+            $("#OrgClasses").hide();
+            $('#OrgLocations').show();
+            $('#generaldetails').addClass('disabled');
+            $('#contactdetails').addClass('disabled');
+            $('#contactdetails').removeClass('active');
+            $("#orgclass").addClass('disabled');
+            $("#orgclass").removeClass('active');
+            $("#Locdetails").removeClass('disabled');
+            $("#Locdetails").addClass('active');
+            $("#LocOrganizationID").val(e);
+            //opener.location.reload();
+        }
+        function OnLocSuccess(e) {
+            var value = $("#LocOrganizationID").val();
+            $.ajax({
+                url: '@Url.Action("SpecificOrgLocation", "Organization")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                data: { LocOrgID: value },
+                cache: false,
+                success: function (data) {
+                    $('#SpecificOrgLocation').empty();
+                    $('#SpecificOrgLocation').html(data);
+                },
+                error: function (data) { }
+            });
+            $.unblockUI();
+            $(".AddOrgDlg").html('Organization Details Saved Successfully!?<br/> Do You Want To Add More Locations?');
+            $(".AddOrgDlg").dialog({
+                title: "Organization",
+                modal: true,
+                buttons: [
+                    {
+                        text: "Yes",
+                        click: function () {
+                            $('#Location').val('');
+                            $('#LocationCode').val('');
+                            $(".AddOrgDlg").dialog('close');
+                        }
+                    },
+                {
+                    text: "No",
+                    click: function () {
+                        window.close();
+                    }
+                }
+                ]
+            });
+        }
+        function OnBegin() {
+            $.blockUI({ message: '<h3><img src="@PhysicalPath/Scripts/ckfinder/plugins/gallery/colorbox/images/loading.gif" width="50px" /> Please wait while saving details...</h3>' });
+        }
+    </script>
+    <div id="CommonDialog"></div>
+    <div id="CommonDialogStatus"></div>

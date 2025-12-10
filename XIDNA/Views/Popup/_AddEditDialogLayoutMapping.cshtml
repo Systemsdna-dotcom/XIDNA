@@ -1,0 +1,125 @@
+﻿@model XIDNA.ViewModels.VMPopupLayout
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+       
+        $('#LayoutPreview td').each(function (j, obj) {
+            var PlaceholderArea = "td"+(j+1);
+            var Details = @Html.Raw(Json.Encode(Model.Details));
+            for(k=0;k<Details.length;k++){
+                if(Details[k].PlaceholderArea==PlaceholderArea){
+                    $(this).html(Details[k].PlaceholderName);
+                    $(this).attr('data-name', Details[k].PlaceholderName);
+                    $(this).attr('data-phid', Details[k].PlaceHolderID);
+                }
+            }
+          
+        });
+     
+        var Assigned = @Html.Raw(Json.Encode(Model.Mappings));
+        $('#PHMappingForm').hide();
+        $('#LayoutPreview td').click(function () {
+            $('.StatusMessages').hide();
+            $('#XiLinkDDL').val(0);
+            var name = $(this).attr('data-name');
+            var phid = $(this).attr('data-phid');
+            for(i=0;i<Assigned.length;i++){
+                if(Assigned[i].PlaceHolderID==phid){
+                    $('#XiLinkDDL').val(Assigned[i].XiLinkID);
+                    $('#XiLinksDDLDiv').show();
+                }
+            }
+            $('#PHName').html(name);
+            $('#PHID').val(phid);
+            $('#PHMappingForm').show();
+        });
+        $('#PHMapSave').click(function () {
+            var XiLinkID = $('#XiLinkDDL').val();
+            var PopupID = '@Model.PopupID';
+            var PlaceHolderID = $('#PHID').val();
+            if (parseInt(PopupID) > 0 && parseInt(XiLinkID)>0 ) {
+                var Mappings = { XiLinkID: XiLinkID, PlaceHolderID: PlaceHolderID, LayoutID:'@Model.LayoutID', PopupID:PopupID, Type:"Dialog"  };
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SaveLayoutMapping", "Popup")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(Mappings),
+                    cache: false,
+                    async: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        CustomMessage(data.ResponseMessage, data.Status);
+                    }
+                });
+            }
+            else{
+                CustomMessage("Please fill * marked fields", false);
+            }
+        });
+        $('.ResetPopup').click(function () {
+            $('#XiLinkDDL').val('0');
+        });
+        $('.CancelMapping').click(function(){
+            window.close();
+        });
+    });
+</script>
+
+<style>
+    #LayoutPreview table td {
+        width: 70px;
+        height: 70px;
+        border: 1px solid #fff;
+        text-align: center;
+    }
+</style>
+
+<section class="content-header hedr">
+    <h1> Map Layout Content For @Model.DialogName</h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Dialog Layout</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body padding10Tab">
+                <div class="innerborder">
+                    <div id="LayoutPreview">
+                        @Html.Raw(Model.LayoutCode)
+                    </div>
+                    <div id="PHMappingForm">
+                        <form class="form-horizontal">
+                            <h4>Select Content for <span id="PHName"></span></h4>
+                            <input type="hidden" id="PHID" />
+                            <div class="form-group" id="XiLinksDDLDiv">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">XiLink<span class="danger">*</span></label>
+                                    <select class="form-control" id="XiLinkDDL">
+                                        <option value="0">--Select--</option>
+                                        @foreach (var items in Model.XiLinks)
+                                        {
+                                            <option value="@items.Value">@items.text</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="button" class="btn btn-theme" id="PHMapSave" value="Save" />
+                                    <button type="button" class="btn btn-theme reverse ResetPopup">Reset</button>
+                                    <button type="button" class="btn btn-theme decline CancelMapping">Cancel</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="MappingGrid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

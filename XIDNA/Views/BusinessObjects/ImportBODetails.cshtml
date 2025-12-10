@@ -1,0 +1,99 @@
+﻿@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+}
+<section class="content-header hedr">
+    <h1> Import Business Object </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Import Business Objects</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<br />
+<section class="content">
+    <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            <label for="inputEmail" class="gn">Enter the BO Xml File path: </label>
+                            <input type="text" class="FilePath form-control" id="FilePath"><br />
+                            <input type="button" class="btn btn-theme btn-xs" value="Get XML" onclick="GetXMLFiles()">
+                            <input type="button" class="btn btn-theme btn-xs Cancel" value="Cancel" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript">
+
+    function GetXMLFiles() {
+        var sTxtVal = $("#FilePath").val()
+        if (sTxtVal == "") {
+            $("#BootstrpError").show();
+            $("#BootstrpError").html("<strong>Error! </strong> Invalid path was requested.");
+            $(function () {
+                setTimeout(function () {
+                    $("#BootstrpError").hide('blind', {}, 500)
+                }, 3000);
+            });
+        }
+        else {
+            $.blockUI({ message: '<h3><img src="@PhysicalPath/Scripts/ckfinder/plugins/gallery/colorbox/images/loading.gif" width="50px" /> Please wait while saving details...</h3>' });
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("UploadXMLBO", "BusinessObjects")',
+                data: { sFilePath: sTxtVal },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    $.unblockUI();
+                    //window.location.reload(true);
+                    if (data == "success") {
+                        $("#BootstrpAlertSuccess").show();
+                        $("#BootstrpAlertSuccess").append("<strong>Success!</strong> The file has been uploaded.");
+                        $(function () {
+                            // it will wait for 5 sec. and then will fire
+                            setTimeout(function () {
+                                $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                            }, 5000);
+                        });
+                    }
+                    else if (data == "Alert") {
+                        $("#BootstrpError").show();
+                        $("#BootstrpError").html("<strong>Warning!</strong> The file already Uploaded with same BO Name.");
+                        $(function () {
+                            setTimeout(function () {
+                                $("#BootstrpError").hide('blind', {}, 500)
+                            }, 5000);
+                        });
+                    }
+                    else {
+                        $("#BootstrpAlert").show();
+                        $("#BootstrpAlert").append("<strong>Warning!</strong> Looks like some error, Please check the uploaded file format is correct.");
+                        $(function () {
+                            setTimeout(function () {
+                                $("#BootstrpAlert").hide('blind', {}, 500)
+                            }, 5000);
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    $('.Cancel').click(function () {
+        window.close();
+    });
+
+</script>

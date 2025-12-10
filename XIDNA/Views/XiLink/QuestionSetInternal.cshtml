@@ -1,0 +1,536 @@
+﻿@model XICore.XIIQS
+@{
+    //Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    var QuestionSetID = Model.FKiQSDefinitionID;
+    var CurrentStepID = Model.iCurrentStepID;
+    var sGUID = ViewBag.sGUID;
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+}
+
+<div id="QSStep">
+    @{
+        Html.RenderPartial("_QuestionSetInternal", Model);
+    }
+</div>
+
+<style>
+    .no-titlebar .ui-dialog-titlebar {
+        display: none;
+    }
+
+    .QSStepForm .on {
+        display: none;
+    }
+
+    .QSStepForm .off {
+        display: block;
+    }
+
+    .questionset-section .on {
+        display: none;
+    }
+
+    .questionset-section .off {
+        display: block;
+    }
+
+    .nav .on {
+        display: none;
+    }
+
+    /*.nav .off {
+         display: block;
+     }*/
+</style>
+
+<script>
+    var sGUIDN;
+    $(document).ready(function () {
+        sGUIDN = '@sGUID';
+        LabelDataURL = '@Url.Action("GetLabelData", "XiLink")';
+        AutoCompleteLarge = '@Url.Action("GetAutoCompleteData", "XiLink")';
+        $(document.body).on('click', '.QSStepForm input', function () {
+            $('.HelpText').hide();
+            $(this).closest('div').next('div').find('.HelpText').show();
+            $(this).closest('div').next('div').find('span[data-type="ErrorMesg"]').hide();
+
+            if ($(this).hasClass('Txtbx-DATETIME')) {
+                $(this).datepicker({
+                    changeMonth: true,
+                    changeYear: true,
+                    inline: true,
+                    yearRange: '1920:2030'
+                }).focus();
+            }
+        });
+
+        $('.HelpText').hide();
+        $('.Txtbx-DATETIME').datepicker({
+            changeMonth: true,
+            changeYear: true,
+            inline: true,
+            yearRange: '1920:2030'
+        });
+        $(".highlight--help .helptext-mobile-button").on('click',function (e) {
+            e.stopPropagation();
+            $('.highlight--help').removeClass("helptext--visible");
+            $(this).closest('.highlight--help').addClass('helptext--visible');
+        });
+        $(".helptext-content-close").on('click',function (e) {
+            $(this).closest('.highlight--help').removeClass('helptext--visible');
+        });
+        $(document.body).on('keydown', 'input.autocomplete', function(event) {
+            var srchtxt = $(this).val();
+            var keycode = (window.event) ? event.keyCode : e.keyCode;
+            if(event.which === 9) {
+                fncgridrowclick('tab', null, srchtxt)
+            }
+        });
+
+        $(document.body).on('click', 'input#QSPolicyCalBtn', function () {
+            var iInstID = $("input[name=ID]").val();
+            var pvalue = {XILinkID:166,
+                sGUID:sGUID,
+                iInstanceID: iInstID,
+                iBOID:296}
+            $.ajax({
+                url: '@Url.Action("XIScripting", "XiLink")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: JSON.stringify(pvalue),
+                success: function (data) {
+                }
+            });
+        });
+
+        $(document.body).on('click', 'button#QSBckBtn', function () {
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            fncGetPreviousStep(QuestionSetID, sGUID);
+            CurrentStepID = QuestionSet.iCurrentStepID;
+            var CurrentStepName = QuestionSet.sCurrentStepName;
+            StepDef = QuestionSet.QSDefinition.Steps[CurrentStepName];
+        });
+        $(document.body).on('click','button#FAChangeBtn', function(){
+            $(this).closest('div').prev('div').find('#FAComponent').removeAttr('disabled');
+        });
+    });
+    var QuoteID = 0;
+    var QuestionSetID = '@QuestionSetID';
+    var QuestionSet =  @Html.Raw(Json.Encode(Model));
+    var ValidationType = 0;
+    if(QuestionSet.QSDefinition.sName.toLowerCase() == "compare the market"){
+        ValidationType = 10;
+    }
+    else if(QuestionSet.QSDefinition.sName.toLowerCase() == "go compare motorhome"){
+        ValidationType =20;
+    }
+    else if(QuestionSet.QSDefinition.sName.toLowerCase() == "money super market motorhome"){
+        ValidationType =20;
+    }
+    var IsValid = true;
+    var FinalValid = true;
+    var CurrentStepID = QuestionSet.iCurrentStepID;
+    var CurrentStepName = QuestionSet.sCurrentStepName;
+    var StepDef = QuestionSet.QSDefinition.Steps[CurrentStepName];
+
+    function fnccheckme($this){
+        var sShowField; var sHideField; var iSHType; var parentName;
+        var tagname = $this.tagName;
+        if(tagname == "SELECT"){
+            sShowField = $($this).find(':selected').attr('data-show');
+            sHideField = $($this).find(':selected').attr('data-hide');
+            iSHType = $($this).find(':selected').attr('data-shtype');
+        }
+        else{
+            sShowField = $($this).attr('data-show');
+            sHideField = $($this).attr('data-hide');
+            iSHType = $($this).find(':selected').attr('data-shtype');
+        }
+        if(iSHType == 10){
+            parentName = 'qsfield';
+            if(sShowField && sShowField.length>0){
+                var childObj1 = $('[name="'+sShowField+'"]');
+                fncHideShowFromHTMLTree(parentName, childObj1[0], 'show');
+            }
+            if(sHideField && sHideField.length>0){
+                var childObj2 = $('[name="'+sHideField+'"]');
+                fncHideShowFromHTMLTree(parentName, childObj2[0], 'hide');
+
+                //Hide dependecy Fields recursively
+                var HideRemaining = $('.questionset-section select[name="'+sHideField+'"]');
+                if(HideRemaining){
+                    $(HideRemaining).find('option[value="0"]').prop('selected',true);//set DropDwon Value To 0
+                    fnccheckme(HideRemaining[0]);
+                }
+
+            }
+        }
+        else if(iSHType == 20){
+            if(sShowField && sShowField.length>0){
+                var childObj1 = $('[name="'+sShowField+'"]');
+                $(childObj1).removeClass('on').addClass('off');
+            }
+            if(sHideField && sHideField.length>0){
+                var childObj2 = $('[name="'+sHideField+'"]');
+                $(childObj2).removeClass('off').addClass('on');
+
+                //Find Form elements and Set Null Values
+                var SetValueToNull = $(childObj2).find('form');
+                if(SetValueToNull){
+                    $(childObj2).find('form').find('input').each(function(a,b){ $(b).attr('value',"") });
+                    $(childObj2).find('form').find('select').each(function(a,b){ $(b).find('option[value="0"]').prop('selected',true) })
+                }
+            }
+        }
+        else if(iSHType == 30){
+            if(sShowField && sShowField.length>0){
+                var childObj1 = $('[name="'+sShowField+'"]');
+                $(childObj1).removeClass('on');
+                var dicSteps = QuestionSet.QSDefinition.Steps;
+                for (var key in dicSteps) {
+                    var singlestep = dicSteps[key];
+                    if(singlestep.sCode == sShowField){
+                        singlestep.sIsHidden = "off";
+                    }
+                }
+                //for (var m = 0; m < QuestionSet.QSDefinition.QSSteps.length; m++) {
+                //    if (QuestionSet.QSDefinition.QSSteps[m].sCode == sShowField) {
+                //        QuestionSet.QSDefinition.QSSteps[m].sIsHidden = "off";
+                //        break;
+                //    }
+                //}
+            }
+            if(sHideField && sHideField.length>0){
+                var childObj2 = $('[name="'+sHideField+'"]');
+                $(childObj2).addClass('on');
+                var dicSteps = QuestionSet.QSDefinition.Steps;
+                for (var key in dicSteps) {
+                    var singlestep = dicSteps[key];
+                    if(singlestep.sCode == sHideField){
+                        singlestep.sIsHidden = "on";
+                    }
+                }
+                //for (var m = 0; m < QuestionSet.QSDefinition.QSSteps.length; m++) {
+                //    if (QuestionSet.QSDefinition.QSSteps[m].sCode == sHideField) {
+                //        QuestionSet.QSDefinition.QSSteps[m].sIsHidden = "on";
+                //        break;
+                //    }
+                //}
+            }
+        }
+    }
+
+    function fncHideShowFromHTMLTree(parentName, childObj, Type) {
+        var ActiveInstanceID = 0;
+        var testObj = childObj.parentNode;
+        var count = 1;
+        if(testObj.className != "questionset-section"){//This Codition without ParentNode
+            while (testObj.getAttribute('data-controltype') != parentName) {// This Condition With ParentNode
+                if (testObj.parentNode.tagName != "HTML") {
+                    testObj = testObj.parentNode;
+                    count++;
+                }
+                else {
+                    return ActiveInstanceID
+                }
+            }
+        }else{
+            testObj = childObj;
+        }
+
+        if(Type == "show"){
+            $(testObj).removeClass('on').addClass('off');
+        }
+        else if(Type == "hide"){
+            $(testObj).removeClass('off').addClass('on');
+        }
+    }
+
+    function fncRunQSStepAction(Type, $this){
+        $('#QSNxtBtn').hide();
+        $('#QSLoadingBtn').show();
+        CurrentStepID = QuestionSet.iCurrentStepID;
+
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', $this);
+        fncMapAndValidate(sGUID, Type)
+    }
+
+    function fncMapAndValidate(sGUID, Type){
+        var CurrentStepName = QuestionSet.sCurrentStepName;
+        var StepIns = QuestionSet.Steps[CurrentStepName];
+        StepDef = QuestionSet.QSDefinition.Steps[CurrentStepName];
+        FinalValid = true;
+        var formid = 'QSStepForm';
+        var formData = JSON.parse(JSON.stringify(jQuery('.' + formid).serializeArray()))
+        var FieldValues = [];
+        var i, j, titleid = [];
+        for (var i = 0; i < formData.length; i++) {
+            FieldValues.push({ Label: formData[i].name, Data: formData[i].value });
+        }
+        if(StepDef.Sections && Object.keys(StepDef.Sections).length > 0){
+            var SecDef;
+            var SecIns;
+            for (var sdid in StepDef.Sections) {
+                for (var siid in StepIns.Sections) {
+                    if(sdid == siid){
+                        SecIns = StepIns.Sections[siid+"_Sec"];
+                        SecDef = StepDef.Sections[sdid+"_Sec"];
+                    }
+                }
+                if(SecDef.iDisplayAs == 30){
+                    for (var j = 0; j < FieldValues.length; j++) {
+                        var FieldDefID = FieldValues[j].Label;
+                        var XiValue = SecIns.XIValues[FieldDefID];
+                        if(XiValue){
+                            XiValue.sValue = FieldValues[j].Data;
+                            SecIns.XIValues[FieldDefID] = XiValue;
+                            var FldOrg = SecDef.FieldDefs[FieldDefID];
+                            fncGetValidationMessage(StepIns.FKiQSStepDefinitionID, FldOrg.FieldOrigin, FieldValues[j].Data)
+                        }
+                    }
+                    //StepIns.Sections[SecIns.FKiStepSectionDefinitionID + "_Sec"] = SecIns;
+                    StepIns.Sections[SecIns.FKiStepSectionDefinitionIDXIGUID + "_Sec"] = SecIns;
+                }
+                else{
+                    if(SecDef.iDisplayAs == 40){
+                        //SaveComponent(sGUID, SecDef.sName );
+                    }
+                }
+            }
+        }
+        else{
+            if(StepIns.XIValues && Object.keys(StepIns.XIValues).length > 0){
+                for (var j = 0; j < FieldValues.length; j++) {
+                    var FieldDefID = FieldValues[j].Label;
+                    var XiValue = StepIns.XIValues[FieldDefID];
+                    if(XiValue){
+                        var FldOrg = StepDef.FieldDefs[FieldDefID];
+                        if(FldOrg.FieldOrigin.FK1ClickID > 0){
+                            var Value = $('#Field-'+StepDef.ID+'-'+FieldDef.ID).attr('data-value');
+                            XiValue.sValue = Value;
+                            StepIns.XIValues[FieldDefID] = XiValue;
+                        }
+                        else{
+                            XiValue.sValue = FieldValues[j].Data;
+                            StepIns.XIValues[FieldDefID] = XiValue;
+                            fncGetValidationMessage(StepIns.FKiQSStepDefinitionID, FldOrg.FieldOrigin, FieldValues[j].Data)
+                        }
+                    }
+                }
+            }
+            else{
+                if(StepDef.iDisplayAs == 40){
+                    //SaveComponent(sGUID, StepDef.sName );
+                }
+            }
+        }
+        QuestionSet.Steps[CurrentStepName] = StepIns;
+
+        if (FinalValid) {
+            if(Type=="Save"){
+                fncSaveQSStep(QuestionSet, sGUID)
+            }
+            else if(Type=="SaveNext"){
+                fncGetNextStep(QuestionSet, sGUID, StepIns.bIsLastStep).then(function (Status) {
+                    CurrentStepID = QuestionSet.iCurrentStepID;
+                    var CurrentStepName = QuestionSet.sCurrentStepName;
+                    StepDef = QuestionSet.QSDefinition.Steps[CurrentStepName];
+                });
+            }
+        }
+    }
+
+    function fncSaveQSStep(QuestionSet, sGUID){
+        var QS = { oQSInstance: QuestionSet, sGUID: sGUID };
+        $.ajax({
+            url: '@Url.Action("SaveQSInstances", "XiLink")',
+            type: "Post",
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            cache: false,
+            async: false,
+            data: JSON.stringify(QS),
+            success: function (data) {
+                if(data == null){
+                    CustomMessage("Error Occured", false);
+                }
+                else{
+                    CustomMessage("Saved Successfully", true);
+                }
+
+            }
+        });
+    }
+
+    function fncGetNextStep(QuestionSet, sGUID, IsLastStep) {
+        var QS = { oQSInstance: QuestionSet, sGUID: sGUID, sType:"public" };
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: '@Url.Action("GetNextStep", "XiLink")',
+                type: "Post",
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                async: false,
+                data: JSON.stringify(QS),
+                success: function (data) {
+                    $('#QSStep').html(data);
+                    //$('#QSStep_' + sGUID).focus();
+                    $('html, body').animate({
+                        scrollTop: $('#QSStep').offset().top //#DIV_ID is an example. Use the id of your destination on the page
+                    }, 'slow');
+                    var QTAMT = $('#QuoteAMt').attr('data-value');
+                    $('#FinalAmt').html(QTAMT);
+                    resolve= true;
+                }
+            });
+        });
+    }
+
+    function fncGetPreviousStep($this) {
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', $this);
+        $.ajax({
+            url: '@Url.Action("GetPreviousStep", "XiLink")',
+            type: "Post",
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            cache: false,
+            async: false,
+            data: JSON.stringify({ oQSInstance: QuestionSet, sGUID: sGUID, sType:"public" }),
+            success: function (data) {
+                $('#QSStep').html(data);
+                $('html, body').animate({
+                    scrollTop: $('#QSStep').offset().top //#DIV_ID is an example. Use the id of your destination on the page
+                }, 'slow');
+            }
+        });
+    }
+
+    function fncGetValidationMessage(StepID, FieldOrigin, Value) {
+        var Visibility = $('div[data-controltype="section"]').filter('.on').find('[name="'+FieldOrigin.sName+'"]')[0];
+        if(!Visibility){
+            var IsVal = FinalValid;
+            IsValid = true;
+            var XIDataType = FieldOrigin.DataType;
+            if (FieldOrigin.bIsMandatory && (Value == null || Value.length == 0)) {
+                IsValid = false;
+            }
+
+            if (XIDataType.sRegex && XIDataType.sRegex != null && XIDataType.sRegex.length > 0 && FieldOrigin.bIsMandatory ) {
+                var regex = new RegExp(XIDataType.sRegex);
+                var matches = regex.test(Value);
+                if (!matches) {
+                    IsValid = false;
+                }
+            }
+            if (XIDataType.sBaseDataType == "datetime") {
+                var yearfield = Value.split('/')[2];
+                var monthfield = Value.split('/')[0];
+                var dayfield = Value.split('/')[1];
+                var S1, E1;
+                if (XIDataType.sStartRange) {
+                    S1 = XIDataType.sStartRange.split('/');
+                }
+                if (XIDataType.sEndRange) {
+                    E1 = XIDataType.sEndRange.split('/');
+                }
+
+                if (XIDataType.sStartRange && XIDataType.sEndRange && XIDataType.sBaseDataType == "datetime") {
+                    var StartDate = new Date(parseInt(S1[0]), parseInt(S1[1]) - 1, parseInt(S1[2]));
+                    var EndDate = new Date(parseInt(E1[0]), parseInt(E1[1]) - 1, parseInt(E1[2]));
+                    var InputDate = new Date(parseInt(yearfield), parseInt(monthfield) - 1, parseInt(dayfield));
+                    if (InputDate >= StartDate && InputDate <= EndDate) {
+
+                    }
+                    else {
+                        IsValid = false;
+                    }
+                }
+                else if (XIDataType.sStartRange && Value.length > XIDataType.sStartRange) {
+                    var StartDate = new Date(parseInt(S1[0]), parseInt(S1[1]) - 1, parseInt(S1[2]));
+                    var InputDate = new Date(parseInt(yearfield), parseInt(monthfield) - 1, parseInt(dayfield));
+                    if (InputDate >= StartDate) {
+
+                    }
+                    else {
+                        IsValid = false;
+                    }
+                }
+                else if (XIDataType.sEndRange && Value.length < XIDataType.sEndRange) {
+                    var EndDate = new Date(parseInt(E1[0]), parseInt(E1[1]) - 1, parseInt(E1[2]));
+                    var InputDate = new Date(parseInt(yearfield), parseInt(monthfield) - 1, parseInt(dayfield));
+                    if (InputDate <= EndDate) {
+
+                    }
+                    else {
+                        IsValid = false;
+                    }
+                }
+            }
+            else if(XIDataType.sBaseDataType == "int"){
+                if(FieldOrigin.bIsMandatory){
+                    if(!Value || Value == "0"){
+                        IsValid = false;
+                    }
+                }
+            }
+            else {
+                if(FieldOrigin.bIsMandatory){
+                    if ((XIDataType.sStartRange && XIDataType.sStartRange > 0) || (XIDataType.sEndRange && XIDataType.sEndRange > 0)) {
+                        if (XIDataType.sStartRange && XIDataType.sEndRange) {
+                            if (Value && Value.length > XIDataType.sStartRange && Value.length < XIDataType.sEndRange) {
+
+                            }
+                            else {
+                                IsValid = false;
+                            }
+                        }
+                        else if (XIDataType.sStartRange && Value.length > XIDataType.sStartRange) {
+                            if (Value &&  Value.length > XIDataType.sStartRange) {
+
+                            }
+                            else {
+                                IsValid = false;
+                            }
+                        }
+                        else if (XIDataType.sEndRange && Value.length < XIDataType.sEndRange) {
+                            if (Value && Value.length < XIDataType.sEndRange) {
+
+                            }
+                            else {
+                                IsValid = false;
+                            }
+                        }
+                    }
+                }
+
+            }
+            if (!IsValid) {
+                FinalValid = false;
+                $('.ErrorMsg-' + StepID + '-' + FieldOrigin.ID).show();
+                if (ValidationType == 10) {
+                    $('.ErrorMsg-' + StepID + '-' + FieldOrigin.ID).html('<img src="@PhysicalPath/input-failure.png" width="20" height="20" />');
+                }
+                else {
+                    $('.ErrorMsg-' + StepID + '-' + FieldOrigin.ID).html(XIDataType.sValidationMessage);
+                    //$('.highlight--help').addClass('msg-error');
+                    $('.field-errmsg-'+ StepID + '-' + FieldOrigin.ID).closest('.highlight--help').addClass('msg-error');
+                    $('.input-success-error').remove();
+                    $('.field-errmsg-'+ StepID + '-' + FieldOrigin.ID).prepend("<div>" + XIDataType.sValidationMessage + "</div>");
+                }
+                $('#QSLoadingBtn').hide();
+                $('#QSNxtBtn').show();
+            }
+            else {
+                if (ValidationType == 10) {
+                    $('.ErrorMsg-' + StepID + '-' + FieldOrigin.ID).html('<img src="@PhysicalPath/input-success.png" width="20" height="20" />');
+                }
+                else {
+                    $('.ErrorMsg-' + StepID + '-' + FieldOrigin.ID).hide();
+                }
+            }
+        }
+    }
+</script>

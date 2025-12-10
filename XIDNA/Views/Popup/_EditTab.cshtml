@@ -1,0 +1,217 @@
+﻿@model XIDNA.Models.Tabs
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        $('#AddSection').hide();
+        @*$.ajax({
+            url: '@Url.Action("GetCategoryDetails", "Popup")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            cache: false,
+            success: function (data) {
+                if (data.length > 0) {
+                    for (i = 0; i < data.length; i++) {
+                        $('#PopupID').append('<option value="' + data[i] + '">' + data[i] + '</option>');
+                    }
+                    $('#PopupID').val('@Model.PopupID');
+                }
+                else {
+                }
+            },
+            error: function (data) { }
+        });*@
+        //$('#EditSection').hide();
+        @*$('#EditSecBtn').click(function () {
+            $("#SectionsList").load('@Url.Action("GetSectionsByTab", "Popup", new { TabID = @Model.ID })');
+            $('#EditSection').show();
+            $('#AddSection').hide();
+            var tabid = '@Model.ID';
+            $.ajax({
+                url: '@Url.Action("GetAllTabSections", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { TabID: tabid },
+                success: function (data) {
+                    if (data.length > 0) {
+                        $('#EditDropDown').show();
+                        $('#TabSections').empty();
+                        $('#TabSections').append('<option value="">--Select--</option>')
+                        for (i = 0; i < data.length; i++) {
+                            $('#TabSections').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>')
+                        }
+                    }
+                    else {
+                        $('#EditDropDown').hide();
+                        
+                    }
+                },
+                error: function (data) { }
+            });
+        });*@
+        $('#AddSecBtn').click(function () {
+            $('#EditForm').empty();
+            $('#AddTabSection').show();
+            var tabid = '@Model.ID';
+            $.ajax({
+                url: '@Url.Action("AddSection", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { SectionID: 0, Type: "EditCreate", TabID: tabid },
+                success: function (data) {
+                    //$('#EditSection').hide();
+                    $('#AddTabSection').html(data);
+                },
+                error: function (data) { }
+            });
+        });
+    });
+</script>
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+    #AddSecBtn{
+        margin-bottom:10px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Edit Tab </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i>Tab Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box">
+                <div class="box-body padding10Tab">
+                    <div class="innerborder">
+
+                        <div id="TabForm">
+                            @using (Ajax.BeginForm("SaveTab", "Popup", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnSuccess" }, new { @id = "FieldsForm", @class = "form-horizontal" }))
+                            {
+                                @Html.AntiForgeryToken();
+                                @Html.ValidationSummary(true);
+                                @Html.HiddenFor(m => m.ID)
+                                @Html.HiddenFor(m => m.TypeC, new { @Value = "Edit" })
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Category</label>
+                                        @Html.DropDownListFor(m => m.PopupID, new SelectList(Model.PopupList, "Value", "text"), "--Select--", new { @class = "form-control" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-3">
+                                        <label for="inputEmail" class="gn">Tab Name<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(model => model.Name, new { @placeholder = "Enter Tab Name", @class = "form-control", @id = "TabName" })
+                                    </div>
+                                    <div class="col-sm-7 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-3">
+                                        <label for="inputEmail" class="gn">Rank<span class="danger">*</span></label>
+                                        @Html.DropDownListFor(m => m.Rank, new SelectList(Model.Ranks, "Value", "text"), new { @class = "form-control", @id = "Rank" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-3">
+                                        <label for="inputEmail" class="gn">Status</label>
+                                        @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value", Model.StatusTypeID), new { @class = "form-control", @id = "Status" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-5">
+                                        <button type="submit" class="btn btn-theme" id="SaveTab">Save</button>
+                                        <button type="button" class="btn btn-theme decline" id="CancelEditTab">Cancel</button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        @*<input class="savebtn btn btn-primary btn2 pull-right" type="button" id="EditSecBtn" value="Edit Sections" />*@
+                    </div>
+
+
+                    <div class="row">
+                        <div class="col-md-12 mgt20">
+                            <input class="savebtn btn btn-theme btn2 pull-right" type="button" id="AddSecBtn" value="Add New Section" />
+                            <div id="EditSection">
+                                <div id="EditDropDown">
+                                    <div id="EditForm"></div>
+                                    <div id="AddTabSection"></div>
+                                    <div id="SectionsList">
+                                        @{
+                                            Html.RenderAction("GetSectionsForEdit", "Popup", new { TabID = @Model.ID });
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                    </div>
+                </div>
+            </div>
+</section>
+<div class="EditTabDlg dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    function OnSuccess(e) {
+        if (e > 0) {
+            opener.location.reload();
+            $(".EditTabDlg").html('Tab Updated Successfully!<br/> Do You Want To Edit Sections?');
+            $(".EditTabDlg").dialog({
+                title: "Tabs",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Yes",
+                       click: function () {
+                           $(".EditTabDlg").dialog("close");
+                       }
+                   },
+                   {
+                       text: "No",
+                       click: function () {
+                           $(".EditTabDlg").dialog("close");
+                           window.close();
+                       }
+                   },
+                ]
+            });
+        }
+        else {
+            opener.location.reload();
+            $(".EditTabDlg").html('Error while updating tab details!!!<br/> Please try again');
+            $(".EditTabDlg").dialog({
+                title: "Tabs",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Ok",
+                       click: function () {
+                           $(".EditTabDlg").dialog("close");
+                       }
+                   },
+                ]
+            });
+        }
+        
+    }
+    $('#CancelEditTab').click(function () {
+        window.close();
+    });
+</script>

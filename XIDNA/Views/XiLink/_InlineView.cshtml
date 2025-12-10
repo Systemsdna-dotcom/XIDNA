@@ -1,0 +1,319 @@
+﻿@model XIDNA.Models.cBODisplay
+@{
+    var oBOInstance = Model.BOInstance;
+    var oVisualisations = Model.Visualisations;
+}
+<script>
+    $(document).ready(function () {
+        $('[data-toggle="popover"]').popover();
+    });
+</script>
+
+<div class="">
+    <div class="PopupTabContentArea">
+        <div class="LeadContent">
+            @*<div class="LeadContent-table" style="max-height: 415px;overflow-y: auto;">
+                <table class="DetailsTable table table-condensed autowidth table-hover">
+                    <tbody>
+                        @foreach (var items in oBOInstance.NVPairs.Where(m => m.bDirty == true).ToList())
+                        {
+                            if (oVisualisations != null)
+                            {
+                                var oVisual = oVisualisations.Where(m => m.sAttribute == items.sName).FirstOrDefault();
+                                if (oVisual != null)
+                                {
+                                    var FKTableName = oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.FKTableName).FirstOrDefault();
+                                    <tr>
+                                        <td class="lightblue sbold">@oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()</td>
+                                        @if (FKTableName != null)
+                                        {
+                                            <td class="leftpd">@items.sGroupValue</td>
+                                        }
+                                        @if (oVisual.sPreviewGroup != null)
+                                        {
+                                            <td><a tabindex="0" role="button" style="color:#fff" data-html="true" data-trigger="hover" data-toggle="popover" data-placement="right" data-content="@oVisual.sPreviewData"><i class="fa fa-eye"></i></a></td>
+                                        }
+                                        @if (oVisual.iDrillDownXiLinkID > 0)
+                                        {
+                                            <td><a style="color:#fff" onclick="XIRun('@oVisual.iDrillDownXiLinkID', '@items.sValue', null, null, true)"><i class="fa fa-search" aria-hidden="true"></i></a></td>
+                                        }
+                                        <td><i class="fa fa-question-circle" tabindex="0" role="button" data-html="true" data-trigger="hover" data-toggle="popover" data-placement="right" data-content="hello"></i></td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td class="lightblue sbold">@oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()</td>
+                                        <td class="leftpd">@items.sValue</td>
+                                        <td><i class="fa fa-question-circle"  tabindex="0" role="button" data-html="true" data-trigger="hover" data-toggle="popover" data-placement="right" data-content="123"></i></td>
+                                    </tr>
+                                }
+                            }
+                            else if (oVisualisations == null)
+                            {
+                                if (oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.FKiType).FirstOrDefault() > 0)
+                                {
+                                    var DDLFieldData = oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.FieldDDL);
+                                    var DDLFieldID = oBOInstance.NVPairs.Where(m => m.sName == items.sName).Select(m => m.sValue).FirstOrDefault();
+                                    foreach (var Options in DDLFieldData)
+                                    {
+                                        foreach (var data in Options)
+                                        {
+                                            if (data.ID.ToString() == DDLFieldID)
+                                            {
+                                                <tr>
+                                                    <td class="lightblue sbold">@oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()</td>
+                                                    <td class="leftpd">@data.Expression</td>
+                                                    <td><i class="fa fa-question-circle" tabindex="0" role="button" data-html="true" data-trigger="hover" data-toggle="popover" data-placement="right" data-content="hello"></i></td>
+                                                </tr>
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.FKiFileTypeID).FirstOrDefault() > 0)
+                                {
+                                    if (oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.ImagePathDetails).Count() > 0)
+                                    {
+                                        var Images = oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.ImagePathDetails);
+                                        foreach (var img in Images)
+                                        {
+                                            <tr>
+                                                <td class="lightblue sbold">@oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()</td>
+                                                @foreach (var item in img)
+                                                {
+                                                    <td class="leftpd"><img src="@item.Expression" width="50" height="50" /></td>
+                                                }
+                                                <td><i class="fa fa-question-circle" tabindex="0" role="button" data-html="true" data-trigger="hover" data-toggle="popover" data-placement="right" data-content="hello"></i></td>
+                                            </tr>
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td class="lightblue sbold">@oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()</td>
+                                        <td class="leftpd"><input type="text" value="@items.sValue" disabled /></td>*@
+            @*@items.sValue*@
+            @*<td><i class="fa fa-question-circle" tabindex="0" role="button" data-html="true" data-trigger="hover" data-toggle="popover" data-placement="right" data-content="hello"></i></td>
+                                    </tr>
+                                }
+                            }
+                        }
+                    </tbody>
+                </table>*@
+            <div class="row">
+                <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8 infobox-left">
+                    <div class="LeadContent-table form-horizontal" style="margin-bottom:15px">
+                        <div class="DetailsTable">
+                            <div class="questionset-section">
+                                @foreach (var items in oBOInstance.NVPairs.Where(m => m.bDirty == true).ToList())
+                                {
+                                    if (oVisualisations != null)
+                                    {
+                                        var oVisual = oVisualisations.Where(m => m.sAttribute == items.sName).FirstOrDefault();
+                                        if (oVisual != null)
+                                        {
+                                            var FKTableName = oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.FKTableName).FirstOrDefault();
+                                            <div class="row form-group highlight--help">
+                                                <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12">
+                                                    <label class="control-label">
+                                                        @oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()
+                                                    </label>
+                                                </div>
+                                                @if (FKTableName != null)
+                                                {
+                                                    <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12 pull-right col-content">
+                                                        @items.sGroupValue
+                                                    </div>
+                                                }
+                                                @if (oVisual.sPreviewGroup != null)
+                                                {
+                                                    <div><a tabindex="0" role="button" style="color:#fff" data-html="true" data-trigger="hover" data-toggle="popover" data-placement="right" data-content="@oVisual.sPreviewData"><i class="fa fa-eye"></i></a></div>
+                                                }
+                                                @if (oVisual.iDrillDownXiLinkID > 0)
+                                                {
+                                                    <div><a style="color:#fff" onclick="XIRun(this,'@oVisual.iDrillDownXiLinkID', '@items.sValue', null, null, true)"><i class="fa fa-search" aria-hidden="true"></i></a></div>
+                                                }
+                                                <button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs">
+                                                    <i class="fa fa-info" tabindex="0" role="button"></i>
+                                                </button>
+                                                <div class="helptext">
+                                                    <div class="helptext--desktop">
+                                                        <div class="helptext__content">
+                                                            <a class="helptext-content-close"><i class="fa fa-close"></i></a>
+                                                            <p><strong>Lorem Ipsum</strong></p>
+                                                            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="row form-group highlight--help">
+                                                <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12">
+                                                    <label class="control-label">
+                                                        @oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()
+                                                    </label>
+                                                </div>
+                                                <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12 pull-right col-content">
+                                                    @items.sValue
+                                                </div>
+                                                <button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs">
+                                                    <i class="fa fa-info" tabindex="0" role="button" data-html="true" data-trigger="hover" data-toggle="popover" data-placement="right" data-content="hello"></i>
+                                                </button>
+                                                <div class="helptext">
+                                                    <div class="helptext--desktop">
+                                                        <div class="helptext__content">
+                                                            <a class="helptext-content-close"><i class="fa fa-close"></i></a>
+                                                            <p><strong>Lorem Ipsum</strong></p>
+                                                            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    else if (oVisualisations == null)
+                                    {
+                                        if (oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.FKiType).FirstOrDefault() > 0)
+                                        {
+                                            var DDLFieldData = oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.FieldDDL);
+                                            var DDLFieldID = oBOInstance.NVPairs.Where(m => m.sName == items.sName).Select(m => m.sValue).FirstOrDefault();
+                                            foreach (var Options in DDLFieldData)
+                                            {
+                                                foreach (var data in Options)
+                                                {
+                                                    if (data.ID.ToString() == DDLFieldID)
+                                                    {
+                                                        <div class="row form-group highlight--help">
+                                                            <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12">
+                                                                <label class="control-label">
+                                                                    @oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()
+                                                                </label>
+                                                            </div>
+                                                            <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12 pull-right col-content">
+                                                                @data.Expression
+                                                            </div>
+                                                            <button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs">
+                                                                <i class="fa fa-info" tabindex="0" role="button" data-html="true" data-trigger="hover" data-toggle="popover" data-placement="right" data-content="hello"></i>
+                                                            </button>
+                                                            <div class="helptext">
+                                                                <div class="helptext--desktop">
+                                                                    <div class="helptext__content">
+                                                                        <a class="helptext-content-close"><i class="fa fa-close"></i></a>
+                                                                        <p><strong>Lorem Ipsum</strong></p>
+                                                                        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else if (oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.FKiFileTypeID).FirstOrDefault() > 0)
+                                        {
+                                            if (oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.ImagePathDetails).Count() > 0)
+                                            {
+                                                var Images = oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.ImagePathDetails);
+                                                foreach (var img in Images)
+                                                {
+                                                    <div class="row form-group highlight--help">
+                                                        <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12">
+                                                            <label class="control-label">
+                                                                @oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()
+                                                            </label>
+                                                        </div>
+                                                        @foreach (var item in img)
+                                                        {
+                                                            <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12 pull-right col-content">
+                                                                <img src="@item.Expression" width="50" height="50" />
+                                                            </div>
+                                                        }
+                                                        <button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs">
+                                                            <i class="fa fa-info" tabindex="0" role="button" data-html="true" data-trigger="hover" data-toggle="popover" data-placement="right" data-content="hello"></i>
+                                                        </button>
+                                                        <div class="helptext">
+                                                            <div class="helptext--desktop">
+                                                                <div class="helptext__content">
+                                                                    <a class="helptext-content-close"><i class="fa fa-close"></i></a>
+                                                                    <p><strong>Lorem Ipsum</strong></p>
+                                                                    <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="row form-group highlight--help">
+                                                <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12">
+                                                    <label class="control-label">
+                                                        @oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()
+                                                    </label>
+                                                </div>
+                                                <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12 pull-right col-content">
+                                                    <input type="text" class="form-control text-uppercase m-b-15" value="@items.sValue" disabled />
+                                                </div>
+                                                <button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs">
+                                                    <i class="fa fa-info" tabindex="0" role="button" data-html="true" data-trigger="hover" data-toggle="popover" data-placement="right" data-content="hello"></i>
+                                                </button>
+                                                <div class="helptext">
+                                                    <div class="helptext--desktop">
+                                                        <div class="helptext__content">
+                                                            <a class="helptext-content-close"><i class="fa fa-close"></i></a>
+                                                            <p><strong>Lorem Ipsum</strong></p>
+                                                            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <button type="button" class="btn  btn-theme"><i class="fa fa-edit"></i> Edit</button>
+            <button type="button" class="btn  btn-theme"><i class="fa fa-check"></i> Approve</button>
+            <button type="button" class="btn  btn-theme"><i class="fa fa-close"></i> Cancel</button>
+            <button type="button" class="btn  btn-theme"><i class="fa fa-history"></i> History</button>
+            <button type="button" class="btn  btn-theme"><i class="fa fa-search-plus"></i> Audit</button>
+            <button type="button" class="btn  btn-theme"><i class="fa fa-question-circle"></i> Question Set</button>
+            <button type="button" class="btn  btn-theme"><i class="fa fa-send"></i> Transactions</button>
+        </div>
+    </div>
+</div>
+<script>
+		$(document).ready(function(){
+			/*$('.helptext-mobile-button').popover({
+				html : true,
+				content: function() {
+				return $('.popover_content').html();
+				}
+			}).click(function(e) {
+				$(this).popover('toggle');
+				e.stopPropagation();
+			});
+
+			$('.helptext-mobile-button').on('click', function (e) {
+				$('.helptext-mobile-button').not(this).popover('hide')
+			});*/
+			$(".highlight--help .helptext-mobile-button").on('click',function (e) {
+				e.stopPropagation();
+				$('.highlight--help').removeClass("helptext--visible");
+				$(this).closest('.highlight--help').addClass('helptext--visible');
+			});
+			$(".helptext-content-close").on('click',function (e) {
+				$(this).closest('.highlight--help').removeClass('helptext--visible');
+			});
+		});
+
+</script>

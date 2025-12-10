@@ -1,0 +1,225 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+    string XIAppLogosPath = System.Configuration.ConfigurationManager.AppSettings["XIAppLogosPath"];
+
+    XIDataSource oXIDS = new XIDataSource();
+    if (Model.oContent.ContainsKey(XIConstant.XIDataSourceComponent))
+    {
+        oXIDS = (XIDataSource)Model.oContent[XIConstant.XIDataSourceComponent];
+        if (oXIDS == null)
+        {
+            oXIDS = new XIDataSource();
+        }
+    }
+}
+<script>
+    $(document).ready(function () {
+        $('#FKiApplicationID').change(function () {
+            if ($(this).val() > 0) {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetAppOrganisations", "BusinessObjects")',
+                    data: JSON.stringify({ iAppID: $(this).val() }),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    async: false,
+                    success: function (data) {
+                        if (data && data.length > 0) {
+                            $('#FKiOrgID').html('<option>--Select--</option>');
+                            for (i = 0; i < data.length; i++) {
+                                $('#FKiOrgID').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                            }
+                        }
+                        else {
+                            $('#FKiOrgID').html('<option>--Select--</option>');
+                        }
+                    }
+                });
+            }
+        });
+    });
+    function OnBegin() {
+        $('body').block({
+            message: '<h3><img src="@PhysicalPath/loading.gif" width="50px" /> Please wait while saving details...</h3>',
+            blockMsgClass: 'report-success',
+        });
+    }
+    function OnComplete(e) {
+        debugger
+        $('body').unblock();
+        $('.StrStatusMessages').empty();
+        if (e.Status == true) {
+            $('.DataSourceStatusMessages').prepend($('<div class="alert alert-success">Data Saved Succesfully</div>'));
+        }
+        else {
+            $('.DataSourceStatusMessages').prepend($('<div class="alert alert-danger">Failure! Error Occured</div>'));
+            //CustomMessage("Failure! Error Occured", false);
+        }
+    }
+</script>
+<script>
+    const content_height = $(window).height() - $('#HomeHeader').height();
+    $('.scroll_vh_100').slimScroll({
+        //height: '250px',
+        height: content_height,
+    });
+</script>
+<section class="">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <h3 class="maintitle">Datasource</h3>
+                    <!--  <div class="innerborder"> -->
+                    <div class="DataSourceStatusMessages"></div>
+                    <div class="scroll_vh_100 p5">
+                        @* SaveBO *@
+                        @using (Ajax.BeginForm("Save_DataSource", "BusinessObjects", FormMethod.Post, new AjaxOptions
+                        {
+                            HttpMethod = "POST",
+                            OnBegin = "OnBegin",
+                            OnSuccess = "OnComplete"
+                        }, new { @id = "DataSourceForm", @class = "" }))
+                        {
+                            @Html.ValidationSummary(true);
+                            <input type="hidden" id="ID" name="XIGUID" value="@oXIDS.XIGUID" />
+                            <input type="hidden" id="FKiApplicationID" name="FKiApplicationIDXIGUID" value="@oXIDS.FKiApplicationIDXIGUID" />
+                            <div id="clear-text">
+                                @if (oXIDS.ID > 0)
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn">DataSource ID:<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">@oXIDS.ID<span class="danger"></span></label>
+                                        </div>
+                                    </div>
+                                }
+                                @*@if (oXIDS.FKiApplicationID == 0)
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-6">
+                                            <label for="inputEmail" class="gn">Application<span class="danger"></span></label>
+                                            @Html.DropDownList("FKiApplicationID", new SelectList(oXIDS.ddlApplications, "sGUID", "text"), new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+
+                                }*@
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                        @Html.TextBox("sName", oXIDS.sName, new { @placeholder = "Enter Name Here", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sName", null, new { @class = "red" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Type<span class="danger"></span></label>
+                                        @Html.DropDownList("sType", new SelectList(new List<Object>{
+                                                   new { key= "Organisation" , value = "Organisation" },
+                           new { key= "Application" , value = "Application" },
+                           new {key="Defined",value="Defined" }
+                        }, "key", "Value", oXIDS.sType), "--Select--", new { @class = "form-control" })
+                                    </div>
+                                </div>
+                                @*<div class="form-group">
+                    <div class="col-md-6">
+                        <label for="inputEmail" class="gn">Organisation<span class="danger"></span></label>
+                        @Html.DropDownListFor(m => m.FKiOrgID, new SelectList(Model.ddlOrgs, "Value", "text"), "--Select--", new { @class = "form-control" })
+                    </div>
+                </div>*@
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Description<span class="danger">*</span></label>
+                                        @Html.TextArea("sDescription", oXIDS.sDescription, new { @placeholder = "Enter Description", @class = "form-control", @rows = 4 })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sDescription", null, new { @class = "red" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Connection String<span class="danger">*</span></label>
+                                        @Html.TextArea("sConnectionString", oXIDS.sConnectionString, new { @placeholder = "Enter Connection string", @class = "form-control", @ID = "ConnectionString", @rows = 3 })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-10">
+                                        <input type="button" class="btn btn-theme reverse" id="TestConn" value="Test Connection" onclick="TestConnectionString()">
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="ColumnDiv">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                        @Html.DropDownList("StatusTypeID", new SelectList(new List<Object>{
+                                                   new { key= 10 , value = "Active" },
+                           new { key= 20 , value = "Inactive" }
+                        }, "key", "Value", oXIDS.StatusTypeID), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="submit" class="btn btn-theme" value="Save" />
+                                    @if (oXIDS.ID == 0)
+                                    {
+                                        <button type="button" class="btn btn-theme reverse" id="ResetBoBtn">Reset</button>
+                                    }
+                                    @*@if (Model.ID > 0)
+                    {
+                        <input type="button" class="btn btn-theme reverse" id="CopyBoBtn" value="Copy">
+                    }*@
+                                    <button type="button" class="btn btn-theme decline" id="CancelBO">Cancel</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+</section>
+
+<script type="text/javascript">
+    function TestConnectionString() {
+        var sConnectionString = $("#ConnectionString").val()
+        if (sConnectionString && sConnectionString.length > 0) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CheckConnectionString", "BusinessObjects")',
+                data: { sConnectionString: sConnectionString },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data == "Success") {
+                        CustomMessage("<strong>Success!!</strong> Connection string is valid, Database Exists.", true);
+                    }
+                    else {
+                        CustomMessage("<strong>Failure!!</strong> Connection error, Please check the connection string", false);
+                    }
+                }
+            });
+        }
+    }
+
+    $('#ResetBoBtn').click(function () {
+        $('#DataSourceForm')[0].reset();
+    });
+
+    $('#CancelBO').click(function () {
+        window.close();
+    });
+</script>

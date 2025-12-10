@@ -1,0 +1,17 @@
+﻿@model XIDNA.ViewModels.VMPopupLayout
+@{
+    //Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        var iID = '@Model.sGUID';
+        var Details = @Html.Raw(Json.Encode(Model));
+        ShowContentInDialogOrPopup(Details, iID);
+    });
+</script>
+
+<div id="InlineContentDiv">
+    <div class="LayoutCode_@Model.sGUID" data-name="InlineLayout" data-guid="@Model.sGUID">
+        @Html.Raw(Model.LayoutCode)
+    </div>
+</div>

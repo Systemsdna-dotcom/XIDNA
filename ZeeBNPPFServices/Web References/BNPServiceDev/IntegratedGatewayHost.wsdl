@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:tns="https://ipfconnect.bnpparibas-pf.co.uk" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="https://ipfconnect.bnpparibas-pf.co.uk" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="https://ipfconnect.bnpparibas-pf.co.uk/Imports">
+      <xsd:import schemaLocation="https://puat-ipf-connect.bnpparibas-pf.co.uk/IntegratedGatewayHost.svc?xsd=xsd0" namespace="https://ipfconnect.bnpparibas-pf.co.uk" />
+      <xsd:import schemaLocation="https://puat-ipf-connect.bnpparibas-pf.co.uk/IntegratedGatewayHost.svc?xsd=xsd1" namespace="urn:https://ipfconnect.bnpparibas-pf.co.uk" />
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_LiveRateQuote_InputMessage">
+    <wsdl:part name="parameters" element="tns:LiveRateQuote" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_LiveRateQuote_OutputMessage">
+    <wsdl:part name="parameters" element="tns:LiveRateQuoteResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_NewBusiness_InputMessage">
+    <wsdl:part name="parameters" element="tns:NewBusiness" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_NewBusiness_OutputMessage">
+    <wsdl:part name="parameters" element="tns:NewBusinessResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_MidTermAdjustment_InputMessage">
+    <wsdl:part name="parameters" element="tns:MidTermAdjustment" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_MidTermAdjustment_OutputMessage">
+    <wsdl:part name="parameters" element="tns:MidTermAdjustmentResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_Cancellation_InputMessage">
+    <wsdl:part name="parameters" element="tns:Cancellation" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_Cancellation_OutputMessage">
+    <wsdl:part name="parameters" element="tns:CancellationResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_PolicyStatus_InputMessage">
+    <wsdl:part name="parameters" element="tns:PolicyStatus" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_PolicyStatus_OutputMessage">
+    <wsdl:part name="parameters" element="tns:PolicyStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_ServiceStatus_InputMessage">
+    <wsdl:part name="parameters" element="tns:ServiceStatus" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_ServiceStatus_OutputMessage">
+    <wsdl:part name="parameters" element="tns:ServiceStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_EditCustomerAddress_InputMessage">
+    <wsdl:part name="parameters" element="tns:EditCustomerAddress" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_EditCustomerAddress_OutputMessage">
+    <wsdl:part name="parameters" element="tns:EditCustomerAddressResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_EditCustomerBank_InputMessage">
+    <wsdl:part name="parameters" element="tns:EditCustomerBank" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_EditCustomerBank_OutputMessage">
+    <wsdl:part name="parameters" element="tns:EditCustomerBankResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_EditCustomerEmail_InputMessage">
+    <wsdl:part name="parameters" element="tns:EditCustomerEmail" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_EditCustomerEmail_OutputMessage">
+    <wsdl:part name="parameters" element="tns:EditCustomerEmailResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_EditCustomerPaymentDay_InputMessage">
+    <wsdl:part name="parameters" element="tns:EditCustomerPaymentDay" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_EditCustomerPaymentDay_OutputMessage">
+    <wsdl:part name="parameters" element="tns:EditCustomerPaymentDayResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_EditCustomerPhone_InputMessage">
+    <wsdl:part name="parameters" element="tns:EditCustomerPhone" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_EditCustomerPhone_OutputMessage">
+    <wsdl:part name="parameters" element="tns:EditCustomerPhoneResponse" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_PartnerQuote_InputMessage">
+    <wsdl:part name="parameters" element="tns:PartnerQuote" />
+  </wsdl:message>
+  <wsdl:message name="ILuk.Ipf.IntegratedGateway.host_PartnerQuote_OutputMessage">
+    <wsdl:part name="parameters" element="tns:PartnerQuoteResponse" />
+  </wsdl:message>
+  <wsdl:portType name="ILuk.Ipf.IntegratedGateway.host">
+    <wsdl:operation name="LiveRateQuote">
+      <wsdl:input wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/LiveRateQuote" message="tns:ILuk.Ipf.IntegratedGateway.host_LiveRateQuote_InputMessage" />
+      <wsdl:output wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/LiveRateQuoteResponse" message="tns:ILuk.Ipf.IntegratedGateway.host_LiveRateQuote_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="NewBusiness">
+      <wsdl:input wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/NewBusiness" message="tns:ILuk.Ipf.IntegratedGateway.host_NewBusiness_InputMessage" />
+      <wsdl:output wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/NewBusinessResponse" message="tns:ILuk.Ipf.IntegratedGateway.host_NewBusiness_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="MidTermAdjustment">
+      <wsdl:input wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/MidTermAdjustment" message="tns:ILuk.Ipf.IntegratedGateway.host_MidTermAdjustment_InputMessage" />
+      <wsdl:output wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/MidTermAdjustmentResponse" message="tns:ILuk.Ipf.IntegratedGateway.host_MidTermAdjustment_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="Cancellation">
+      <wsdl:input wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/Cancellation" message="tns:ILuk.Ipf.IntegratedGateway.host_Cancellation_InputMessage" />
+      <wsdl:output wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/CancellationResponse" message="tns:ILuk.Ipf.IntegratedGateway.host_Cancellation_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="PolicyStatus">
+      <wsdl:input wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/PolicyStatus" message="tns:ILuk.Ipf.IntegratedGateway.host_PolicyStatus_InputMessage" />
+      <wsdl:output wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/PolicyStatusResponse" message="tns:ILuk.Ipf.IntegratedGateway.host_PolicyStatus_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="ServiceStatus">
+      <wsdl:input wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/ServiceStatus" message="tns:ILuk.Ipf.IntegratedGateway.host_ServiceStatus_InputMessage" />
+      <wsdl:output wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/ServiceStatusResponse" message="tns:ILuk.Ipf.IntegratedGateway.host_ServiceStatus_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="EditCustomerAddress">
+      <wsdl:input wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/EditCustomerAddress" message="tns:ILuk.Ipf.IntegratedGateway.host_EditCustomerAddress_InputMessage" />
+      <wsdl:output wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/EditCustomerAddressResponse" message="tns:ILuk.Ipf.IntegratedGateway.host_EditCustomerAddress_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="EditCustomerBank">
+      <wsdl:input wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/EditCustomerBank" message="tns:ILuk.Ipf.IntegratedGateway.host_EditCustomerBank_InputMessage" />
+      <wsdl:output wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/EditCustomerBankResponse" message="tns:ILuk.Ipf.IntegratedGateway.host_EditCustomerBank_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="EditCustomerEmail">
+      <wsdl:input wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/EditCustomerEmail" message="tns:ILuk.Ipf.IntegratedGateway.host_EditCustomerEmail_InputMessage" />
+      <wsdl:output wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/EditCustomerEmailResponse" message="tns:ILuk.Ipf.IntegratedGateway.host_EditCustomerEmail_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="EditCustomerPaymentDay">
+      <wsdl:input wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/EditCustomerPaymentDay" message="tns:ILuk.Ipf.IntegratedGateway.host_EditCustomerPaymentDay_InputMessage" />
+      <wsdl:output wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/EditCustomerPaymentDayResponse" message="tns:ILuk.Ipf.IntegratedGateway.host_EditCustomerPaymentDay_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="EditCustomerPhone">
+      <wsdl:input wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/EditCustomerPhone" message="tns:ILuk.Ipf.IntegratedGateway.host_EditCustomerPhone_InputMessage" />
+      <wsdl:output wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/Ilukipfintegratedgatewayhost/EditCustomerPhoneResponse" message="tns:ILuk.Ipf.IntegratedGateway.host_EditCustomerPhone_OutputMessage" />
+    </wsdl:operation>
+    <wsdl:operation name="PartnerQuote">
+      <wsdl:input wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/ILukIpfIntegratedGatewayHost/PartnerQuote" message="tns:ILuk.Ipf.IntegratedGateway.host_PartnerQuote_InputMessage" />
+      <wsdl:output wsaw:Action="https://ipfconnect.bnpparibas-pf.co.uk/ILukIpfIntegratedGatewayHost/PartnerQuoteResponse" message="tns:ILuk.Ipf.IntegratedGateway.host_PartnerQuote_OutputMessage" />
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>

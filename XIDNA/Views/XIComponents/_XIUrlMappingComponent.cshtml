@@ -1,0 +1,139 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIURLMappings oUrl = new XIURLMappings();
+    if (Model.oContent.ContainsKey(XIConstant.XIUrlMappingComponent))
+    {
+        oUrl = (XIURLMappings)Model.oContent[XIConstant.XIUrlMappingComponent];
+        if (oUrl == null)
+        {
+            oUrl = new XIURLMappings();
+        }
+    }
+    else
+    {
+
+    }
+}
+<section class="content">
+    <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    @using (Ajax.BeginForm("Save_Url", "XIApplications", FormMethod.Post, new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "XIUrlForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        <input type="hidden" id="ID" name="ID" value="@oUrl.ID" />
+                        <div id="clear-text">
+                            @if (oUrl.ID != 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn">Url ID:<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">@oUrl.ID<span class="danger"></span></label>
+                                    </div>
+                                </div>
+                            }
+                            @if (oUrl.FKiApplicationID == 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Application<span class="danger"></span></label>
+                                        @Html.DropDownList("FKiApplicationID", new SelectList(oUrl.ddlApplications, "Value", "text"), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" id="FKiApplicationID" name="FKiApplicationID" value="@oUrl.FKiApplicationID" />
+                            }
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Type<span class="danger"></span></label>
+                                    @Html.DropDownList("sType", new SelectList(new List<Object>{
+                                   new {key= "0" , value = "--Select--" },
+                                               new { key= "Application" , value = "Application" },
+                       new { key= "QuestionSet" , value = "QuestionSet" }
+                    }, "key", "Value", oUrl.sType), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Url Name<span class="danger">*</span></label>
+                                    @Html.TextBox("sUrlName", oUrl.sUrlName, new { @placeholder = "Enter Url name", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("sUrlName", null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Actual Url<span class="danger">*</span></label>
+                                    @Html.TextBox("sActualUrl", oUrl.sActualUrl, new { @placeholder = "Enter Actual Url Name", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("sActualUrl", null, new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Source<span class="danger"></span></label>
+                                    @Html.DropDownList("FKiSourceID", new SelectList(oUrl.SourceList, "Value", "text", oUrl.FKiSourceID), new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownList("StatusTypeID", new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value", oUrl.StatusTypeID), new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="submit" class="btn btn-theme" value="Save" />
+                                @if (oUrl.ID == 0)
+                                {
+                                    <button type="button" class="btn btn-theme reverse" id="ResetXiUrl">Reset</button>
+                                }
+                                <button type="button" class="btn btn-theme decline" id="CancelXiUrl">Cancel</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#ResetXiUrl').click(function () {
+            $('#XIUrlForm')[0].reset();
+            $('#XIUrlForm .taberrormsg').find('span').html('');
+        });
+        $('#CancelXiUrl').click(function () {
+            window.close();
+        });
+    });
+    function OnComplete(e) {
+        if (e == "Success") {
+            CustomMessage("<strong>Success!</strong> Data Saved Successfully", true);
+        }
+        else {
+            CustomMessage("<strong>Failure!</strong> Error occured", false);
+        }
+    }
+</script>

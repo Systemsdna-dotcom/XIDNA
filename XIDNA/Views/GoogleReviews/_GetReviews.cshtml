@@ -1,0 +1,97 @@
+﻿
+@model IEnumerable<XIDNA.ViewModels.GoogleReviews.VMGoogleReviews>
+@using XIDNA.ViewModels
+@{
+    var ReviewsList = Model;
+}
+<script src="~/Scripts/jquery-1.12.4.js"></script>
+<script src="~/Scripts/jquery-1.12.4.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+@using (Html.BeginForm("SavingReviews", "GoogleReview", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.Hidden("Reviews", @Model);
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" class="btn btn-default" value="Submit" />
+        </div>
+    </div>
+    @*<div>
+        <input type="button" value="Save" onclick="DataSaving('@Model')" />
+    </div>*@
+    <div class="col-md-12" id="GoogleReviewsData">
+        @foreach (var item in ReviewsList)
+        {
+            <div class="form-group">
+                @Html.LabelFor(m => item.AuthorName, new { @class = "col-md-2 control-label" })
+                <div class="col-md-10">
+                    @Html.DisplayFor(m => item.AuthorName, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => item.Rating, new { @class = "col-md-2 control-label" })
+                <div class="col-md-10">
+                    @Html.DisplayFor(m => item.Rating, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => item.Review, new { @class = "col-md-2 control-label" })
+                <div class="col-md-10">
+                    @Html.DisplayFor(m => item.Review, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => item.Months, new { @class = "col-md-2 control-label" })
+                <div class="col-md-10">
+                    @Html.DisplayFor(m => item.Months, new { @class = "form-control" })
+                </div>
+            </div>
+            <br /><br /><br />
+            @*@Html.DisplayFor(m=>item.AuthorName)
+                @Html.DisplayFor(m => item.Rating)
+                @Html.DisplayFor(m => item.Review)
+                @Html.DisplayFor(m => item.Months)
+
+
+                <span style="font-weight:bold">Author Name </span>@item.AuthorName <br />
+                <span style="font-weight:bold">Rating </span>@item.Rating<br />
+                <span style="font-weight:bold">Review </span>@item.Review<br />
+                <span style="font-weight:bold">Days </span>@item.Months<br /><br /><br />*@
+        }
+    </div>
+}
+<script type="text/javascript">
+    function DataSaving(Content) {
+        debugger;
+        var PlaceID = $('#EventVenueId').val();
+
+        var Content = Html.Raw(Json.Encode($('#GoogleReviewsData').html()));
+        //var Content='@ReviewsList';
+        var HtmlText = "Test";//$('#GoogleReviewsData').html();
+        $.ajax({
+            url: "@Url.Action("SavingReviews", "GoogleReview")",
+            //data: { Reviews: Content },
+        dataType: "json",
+        type: "GET",
+        success: function (data) {
+            debugger;
+            if (data.length == 0) {
+                $('#EventVenueId').val("");
+                //$('#VenueLocationMesssage').show();
+                return false;
+            }
+            else {
+                response($.map(data, function (item) {
+                    return {
+                        label: item.description,
+                        value: item.place_id
+                    }
+                }));
+            }
+        },
+        error: function (x, y, z) {
+            alert('error');
+        }
+    });
+    }
+</script>

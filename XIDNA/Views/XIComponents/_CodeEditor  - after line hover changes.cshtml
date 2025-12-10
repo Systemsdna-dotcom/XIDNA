@@ -1,0 +1,425 @@
+﻿@using XIDNA
+@{ 
+    int iUserID = SessionManager.UserID;
+}
+<div class="editor_dialog">
+    <div class="editor_body">
+        <h1 class="editor_title">XIDNA Code Editor</h1>
+        <ol class="breadcrumb">
+            <li><a href="#">Client</a></li>
+            <li><a href="#">GitContract</a></li>
+            <li class="active">Editor</li>
+        </ol>
+        <div class="editor-frame">
+            <div class="loading editor">
+                <div class="progress progress-striped active">
+                    <div class="bar"></div>
+                </div>
+            </div>
+            <div id="editor"></div>
+        </div>
+        <div id="myModal" class="modal modal-dialog-center" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" id="txtComment"></textarea>
+                        <input type="hidden" id="iLineNo" />
+                        <br />
+                        <button type="button" class="btn btn-secondary" id="closeModalBtn">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="saveComment()">Create Note</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="chatText">
+    <div class="panel-heading">
+        <div class="panel-title">
+            Messages
+        </div>
+        <div class="panel-footer" style="min-height:400px;">
+            <div id="divmsg">
+            </div>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://platformfactory.in/BlockChain/Content/css/skins/blockchainone.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+@* <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> *@
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>
+@* <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> *@
+<script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>
+<script>
+    $(function () {
+        //'use strict';
+        require.config({
+            baseUrl: 'https://microsoft.github.io/monaco-editor/node_modules/monaco-editor/min/'
+        });
+
+        var editor = null, diffEditor = null;
+
+        $(document).ready(function () {
+            //$('#myModal').prop('hidden', true);
+            //alert(TempData["Id"]);
+            //updateComment();
+            require(['vs/editor/editor.main'], function () {
+                var MODES = (function () {
+                    var modesIds = monaco.languages.getLanguages().map(function (lang) {
+                        //console.log(lang)
+                        return lang.id;
+                    });
+                    modesIds.sort();
+                    return modesIds.map(function (modeId) {
+                        return {
+                            modeId: modeId,
+                            sampleURL: 'https://microsoft.github.io/monaco-editor/index/samples/sample.' + modeId + '.txt'
+                        };
+                    });
+                })();
+
+                //Loading Solidity based editor
+                loadSample(MODES[75]);
+
+
+
+
+                //Loading file comparision file lhs and rhs
+                //loadDiffSample();
+
+                //diffEditor.updateOptions({
+                //	renderSideBySide: false,
+                //});
+            });
+
+            window.onresize = function () {
+                if (editor) {
+                    editor.layout();
+                }
+                if (diffEditor) {
+                    diffEditor.layout();
+                }
+            };
+        });
+
+        function loadSample(mode) {
+            var iLineNo = 0;
+             var dataS = {
+            "ID": '@TempData["Id"]', 'iLineNo':'33'
+        };
+            $.ajax({
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                url: ("/XIComponents/Get_HoverContent"),
+                data: JSON.stringify(dataS),
+                cache: false,
+                async: true,
+                dataType: 'JSON',
+                success: function (data) {
+                    debugger
+                    var oData = '';
+                    oData = JSON.parse(data.substr(1, data.length))
+            $.ajax({
+                type: 'POST',
+                //url: mode.sampleURL,
+                url: '/XIComponents/Get_ContractContent?Id='+@TempData["Id"] +'&sBO='+'@TempData["sBO"]',
+                //url:'http://oneplatformfactory.com/Whatsapp_API/Api/QSAPI/GetCodeEditorData?Id='+@TempData["Id"],
+                //url: 'https://raw.githubusercontent.com/smartcontractkit/chainlink/develop/contracts/src/v0.5/Median.sol',
+                dataType: 'text',
+                beforeSend: function () {
+                    $('.loading.editor').show();
+                    editor = monaco.editor.create(document.getElementById('editor'), {
+                        glyphMargin: true,
+                        //contextmenu: false
+                    });
+                    monaco.languages.registerHoverProvider("sol", {
+                        provideHover: function (model, position) {
+                            debugger
+                            var sHTML = '';
+                            var LineInfo = oData["Line " + position.lineNumber];
+                            if (LineInfo && LineInfo.length > 0) {
+                                for (var i = 0; i < LineInfo.length; i++) {
+                                    var LInfo = LineInfo[i];
+                                    var LineNo = LInfo[i]["lineno"];
+                                    sHTML = sHTML + LInfo[i]["content"];
+                                }
+                            }
+                            sHTML = '<div><ul>'+ sHTML+'</ul></div>'; 
+                            //if (position.lineNumber == iLineNo) {
+                                return {
+                                    range: new monaco.Range(
+                                        1,
+                                        1,
+                                        model.getLineCount(),
+                                        model.getLineMaxColumn(model.getLineCount())
+                                    ),
+                                    @* options: {
+                                    isWholeLine: true,
+                                        linesDecorationsClassName: 'myLineDecoration'
+                                }, *@
+                                    contents: [
+                                        @* {
+                                    value: "XIDNA Modal"
+                                }, *@
+                                        {
+                                            isTrusted: true,
+                                            supportHtml: true,
+                                            value: sHTML,
+                                        },
+                                    ],
+                                };
+                            //}
+                    },
+                    });
+                    //Add Custom Lable/Actions
+                    editor.addAction({
+                        // An unique identifier of the contributed action.
+                        id: 'my-unique-id',
+                        // A label of the action that will be presented to the user.
+                        label: 'Capture Line Number',
+                        // An optional array of keybindings for the action.
+                        keybindings: [
+                            monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10,
+                            // chord
+                            monaco.KeyMod.chord(
+                                monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK,
+                                monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM
+                            )
+                        ],
+                        // A precondition for this action.
+                        precondition: null,
+
+                        // A rule to evaluate on top of the precondition in order to dispatch the keybindings.
+                        keybindingContext: null,
+
+                        contextMenuGroupId: 'navigation',
+
+                        contextMenuOrder: 1.5,
+
+                        // Method that will be executed when the action is triggered.
+                        // param editor The editor instance is passed in as a convenience
+                        run: function (ed) {
+                            alert("i'm running => " + ed.getPosition());
+                        }
+                    });
+
+                    editor.addAction({
+					// An unique identifier of the contributed action.
+					id: 'add-comment-id',
+
+					// A label of the action that will be presented to the user.
+					label: 'Add New Note',
+
+					// An optional array of keybindings for the action.
+					keybindings: [
+						monaco.KeyMod.CtrlCmd | monaco.KeyCode.F2,
+						// chord
+						monaco.KeyMod.chord(
+							monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK,
+							monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyM
+						)
+					],
+
+					// A precondition for this action.
+					precondition: null,
+
+					// A rule to evaluate on top of the precondition in order to dispatch the keybindings.
+					keybindingContext: null,
+
+					contextMenuGroupId: 'navigation',
+
+					contextMenuOrder: 1.6,
+
+					// Method that will be executed when the action is triggered.
+					// param editor The editor instance is passed in as a convenience
+                        run: function (ed) {
+                        //debugger
+						//console.log(ed);
+
+                            //alert("i'm running => " + ed.getPosition());
+                            $('#iLineNo').val(ed.getPosition().lineNumber);
+                            //$('#myModal').prop('hidden', false);
+                            $('#myModal').modal('show')
+                            //$('#myModal').css({'display': 'block'});
+					}
+				});
+
+                    // Mouse events
+                    editor.onMouseMove(function (e) {
+                        //console.log('mousemove - ' + e.target.toString());
+                        //alert(e.target.toString());
+                        //debugger
+                        //console.log(e.target.position['lineNumber']);
+                        $('.summery_Table tr').each(function () {
+                            $(this).find('td').each(function () {
+                                if ($(this).hasClass("one-1q-field-ilinenumber"))
+                                    if ($(this).text() == e.target.position['lineNumber']) {
+                                        alert(e.target.position['lineNumber']);
+                                    }
+
+                            });
+
+                        });
+                       // console.log($(this).parent().siblings('td.one-1q-field-snote').html());
+                    });
+                    //editor.onMouseDown(function (e) {
+                    //    console.log('mousedown - ' + e.target.toString());
+                    //    console.log(e.target);
+                    //});
+                    //editor.onContextMenu(function (e) {
+                    //    console.log('contextmenu - ' + e.target.toString());
+                    //    console.log(e.target);
+                    //});
+                    //editor.onMouseLeave(function (e) {
+                    //    console.log('mouseleave');
+                    //    console.log(e.target);
+                    //});
+
+
+
+                    // add key event
+                    editor.addCommand(monaco.KeyCode.F9, function () {
+                        alert('F9 pressed!');
+                    });
+                },
+                error: function () {
+                    if (editor) {
+                        if (editor.getModel()) {
+                            editor.getModel().dispose();
+                        }
+                        editor.dispose();
+                        editor = null;
+                    }
+                    $('.loading.editor').fadeOut({ duration: 200 });
+                    $('#editor').empty();
+                    $('#editor').append('<p class="alert alert-error">Failed to load ' + mode.modeId + ' sample</p>');
+                }
+            }).done(function (data) {
+                if (!editor) {
+                    $('#editor').empty();
+                    editor = monaco.editor.create(document.getElementById('editor'), {
+                        model: null,
+                    });
+                }
+                var oldModel = editor.getModel();
+                var newModel = monaco.editor.createModel(data, mode.modeId);
+                editor.setModel(newModel);
+                if (oldModel) {
+                    oldModel.dispose();
+                }
+                $('.loading.editor').fadeOut({ duration: 300 });
+            });
+                }, error: function (er) {
+                    debugger
+                }
+            })
+        }
+
+        function loadDiffSample() {
+
+            var onError = function () {
+                $('.loading.diff-editor').fadeOut({ duration: 200 });
+                $('#diff-editor').append('<p class="alert alert-error">Failed to load diff editor sample</p>');
+            };
+
+            $('.loading.diff-editor').show();
+
+            var lhsData = null, rhsData = null, jsMode = null;
+
+            $.ajax({
+                type: 'GET',
+                url: 'https://microsoft.github.io/monaco-editor/index/samples/diff.lhs.txt',
+                dataType: 'text',
+                error: onError
+            }).done(function (data) {
+
+                lhsData = data;
+                onProgress();
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: 'https://microsoft.github.io/monaco-editor/index/samples/diff.rhs.txt',
+                dataType: 'text',
+                error: onError
+            }).done(function (data) {
+                rhsData = data;
+                onProgress();
+            });
+
+            function onProgress() {
+                if (lhsData && rhsData) {
+                    diffEditor = monaco.editor.createDiffEditor(document.getElementById('diff-editor'), {
+                        enableSplitViewResizing: true
+                    });
+
+                    var lhsModel = monaco.editor.createModel(lhsData, 'text/javascript');
+                    var rhsModel = monaco.editor.createModel(rhsData, 'text/javascript');
+
+                    diffEditor.setModel({
+                        original: lhsModel,
+                        modified: rhsModel
+                    });
+
+                    $('.loading.diff-editor').fadeOut({ duration: 300 });
+                }
+            }
+        }
+    })
+
+    $('#closeModalBtn').on('click',function(){
+        $('#myModal').modal('hide')
+    })
+    function updateComment() {
+        //alert("Test");
+        var dataS = {
+            "iGitFileID": @TempData["Id"]
+        };
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            url: ("/BlockChain/XIComponents/updateComment"),
+            data: JSON.stringify(dataS),
+            cache: false,
+            async: true,
+            dataType: 'JSON',
+            success: function (data) {
+
+            }, error: function (er) {
+                debugger
+            }
+        })
+    }
+
+    function saveComment() {
+        var sComment = $('#txtComment').val();
+        var iLineNo = $('#iLineNo').val();
+        var dataS = {
+            "sComment": sComment,
+            "iLineNo": iLineNo,
+            "iGitFileID": @TempData["Id"],
+            "sBO":'@TempData["sBO"]'
+        };
+        $.ajax({
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            url: ("/XIComponents/saveComment"),
+            data: JSON.stringify(dataS),
+            cache: false,
+            async: true,
+            dataType: 'JSON',
+            success: function (data) {
+                $("#txtComment").val("");
+                $('#myModal').modal('hide');
+            }, error: function (er) {
+                debugger
+            }
+        })
+    }
+
+</script>
+

@@ -1,0 +1,84 @@
+﻿@model IEnumerable<XIDNA.Models.BOs>
+@using XIDNA.ViewModels
+@{
+
+}
+<link href="~/Content/jsTree/themes/default/style.min.css" rel="stylesheet" />
+<script src="~/Scripts/treeview/jstree.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#BOsTree').jstree({
+            "core": {
+                "check_callback": function (op, node, par, pos, more) {
+                    if (op === "delete_node") {
+                        return confirm("Are you sure you want to delete?");
+                    }
+                }
+            },
+            "plugins": [
+                "contextmenu", "themes", "html_data", "ui", "crrm", "dnd", "state",
+            ],
+        });
+
+    });
+
+</script>
+<style>
+    .treegroup {
+        width: 230px;
+        margin-top: 22px;
+        margin-bottom: 30px;
+        float: left;
+    }
+
+    .condata {
+        margin-left: 190px;
+    }
+</style>
+
+
+<div class="box-body" id="test2">
+    <div class="treediv">
+
+
+        @helper TreeView(IEnumerable<XIDNA.Models.BOs> nodes)
+{
+    foreach (var node in nodes)
+    {
+        <li id="@node.BOID">
+
+            @Ajax.ActionLink(node.Name.ToString(),
+                                        "AddAttributes", "BusinessObjects",
+                             new { BOName = node.Name.ToString(), BOID = node.BOID },
+                                new AjaxOptions
+                                {
+
+                                    UpdateTargetId = "BOAttibutesForms",
+                                    InsertionMode = InsertionMode.Replace,
+                                    HttpMethod = "GET",
+                                    LoadingElementId = "ajax-loader",
+                                }
+                                )
+
+
+        </li>
+    }
+}
+
+
+        <div id="BOsTree">
+            <ul>
+                @TreeView(Model)
+            </ul>
+        </div>
+
+
+    </div>
+</div>
+<div class="box-body" id="addClass">
+    <div id="BOAttibutesForms" class="condata">
+        @{
+            Html.RenderAction("AddAttributes", "BusinessObjects", new { BOName = EnumLeadTables.Leads.ToString(), BOID = "1" });
+        }
+    </div>
+</div>

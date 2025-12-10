@@ -1,0 +1,280 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Globalization;
+@{
+    XIGraphData oXIGraph = new XIGraphData();
+    Dictionary<string, XIIBO> records = new Dictionary<string, XIIBO>();
+    oXIGraph = (XIGraphData)Model.oContent[XIConstant.DailerComponent];
+    XIInfraCache oCache = new XIInfraCache();
+    var sSessionID = Context.Session.SessionID;
+    var BOIDByOneClick = oCache.Get_ParamVal(sSessionID, ViewBag.sGUID, null, "{XIP|1ClickID}");
+    if (Model.oContent.ContainsKey(XIConstant.DailerComponent))
+    {
+        records = oXIGraph.oRes;
+    }
+    XID1Click o1ClickD = new XID1Click();
+    o1ClickD = (XID1Click)oCache.GetObjectFromCache(XIConstant.Cache1Click, null, oXIGraph.OnClickResultID.ToString());
+    string sOnColumn = o1ClickD.SelectFields.Split(',')[o1ClickD.SelectFields.Split(',').Count() - 1].ToLower();
+    int i = 0;
+}
+@* <link href="~/Scripts/guage/fd-slider-tooltip.css" rel="stylesheet" />
+    <link href="~/Scripts/guage/fd-slider.css" rel="stylesheet" />
+    <script src="~/Scripts/guage/jscolor.js"></script>
+    <script src="~/Scripts/guage/fd-slider.js"></script> *@
+@*<link href="~/Scripts/guage/main.css" rel="stylesheet" />*@
+@* <link href="~/Scripts/guage/prettify.css" rel="stylesheet" />
+    <script src="~/Scripts/guage/prettify.js"></script> *@
+<link href="~/Scripts/assets/css/roundslider.min.css" rel="stylesheet" />
+<link href="~/Scripts/assets/css/styles.css" rel="stylesheet" />
+<script src="~/Scripts/assets/js/roundslider.min.js"></script>
+@*<script src="assets/js/script.js"></script>
+    <script src="~/Scripts/assets/js/script.js"></script>*@
+
+@*<script>
+        var demoGauge;
+        var opts = {
+            angle: 0.07,//-0.25,
+            lineWidth: 0.15,
+            radiusScale: 0.5,
+            //percentColors: [[0.0, "#33CF21"], [1.0, "#1C16DA"]],
+            pointer: {
+                length: 0.6,
+                strokeWidth: 0,//0.05,
+                color: '#000000'
+            },
+            limitMax: false,
+            limitMin: false,
+            strokeColor: '#E0E0E0',
+            highDpiSupport: true
+        };
+        function InitializeDailer(val, index) {
+            demoGauge = new Gauge(document.getElementById("canvas-preview_" + index));
+            demoGauge.setTextField(document.getElementById("preview-textfield_" + index));
+            demoGauge.minValue = -100;
+            demoGauge.maxValue = 100;
+            demoGauge.animationSpeed = 1;
+            demoGauge.setOptions(opts);
+            demoGauge.set(val);
+
+            //var canvas = $("#canvas-preview_" + index);
+            //debugger
+            //canvas[0].width = 300;
+            //canvas[0].height = 300;
+        }
+
+        function fncUpdate(OriginalValue, index) {
+            //var guagebyIndex = $('#guageIndex_' + index);
+            //var value = parseInt($(guagebyIndex).find('.fd-slider-handle').attr('aria-valuenow'));
+            var value = parseInt($('#txt_'+index).val());
+            if (OriginalValue != value) {
+                $('#txt_' + index).attr('data-IsChanged', true);
+                $('#txt_' + index).val(value);
+            }
+            else
+                $('#txt_' + index).attr('data-IsChanged', false);
+
+            $('#input_Save').prop('disabled', 'disabled');
+            if ($('.txt_class[data-IsChanged="true"]').length > 0) {
+                $('#input_Save').prop('disabled', '');
+            }
+
+            InitializeDailer(value, index);
+
+            var XIGUID = $('#txt_'+index).attr('data-xiguid');
+            if(OriginalValue != value)
+                fncSaveData(XIGUID, value, '@oXIGraph.OnClickResultID');
+        }
+
+        function fncSaveData(XIGUID, value, OneClickID) {
+            var model = {
+                XIGUID: XIGUID,
+                Value: value,
+                OneClickID:OneClickID
+            }
+            $.ajax({
+                url: '@Url.Action("SaveGaugeChartValues", "XiLink")',
+                type: 'POST',
+                data: model,
+                dataType: 'json',
+                success: function (data) {
+                }
+            });
+        }
+        $('#change').change(function () {
+            if ($(this).val() && $(this).val != '')
+                $('#display').css('display', '');
+
+            else
+                $('#display').css('display', 'none');
+        });
+    </script>*@
+
+<section class="content" style="height: 100%;overflow-y: auto;">
+    <div class="row">
+
+        @foreach (var record in records)
+        {
+            decimal value = record.Value.Attributes.Where(m => m.Key.ToLower() == sOnColumn.ToLower().Replace(" ", "")).FirstOrDefault().Value.rValue;
+            string sXIGUID = record.Value.Attributes.Where(m => m.Key.ToLower() == "id").FirstOrDefault().Value.sValue;
+            string Name = record.Value.Attributes.Where(m => m.Key.ToLower() != "id" && m.Key.ToLower() != sOnColumn.ToLower()).FirstOrDefault().Value.sValue;
+            <div class="col-sm-3" id="guageIndex_@i">
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title">@Name</h3>
+                    </div>
+                    @*<div class="box-body">
+                            <div class="gaugeContainer">
+                                <canvas id="canvas-preview_@i" class="canvas_preview_class"></canvas>
+                                <div class="preview_textfie_class"><span id="preview-textfield_@i"></span> / @value</div>
+                            </div>
+
+                            <input type="text" name="currval" min="-100" max="100" step="1" value="@value" id="txt_@i" data-IsChanged="false" data-xiguid="@sXIGUID" class="txt_class" onchange="fncUpdate(@value,@i)">
+                            <div class="range-slider">
+                                <label>Update Value:</label>
+                                <input type="range" id="txt_@i" onmousemove="fncUpdate(@value,@i)" data-IsChanged="false" data-xiguid="@sXIGUID" class="txt_class range-slider__range" name="vol" min="-100" max="100" value="@value">
+                            </div>
+
+                        </div>*@
+                    <div class="box-body">
+                        <div id="handle_@i" class="handle1" style="margin: 0 auto" onchange="fncSaveData('@sXIGUID', '@value')">
+                            <div class="control" id="control"></div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    var sData;
+                    $("#handle_@i").roundSlider({
+                        sliderType: "min-range",
+                        min: -100,
+                        editableTooltip: false,
+                        radius: 105,
+                        width: 16,
+                        value: @value,
+                        handleSize: 0,
+                        handleShape: "square",
+                        circleShape: "pie",
+                        startAngle: 315,
+                        tooltipFormat: "changeTooltip"
+                    });
+                    function changeTooltip(e) {
+                        var val_@i = e.value, speed;
+                        sData=e.value;
+                        if (val_@i < 0 || val_@i > -1) {
+                            $(".tick-right li,.tick-left li").removeAttr('class');
+                            $(".tick-right li,.tick-left li").attr('class', '');
+                            $(".tick-right li,.tick-left li").removeClass("active");
+                        }
+                        if (val_@i > 1) {
+                            $(".tick-right li:nth-child(1)").removeAttr('class');
+                            $(".tick-right li:nth-child(1)").attr('class', '');
+                            $(".tick-right li:nth-child(1)").addClass("active");
+                            $(".tick-right li:nth-child(2),.tick li:nth-child(3)").removeClass("active");
+                        }
+                        if (val_@i > 20) {
+                            $(".tick-right li:nth-child(2)").removeAttr('class');
+                            $(".tick-right li:nth-child(2)").attr('class', '')
+                            $(".tick-right li:nth-child(2)").addClass("active");
+                            $(".tick-right li:nth-child(3),.tick li:nth-child(4)").removeClass("active");
+                        }
+                        if (val_@i > 40) {
+                            $(".tick-right li:nth-child(3)").removeAttr('class');
+                            $(".tick-right li:nth-child(3)").attr('class', '')
+                            $(".tick-right li:nth-child(3)").addClass("active");
+                            $(".tick-right li:nth-child(4),.tick li:nth-child(5)").removeClass("active");
+                        }
+                        if (val_@i > 60) {
+                            $(".tick-right li:nth-child(4)").removeAttr('class');
+                            $(".tick-right li:nth-child(4)").attr('class', '')
+                            $(".tick-right li:nth-child(4)").addClass("active");
+                            $(".tick-right li:nth-child(5),.tick li:nth-child(6)").removeClass("active");
+                        }
+                        if (val_@i > 80) {
+                            $(".tick-right li:nth-child(5)").removeAttr('class');
+                            $(".tick-right li:nth-child(5)").attr('class', '')
+                            $(".tick-right li:nth-child(5)").addClass("active");
+                            $(".tick-right li:nth-child(6),.tick li:nth-child(7)").removeClass("active");
+                        }
+                        if (val_@i > 100) {
+                            $(".tick-right li:nth-child(6)").removeAttr('class');
+                            $(".tick-right li:nth-child(6)").attr('class', '')
+                            $(".tick-right li:nth-child(6)").addClass("active");
+                            $(".tick-right li:nth-child(7),.tick li:nth-child(8)").removeClass("active");
+                        }
+                        if (val_@i < -1) {
+                            $(".tick-left li:nth-child(1)").removeAttr('class');
+                            $(".tick-left li:nth-child(1)").attr('class', '')
+                            $(".tick-left li:nth-child(1)").addClass("active");
+                            $(".tick-left li:nth-child(2),.tick li:nth-child(3)").removeClass("active");
+                        }
+                        if (val_@i < -20) {
+                            $(".tick-left li:nth-child(2)").removeAttr('class');
+                            $(".tick-left li:nth-child(2)").attr('class', '')
+                            $(".tick-left li:nth-child(2)").addClass("active");
+                            $(".tick-left li:nth-child(3),.tick li:nth-child(4)").removeClass("active");
+                        }
+                        if (val_@i < -40) {
+                            $(".tick-left li:nth-child(3)").removeAttr('class');
+                            $(".tick-left li:nth-child(3)").attr('class', '')
+                            $(".tick-left li:nth-child(3)").addClass("active");
+                            $(".tick-left li:nth-child(4),.tick li:nth-child(5)").removeClass("active");
+                        }
+                        if (val_@i < -60) {
+                            $(".tick-left li:nth-child(4)").removeAttr('class');
+                            $(".tick-left li:nth-child(4)").attr('class', '')
+                            $(".tick-left li:nth-child(4)").addClass("active");
+                            $(".tick-left li:nth-child(5),.tick li:nth-child(6)").removeClass("active");
+                        }
+                        if (val_@i < -80) {
+                            $(".tick-left li:nth-child(5)").removeAttr('class');
+                            $(".tick-left li:nth-child(5)").attr('class', '')
+                            $(".tick-left li:nth-child(5)").addClass("active");
+                            $(".tick-left li:nth-child(6),.tick li:nth-child(7)").removeClass("active");
+                        }
+                        if (val_@i < -100) {
+                            $(".tick-left li:nth-child(6)").removeAttr('class');
+                            $(".tick-left li:nth-child(6)").attr('class', '')
+                            $(".tick-left li:nth-child(6)").addClass("active");
+                            $(".tick-left li:nth-child(7),.tick li:nth-child(8)").removeClass("active");
+                        }
+                        // if (val < 20) speed = "Slow";
+                        // else if (val < 40) speed = "Normal";
+                        // else if (val < 70) speed = "Speed";
+                        // else speed = "Very Speed";
+                        // return val + " km/h" + "<div>" + speed + "<div>";
+                        return val_@i + "%";
+                    }
+                </script>
+            </div>
+            i++;
+
+
+        }
+
+    </div>
+    <div>
+        @*<input type="button" value="Update" onclick="fncSaveData()" class="btn btn success" id="input_Save" disabled />*@
+    </div>
+    <script>
+        var bars = $('.rs-outer');
+        $('<ul class="tick-right"><li class=""></li><li class=""></li><li class=""></li><li class=""></li><li class=""></li></ul>').appendTo(bars);
+        $('<ul class="tick-left"><li class=""></li><li class=""></li><li class=""></li><li class=""></li><li class=""></li></ul>').appendTo(bars);
+        var minmax = $('.handle1');
+        $('<div class="minMax"><span class="min">-100</span><span class="max">100</span></div>').appendTo(minmax);
+        function fncSaveData(XIGUID, value) {
+            var model = {
+                XIGUID: XIGUID,
+                Value: sData,
+            }
+            $.ajax({
+                url: '@Url.Action("SaveGaugeChartValues", "XiLink")',
+                type: 'POST',
+                data: model,
+                dataType: 'json',
+                success: function (data) {
+                }
+            });
+        }
+    </script>
+
+</section>

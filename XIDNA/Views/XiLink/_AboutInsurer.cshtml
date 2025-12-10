@@ -1,0 +1,131 @@
+﻿@model string
+
+@{
+    var Image = Model + ".png";
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+}
+<tr>
+    <td colspan="8" style="text-align:left;">
+        <div class="quote-table-details">
+            @*<div class="close-quote-detail">×</div>*@
+            <div class="row">
+                <div class="col-sm-6">
+                    <h4>About the Insurer</h4>
+                    <div class="media">
+                        <div class="media-left" style="max-width:100px;min-width:100px;">
+                            <img src="@PhysicalPath/@Image" class="fullwidth" />
+                        </div>
+                        <div class="media-body">
+                            <p>
+                                Our well-rounded Home Insurance Plus product includes cover for buildings, contents, and personal possessions, with the option to add legal expenses.
+                                We are able to consider a wide variety of applicants, and our system has
+                                the ability to quote these immediately without the need for referral to
+                                an underwriter
+                            </p>
+                        </div>
+                    </div>
+                    <hr style="border-top-color:#ccc;" />
+                    <h4>Cover Included with @Model Motor Insurance:</h4>
+                    <table class="table custom-table table-condensed bc-transparent" style="table-layout:fixed;">
+                        <tr>
+                            <td>Liablility Limit</td>
+                            <td><img src="@PhysicalPath/input-success-blue.png" width="20" height="20" /></td>
+                        </tr>
+                        <tr>
+                            <td>Index Linking included</td>
+                            <td><img src="@PhysicalPath/input-success-blue.png" width="20" height="20" /></td>
+                        </tr>
+                        <tr>
+                            <td>Money & Assault Cover</td>
+                            <td><img src="@PhysicalPath/input-success-blue.png" width="20" height="20" /></td>
+                        </tr>
+                        <tr>
+                            <td>Loss of Metered Water</td>
+                            <td><img src="@PhysicalPath/input-success-blue.png" width="20" height="20" /></td>
+                        </tr>
+                    </table>
+                    <hr style="border-top-color:#ccc;" />
+                    <h4>You have selected cover for:</h4>
+                    <table class="table custom-table table-condensed bc-transparent" style="table-layout:fixed;">
+                        <tr>
+                            <td>Caravans</td>
+                            <td><img src="@PhysicalPath/input-success-blue.png" width="20" height="20" /></td>
+                        </tr>
+                        <tr>
+                            <td>Content</td>
+                            <td><img src="@PhysicalPath/input-success-blue.png" width="20" height="20" /></td>
+                        </tr>
+                        <tr>
+                            <td>Caravans Contents Sum insured</td>
+                            <td><img src="@PhysicalPath/input-success-blue.png" width="20" height="20" /></td>
+                        </tr>
+                        <tr>
+                            <td>Rental income sum insured</td>
+                            <td><img src="@PhysicalPath/input-success-blue.png" width="20" height="20" /></td>
+                        </tr>
+                        <tr>
+                            <td>Rental income indemintiy period</td>
+                            <td><img src="@PhysicalPath/input-success-blue.png" width="20" height="20" /></td>
+                        </tr>
+                        <tr>
+                            <td>Accidental damage conver</td>
+                            <td><img src="@PhysicalPath/input-success-blue.png" width="20" height="20" /></td>
+                        </tr>
+                    </table>
+                    <h4>Your excesses:</h4>
+                    <hr style="border-top-color:#ccc;" />
+                    <table class="table custom-table table-condensed bc-transparent autowidth">
+                        <tr>
+                            <td>&#163; 100</td>
+                            <td>Third Party Property Damage </td>
+                        </tr>
+                        <tr>
+                            <td>&#163; 100</td>
+                            <td>Fire </td>
+                        </tr>
+                        <tr>
+                            <td>&#163; 0</td>
+                            <td>Theft </td>
+                        </tr>
+                        <tr>
+                            <td>&#163; 100</td>
+                            <td>Explosion</td>
+                        </tr>
+                        <tr>
+                            <td>&#163; 100</td>
+                            <td>Aircraft </td>
+                        </tr>
+                        <tr>
+                            <td>&#163; 0</td>
+                            <td>Riot </td>
+                        </tr>
+                        <tr>
+                            <td>&#163; 0</td>
+                            <td>Malicious Persons </td>
+                        </tr>
+                        <tr>
+                            <td>&#163; 0</td>
+                            <td>Earthquake </td>
+                        </tr>
+                        <tr>
+                            <td>&#163; 100</td>
+                            <td>Subterranean Fire </td>
+                        </tr>
+                        <tr>
+                            <td>&#163; 0</td>
+                            <td>Stroam Flood </td>
+                        </tr>
+                        <tr>
+                            <td>&#163; 0</td>
+                            <td>Escape of Water </td>
+                        </tr>
+                        <tr>
+                            <td>&#163; 0</td>
+                            <td>Impact </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </td>
+</tr>

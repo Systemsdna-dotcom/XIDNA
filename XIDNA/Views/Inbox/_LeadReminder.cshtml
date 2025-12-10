@@ -1,0 +1,87 @@
+﻿@model XIDNA.Models.Reminders
+
+
+<script src="~/Scripts/moment.min.js"></script>
+<script src="~/Scripts/bootstrap-datetimepicker.js"></script>
+<link href="~/Content/css/bootstrap-datetimepicker.css" rel="stylesheet" />
+<script src="../Scripts/jquery.validate.unobtrusive.min.js"></script>
+<div class="col-xs-12 box-body">
+    @using (Ajax.BeginForm("SaveReminder", "Inbox", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnSuccess()" }, new { @id = "FieldsForm", @class = "form-horizontal" }))
+    {
+    @Html.HiddenFor(m => m.LeadID);
+    @Html.HiddenFor(m => m.ReportID);
+        @Html.HiddenFor(m => m.ClassID);
+        @Html.AntiForgeryToken();
+        @Html.ValidationSummary(true);
+        <div class="form-group">
+            <div class="col-md-12">
+                <label for="inputEmail" class="gn">Reminder Time<span class="danger">*</span></label>
+                <div class="form-group">
+                    <div class="col-sm-5">
+                        @Html.TextBoxFor(model => model.ReminderTime, new { @class = "datefield form-control" })
+                    </div>
+                    <div class="col-sm-7 errormsg">
+                        @Html.ValidationMessageFor(m => m.ReminderTime, "", new { @class = "red" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-12">
+                <label for="inputEmail" class="gn">Message<span class="danger">*</span></label>
+                <div class="form-group">
+                    <div class="col-sm-5">
+                        @Html.TextAreaFor(model => model.Message, new { @class = "form-control", @id = "Message" })
+                    </div>
+                    <div class="col-sm-7 errormsg">
+                        @Html.ValidationMessageFor(m => m.Message, null, new { @class = "red" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-5">
+                <input type="submit" class="btn btn-theme" value="Save" id="BtnCreate">
+                <input type="button" class="btn btn-theme decline" value="Cancel" id="BtnCancel">
+
+            </div>
+        </div>
+    }
+</div>
+
+<div id="LeadReminderList">
+        @{
+        Html.RenderAction("LeadReminderList", "Inbox",new { LeadID=@Model.LeadID});
+    }
+</div>
+
+<div id="ReminderDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+
+
+<script>
+    $(document).ready(function () {
+        $(".datefield").datetimepicker({ minDate: 'now'})
+        });
+
+    $('#BtnCancel').click(function () {
+        window.close();
+    });
+    function OnSuccess() {
+        $("#LeadReminderList").load('@Url.Action("LeadReminderList", "Inbox")');
+        $("#ReminderDlg").html('Reminder Added Successfully!');
+        $("#ReminderDlg").dialog({
+            title: "Tabs",
+            modal: true,
+            buttons: [
+               {
+                   text: "OK",
+                   click: function () {
+                       $('#Message').val('');
+                       $("#ReminderDlg").dialog("close");
+                   }
+               }
+            ]
+        });
+    }
+
+</script>

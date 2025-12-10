@@ -1,0 +1,356 @@
+﻿<div id="Div_Tables_Tree">
+</div>
+<div class="col-md-12 no-padding">
+    <div class="col-md-offset-5">
+        <input type="button" style="position:center" @*id="btn_GenerateScript"*@ onclick="btn_GenerateScript('@ViewBag.iInstanceID','@ViewBag.sBoName',false)" value="Generate Script" class="btn btn-primary" />
+        <input type="text" id="SchemaFilePath" placeholder="Schema File Path" />
+        <input type="button" style="position:center" onclick="btn_GenerateScript('@ViewBag.iInstanceID','@ViewBag.sBoName',true)" value="Save & Generate Script" class="btn btn-primary"/>
+        <input type="button" style="position:center" onclick="btn_GenerateData('@ViewBag.iInstanceID','@ViewBag.sBoName',true,'FullScript')" value="Changes Table Data Generation" class="btn btn-primary" />
+    </div>
+
+</div>
+<div id="Dialog_Script" title="Business Object Schema"></div>
+<div id="Dialog_Confirm"></div>
+<script>
+    var JsonData = '@Html.Raw(Model)';
+    var Type = 0;
+    var sChecked = '';
+    var nodeID = undefined;
+    var IsCheckBox = false;
+    var DisplayName = undefined;
+    $(function () {
+        $('#Dialog_Confirm').dialog({
+            autoOpen: false,
+            height: 220,
+            width: 380,
+            resizable: false,
+            modal: false,
+            buttons: [
+                {
+                    text: "Yes",
+                    click: function () {
+                        var model = {};
+                        if (window.editor.getValue()) {
+                            if ('@ViewBag.IsFromBo' == 'True') {
+                                model = {
+                                    sScript: window.editor.getValue(),
+                                    iDataSource: parseInt($('#DD_Database').val())
+                                }
+                            }
+                            else {
+                                model = {
+                                    sScript: window.editor.getValue(),
+                                    sTarget: $('#hiddenTarget').val()
+                                }
+                            }
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("Execute","DataBase")',
+                                data: model,
+                                cache: false,
+                                async: false,
+                                dataType: 'JSON',
+                                success: function (data) {
+                                    $('#Dialog_Confirm').dialog("close");
+                                    if (data)
+                                        alert(data.from + "\n" + data.Message);
+                                    else
+                                        alert("Successfully Executed");
+                                }
+                            });
+                        }
+                    }
+                },
+                {
+                    text: "No",
+                    click: function () {
+                        $('#Dialog_Confirm').dialog("close");
+                    }
+                }
+            ]
+        });
+        $('#Dialog_Script').dialog({
+            autoOpen: false,
+            width: 1300,
+            height: 560,
+            buttons: [
+                //{
+                //    text: "Execute",
+                //    click: function() {
+                //        $("#Dialog_Confirm").html("Are you sure want to execute?");
+                //        $("#Dialog_Confirm").dialog('open');
+
+                //    }
+                //},
+                @*{
+                    text: "Validate",
+                    click: function() {
+                        if (window.editor.getValue()) {
+                            var model = {};
+
+                            if ('@ViewBag.IsFromBo' == 'True') {
+                                model = {
+                                    sScript: window.editor.getValue(),
+                                    iDataSource: parseInt($('#DD_Database').val())
+                                }
+                            }
+                            else {
+                                model = {
+                                    sScript: window.editor.getValue(),
+                                    sTarget: $('#hiddenTarget').val()
+                                }
+                            }
+
+                        }
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("ValidateScript","DataBase")',
+                            data: model,
+                            cache: false,
+                            async: false,
+                            dataType: 'JSON',
+                            success: function(data){
+                                if (data)
+                                    alert(data);
+                                else
+                                    alert("Script is Valid");
+                            }
+                        });
+
+                    }
+                },*@
+                {
+                    text: "Close",
+                    click: function () {
+                        $('#Dialog_Script').dialog("close");
+                    }
+                }
+            ]
+        });
+
+        $("#Div_Tables_Tree").jstree({
+            core: {
+                data: JSON.parse(JsonData)
+            },
+            plugins: ["grid"],
+            grid: {
+                columns: [
+                    { width: 300, header: "Type", headerClass: "TestTree" },
+                    { width: 300, header: "Source", value: "sName", headerClass: "TestTree" },
+                    {
+                        width: 100, header: "Action", headerClass: "TestTree",
+                        value: function (node) {
+                            sChecked = '';
+                            nodeID = undefined;
+                            IsCheckBox = false;
+
+                            DisplayName = undefined;
+                            if (node.parent != '#' && node.data) {
+                                nodeID = node.id;
+                                Type = parseInt(node.data.iType);
+
+                                if (node.data.bIsSelected) {
+                                    sChecked = 'checked';
+                                }
+                                if (node.text.toLowerCase() == "table") {
+                                    IsCheckBox = true;
+                                }
+                                if (node.data.iType == '30') {
+                                    DisplayName = node.data.tName;
+                                    return "tName";
+                                }
+                                else {
+                                    DisplayName = node.data.sName;
+                                    return "sName";
+                                }
+                            };
+                        },
+                        format: function (value) {
+                            var icon = '';
+                            if (Type == 10)
+                                icon = '<i class="fa fa-plus" style="color:green" aria-hidden="true" title="Add"></i>';
+                            if (Type == 20)
+                                icon = '<i class="fa fa-pencil" style="color:blue" aria-hidden="true" title="Change"></i>';
+                            if (Type == 30)
+                                icon = '<i class="fa fa-times" style="color:red" aria-hidden="true" title="Delete"></i>'
+
+                            if (value && DisplayName) {
+                                if (IsCheckBox)
+                                    return '<input  name=' + DisplayName + ' data-ActionType=' + Type + ' class="TableNames" onchange=fncCheckBoxChange(this,' + nodeID + ') type="checkbox" ' + sChecked + '><span>' + icon + '</span>';
+                                else
+                                    return icon;
+                            }
+                        }
+                    },
+                    { width: 300, header: "Target", headerClass: "TestTree", value: "tName" }
+                ],
+                resizable: true,
+                width: "100%",
+                height: 500
+            }
+        });
+    })
+    //$('#btn_GenerateScript').click(function () {
+    function btn_GenerateScript(InstanceID, BoName, SavingType) {
+        //debugger;
+        
+       var FilePath = $('#SchemaFilePath').val();
+        var Columns = [];
+        var jsTree = $('#Div_Tables_Tree').jstree(true);
+        var AddTables = jsTree.get_json(10).children
+        if (AddTables && AddTables.length > 0) {
+            $.each(AddTables, function (i, item) {
+                if (item.data.bIsSelected) {
+                    Columns.push({ iActionType: 10, sTableName: item.data.sName, AllColumns: item.data.AllColumns });
+                };
+            });
+        };
+        var ChangeTables = jsTree.get_json(20).children
+        if (ChangeTables && ChangeTables.length > 0) {
+            $.each(ChangeTables, function (i, item) {
+                if (item.data.bIsSelected) {
+                    var ColumnDetails = [];
+                    var Childs = item.children[0].children;
+                    $.each(Childs, function (i, column) {
+                        if (column.data.iType == 10 || column.data.iType == 20) {
+                            ColumnDetails.push(column.data.ColumnDetails);
+                        };
+                        if (column.data.iType == 30) {
+                            ColumnDetails.push(column.data.ColumnDetails);
+                        };
+                    });
+                    Columns.push({ iActionType: 20, sTableName: item.data.sName, Columns: ColumnDetails, AllColumns: item.data.AllColumns });
+                };
+            });
+        };
+
+        var DeleteTables = jsTree.get_json(30).children
+        if (DeleteTables && DeleteTables.length > 0) {
+            $.each(DeleteTables, function (i, item) {
+                if (item.data.bIsSelected) {
+                    Columns.push({ iActionType: 30, sTableName: item.data.tName });
+                };
+            });
+        };
+        if (Columns && Columns.length > 0) {
+            var URL = '';
+            var model = {};
+            if ('@ViewBag.IsFromBo' == 'True') {
+                URL = '@Url.Action("GenerateBOScript","DataBase")';
+                model = {
+                    SelectedTables: JSON.stringify(Columns),
+                    InstanceID: InstanceID,
+                    sBoName:BoName,
+                    sDBType:'Schema',
+                    bSavefile: SavingType,
+                    FilePath: FilePath
+                }
+            };
+            if ('@ViewBag.IsFromBo' == 'False') {
+                URL = '@Url.Action("GenerateScript","DataBase")';
+                model = {
+                    SelectedTables: JSON.stringify(Columns),
+                    sSource: $('#hiddenSource').val(),
+                    sTarget: $('#hiddenTarget').val(),
+                    sDBType:'Schema'
+                }
+            };
+            $.ajax({
+                type: 'POST',
+                url: URL,
+                data: model,
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    if (FilePath != "") {
+                        alert("Files Saved in " + FilePath);
+                    }
+                    else {
+                        if (data.length > 0) {
+                            $('#Dialog_Script').html(data);
+                            $('#Dialog_Script').dialog('open');
+                        }
+                        else
+                            alert('Script not Generated');
+                    }
+                }
+
+            });
+        };
+        //});
+    }
+      
+    function fncCheckBoxChange($this, node) {
+        var jsTree = $('#Div_Tables_Tree').jstree(true);
+        jsTree.get_node(node.id).data.bIsSelected = $($this).is(":checked");
+    };
+    function btn_GenerateData(iInstanceID, BoName, bSavingType, DataGeneration1) {
+        debugger;
+        var Columns = [];
+        var jsTree = $('#Div_Tables_Tree').jstree(true);
+
+        var ChangeTables = jsTree.get_json(20).children
+        if (ChangeTables && ChangeTables.length > 0) {
+            $.each(ChangeTables, function (i, item) {
+                if (item.data.bIsSelected) {
+                    var ColumnDetails = [];
+                    var Childs = item.children[0].children;
+                    $.each(Childs, function (i, column) {
+                        if (column.data.iType == 10 || column.data.iType == 20) {
+                            ColumnDetails.push(column.data.ColumnDetails);
+                        };
+                        if (column.data.iType == 30) {
+                            ColumnDetails.push(column.data.ColumnDetails);
+                        };
+                    });
+                    Columns.push({ iActionType: 20, sTableName: item.data.sName, Columns: ColumnDetails, AllColumns: item.data.AllColumns });
+                };
+            });
+        };
+
+        var model = {
+            //sSourceDB: $('input[name="8bce138c-b9bc-43fd-b2b6-ff21f6188a5a"]').val(),
+            //sTargetDB: $('input[name="5477126a-fddd-4fa1-8d9a-9890cde2528c"]').val(),
+            //sSourceEnvID: $('input[name="5307229f-d0af-44b5-8227-5a8d8f672e75"]').val(),
+            //sTargetEnvID: $('input[name="cf1bb769-3d94-4851-b703-65a43453046a"]').val(),
+            sSourceDB: $('input[name="FKiSourceDB"]').val(),
+            sTargetDB: $('input[name="FKiTargetDB"]').val(),
+            sSourceEnvID: $('input[name="FKiSourceEnvID"]').val(),
+            sTargetEnvID: $('input[name="FKiTargetEnvID"]').val(),
+            sBOName: BoName,
+            bSavingType: bSavingType,
+            SelectedTables: JSON.stringify(Columns),
+            FilePath: $('#SchemaFilePath').val(),
+            sDBType: 'Schema',
+            //DataGen: DataGeneration
+        }
+        $.ajax({
+            url: DataGeneration,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            async: true,
+            cache: false,
+            data: JSON.stringify(model),
+            success: function (data) {
+                if (data == "Success") {
+                    alert("Schema and data Successfully saved to " + $('#SchemaFilePath').val());
+                }
+                else {
+                    alert("Failure!! Connection error, Please check the connection string", false);
+                }
+            }
+        });
+        //  }, { "name": "sApplicationID", "value": $('input[name="75a95f03-b045-4e56-98bd-454c2f93baaa"]').val() }, { "name": "BONames", "value": sBOName }, { "name": "iInstanceID", "value": iInstanceID }, { "name": "StructureName", "value": StructureName }, { "name": "ParentID", "value": jsonNodes }, { "name": "Boid", "value": iBOID });
+
+    }
+
+</script>
+<style>
+    .TestTree {
+        color: teal;
+        text-align: center;
+        /*min-width: 250px !important;*/
+    }
+</style>

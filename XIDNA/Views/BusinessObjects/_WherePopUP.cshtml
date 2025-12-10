@@ -1,0 +1,265 @@
+﻿@model XIDNA.ViewModels.VMWherePopUP
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+    <script>
+        $(document).ready(function () {
+            if ('@Model.Type' == 'wherecheckbox') {
+                $('#WhereConditions').show();
+                $('#Expressions').hide();
+            }
+            else {
+                $('#Expressions').show();
+                $('#WhereConditions').hide();
+            }
+            if ('@Model.IsWhereExpression' == 'True')
+            {
+            $('#ExpressionArea').show();
+            $('#IsDate').attr('disabled', true);
+            $('#IsDate').val(false);
+            $('#IsDBValue').attr('disabled', true);
+            $('#IsDBValue').val(false);
+            }
+            else
+            {
+            $('#ExpressionArea').hide();
+            $('#IsDate').attr('disabled', false);
+            $('#IsDate').val(true);
+            $('#IsDBValue').attr('disabled', false);
+            $('#IsDBValue').val(true);
+             }
+
+            if ('@Model.IsDBValue' == 'True') {
+                $('#DBTextarea').show();
+                $('#IsDate').attr('disabled', true);
+                $('#IsDate').val(false);
+                $('#IsExpression').attr('disabled', true);
+                $('#IsExpression').val(false);
+            }
+            else if ('@Model.IsWhereExpression' != 'True')
+            {
+                $('#DBTextarea').hide();
+                $('#IsDate').attr('disabled', false);
+                $('#IsDate').val(true);
+                $('#IsDBValue').attr('disabled', false);
+                $('#IsDBValue').val(true);
+            }
+            else
+            {
+                $('#DBTextarea').hide();
+                $('#IsExpression').attr('disabled', false);
+                $('#IsExpression').val(true);
+            }
+
+            $('#IsDBValue').on('change', function () {
+                if ($(this).prop('checked') == true ) {
+                    $('#DBTextarea').show();
+                    $('#IsDate').attr('disabled', true);
+                    $('#IsDate').val(false);
+                    $('#IsExpression').attr('disabled', true);
+                    $('#IsExpression').val(false);
+                }
+                else {
+                    $('#DBTextarea').hide();
+                    $('#IsDate').attr('disabled', false);
+                    $('#IsDate').val(true);
+                    $('#IsExpression').attr('disabled', false);
+                    $('#IsExpression').val(true);
+                }
+
+            });
+            $('#IsExpression').on('change', function () {
+
+                if ($(this).prop('checked') == true) {
+                    $('#ExpressionArea').show();
+                    $('#IsDate').attr('disabled', true);
+                    $('#IsDate').val(false);
+                    $('#IsDBValue').attr('disabled', true);
+                    $('#IsDBValue').val(false);
+                }
+                else {
+                    $('#ExpressionArea').hide();
+                    $('#IsDate').attr('disabled', false);
+                    $('#IsDate').val(true);
+                    $('#IsDBValue').attr('disabled', false);
+                    $('#IsDBValue').val(true);
+                }
+
+            });
+            $('#IsDate').on('change', function () {
+                if ($(this).prop('checked') == true) {
+                    $('#IsExpression').attr('disabled', true);
+                    $('#IsExpression').val(false);
+                    $('#IsDBValue').attr('disabled', true);
+                    $('#IsDBValue').val(false);
+                }
+                else {
+                    $('#IsExpression').attr('disabled', false);
+                    $('#IsExpression').val(true);
+                    $('#IsDBValue').attr('disabled', false);
+                    $('#IsDBValue').val(true);
+                }
+
+            });
+        });
+    </script>
+    <style>
+        #WherePopUP{
+            margin-top:10px;
+        }
+        .queryheading{
+            margin-left:15px;
+            margin-top:0px;
+        }
+        .whereerror{
+            margin-top:30px;
+        }
+    </style>
+    <section class="content-header hedr">
+        <h1>@Model.BOName - @Model.FieldName - @Model.FieldDataType</h1>
+        <ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-dashboard"></i> BO</a></li>
+            <li class="active">Home</li>
+        </ol>
+    </section>
+    <div class="content">
+        <div class="col-xs-12">
+            <div class="box">
+                <div id="WherePopUP" class="">
+                    @using (Ajax.BeginForm("SavePopUpItems", "BuisinessObjects", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "WhereForm", OnSuccess = "OnComplete" }, new { @id = "WhereConditonForm", @class = "form-horizontal" }))
+                    {
+                         @Html.HiddenFor(m => m.FieldID)
+                        @Html.HiddenFor(m=>m.Type)
+                        @Html.ValidationSummary(true)
+                        <div id="WhereConditions">
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    @Html.Label("Is Runtime Value")
+                                </div>
+                                <div class="col-md-2">
+                                    @Html.CheckBoxFor(m => m.IsRuntimeValue, new { @class = "", @id = "IsRuntimeValue" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    @Html.Label("Is Date")
+                                </div>
+                                <div class="col-md-2">
+                                    @Html.CheckBoxFor(m => m.IsDate, new { @class = "", @id = "IsDate" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    @Html.Label("Is DB Value")
+                                </div>
+                                <div class="col-md-2">
+                                    @Html.CheckBoxFor(m => m.IsDBValue, new { @class = " ", @id = "IsDBValue" })
+                                </div>
+                            </div>
+
+                            <div class="form-group" id="DBTextarea">
+                                <h5 class="queryheading">Query</h5>
+                                <div class="col-md-3">
+                                    @Html.TextAreaFor(m => m.DBQuery, new { @class = "DBValueText form-control", @id = "DBValueText", @cols = "40" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    @Html.Label("Is Expression")
+                                </div>
+                                <div class="col-md-2">
+                                    @Html.CheckBoxFor(m => m.IsWhereExpression, new { @class = "", @id = "IsExpression" })
+                                </div>
+                            </div>
+                            <div class="form-group" id="ExpressionArea">
+                                <div class="col-md-2">
+                                    @Html.TextBoxFor(m => m.WhereExpression, new { @id = "ExpressionText", @class = "form-control", @placeholder = "Expression Name" })
+                                    @Html.ValidationMessageFor(m => m.WhereExpression, "", new { @class = "red" })
+                                </div>
+                                <div class="col-md-2">
+                                    @Html.TextBoxFor(m => m.WhereExpressionValue, new { @id = "ExpressionValue", @class = "form-control", @placeholder = "Value" })
+                                    @Html.ValidationMessageFor(m => m.WhereExpressionValue, "", new { @class = "red" })
+                                </div>
+                            </div>
+                        </div>
+                       <div id="Expressions">
+                            @*<div class="form-group">
+                                <div class="col-md-2">
+                                    @Html.Label("Is Expression")
+                                </div>
+                                <div class="col-md-2">
+                                    @Html.CheckBoxFor(m => m.IsExpression, new { @class = "", @id = "IsExpression" })
+                                </div>
+                            </div>*@
+                            <div id="ExpressionArea">
+                                @Html.HiddenFor(m => m.IsExpression, new { @Value = true })
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Expression<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(m => m.ExpressionText, new { @class = "form-control", @placeholder = "Expression Name", @id = "ExpressionText" })
+                                    </div>
+                                    <div class="col-sm-7 whereerror">
+                                        @Html.ValidationMessageFor(m => m.ExpressionText, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Expression Value<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(m => m.ExpressionValue, new { @class = "form-control", @placeholder = "Expression Text", @id = "ExpressionValue" })
+                                    </div>
+                                    <div class="col-sm-7 whereerror">
+                                        @Html.ValidationMessageFor(m => m.ExpressionValue, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <input type="submit" class="savebtn sv_bt btn btn-theme" id="Save" value="Save" />
+                                <input type="button" class="savebtn btn btn-theme decline" id="Cancel" value="Cancel" onclick="self.close()" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="dialog-box WhereDlg" title="Confirm Message" style="background-color:white;"></div>
+    <script>
+        function OnComplete(e) {
+
+            if (e > 0) {
+                $(".WhereDlg").html('Details updated Successfully!');
+                $(".WhereDlg").dialog({
+                    title: "Where Configuration",
+                    modal: true,
+                    buttons: [
+                    {
+                        text: "Ok",
+                        click: function () {
+                            $(".WhereDlg").dialog("close");
+                            window.close();
+                        }
+                    }
+                    ]
+                });
+            }
+            else {
+                $(".WhereDlg").html('Something went wrong. Please try again!!!');
+                $(".WhereDlg").dialog({
+                    title: "Where Configuration",
+                    modal: true,
+                    buttons: [
+                    {
+                        text: "Ok",
+                        click: function () {
+                            $(".WhereDlg").dialog("close");
+                        }
+                    }
+                    ]
+                });
+            }
+        }
+    </script>

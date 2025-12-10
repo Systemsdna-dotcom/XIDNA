@@ -1,0 +1,115 @@
+﻿
+<script>
+    $(document).ready(function () {
+        var table = $('#Preview').dataTable({
+            //"bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("DisplayOrgDetails", "Organization")",
+            "aaSorting": [1, 'desc'],
+            "aoColumns": [
+    {},
+                             {
+                                 "sName": "ID",
+                                 "visible": false
+                             },
+                             {
+                                 "sName": "Location",
+
+                             },
+                             {
+                                 "sName": "Actions"
+                             },
+
+
+
+            ],
+
+            //"fnRowCallback": function (nRow, aData, iDisplayIndex) {
+
+            //    $('td:eq(4)', nRow).html("<input class='savebtn btn btn-primary btn2' onclick='edit(this)' id='editq-" + aData[1] + "' value='EDIT'  type='button'  data-url='GetOrganizationEdit/Organization?orgid=" + aData[1] + "'/>");
+            //    //$('td:eq(4)', nRow).html("<input class='savebtn btn btn-primary btn2' onclick='viewgeneral(this)' id='viewq-" + aData[1] + "' value='VIEW'  type='button'  data-url='GetOrganizationView/Organization?orgaid=" + aData[1] + "'/>");
+            //    $('td:eq(5)', nRow).html("<input class='savebtn btn btn-primary btn2' onclick='viewcontact(this)' id='viewcon-" + aData[1] + "' value='VIEW'  type='button'  data-url='GetOrganizationView/Organization?orgaid=" + aData[1] + "'/>");
+
+            //    return nRow;
+            //},
+            @*"columnDefs": [{
+                    "targets": 5, "data": "name", "render": function (nRow, aData, iDisplayIndex) {
+
+                        return ("<input class='savebtn btn btn-primary btn2' onclick='edit(this)' id='editq-" + parseInt(iDisplayIndex[1]) + "' value='EDIT'  type='button'  data-url='@Url.Action("GetOrganizationEdit", "Organization")?orgid=" + parseInt(iDisplayIndex[1]) + "'/>"+
+
+
+                            "<input class='savebtn btn btn-primary btn2' onclick='viewcontact(this)' id='viewcon-" + parseInt(iDisplayIndex[1]) + "' value='VIEW'  type='button'  data-url='@Url.Action("GetOrganizationView", "Organization")?orgaid=" + parseInt(iDisplayIndex[1]) + "'/>"
+                      )
+                    }
+                }]*@
+        });
+        //var table = $('#Preview').dataTable();
+
+        $('#dialog').dialog({
+            autoOpen: false,
+            title: 'Confirm Delete Action'
+        });
+
+        $('.ConfirmDelete').click(function () {
+            var id = $('.ConfirmDelete').data('id');
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("DeleteOrg","Organization")',
+                data: { ColumnID: id },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    $('#dialog').dialog('close');
+                    $("#Preview").load('@Url.Action("DisplayOrgDetails", "Organization")');
+                }
+            });
+
+        });
+    });
+</script>
+
+
+
+<div class="col-xs-12">
+    <div id="box-body">
+        <div class="tab_scroll main-table">
+            <div class="dataTables_wrapper no-footer table-responsive">
+                <table id="Preview" class="table table-bordered table-striped dataTable">
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>ID</th>
+                            <th>Location</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    @*<tbody>
+                            @foreach (var item in @Model)
+                            {
+                                <tr>
+                                    @foreach (var value in item)
+                                    {
+                                        <td>@value</td>
+
+                                    }
+                                    <td>
+                                        <input class='savebtn btn btn-primary btn2 Editit' value='EDIT' type='button' data-url='@Url.Action("EditOrgDetails","Organization")?ColumnID=@item[0]' />
+                                        <input class='savebtn btn btn-primary btn2 Deleteit' value='DELETE' type='button' id='@item[0]'/>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>*@
+                </table>
+
+            </div>
+        </div>
+        @*Dialog*@
+        <div id="dialog" title="Confirm Delete Action">
+            <p>Are you sure you want to delete it??</p>
+            <input class='savebtn btn btn-theme ConfirmDelete' value='Yes' type='Submit' />
+        </div>
+
+    </div>
+
+</div>
+

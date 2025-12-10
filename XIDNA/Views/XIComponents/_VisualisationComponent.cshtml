@@ -1,0 +1,375 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIVisualisation oVisual = new XIVisualisation();
+    if (Model.oContent.ContainsKey(XIConstant.VisualisationComponent))
+    {
+        oVisual = (XIVisualisation)Model.oContent[XIConstant.VisualisationComponent];
+        if (oVisual == null)
+        {
+            oVisual = new XIVisualisation();
+        }
+    }
+    else
+    {
+
+    }
+}
+
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        if(@oVisual.XiVisualID != 0)
+        {
+            $('#Type').val('@oVisual.Type');
+            $('#StatusTypeID').val('@oVisual.StatusTypeID');
+        }
+        $('#AddMoreNV').click(function () {
+            var Divs = $('.NVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $('#NameValuePairs').append(Divs);
+            $('.NVPairs').last().css("display", "block");
+        });
+        $(document.body).on('click', 'input.AddMoreList', function () {
+            var Divs = $('.LNVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $(Divs).filter('.LNVPairs').css("display", "block");
+            $(this).closest(".amlist").before(Divs);
+        });
+        $('.AddList').click(function () {
+            var Divs = $('.Lists').first().clone();
+            var TextBoxs = $(Divs).find('.LNVPairs').css("display", "block");
+            for (i = 0; i < TextBoxs.length; i++) {
+                if (i >= 1) {
+                    $(TextBoxs[i]).remove();
+                }
+            }
+            $(Divs).find('input[type=text]').val('');
+            $(this).closest(".alist").before(Divs);
+        });
+
+        $(document.body).on('click', 'button.DelNVPair', function () {
+            $(this).closest(".NVPairs").hide();
+        });
+
+        $(document.body).on('click', 'button.DeleteLNVPair', function () {
+            $(this).closest('.LNVPairs').hide();
+        });
+
+        $('#SaveXiVisualisation').click(function () {
+            var empty = $('#XiVisualisationForm').find("input.req").filter(function () {
+                return this.value === "";
+            });
+            if (empty.length) {
+                CustomMessage("Please fill * marked fields", false);
+            }
+            else {
+                var XiVisualisationName = $('#Name').val();
+                var Type = $('#Type').val();
+                var ApplicationID = $('#FKiApplicationID').val();
+                var Status = $('#StatusTypeID').val();
+                var NVPairs = [];
+                $('.NVPairs:visible').each(function () {
+                    var Name; var Value;
+                    $(this).find('input').each(function (i, obj) {
+                        var Nname = obj.name;
+                        if (Nname == "Names") {
+                            Name = $(this).val();
+                        }
+                        else if (Nname == "Values") {
+                            Value = $(this).val();
+                        }
+                    });
+                    if (Name.length > 0) {
+                        NVPairs.push(Name + "," + Value);
+                    }
+                });
+                var LNVPairs = [];
+                $('.Lists').each(function () {
+                    var LName = $(this).find('input.ListName').val();
+                    //LName = "ListName-" + LName;
+                    if (LName.length > 0) {
+                        LNVPairs.push(LName);
+                        $(this).find('.LNVPairs:visible').each(function (i, obj) {
+                            var Name; var Value;
+                            $(this).find('input').each(function (i, obj) {
+                                var Nname = obj.name;
+                                if (Nname == "ListNames") {
+                                    Name = $(this).val();
+                                }
+                                else if (Nname == "ListValues") {
+                                    Value = $(this).val();
+                                }
+                            });
+                            if (Name.length > 0 && Value.length > 0) {
+                                LNVPairs.push(LName + "," + Name + "," + Value);
+                            }
+                        });
+                    }
+                });
+                var model = { XiVisualID: $('#XiVisualID').val(), Name: XiVisualisationName, Type: Type,FKiApplicationID:ApplicationID , NVPairs: NVPairs, LNVPairs: LNVPairs, Status: Status };
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("Save_XiVisualisation", "XiLink")',
+                    data: JSON.stringify(model),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    success: function (data) {
+                        CustomMessage(data.ResponseMessage, data.Status);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="innerborder">
+                        <form id="XiVisualisationForm" class="form-horizontal">
+                            <div id="clear-text">
+                                <input type="hidden" value="@oVisual.XiVisualID" id="XiVisualID" />
+                                @if (oVisual.XiVisualID > 0)
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-4">
+                                            <label for="inputEmail" class="gn">Visualisation ID:<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="inputEmail" class="gn">@oVisual.XiVisualID<span class="danger"></span></label>
+                                        </div>
+                                    </div>
+                                }
+                                @if (oVisual.FKiApplicationID == 0)
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Application<span class="danger"></span></label>
+                                            @Html.DropDownList("FKiApplicationID", new SelectList(oVisual.ddlApplications, "Value", "text"), new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <input type="hidden" id="FKiApplicationID" name="FKiApplicationID" value="@oVisual.FKiApplicationID" />
+                                }
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn"> Name<span class="danger">*</span></label>
+                                        @Html.TextBox("Name", oVisual.Name, new { @class = "form-control", @placeholder = "Name Here" })
+                                        @*<input type="text" name="Name" id="Name" placeholder="XiVisualisation Name" class="form-control req" value="@Model.Name" />*@
+                                    </div>
+                                    <div class="col-sm-7 emperrormsg">
+                                        @Html.ValidationMessage("Name", null, new { @class = "red" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Type<span class="danger"></span></label>
+                                        @Html.DropDownList("StatusTypeID", new SelectList(new List<Object>
+                                    {
+                                       new { key= "0" , value = "--Select--" },
+                                    new { key= "Edit Form" , value = "Edit Form" },
+                                    new { key= "Grid" , value = "Grid" },
+                                       new { key= "Matrix" , value = "Matrix" }
+                                    }, "key", "Value", oVisual.Type), new { @class = "form-control", id = "Type" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group col-md-12">
+                                    <div id="NameValuePairs" class="col-md-12">
+                                        @if (oVisual.NVs != null)
+                                        {
+                                            if (oVisual.XiVisualID == 0 || oVisual.NVs.Count() == 0)
+                                            {
+                                                <div class="form-group NVPairs">
+                                                    <div class="col-md-4">
+                                                        <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                        <input type="text" name="Names" placeholder="Name" class="form-control" />
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                        <input type="text" name="Values" placeholder="Value" class="form-control" />
+                                                    </div>
+                                                    <br />
+                                                    <div>
+                                                        <button type="button" class="btn btn-theme btn-xs DelNVPair">Delete</button>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                foreach (var NVs in oVisual.NVs)
+                                                {
+                                                    <div class="form-group NVPairs">
+                                                        <div class="col-md-4">
+                                                            <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                            <input type="text" name="Names" placeholder="Name" class="form-control" value="@NVs.sName" />
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                            <input type="text" name="Values" placeholder="Value" class="form-control" value="@NVs.sValue" />
+                                                        </div>
+                                                        <br />
+                                                        <div>
+                                                            <button type="button" class="btn btn-theme btn-xs DelNVPair">Delete</button>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-12">
+                                    <div class="col-md-2">
+                                        <input type="button" id="AddMoreNV" value="Add" class="btn btn-theme btn-xs">
+                                    </div>
+                                </div>
+                                @if (oVisual.Lists != null)
+                                {
+                                    if (oVisual.XiVisualID == 0 || oVisual.Lists.Count() == 0)
+                                    {
+                                        <div class="form-group col-md-12 Lists">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-4">
+                                                    <label for="inputEmail" class="gn"> List<span class="danger"></span></label>
+                                                    <input type="text" name="List" placeholder="List Name" class="form-control ListName" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 LNVPairs">
+                                                <div class="col-md-4">
+                                                    <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                    <input type="text" name="ListNames" placeholder="Name" class="form-control" />
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                    <input type="text" name="ListValues" placeholder="Value" class="form-control" />
+                                                </div>
+                                                <br />
+                                                <div>
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteLNVPair">Delete</button>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 amlist">
+                                                <div class="col-md-2">
+                                                    <input type="button" value="Add" class="AddMoreList btn btn-theme btn-xs">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        foreach (var items in oVisual.Lists)
+                                        {
+                                            if (items.XiVisualisationListNVs.Count == 0)
+                                            {
+                                                <div class="form-group Lists">
+                                                    <div class="form-group col-md-12">
+                                                        <div class="col-md-4">
+                                                            <label for="inputEmail" class="gn"> List<span class="danger"></span></label>
+                                                            <input type="text" name="List" placeholder="List Name" class="form-control ListName" value="@items.ListName" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-md-12 LNVPairs">
+                                                        <div class="col-md-4">
+                                                            <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                            <input type="text" name="ListNames" placeholder="Name" class="form-control" />
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                            <input type="text" name="ListValues" placeholder="Value" class="form-control" />
+                                                        </div>
+                                                        <br />
+                                                        <div>
+                                                            <button type="button" class="btn btn-theme btn-xs DeleteLNVPair">Delete</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group col-md-12 amlist">
+                                                        <div class="col-md-2">
+                                                            <input type="button" value="Add" class="AddMoreList btn btn-theme btn-xs">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="form-group Lists">
+                                                    <div class="form-group col-md-12">
+                                                        <div class="col-md-4">
+                                                            <label for="inputEmail" class="gn"> List<span class="danger"></span></label>
+                                                            <input type="text" name="List" placeholder="List Name" class="form-control ListName" value="@items.ListName" />
+                                                        </div>
+                                                    </div>
+                                                    @foreach (var NVs in items.XiVisualisationListNVs)
+                                                    {
+                                                        <div class="form-group col-md-12 LNVPairs">
+                                                            <div class="col-md-4">
+                                                                <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                                <input type="text" name="ListNames" placeholder="Name" class="form-control" value="@NVs.sName" />
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                                <input type="text" name="ListValues" placeholder="Value" class="form-control" value="@NVs.sValue" />
+                                                            </div>
+                                                            <br />
+                                                            <div>
+                                                                <button type="button" class="btn btn-theme btn-xs DeleteLNVPair">Delete</button>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                    <div class="form-group col-md-12 amlist">
+                                                        <div class="col-md-2">
+                                                            <input type="button" value="Add" class="AddMoreList btn btn-theme btn-xs">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    }
+                                }
+                                <div class="form-group alist">
+                                    <div class="col-md-2">
+                                        <input type="button" value="Add List" class="AddList btn btn-theme btn-xs">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                        @Html.DropDownList("StatusTypeID", new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "Active" },
+                                    new { key= 20 , value = "Inactive" }
+                                    }, "key", "Value", oVisual.StatusTypeID), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="button" class="btn btn-theme" value="Save" id="SaveXiVisualisation" />
+                                    <button type="button" class="btn btn-theme decline CancelXiVisualisation">Cancel</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="SavePopupDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    $('.CancelXiVisualisation').click(function () {
+        window.close();
+    });
+</script>

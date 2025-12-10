@@ -1,0 +1,83 @@
+﻿@model IEnumerable<XIDNA.Models.Stages>
+
+<script>
+    $(document).ready(function () {
+        $(document.body).on('click', 'li a.LeadStages', function () {
+            var stage = $(this).attr('id');
+            var values = {
+                ID: stage,
+                LeadID: '@Model.FirstOrDefault().LeadID'
+            };
+            $.ajax({
+                url: '@Url.Action("SaveToLeadHistory", "Lead")',
+                type: 'Post',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                data: JSON.stringify(values),
+                cache: false,
+                async: false,
+                success: function (data) {
+                    if (data == "New Lead") {
+                        $(".StageDlg").html('Lead Status Changed To ' + data);
+                        $('#LeadStatus').html(data);
+                        $('#LeadConStatus').html(data);
+                    }
+                    else if (data == "Quote") {
+                        $(".StageDlg").html('Lead Status Changed To ' + data + 'd');
+                        $('#LeadStatus').html(data + "d");
+                        $('#LeadConStatus').html(data + "d");
+                    }
+                    else {
+                        $(".StageDlg").html('Lead Status Changed To ' + data + 'ed');
+                        $('#LeadStatus').html(data + "ed");
+                        $('#LeadConStatus').html(data + "ed");
+                    }
+                    $(".StageDlg").dialog({
+                        title: "Stage Change",
+                        modal: true,
+                        buttons: [
+                        {
+                            text: "Ok",
+                            click: function () {
+                                $(".StageDlg").dialog("close");
+                            }
+                        }
+                        ]
+                    });
+                    $.ajax({
+                        url: '@Url.Action("GetNextStages", "inbox")',
+                        type: 'GET',
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "html",
+                        data: { LeadID: '@Model.FirstOrDefault().LeadID', StageID: stage },
+                        cache: false,
+                        success: function (data) {
+                            $('.stageslist').empty();
+                            for (i = 0; i < data.length; i++) {
+                                $('.stageslist').append('<li class="Stage"><a class="LeadStages" id='+data[i].ID+'>'+data[i].Name+'</a></li>');
+                            }
+                        },
+                        error: function (data) { }
+                    });
+                },
+                error: function (data) { }
+            });
+        });
+    });
+</script>
+<div class="dialog-box StageDlg" title="Confirm Message" style="background-color:white;"></div>
+<div id="LeadStagesList">
+    <h4><i class="fa  fa-caret-right "></i>Navigate<a class="fa fa-angle-down accordion-btn" aria-controls="collapseOne" aria-expanded="true" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapsefive"></a></h4>
+    <div id="collapsefive" class="clint-ledscontent clint-ledscontent-nopad">
+        <div id="LeadStages">
+            <ul class="stageslist actionlist">
+                @foreach (var items in Model)
+                {
+                    <li class="Stage"><a class="LeadStages" id="@items.ID">@items.Name</a></li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+

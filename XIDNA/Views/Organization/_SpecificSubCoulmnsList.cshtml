@@ -1,0 +1,57 @@
+﻿@model string
+<script>
+        $(document).ready(function () {
+            var popups = new Array();
+            var table = $('#SubColTb1').dataTable({
+                "paging": true,
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Url.Action("SpecificSubCoulmnsList", "Organization", new { SubID = @Model })",
+                "aaSorting": [[1, 'desc']],
+                "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+                "autoWidth": false,
+                "aoColumns": [
+                {},
+                                 {
+                                     "sName": "ID",
+                                     "visible": false
+                                 },
+                                {
+                                    "sName": "Subscription"
+                                },
+                                {
+                                    "sName": "Organization",
+                                    "visible": false
+                                },
+                                {
+                                    "sName": "FieldName"
+                                },
+                                {
+                                    "sName": "FieldValue"
+                                },
+                                
+
+                ],
+            });
+            $('#SubColTb1').css({ 'width': '100%' });
+        });
+</script>
+<div id="SubscriptionGrid">
+    <div id="box-body">
+        <div class="table-clean">
+            <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="SubColTb1">
+                <thead>
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th>ID</th>
+                        <th>Subscription</th>
+                        <th>Organization</th>
+                        <th>Field Name</th>
+                        <th>Field Value</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>

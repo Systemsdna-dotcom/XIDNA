@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="https://ipfconnect.bnpparibas-pf.co.uk" elementFormDefault="qualified" targetNamespace="https://ipfconnect.bnpparibas-pf.co.uk" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="https://puat-ipf-connect.bnpparibas-pf.co.uk/IntegratedGatewayHost.svc?xsd=xsd1" namespace="urn:https://ipfconnect.bnpparibas-pf.co.uk" />
+  <xs:element name="LiveRateQuote">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="request" type="q1:LiveRateQuoteRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="LiveRateQuoteResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q2="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="LiveRateQuoteResult" type="q2:LiveRateQuoteResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="NewBusiness">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q3="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="request" type="q3:NewBusinessRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="NewBusinessResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q4="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="NewBusinessResult" type="q4:NewBusinessResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="MidTermAdjustment">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q5="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="request" type="q5:MidTermAdjustmentRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="MidTermAdjustmentResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q6="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="MidTermAdjustmentResult" type="q6:MidTermAdjustmentResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Cancellation">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q7="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="request" type="q7:CancellationRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CancellationResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q8="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="CancellationResult" type="q8:CancellationResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="PolicyStatus">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q9="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="request" type="q9:PolicyStatusRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="PolicyStatusResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q10="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="PolicyStatusResult" type="q10:PolicyStatusResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ServiceStatus">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q11="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="request" type="q11:ServiceStatusRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ServiceStatusResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q12="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="ServiceStatusResult" type="q12:ServiceStatusResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="EditCustomerAddress">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q13="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="request" type="q13:EditCustomerAddressRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="EditCustomerAddressResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q14="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="EditCustomerAddressResult" type="q14:EditCustomerAddressResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="EditCustomerBank">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q15="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="request" type="q15:EditCustomerBankRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="EditCustomerBankResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q16="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="EditCustomerBankResult" type="q16:EditCustomerBankResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="EditCustomerEmail">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q17="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="request" type="q17:EditCustomerEmailRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="EditCustomerEmailResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q18="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="EditCustomerEmailResult" type="q18:EditCustomerEmailResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="EditCustomerPaymentDay">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q19="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="request" type="q19:EditCustomerPaymentDayRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="EditCustomerPaymentDayResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q20="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="EditCustomerPaymentDayResult" type="q20:EditCustomerPaymentDayResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="EditCustomerPhone">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q21="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="request" type="q21:EditCustomerPhoneRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="EditCustomerPhoneResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q22="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="EditCustomerPhoneResult" type="q22:EditCustomerPhoneResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="PartnerQuote">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q23="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="request" type="q23:PartnerQuoteRequest" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="PartnerQuoteResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q24="urn:https://ipfconnect.bnpparibas-pf.co.uk" minOccurs="0" maxOccurs="1" name="PartnerQuoteResult" type="q24:PartnerQuoteResponse" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

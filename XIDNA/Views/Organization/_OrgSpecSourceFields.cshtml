@@ -1,0 +1,114 @@
+﻿@model string
+<script>
+
+        $(document).ready(function () {
+            var popups = new Array();
+            var table = $('#OrgSorSpecFields').dataTable({
+                //"bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Url.Action("GetOrgSpecSourceFields", "Organization", new { SubID = @Model })",
+                "aaSorting": [[1, 'desc']],
+                "aoColumns": [
+                {},
+                                 {
+                                     "sName": "ID",
+                                     "visible": false
+                                 },
+                                 {
+                                     "sName": "SubsctipitonID"
+                                 },
+                                {
+                                    "sName": "FieldName"
+                                },
+                                {}
+                ],
+                //"columnDefs": [
+                //  {
+                //      "targets": [4],
+                //      "createdCell": function (td, cellData, rowData, row, col) {
+                //          if (cellData == 10)
+                //              $(td).replaceWith('<td>Active</td>')
+                //          else
+                //              $(td).replaceWith('<td>Inactive</td>')
+                //      }
+                //  }
+                //],
+                "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+
+                    $('td:eq(3)', nRow).html('<a class="DeleteBtn" id="'+aData[1]+'" data-ajax-update="#QueryPreview"  data-ajax-method="POST" data-ajax="true">Delete</a>');
+                    return nRow;
+                }
+            });
+            $('#OrgSorSpecFields').css({'width':'100%'});
+            $('#OrgSorSpecFields').on('click', 'a.DeleteBtn', function () {
+                var id = $(this).attr('id');
+                var rowindex = $(this);
+                $(".DeleteSorField").html('Do You Want To Delete This Field?');
+                $(".DeleteSorField").dialog({
+                    title: "Organization Source Fields",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "Yes",
+                           click: function () {
+                               //$(rowindex).closest('tr').remove();
+                               $.ajax({
+                                   type: 'POST',
+                                   url: '@Url.Action("DeleteSourceField","Organization")',
+                                   data: { ID: id },
+                                   cache: false,
+                                   dataType: 'json',
+                                   success: function (data) {
+                                       $('.DeleteSorField').dialog('close');
+                                       $.ajax({
+                                           url: '@Url.Action("OrganizationSourceSpecFields", "Organization")',
+                                           type: 'GET',
+                                           contentType: "application/json; charset=utf-8",
+                                           datatype: "html",
+                                           data: { SubID: '@Model' },
+                                           cache: false,
+                                           success: function (data) {
+                                               $('#OrgSorFieldGrid').empty();
+                                               $('#OrgSorFieldGrid').append(data);
+                                           },
+                                           error: function (data) { }
+                                       });
+                                   }
+                               });
+                           }
+                       },
+                    {
+                        text: "No",
+                        click: function () {
+                            $(".DeleteSorField").dialog("close");
+                        }
+                    }
+                    ]
+                });
+            })
+        });
+</script>
+<div class="dialog-box DeleteSorField" title="Confirm Message" style="background-color:white;"></div>
+
+<div id="OrgSorFieldGrid">
+    <div class="box-body">
+        <div class="tab_scroll main-table">
+            <div class="dataTables_wrapper no-footer table-responsive">
+                <table class="table table-bordered table-striped dataTable" id="OrgSorSpecFields">
+                    <thead>
+                        <tr role="row">
+                            <th>S.No</th>
+                            <th>ID</th>
+                            <th>Subscription ID</th>
+                            <th>Field Name</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody></tbody>
+
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,235 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{60488C5A-E677-441F-BA55-D952A6DCB410}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>XIDNA.Models</RootNamespace>
+    <AssemblyName>XIDNA.Models</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AddFields\AddFields.cs" />
+    <Compile Include="AddFields\LeadColumnDetails.cs" />
+    <Compile Include="AddFields\LeadColumns.cs" />
+    <Compile Include="AllBOsforSignalR.cs" />
+    <Compile Include="BCOneCommand.cs" />
+    <Compile Include="BO\BObjectFields.cs" />
+    <Compile Include="BO\BObjects.cs" />
+    <Compile Include="BO\BOClassAttributes.cs" />
+    <Compile Include="BO\BODefinition.cs" />
+    <Compile Include="BO\BOFields.cs" />
+    <Compile Include="BO\BOGroupFields.cs" />
+    <Compile Include="BO\BOOptionLists.cs" />
+    <Compile Include="BO\BOProperty.cs" />
+    <Compile Include="BO\BOs.cs" />
+    <Compile Include="BO\BOScripts.cs" />
+    <Compile Include="BO\cBOUIDetails.cs" />
+    <Compile Include="BO\cXIStructure.cs" />
+    <Compile Include="BO\GenericBO.cs" />
+    <Compile Include="BO\XIBoDefaultDashboard.cs" />
+    <Compile Include="BO\XIDataSources.cs" />
+    <Compile Include="BO\XIHelpItem.cs" />
+    <Compile Include="CommonProperties\DTResponse.cs" />
+    <Compile Include="CommonProperties\ErrorLogs.cs" />
+    <Compile Include="CommonProperties\jQueryDataTableParamModel.cs" />
+    <Compile Include="ContentEmail\ContentEditors.cs" />
+    <Compile Include="DataBase\cXIEnvironmentType.cs" />
+    <Compile Include="File\XIDocs.cs" />
+    <Compile Include="File\XIDocTypes.cs" />
+    <Compile Include="File\XIFileTypes.cs" />
+    <Compile Include="GoogleReviews\GoogleReviewData.cs" />
+    <Compile Include="Home\RightMenuTrees.cs" />
+    <Compile Include="Home\UserConfigurations.cs" />
+    <Compile Include="Home\XIMenuMappings.cs" />
+    <Compile Include="Home\XIRoleMenus.cs" />
+    <Compile Include="Inbox\XIInbox.cs" />
+    <Compile Include="InsuranceWallet\ClientDocuments.cs" />
+    <Compile Include="InsuranceWallet\InboxMails.cs" />
+    <Compile Include="Leads\Datas.cs" />
+    <Compile Include="Leads\EmailDetails.cs" />
+    <Compile Include="Leads\HTMLColorCodings.cs" />
+    <Compile Include="Leads\ImportHistories.cs" />
+    <Compile Include="Leads\ImportingErrorDetails.cs" />
+    <Compile Include="Leads\ImportRules.cs" />
+    <Compile Include="Leads\LeadActionMenus.cs" />
+    <Compile Include="Leads\LeadActions.cs" />
+    <Compile Include="Leads\LeadClients.cs" />
+    <Compile Include="Leads\LeadConfigurations.cs" />
+    <Compile Include="Leads\LeadHistories.cs" />
+    <Compile Include="Leads\LeadInbounds.cs" />
+    <Compile Include="Leads\LeadMappings.cs" />
+    <Compile Include="Leads\LeadQuotes.cs" />
+    <Compile Include="Leads\Leads.cs" />
+    <Compile Include="Leads\LeadStatus.cs" />
+    <Compile Include="Leads\LeadTransitions.cs" />
+    <Compile Include="Leads\MappedFields.cs" />
+    <Compile Include="Leads\MasterTemplates.cs" />
+    <Compile Include="Leads\NewLeads.cs" />
+    <Compile Include="Leads\Outbounds.cs" />
+    <Compile Include="Leads\Reminders.cs" />
+    <Compile Include="Mail\AppNotifications.cs" />
+    <Compile Include="Mail\MailData.cs" />
+    <Compile Include="Mail\MailExtractStrings.cs" />
+    <Compile Include="Master\DeviceKeys.cs" />
+    <Compile Include="Master\Master.cs" />
+    <Compile Include="Master\Types.cs" />
+    <Compile Include="ModelDbContext.cs" />
+    <Compile Include="Organization\Organization.cs" />
+    <Compile Include="Organization\OrganizationClasses.cs" />
+    <Compile Include="Organization\OrganizationContacts.cs" />
+    <Compile Include="Organization\OrganizationDocuments.cs" />
+    <Compile Include="Organization\OrganizationImages.cs" />
+    <Compile Include="Organization\OrganizationLocations.cs" />
+    <Compile Include="Organization\OrganizationReports.cs" />
+    <Compile Include="Organization\OrganizationSetup.cs" />
+    <Compile Include="Organization\OrganizationSourceFields.cs" />
+    <Compile Include="Organization\OrganizationSources.cs" />
+    <Compile Include="Organization\OrganizationSubscriptions.cs" />
+    <Compile Include="Organization\OrganizationTeams.cs" />
+    <Compile Include="Organization\SubscriptionColumns.cs" />
+    <Compile Include="Payment\PaymentGateWay.cs" />
+    <Compile Include="PolicyLookUp\PostCodeLookUp.cs" />
+    <Compile Include="Popup\Calls.cs" />
+    <Compile Include="Popup\Dialogs.cs" />
+    <Compile Include="Popup\Popup.cs" />
+    <Compile Include="Popup\PopupLayoutMappings.cs" />
+    <Compile Include="Popup\PopupLayouts.cs" />
+    <Compile Include="Popup\Sections.cs" />
+    <Compile Include="Popup\Stages.cs" />
+    <Compile Include="Popup\StagesFlows.cs" />
+    <Compile Include="Popup\Tab1Clicks.cs" />
+    <Compile Include="Popup\Tabs.cs" />
+    <Compile Include="Popup\UserDialogs.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CommonProperties\CommonProperties.cs" />
+    <Compile Include="QueryGeneration\Reports.cs" />
+    <Compile Include="QueryGeneration\Schedulers.cs" />
+    <Compile Include="QueryGeneration\SchedulersLogs.cs" />
+    <Compile Include="QueryGeneration\StructuredOneClicks.cs" />
+    <Compile Include="QueryGeneration\Targets.cs" />
+    <Compile Include="QueryGeneration\XI1ClickLinks.cs" />
+    <Compile Include="QueryGeneration\XI1ClickNVs.cs" />
+    <Compile Include="QueryGeneration\XI1ClickParameterNDVs.cs" />
+    <Compile Include="QueryGeneration\XI1ClickPermissions.cs" />
+    <Compile Include="QusetionSet\cAggregations.cs" />
+    <Compile Include="QusetionSet\cDBQSInstances.cs" />
+    <Compile Include="QusetionSet\cQSInstance.cs" />
+    <Compile Include="QusetionSet\cXIFieldOptionList.cs" />
+    <Compile Include="QusetionSet\cXIFieldDefinition.cs" />
+    <Compile Include="ServerDetails\IOServerDetails.cs" />
+    <Compile Include="UserConfig\cSignalRQuerySettings.cs" />
+    <Compile Include="UserConfig\cSignalRUserconfigsettings.cs" />
+    <Compile Include="Users\cUserCookies.cs" />
+    <Compile Include="XiComponents\cImageComponent.cs" />
+    <Compile Include="XiComponents\cTreeView.cs" />
+    <Compile Include="XiComponents\cXIComponentParams.cs" />
+    <Compile Include="XiComponents\cXIComponentTriggers.cs" />
+    <Compile Include="XiComponents\XIComponents.cs" />
+    <Compile Include="XiComponents\XIComponentsNVs.cs" />
+    <Compile Include="Users\Clients.cs" />
+    <Compile Include="Users\UserReports.cs" />
+    <Compile Include="Users\Users.cs" />
+    <Compile Include="Wallet\WalletDocuments.cs" />
+    <Compile Include="Wallet\WalletMessages.cs" />
+    <Compile Include="Wallet\WalletOrders.cs" />
+    <Compile Include="Wallet\WalletPolicies.cs" />
+    <Compile Include="Wallet\WalletProducts.cs" />
+    <Compile Include="Wallet\WalletQuotes.cs" />
+    <Compile Include="Wallet\WalletRequests.cs" />
+    <Compile Include="XICore\cXIApplications.cs" />
+    <Compile Include="XICore\cXIAppRoles.cs" />
+    <Compile Include="XICore\cXIAppUsers.cs" />
+    <Compile Include="XICore\cXIUrlMappings.cs" />
+    <Compile Include="XICore\XIResults.cs" />
+    <Compile Include="XICore\XISource.cs" />
+    <Compile Include="XiLink\cBODisplay.cs" />
+    <Compile Include="XiLink\cBOInstanceOld.cs" />
+    <Compile Include="XiLink\CInstance.cs" />
+    <Compile Include="XiLink\XiLinkLists.cs" />
+    <Compile Include="XiLink\XiLinkNVs.cs" />
+    <Compile Include="XiLink\XiLinks.cs" />
+    <Compile Include="XiLink\XiParameterLists.cs" />
+    <Compile Include="XiLink\XiParameterNVs.cs" />
+    <Compile Include="XiLink\XiParameters.cs" />
+    <Compile Include="XiLink\XiVisualisationLists.cs" />
+    <Compile Include="XiLink\XiVisualisationNVs.cs" />
+    <Compile Include="XiLink\XiVisualisations.cs" />
+    <Compile Include="XISemantics\cXIDataTypes.cs" />
+    <Compile Include="XISemantics\XIQSLink.cs" />
+    <Compile Include="XISemantics\XIQSLinkDefinition.cs" />
+    <Compile Include="XISemantics\XIQSScripts.cs" />
+    <Compile Include="XISemantics\XIQSStages.cs" />
+    <Compile Include="XISemantics\XISemantics.cs" />
+    <Compile Include="XISemantics\XISemanticsNavigations.cs" />
+    <Compile Include="XISemantics\XISemanticsSteps.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XIDNA.ViewModels\XIDNA.ViewModels.csproj">
+      <Project>{099e075a-0736-468d-aa77-74462d803162}</Project>
+      <Name>XIDNA.ViewModels</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

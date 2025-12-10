@@ -1,0 +1,553 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIDLayout oLay = new XIDLayout();
+    if (Model.oContent.ContainsKey(XIConstant.LayoutComponent))
+    {
+        oLay = (XIDLayout)Model.oContent[XIConstant.LayoutComponent];
+        if (oLay == null)
+        {
+            oLay = new XIDLayout();
+        }
+    }
+}
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+
+    .XILayoutPreview div {
+        /**/ height: 70px;
+        border: 1px solid #b5b5b5;
+        text-align: center;
+    }
+
+    .XILayoutPreview {
+        padding: 15px !important;
+    }
+</style>
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="innerborder">
+                        <div id="PopupForm">
+                            @using (Ajax.BeginForm("Save_Layout", "Popup", FormMethod.Post, new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnBegin = "OnBegin", OnSuccess = "OnComplete" }, new { @id = "PopupLayoutForm", @class = "form-horizontal" }))
+                            {
+                                @Html.ValidationSummary(true);
+                                <input type="hidden" id="ID" name="ID" value="@oLay.ID" />
+                                <div id="clear-text">
+                                    @if (oLay.ID > 0)
+                                    {
+                                        <div class="form-group">
+                                            <div class="col-md-2">
+                                                <label for="inputEmail" class="gn">Layout ID :<span class="danger"></span></label>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">@oLay.ID<span class="danger"></span></label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-2">
+                                                <input type="button" class="MapPopup btn btn-theme btn2 btn-xs" id="MapPopup" value="Map" />
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (oLay.FKiApplicationID == 0)
+                                    {
+                                        <div class="form-group">
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn">Application<span class="danger"></span></label>
+                                                @Html.DropDownList("FKiApplicationID", new SelectList(oLay.ddlApplications, "Value", "text"), new { @class = "form-control" })
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <input type="hidden" id="FKiApplicationID" name="FKiApplicationID" value="@oLay.FKiApplicationID" />
+                                    }
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn"> Name<span class="danger">*</span></label>
+                                            @Html.TextBox("LayoutName", oLay.LayoutName, new { @placeholder = "Layout name", @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessage("LayoutName", "", new { @class = "red" })
+                                        </div>
+                                    </div>
+                                    @if (ViewBag.OrgID > 0)
+                                    {
+                                        <div class="form-group">
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn">Level<span class="danger">*</span></label>
+                                                @Html.DropDownList("LayoutLevel", new SelectList(new List<Object>{
+                                               new { key= "OrganisationLevel" , value = "Organisation Level" },
+                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-4 taberrormsg">
+                                                @Html.ValidationMessage("LayoutLevel", null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="form-group">
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn">Level<span class="danger">*</span></label>
+                                                @Html.DropDownList("LayoutLevel", new SelectList(new List<Object>{
+                                       new { key= "ApplicationLevel" , value = "Application Level" },
+                                               new { key= "OrganisationLevel" , value = "Organisation Level" },
+                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-4 taberrormsg">
+                                                @Html.ValidationMessage("LayoutLevel", null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="form-group" id="OrgLevelDiv">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Authentication<span class="danger">*</span></label>
+                                            @Html.DropDownList("Authentication", new SelectList(new List<Object>{
+                                       new { key= "Authenticated" , value = "Authenticated" },
+                                               new { key= "NonAuthenticated" , value = "Non Authenticated" },
+                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Type<span class="danger">*</span></label>
+                                            @Html.DropDownList("LayoutType", new SelectList(new List<Object>{
+                                       new { key= "Inline" , value = "Inline" },
+                                               new { key= "Popup" , value = "Popup" },
+                       new { key= "Dialog" , value = "Dialog" },
+                       new { key= "Template" , value = "Template" }
+                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessage("LayoutType", null, new { @class = "red" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">XI Parameter<span class="danger"></span></label>
+                                            <select class="form-control" id="XiParameterDDL" name="XiParameterID">
+                                                @*<option value="0">--Select--</option>*@
+                                                @foreach (var items in oLay.ddlXiParameters)
+                                                {
+                                                    var NewXiParameterID = oLay.XiParameterID;
+                                                    if (NewXiParameterID == items.Value)
+                                                    {
+                                                        <option value="@items.Value" selected>@items.text</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@items.Value">@items.text</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <br />
+                                        <div class="col-md-4">
+                                            <input type="button" class="btn btn-theme btn-xs" value="Refresh" onclick="XiParameterManager('XiParameterLayout','Refresh')" />
+                                            <input type="button" class="btn btn-theme btn-xs" value="Add" onclick="XiParameterManager('XiParameterLayout','Add')" />
+                                            <input type="button" class="btn btn-theme btn-xs" value="Edit" onclick="XiParameterManager('XiParameterLayout','Edit')" />
+                                            <input type="button" class="btn btn-theme btn-xs" value="View" onclick="XiParameterManager('XiParameterLayout','View')" />
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Theme<span class="danger"></span></label>
+                                            @Html.DropDownList("iThemeID", new SelectList(oLay.ddlXIThemes, "Value", "text", oLay.iThemeID), new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn"> Code<span class="danger">*</span></label>
+                                            @Html.TextArea("LayoutCode", oLay.LayoutCode, new { @placeholder = "Layout code", @class = "form-control", @rows = 10, @cols = 50, @id = "LayoutCode" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessage("LayoutCode", null, new { @class = "red" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-4">
+                                            <input type="button" value="Show Preview" id="XILayoutPrvBtn" class="btn btn-xs btn-theme m-s-10" />
+                                            <input type="button" value="Help" id="Helpbutton" class="btn btn-xs btn-theme m-s-10" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">SiloAccess<span class="danger"></span></label>
+                                            @Html.ListBox("arrSiloAccess", new SelectList(new List<Object>{
+                                               new { key="SiloClient" , value = "SiloClient" },
+                                               new { key= "SiloAdmin" , value = "SiloAdmin" }
+                                               }, "key", "Value", oLay.arrSiloAccess), new { @class = "form-control", style = "height: 140px; width: 250px; padding-left: 5px; padding-top: 8px; margin: 2px;" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Use Parent GUID</label>
+                                            @Html.CheckBox("bUseParentGUID", oLay.bUseParentGUID, new { @id = "bIsUserParentGUID" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">IsTaskBar</label>
+                                            @Html.CheckBox("bIsTaskBar", oLay.bIsTaskBar, new { @id = "bIsTaskBar" })
+                                        </div>
+                                    </div>
+
+                                    @if (oLay.bIsTaskBar == true)
+                                    {
+                                        <div id="chkTaskBarPosition">
+                                            <div class="form-group">
+                                                <div class="col-md-8">
+                                                    <label for="inputEmail" class="gn">TaskBarPosition<span class="danger">*</span></label>
+                                                    @Html.DropDownList("sTaskBarPosition", new SelectList(new List<Object>{
+                                               new { key= "" , value = "--Select--" },
+                                               new { key= "Top" , value = "Top" },
+                                               new { key= "Down" , value = "Down" },
+                                               new { key= "Left" , value = "Left" },
+                                               new { key= "Right" , value = "Right" }
+                                               }, "key", "Value", oLay.sTaskBarPosition), new { @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-4 taberrormsg">
+                                                    @Html.ValidationMessage("sTaskBarPosition", null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div id="chkTaskBarPosition" style="display:none">
+                                            <div class="form-group">
+                                                <div class="col-md-8">
+                                                    <label for="inputEmail" class="gn">TaskBarPosition<span class="danger">*</span></label>
+                                                    @Html.DropDownList("sTaskBarPosition", new SelectList(new List<Object>{
+                                               new { key= "" , value = "--Select--" },
+                                               new { key= "TOP" , value = "Top" },
+                                               new { key= "DOWN" , value = "Down" },
+                                               new { key= "LEFT" , value = "Left" },
+                                               new { key= "RIGHT" , value = "Right" }
+                                               }, "key", "Value", oLay.sTaskBarPosition), new { @class = "form-control TaskBarPositioncls" })
+                                                </div>
+                                                <div class="col-sm-4 taberrormsg">
+                                                    @Html.ValidationMessage("sTaskBarPosition", null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                            @Html.DropDownList("StatusTypeID", new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value", oLay.StatusTypeID), new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-10">
+                                        <input type="submit" class="btn btn-theme" value="Save" />
+                                        @if (oLay.ID == 0)
+                                        {
+                                            <button type="button" class="btn btn-theme reverse ResetPopup">Reset</button>
+                                        }
+                                        <button type="button" class="btn btn-theme decline CancelPopup">Cancel</button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div id="PreviewDiv" class="col-md-6">
+                            <div id="" class="XILayoutPreview col-md-12"></div>
+                            <div id="XIHelpPreview" class="col-md-12"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="SavePopupDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    $(document).ready(function () {
+        $('#bIsTaskBar').change(function(){
+            if($('#bIsTaskBar').is(':checked')==true){
+                $('#chkTaskBarPosition').show();
+                $('#sTaskBarPosition').val('@oLay.sTaskBarPosition');
+            }
+            else
+            {
+                $('#chkTaskBarPosition').hide();
+                sTaskBarPosition.selectedIndex=0;
+            }
+        })
+
+        if(@oLay.ID > 0)
+        {
+            if ('@oLay.bIsTaskBar' == "True") {
+                $('#BarPositionDiv').show();
+            }
+        }
+        if (parseInt('@oLay.StatusTypeID') > 0) {
+            $('#StatusTypeID').val('@oLay.StatusTypeID');
+        }
+        if ('@oLay.LayoutLevel'!=null) {
+            $('#LayoutLevel').val('@oLay.LayoutLevel');
+        }
+        if ('@oLay.LayoutType'!=null ||'@oLay.LayoutType'!="") {
+            $('#LayoutType').val('@oLay.LayoutType');
+        }
+
+        if ('@oLay.Authentication'!=null) {
+            $('#Authentication').val('@oLay.Authentication');
+        }
+        if(@oLay.ID > 0)
+        {
+            if($('#LayoutLevel').val() == "OrganisationLevel")
+            {
+                $('#OrgLevelDiv').show();
+            }
+            else
+            {
+                $('#OrgLevelDiv').hide();
+            }
+        }
+        else
+        {
+            $('#OrgLevelDiv').hide();
+        }
+        $('#LayoutLevel').change(function () {
+            if ($(this).val() == "OrganisationLevel") {
+                $('#OrgLevelDiv').show();
+            }
+            else {
+                $('#OrgLevelDiv').hide();
+            }
+        });
+        $('#XILayoutPrvBtn').click(function () {
+            var Code = $('#LayoutCode').val();
+            if (Code.length > 0) {
+                $('.XILayoutPreview').html(Code);
+                $('.XILayoutPreview td').css({ "width": "70px", "height": "70px", "border": "1px solid #fff", "text-align": "center" });
+                $(".XILayoutPreview td").each(function (i, obj) {
+                    $(this).html("Placeholder" + (i + 1));
+                });
+                $(".XILayoutPreview").dialog({
+                    width:800,
+                    height:500,
+                    title: "Layout Preview",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "Close",
+                           "class":'btn btn-theme',
+                           click: function () {
+                               debugger
+                               $(".XILayoutPreview").dialog("close");
+                           }
+                       }
+                    ]
+                });
+            }
+        });
+
+        $('#Helpbutton').click(function () {
+            var url = '@Url.Action("HelpLayoutCode", "Popup")';
+            $('#XIHelpPreview').load(url);
+        });
+    });
+    $("#SaveLayout").on('click', function () {
+        var oModel = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model, Newtonsoft.Json.Formatting.Indented));
+        var formid = $(this).closest('form').attr('id');
+        var Data = JSON.parse(JSON.stringify(jQuery('#' + formid).serializeArray()))
+        var Popup = [];
+        var i;
+        for (i = 0, j = Data.length; i < j; i++) {
+            Popup.push({ Label: Data[i].name, Value: Data[i].value });
+        }
+        for (var k = 0; k < Popup.length ; k++) {
+            var AttrName = Popup[k].Label;
+            var sValue = Popup[k].Value;
+            oModel[AttrName] = sValue;
+            //var AttrI = oModel[Popup[k].Label];
+            //AttrI.sValue = Popup[k].Value;
+            //oModel[Popup[k].Label] = AttrI;
+        }
+        var pvalue = {
+            oXIDLayout: oModel,
+        }
+        $.ajax({
+            url: '@Url.Action("IDESavePopupLayout", "Popup")',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            cache: false,
+            data: JSON.stringify(pvalue),
+            success: function (data) {
+                if(data.toLowerCase()=="xisuccess")
+                {
+                    $("#SavePopupDlg").html(' The Layout details are updated!! ');
+                    $("#SavePopupDlg").dialog({
+                        title: "Success Message",
+                        modal: true,
+                        buttons: [
+                           {
+                               text: "Ok",
+                               "class":'btn btn-theme',
+                               click: function () {
+                                   $("#SavePopupDlg").dialog("close");
+                               }
+                           }
+                        ]
+                    });
+                }
+                else
+                {
+                    $("#SavePopupDlg").html(' Something went wrong, Please check!! ');
+                    $("#SavePopupDlg").dialog({
+                        title: "Error Message",
+                        modal: true,
+                        buttons: [
+                           {
+                               text: "Ok",
+                               "class":'btn btn-theme',
+                               click: function () {
+                                   $("#SavePopupDlg").dialog("close");
+                               }
+                           }
+                        ]
+                    });
+                }
+            }
+        });
+    });
+    function OnBegin() {
+        var LayoutCode = $("#LayoutCode").val();
+        var regexclass = new RegExp(/class=["'](.*?)["'](.*?)/gi);
+        var Classmatches = LayoutCode.match(regexclass);
+        var classes = new Array();
+        for (j = 0; j < Classmatches.length; j++) {
+            LayoutCode = LayoutCode.replace(Classmatches[j], " ");
+            LayoutCode = LayoutCode.replace("  ", "").replace("  ", "").replace("  ", "").replace("  ", "");
+        }
+        var regex = new RegExp(/<div[^>]*id=["'](.*?)["']>(.*?)<\/div>/gi);
+        var matches = LayoutCode.match(regex);
+        var results = new Array();
+        for (i = 0; i < matches.length; i++) {
+            id = matches[i].replace("<div id=", "").replace("</div>", "").replace(">", "").replace(/['"]+/g, '').replace("  ", "").replace("  ", "").replace("  ", "").replace("  ", "").replace("<div id=", "");
+            results.push(id);
+        }
+        var specialChars = "<>!@@#$%^&*()_+[]{}?:;|'\"\\,./~`-=";
+        var checkForSpecialChar = function (string) {
+            for (i = 0; i < specialChars.length; i++) {
+                if (string.indexOf(specialChars[i]) > -1) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        for (var j = 0; j < results.length; j++) {
+            if (checkForSpecialChar(results[j])) {
+                $("#SavePopupDlg").html(' There is a Special Character in Layout Code! ');
+                $("#SavePopupDlg").dialog({
+                    title: "Warning Message",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "Ok",
+                           "class":'btn btn-theme',
+                           click: function () {
+                               $("#SavePopupDlg").dialog("close");
+                           }
+                       }
+                    ]
+                });
+                return false;
+            }
+        }
+
+        var EnteredTdIds = results;
+        var recipientsArray = EnteredTdIds.sort();
+
+        var EnteredTdIdsDuplicate = [];
+        for (var i = 0; i < recipientsArray.length - 1; i++) {
+            if (recipientsArray[i + 1] == recipientsArray[i]) {
+                EnteredTdIdsDuplicate.push(recipientsArray[i]);
+            }
+        }
+
+        if (EnteredTdIdsDuplicate.length > 0) {
+            $("#SavePopupDlg").html('id attribute should have unique value for div');
+            $("#SavePopupDlg").dialog({
+                title: "Layout",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Ok",
+                       "class":'btn btn-theme',
+                       click: function () {
+                           $("#SavePopupDlg").dialog("close");
+                       }
+                   }
+                ]
+            });
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    function OnComplete(e)
+    {
+        $('#SavePopupDlg').unblock();
+        CustomMessage(e.ResponseMessage, e.Status);
+        //opener.location.reload();
+    }
+
+    $('.CancelPopup').click(function () {
+        window.close();
+    });
+    $('.ResetPopup').click(function () {
+        $('#PopupLayoutForm')[0].reset();
+        $('#PopupLayoutForm .taberrormsg').find('span').html('');
+        $('#XIHelpPreview').html('');
+        $('.XILayoutPreview').html('');
+    });
+
+    $('.MapPopup').click(function () {
+        var editpopups = new Array();
+        var ID = $('#ID').val();
+        if (editpopups.length > 0) {
+            for (i = 0; i < editpopups.length; i++) {
+                editpopups[i].close();
+            }
+        }
+        var editpopup = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("AddEditPopupLayoutDetails", "Popup")',
+            data: { LayoutID: ID },
+            cache: false,
+            async: false,
+            dataType: 'html',
+            success: function (data) {
+                with (editpopup.document) {
+                    open();
+                    write(data);
+                    close();
+                }
+                editpopups.push(editpopup);
+                editpopup.moveTo(0, 0);
+            }
+        });
+    })
+</script>

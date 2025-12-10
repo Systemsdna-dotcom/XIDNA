@@ -1,0 +1,94 @@
+﻿@model XIDNA.Models.cBODisplay
+@{
+    Layout = null;
+    var oBOInstance = Model.BOInstance;
+    var oVisualisations = Model.Visualisations;
+    var BOName = @Model.BOInstance.Definition.Name.ToString();
+}
+
+            @foreach (var items in oBOInstance.NVPairs.Where(m => m.bDirty == true).ToList())
+            {
+                var FieldOrigin = oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).FirstOrDefault();
+                if (FieldOrigin.IsOptionList || FieldOrigin.FKiType > 0)
+                {
+                    <td>
+                        <select name="@items.sName" class="form-control" id="DDL-@items.sName" data-attrname="@items.sName">
+                            @if (FieldOrigin.IsOptionList == true || FieldOrigin.FKiType > 0)
+                            {
+                                foreach (var opt in FieldOrigin.FieldDDL)
+                                {
+                                    if (!string.IsNullOrEmpty(FieldOrigin.DefaultValue))
+                                    {
+                                        if (opt.Expression == FieldOrigin.DefaultValue || Convert.ToInt32(items.sValue) == opt.ID)
+                                        {
+                                            <option value="@opt.ID" selected>@opt.Expression</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@opt.ID">@opt.Expression</option>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (Convert.ToInt32(items.sValue) == opt.ID)
+                                        {
+                                            <option value = "@opt.ID" selected > @opt.Expression </option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@opt.ID">@opt.Expression</option>
+                                        }
+                                    }
+                                }
+                            }
+                        </select>
+                    </td>
+                }
+
+                else if (oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.FKiFileTypeID).FirstOrDefault() > 0 && oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.FKiType).FirstOrDefault() == 0)
+                {
+                    <td>
+                        <input type="file" class="UploadImage" name="UploadImage" id="UploadImage-@items.sName" data-attrname="@items.sName" data-bofieldid="@oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.ID).FirstOrDefault()" multiple />
+                        <input class="IconDisplay" type="hidden" name="@items.sName" id="ImageID-@items.sName" value="0" />
+                        <div class=form-group id="dvPreview-@items.sName">
+
+                        </div>
+                    </td>
+                }
+
+                else if (oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.TypeID == 150).FirstOrDefault())
+                {
+                    <td>
+                        @Html.TextBoxFor(m => items.sValue, new { @Name = items.sName, @class = "form-control textb", @style = "padding:1px 5px;", @id = "Txtbx-DATETIME" })
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        <input type="text" name="@items.sName" class="form-control textb" style = "padding:1px 5px;" value="@items.sValue"/>
+                        @*@Html.TextBoxFor(m => items.sValue, new { @Name = items.sName, @class = "form-control textbox", @style = "padding:1px 5px;" })*@
+                    </td>
+                }
+
+            }
+            <td>
+                <button type="button" class="CreateBtn btn btn-theme">Save</button>
+                <button type="button" class="ResetBtn btn btn-theme">Delete</button>
+            </td>
+
+<script src="~/Scripts/ajaxfileupload.js"></script>
+<script>
+    $(document).ready(function () {
+        BOInstance =@Html.Raw(Json.Encode(Model.BOInstance));
+        $('#Txtbx-DATETIME').datepicker({
+            changeMonth: true,
+            changeYear: true,
+            inline: true,
+            yearRange: '1990:2030'
+        });
+    });
+
+
+
+</script>
+ 

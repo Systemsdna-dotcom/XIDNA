@@ -1,0 +1,172 @@
+﻿@model IEnumerable<XIDNA.Models.cTreeView>
+
+<script>
+    $(document).ready(function () {
+        var jsondata = [];
+        var Nodes = @Html.Raw(Json.Encode(Model));
+        if(Nodes && Nodes!=null){
+            var j=0;
+            for (var i = 0; i < Nodes.length; i++) {
+                item = {}
+                item["id"] = Nodes[i].sID
+                if(Nodes[i].sParentID == null){
+                    item["parent"] ="#";
+                }
+                else{
+                    item["parent"] =Nodes[i].sParentID;
+                }
+
+                item["text"] = Nodes[i].sText;
+                jsondata.push(item);
+
+
+                //if(Component[i].sName.toLowerCase().indexOf("BOLevel".toLowerCase()) !== -1 && Component[i].sValue ){
+                //    var ID = j;
+                //    var Parent = "#";
+                //    if(j>0){
+                //        Parent = j-1;
+                //    }
+                //    //Add main node "Add Menu" details statically.
+
+                //    var FKID = fncgetforeignkeyfornode(Component[i].sName, Component);
+                //    var NodeData = [];
+                //    extradata = {}
+                //    extradata["FKID"] = FKID;
+                //    if(FKID && FKID>0){
+                //        ;
+                //        //extradata["FKID"] = FKID;
+                //        //item["li_attr"] = JSON.stringify(extradata);
+                //    }
+                //    else{
+                //        item["id"] = 0;
+                //        //extradata["FKID"] = 0;
+                //        //item["li_attr"] = JSON.stringify(extradata);
+                //    }
+
+                //    j++;
+                //}
+            }
+            if(jsondata.length>0){
+                var jsonString = JSON.stringify(jsondata);
+                createJSTree(JSON.parse(jsonString));
+            }
+        }
+        $(document.body).off().on('click', 'a.jstree-anchor', function () {
+            GUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);            
+            var OnClickComponentID = 0;
+            var OutputArea = "";
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("TreeNodeClick", "XIComponents")',
+                data: {sGUID: GUID},
+                contentType: 'application/json;',
+                dataType: 'json',
+                traditional: true,
+                async:false,
+                success: function (data) {
+                    for(i=0;i<data.length;i++){
+                        if(data[i].sName=="OnClick"){
+                            OnClickComponentID = data[i].sValue;
+                        }
+                        else if(data[i].sName=="Node Click"){
+                            OutputArea = data[i].sValue;
+                        }
+                    }
+                }
+            });
+            var BOName = $(this).attr('id').split('_')[0];
+            var iInstanceID = $(this).attr('id').split('_')[1];
+            var Params = [];
+            var NVPair = {};
+            NVPair["sName"] = "BO";
+            NVPair["sValue"] = BOName;
+            NVPair["bDirty"] = false;
+            NVPair["sGroupValue"] = "1";
+            Params.push(NVPair);
+            var NVPair2 = {};
+            NVPair2["sName"] = "FC_InstanceID";
+            NVPair2["sValue"] = iInstanceID;
+            NVPair2["bDirty"] = false;
+            NVPair2["sGroupValue"] = "2";
+            Params.push(NVPair2);
+            //var NVPair3 = {};
+            //NVPair3["sName"] = "FC_GroupName";
+            //NVPair3["sValue"] = "Save Group";
+            //NVPair3["bDirty"] = false;
+            //NVPair3["sGroupValue"] = "3";
+            //Params.push(NVPair3);
+            var oParams = {oParams:Params, sGUID:GUID};
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SetXIParams", "XIComponents")',
+                data: JSON.stringify(oParams),
+                contentType: 'application/json;',
+                dataType: 'html',
+                traditional: true,
+                async:false,
+                success: function (data) {
+                    if(OnClickComponentID >0){
+                        $.ajax({
+                            type: 'GET',
+                            url: '@Url.Action("LoadComponentByID", "XIComponents")',
+                            data: {iXIComponentID:OnClickComponentID, sGUID: GUID},
+                            contentType: 'application/json;',
+                            dataType: 'html',
+                            traditional: true,
+                            success: function (data) {
+                                Type = "XILoad";
+                                $('#'+OutputArea+'-'+GUID).html(data);
+                                //$('#ComponentParamsDialog').html(data);
+                                //$("#ComponentParamsDialog").dialog({
+                                //    //modal: true,
+                                //    width: 600
+                                //});
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    });
+
+    //function fncgetforeignkeyfornode(NodeName, Component){
+    //    var LabelValue = NodeName.replace("BOLevel","");
+    //    for(i=0;i<Component.length;i++){
+    //        var FKLabel = Component[i].sName.replace("FKLevel","");
+    //        if(LabelValue==FKLabel){
+    //            return Component[i].sValue;
+    //        }
+    //    }
+    //}
+
+    function createJSTree(jsondata) {
+        $('#jstree').jstree({
+            "core": {
+                "themes": {
+                    "variant" : "large"
+                },
+                "check_callback": function (op, node, par, pos, more) {
+                    if ((op === "move_node") && (par.id === "#")) {
+                        return false;
+                    }
+                    return true;
+                },
+                'data': jsondata,
+
+            },
+            "plugins": ["themes", "html_data", "ui", "state"],
+        });
+    }
+
+</script>
+
+
+
+<div class="box-body col-md-2">
+    <div id="jstree">
+
+
+
+    </div>
+</div>

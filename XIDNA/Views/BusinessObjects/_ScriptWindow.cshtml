@@ -1,0 +1,103 @@
+﻿@model XIDNA.ViewModels.VMWherePopUP 
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        $('#SuccessMsg').hide();
+        $('#ErrorMsg').hide();
+        if ('@Model.ScriptExecutionType') {
+            $('#ExecuteType').val('@Model.ScriptExecutionType');
+        }
+        $('#ScriptSaveBtn').click(function () {
+            var ID = '@Model.FieldID';
+            var Scrpt = $('#ScriptArea').val();
+            var ExctType = $('#ExecuteType option:selected').val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SaveScript", "BusinessObjects")',
+                data: { ID: ID, Script: Scrpt, ExecuteType: ExctType },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    window.close();
+                }
+            });
+        });
+        $('#ValidateScrBtn').click(function () {
+            var Scrpt = $('#ScriptArea').val();
+            if (Scrpt.length > 0) {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("ValidateScript", "BusinessObjects")',
+                    data: { Script: Scrpt },
+                    cache: false,
+                    dataType: 'json',
+                    success: function (data) {
+
+                    }
+                });
+            }            
+        });
+    });
+</script>
+
+<section class="content-header hedr">
+    <h1> BO Attribute Script </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Business Objects</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    <div class="alert alert-success" id="SuccessMsg">
+                    </div>
+                    <div class="alert alert-danger" id="ErrorMsg">
+                    </div>
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <div class="col-md-6">
+                                <label for="inputEmail" class="gn">Script<span class="danger">*</span></label>
+                                <textarea class="form-control" rows="15" cols="150" id="ScriptArea">@Model.Script</textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6">
+                                <label for="inputEmail" class="gn">Script Execution Type<span class="danger"></span></label>
+                                <select class="form-control" id="ExecuteType">
+                                    <option value="JsPageLoad">javascript pageload</option>
+                                    <option value="JsAttribute">javascript attribute</option>
+                                    <option value="CSAttribute">C# attribute</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                @*<input type="button" class="btn btn-primary" id="ValidateScrBtn" value="Validate" />*@
+                                <input type="button" class="btn btn-theme" id="ScriptSaveBtn" value="Save" />
+                                <button type="button" class="btn btn-theme reverse" id="ResetBoBtn">Reset</button>
+                                <button type="button" class="btn btn-theme decline" id="CancelBO">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $(document).ready(function () {
+        $('#CancelBO').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#ScriptForm')[0].reset();
+        });
+    })
+</script>

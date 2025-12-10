@@ -1,0 +1,710 @@
+﻿@model XICore.XIIComponent
+@using XIDNA
+@using XISystem
+@using XICore
+@using xiEnumSystem
+@{
+    var sRes = "";
+    List<CNV> oNVs = new List<CNV>();
+        if (Model.oContent.ContainsKey(XIConstant.RulesComponent))
+        {
+        oNVs = (List<CNV>)Model.oContent[XIConstant.RulesComponent];
+            }
+            XIInfraCache oCache = new XIInfraCache();
+            string sGUID = ViewBag.sGUID;
+            var sSessionID = Context.Session.SessionID;
+            var RuleDetailID = oCache.Get_ParamVal(sSessionID, ViewBag.sGUID, null, "{XIP|RuleDetailsID}");
+}
+
+
+            <script src="@Url.Content(" ~ /Scripts/treeview/jstree.min.js")"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/js/select2.min.js"></script>
+
+            <link href="@Url.Content(" ~ /Content/jsTree/themes/default/style.min.css")" rel="stylesheet" />
+            @*<div class="treeList">
+                <ul class="trNodes">
+
+                    <li class="treenode folder-icon" data-foldername=""><a>AND</a></li>
+                    <li class="treenode folder-icon" data-foldername=""><a>OR</a></li>
+
+
+                </ul>
+            </div>*@
+
+            <div id="XIRuleTree_@sGUID" class="col-md-3">
+                <div id="TreeStrctr" class="scroll_vh_100 tree-guid">
+
+
+                    <div class="instancetree">
+
+                        <div class="treeList">
+                            <ul class="trNodes">
+
+                                @*
+                                <li class="parent treenode folder-icon" data-foldername=""><a>AND</a></li>
+                                <div class="subnodes" style="display:none">
+                                    <div class="content-header chead">
+                                        <a class="pull-right font-md" onclick="fncReturnToParent('','')" style="cursor: pointer;"><i class="fa ion-ios-arrow-back"></i> Back</a>
+                                        <h1 class="">AND</h1>
+                                    </div>
+
+                                </div>
+                                <li class="parent treenode folder-icon" data-foldername=""><a>OR</a></li>
+                                <div class="subnodes" style="display:none">
+                                    <div class="content-header chead">
+                                        <a class="pull-right font-md" onclick="fncReturnToParent('','')" style="cursor: pointer;"><i class="fa ion-ios-arrow-back"></i> Back</a>
+                                        <h1 class="">OR</h1>
+                                    </div>
+
+                                </div>*@
+
+                            </ul>
+                            <ul class="trNodes">
+                            </ul>
+                        </div>
+
+
+                    </div>
+
+                </div>
+            </div>
+            <div id="Rules_Content" class="col-md-9"></div>
+            <input type="text" id="sScript" />
+            <button type="button" class="btn btn-theme btn-xs" onclick=RulesTreeSave()>Generate</button>
+
+            <div id="MainDiv">
+                @*<div id="XIMenuStructure" class="col-md-4"></div>*@
+                <div id="AddDetails" class="col-md-6"></div>
+                <div id="Remove" class="col-md-12"></div>
+                <div id="dialogbox" class="col-md-12">
+                    <div id="dynamicFields"></div>
+                </div>
+            </div>
+            <script>
+                $(document).ready(function () {
+                    debugger;
+                    $('#XIRuleTree_@sGUID').hide();
+                    // $('#RuleContentCopy').hide();
+                    $('#Rules_Content').hide();
+
+                    $('#XIRuleTree_@sGUID').show();
+
+                    debugger
+                    var jsondata = [];
+                    var oList =  @Html.Raw(Json.Encode(oNVs));
+                    @*var oList =@oNVs.ToList();*@
+                    if (oList && oList != null && oList.length > 0) {
+                        var j = 0;
+                        var Parent = "";
+                        for (var i = 0; i < oList.length; i++) {
+                            var item = {}
+                            //if (i == 0) {
+                            if (oList[i].sType == "0") {
+                                item["parent"] = "#";
+                                Parent = oList[i].sValue;
+                            }
+                            else {
+                                item["parent"] = oList[i].sType;
+                            }
+                            //item["parent"] = "#";
+                            item["id"] = oList[i].sValue;
+                            item["text"] = oList[i].sName;
+                            item["fkimenuid"] = oList[i].sValue;
+
+                            var data = [];
+                            var attr = {};
+                            attr["rootname"] = oList[i].sName;
+                            data.push(attr);
+
+                            var attr = {};
+                            attr["menuid"] = oList[i].sValue;
+                            data.push(attr);
+
+                            var attr = {};
+                            item["data"] = data;
+
+                            jsondata.push(item);
+                        }
+                    }
+                    if (jsondata.length > 0) {
+                        var jsonString = JSON.stringify(jsondata);
+                        createRulesJSTree(JSON.parse(jsonString));
+                        $('body').unblock();
+                    }
+
+                    //var item = {}
+
+                    //item["id"] = "10";
+                    //item["parent"] = "#";
+                    //item["text"] = "AND";
+                    //item["fkimenuid"] = "10";
+                    //var data = [];
+                    //var attr = {};
+                    //attr["rootname"] = "AND";
+                    //data.push(attr);
+
+                    //var attr = {};
+                    //attr["menuid"] = "10";
+                    //data.push(attr);
+
+                    //var attr = {};
+                    //item["data"] = data;
+
+                    //jsondata.push(item);
+                    //var item1 = {}
+
+                    //item1["id"] = "20";
+                    //item1["parent"] = "10";
+                    //item1["text"] = "OR";
+                    //item1["fkimenuid"] = "20";
+                    //var data1 = [];
+                    //var attr1 = {};
+                    //attr1["rootname"] = "OR";
+                    //data1.push(attr1);
+
+                    //var attr1 = {};
+                    //attr1["menuid"] = "20";
+                    //data1.push(attr1);
+
+                    //var attr1 = {};
+                    //item1["data"] = data1;
+                    //jsondata.push(item1);
+
+                    //if (jsondata.length > 0) {
+                    //    var jsonString = JSON.stringify(jsondata);
+                    //    createRulesJSTree(JSON.parse(jsonString));
+                    //    $('body').unblock();
+                    //}
+
+
+
+                    function createRulesJSTree(jsondata) {
+                        debugger
+                        $('#XIRuleTree_@sGUID').empty();
+                        $('#XIRuleTree_@sGUID').removeAttr('class');
+                        $('#XIRuleTree_@sGUID').jstree("open_all");
+                        $('#XIRuleTree_@sGUID').jstree({
+                            "core": {
+                                "themes": {
+                                    "variant": "large"
+                                },
+                                "check_callback": true,
+                                'data': jsondata,
+                            },
+                            "types": {
+                                "#": {
+                                    "valid_children": ["default"]
+                                },
+                                //les dossiers
+                                "default": {
+                                    "valid_children": ["default", "presentation"],
+                                    //"icon": "img/icons/etablissement.png"
+                                    "icon": "fa fa-folder fc-theme"
+                                },
+                                "demo": {
+                                    "icon": "fa fa-folder-open"
+                                }
+                            },
+                            "plugins": ["contextmenu", "dnd"],
+                            "dnd": {},
+                            "contextmenu": {
+                                "items": function ($node) {
+                                    var tree = $("#XIRuleTree_@sGUID").jstree(true);
+                                    return {
+                                        "Create": {
+                                            "separator_before": false,
+                                            "separator_after": true,
+                                            "label": "Create",
+                                            action: function (obj) {
+                                                debugger;
+                                                var ID = 0;
+                                                var RootName = $("#RootName").val();
+                                                var iRoleID = $('#RoleID').val();
+                                                var iOrgID = $('#OrgID').val();
+                                                $.ajax({
+                                                    type: 'POST',
+                                                    url: '@Url.Action("SaveRulesTreeDetails", "XiLink")',
+                                                    data: { RootNode: RootName, ParentNode: $node.id, NodeTitle: 'New Rule', Type: 'create', NodeID: $node.id },
+                                                    cache: false,
+                                                    dataType: 'json',
+                                                    success: function (data) {
+                                                        if (parseInt(data) > 0) {
+                                                            ID = parseInt(data);
+                                                            $node = tree.create_node($node, { text: 'New Menu', type: 'default', id: ID });
+                                                            tree.deselect_all();
+                                                            tree.select_node($node);
+                                                            var ParentID = $("#" + $node).parent().parent().attr('id');
+                                                            var NodeTitle = $("#" + $node).text();
+                                                            @* $.ajax({
+                                                                type: 'POST',
+                                                                url: '@Url.Action("SaveRulesTreeDetails", "XiLink")',
+                                                                data: { ID: parseInt(data), ParentNode: ParentID, NodeID: '', Type: 'create' },
+                                                                cache: false,
+                                                                dataType: 'json',
+                                                                success: function (result) {
+                                                                    if (parseInt(result) > 0) {
+
+                                                                    }
+                                                                    else {
+                                                                        alert('Error Occurred');
+                                                                    }
+                                                                }
+                                                            });*@
+                                                    }
+                                                        else {
+                                                            alert('Error Occurred');
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        },
+                                    @* "Rename": {
+                                        "separator_before": false,
+                                            "separator_after": false,
+                                                "label": "Rename",
+                                                    "action": function (obj) {
+                                                        debugger;
+                                                        tree.edit($node, null, function (node, status) {
+                                                            if (node.original.text != node.text) {
+                                                                var RootName = $("#RootName").val();
+                                                                $.ajax({
+                                                                    type: 'POST',
+                                                                    url: '@Url.Action("SaveRulesTreeDetails", "XiLink")',
+                                                                    data: { RootNode: RootName, ParentNode: node.id, NodeTitle: node.text, Type: 'rename', NodeID: node.id },
+                                                                    cache: false,
+                                                                    dataType: 'json',
+                                                                    success: function (data) {
+                                                                    }
+                                                                });
+                                                                //RenameAndSaveToDB($node, "rename");
+                                                            }
+                                                        });
+                                                    }
+                                    },*@
+                                    "Remove": {
+                                        "separator_before": false,
+                                            "separator_after": false,
+                                                "label": "Remove",
+                                                    "action": function (obj) {
+                                                        $("#Remove").dialog({
+                                                            title: "Are you sure you want to delete ? ",
+                                                            buttons: {
+                                                                "Yes": function () {
+
+                                                                    var ID = 0;
+                                                                    var RootName = $("#RootName").val();
+                                                                    var iRoleID = $('#RoleID').val();
+                                                                    var iOrgID = $('#OrgID').val();
+                                                                    $.ajax({
+                                                                        type: 'POST',
+                                                                        url: '@Url.Action("SaveRulesTreeDetails", "XiLink")',
+                                                                        data: { RootNode: RootName, ParentNode: $node.id, NodeTitle: $node.text, Type: 'delete', NodeID: $node.id },
+                                                                        cache: false,
+                                                                        dataType: 'json',
+                                                                        success: function (data) {
+                                                                            if (parseInt(data) > 0) {
+                                                                                //ID = parseInt(data);
+                                                                                tree.delete_node($node);
+                                                                                $(this).dialog("close");
+                                                                            }
+                                                                            else {
+                                                                                $(this).dialog("close");
+                                                                                alert('Error Occurred');
+                                                                            }
+                                                                        }
+                                                                    });
+                                                                    $(this).dialog("close");
+                                                                    //var CheckNode = CheckIfMain($node);
+                                                                    //if (CheckNode == '1') {
+                                                                    //    tree.delete_node($node);
+                                                                    //    DeleteNodeDetails($node, "delete");
+                                                                    //    $(this).dialog("close");
+                                                                    //}
+                                                                },
+                                                                "No": function () {
+                                                                    $(this).dialog("close");
+                                                                }
+                                                            }
+                                                        });
+                                                    }
+                                    },
+                                    //"AddDetails": {
+                                    //    "separator_before": false,
+                                    //    "separator_after": false,
+                                    //    "label": "Add Details",
+                                    //    "action": function (obj) {
+                                    //        //$('#RuleContentCopy').show();
+                                    //        $('#Rules_Content').show();
+                                    //        jsondata1=$node;
+                                    //        fncSelectTreeNode($node, tree);
+                                    //    }
+                                    //}
+                                    "Library": {
+                                        "separator_before": false,
+                                            "separator_after": false,
+                                                "label": "Library",
+                                                    'submenu': {
+                                            'and': {
+                                                'label': 'and',
+                                                    "action": function (obj) {
+                                                        $node.text = obj.item.label;
+                                                        //tree.edit($node);
+                                                        //tree.create_node($node, { text: 'and', type: 'default' });
+                                                        tree.edit($node, null, function (node, status) {
+                                                            //if (node.original.text != node.text) {
+                                                            var RootName = $("#RootName").val();
+                                                            $.ajax({
+                                                                type: 'POST',
+                                                                url: '@Url.Action("SaveRulesTreeDetails", "XiLink")',
+                                                                data: { RootNode: RootName, ParentNode: node.id, NodeTitle: node.text, Type: 'rename', NodeID: node.id },
+                                                                cache: false,
+                                                                dataType: 'json',
+                                                                success: function (data) {
+                                                                }
+                                                            });
+                                                            //RenameAndSaveToDB($node, "rename");
+                                                            //}
+                                                        });
+
+                                                    }
+                                            },
+                                            'or': {
+                                                'label': 'or',
+                                                    "action": function (obj) {
+                                                        $node.text = obj.item.label;
+                                                        tree.edit($node, null, function (node, status) {
+                                                            //if (node.original.text != node.text) {
+                                                            var RootName = $("#RootName").val();
+                                                            $.ajax({
+                                                                type: 'POST',
+                                                                url: '@Url.Action("SaveRulesTreeDetails", "XiLink")',
+                                                                data: { RootNode: RootName, ParentNode: node.id, NodeTitle: node.text, Type: 'rename', NodeID: node.id },
+                                                                cache: false,
+                                                                dataType: 'json',
+                                                                success: function (data) {
+                                                                }
+                                                            });
+                                                            //RenameAndSaveToDB($node, "rename");
+                                                            //}
+                                                        });
+                                                    }
+                                            },
+                                            'nand': {
+                                                'label': 'nand',
+                                                    "action": function (obj) {
+                                                        $node.text = obj.item.label;
+                                                        tree.edit($node, null, function (node, status) {
+                                                            //if (node.original.text != node.text) {
+                                                            var RootName = $("#RootName").val();
+                                                            $.ajax({
+                                                                type: 'POST',
+                                                                url: '@Url.Action("SaveRulesTreeDetails", "XiLink")',
+                                                                data: { RootNode: RootName, ParentNode: node.id, NodeTitle: node.text, Type: 'rename', NodeID: node.id },
+                                                                cache: false,
+                                                                dataType: 'json',
+                                                                success: function (data) {
+                                                                }
+                                                            });
+                                                            //RenameAndSaveToDB($node, "rename");
+                                                            //}
+                                                        });
+                                                    }
+                                            },
+                                            'nor': {
+                                                'label': 'nor',
+                                                    "action": function (obj) {
+                                                        $node.text = obj.item.label;
+                                                        tree.edit($node, null, function (node, status) {
+                                                            //if (node.original.text != node.text) {
+                                                            var RootName = $("#RootName").val();
+                                                            $.ajax({
+                                                                type: 'POST',
+                                                                url: '@Url.Action("SaveRulesTreeDetails", "XiLink")',
+                                                                data: { RootNode: RootName, ParentNode: node.id, NodeTitle: node.text, Type: 'rename', NodeID: node.id },
+                                                                cache: false,
+                                                                dataType: 'json',
+                                                                success: function (data) {
+                                                                }
+                                                            });
+                                                            //RenameAndSaveToDB($node, "rename");
+                                                            //}
+                                                        });
+                                                    }
+                                            }
+                                        }
+                                    }
+                                };
+                            }
+                        },
+                    }).bind("move_node.jstree", function (e, data) {
+                            DragAndDropNodes(data)
+                        }).bind("loaded.jstree", function (event, data) {
+                            $(this).jstree("open_all");
+                            $(this).addClass("col-md-3")
+                        }).bind("select_node.jstree", function (NODE, REF_NODE) {
+                            $('#Rules_Content').show();
+                            var tree = $("#XIRuleTree_@sGUID").jstree(true);
+                            //jsondata1 = $node;
+                            fncSelectTreeNode(REF_NODE.node, tree);
+                        });
+                            }
+                        });
+                function fncSelectTreeNode(_node, _this, ParamClear) {
+                    debugger;
+                    var Output = "Rules_Content";//"RuleContentCopy";// $('.RuleG').attr("id");
+                    //var Output = 'LeftTreeOutput';
+                    var _uidialog = fncgetDialogFromHTMLTree('dialog', _this.element[0]);
+                    if (Output && Output.length > 0) {
+                        $(_uidialog).find('#' + Output).html('<div class="loader"></div>');
+                    }
+                    var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this.element[0]);
+                    var sLayoutType = "Dialog";
+                    var Parent = _node.parent;
+                    var ComponentName = fncGetComponentNameFromHTMLTree('Component', _this.element[0]);
+                    if (_uidialog == null || (_uidialog && _uidialog.length == 0)) {
+                        sLayoutType = "inline-layout";
+                        _uidialog = fncgetInlineLayoutFromHTMLTree('inline-layout', _this.element[0]);
+                    }
+                    var CurrentGUID = sCurrentGUID;
+                    var NewParams = [];
+                    //var StepID = ComponentName.split('-')[1];
+                    //if(QSInfo[2].sValue && QSInfo[2].sValue > 0){
+                    //var iQSDID = QSInfo[0].sValue;
+                    var jCompDef = '@Html.Raw(Json.Encode(Model.oDefintion))';
+                    var ConfigParams = JSON.parse(jCompDef).Params;
+                    if (ConfigParams && ConfigParams.length > 0) {
+                        var InputParams = [];
+                        var id = _node.id;
+                        var parent = "iGroupID";
+                        for (var i = 0; i < ConfigParams.length; i++) {
+                            if (ConfigParams[i].sName.toLowerCase() == "mode".toLowerCase()) {
+                                var WrapperParms = {};
+                                WrapperParms["sName"] = "Where";
+                                WrapperParms["sValue"] = "XIC|null";
+                                // if(Mode.length > 0 ){
+                                var param1 = {};
+                                param1["sName"] = 'ParentFKColumn';
+                                param1["sValue"] = parent;
+                                InputParams.push(param1);
+                                var param2 = {};
+                                param2["sName"] = 'ParentInsID';
+                                param2["sValue"] = id;
+                                InputParams.push(param2);
+                                WrapperParms["nSubParams"] = InputParams;
+                                NewParams.push(WrapperParms);
+                            }
+                        }
+                        fncUpdateXIParams('', sGUID, sGUID, NewParams).then(function (data) {
+                            //$('#MainContent').empty();
+                            $('.tabbtn').attr('data-load', 'false');
+
+                            //TriggerMultiComponent(sGUID, "MultiRowComponent", data, Output, _uidialog);
+                            fncTriggerStep("MultiRowComponent_20188E8D-9789-45CF-808F-47AE7BA362C3", '20188E8D-9789-45CF-808F-47AE7BA362C3', sGUID, _uidialog, Output);
+                            //TriggerComponent(sGUID, ComponentName, data, 'MainContent',_uidialog).then(function (ID) {
+                            //LoadSubnodeStep(sGUID, 'Step7 with BO Component', QSInfo[0].sValue, ID);
+                            //});
+
+
+                        })
+                    }
+                }
+                function TriggerMultiComponent(sGUID, sName, data, OutputDiv, _uidialog) {
+                    return new Promise(function (resolve, reject) {
+                        var step = "MultiRowComponent_";
+                        if (data.Registers && data.Registers.length > 0) {
+                            var j = 0;
+                            for (var i = 0; i < data.Registers.length; i++) {
+                                if (data.Registers[i].sType && data.Registers[i].sType == "template") {
+                                    var Step = data.Registers[i].sValue;
+                                    var sOutputArea = data.Registers[i].sValue.split('_')[0];
+                                    var StepID = 0;
+                                    fncTriggerStep(Step, StepID, sGUID, _uidialog, sOutputArea);
+                                }
+                                else {
+                                    var Step = data.Registers[i].sValue;
+                                    var StepID = data.Registers[i].sValue.split('_')[1];
+                                    var CompName = data.Registers[i].sValue.split('_')[0];
+                                    if (sName != CompName)
+                                        fncTriggerStep(Step, StepID, sGUID, _uidialog, OutputDiv);
+                                }
+
+                            }
+                        }
+                        resolve(true);
+                    })
+                }
+
+                function RulesTreeSave() {
+                    debugger;
+                    $('#TreeSave').attr('disabled', 'disabled');
+                    $('#lblID').val($(this)[0].RowData[0]);
+                    var test = "";
+                    var endSring = "";
+                    var ifornot = "";
+                    var tree = $('#XIRuleTree_@sGUID').jstree(true);
+                    var jsondata = [];
+                    var str;
+                    var index = 0;
+                    var RulesC = "";
+                    var currentNode = $(".jstree-node")[index].id;
+                    var CurrentOperator = $("#" + currentNode + "_anchor").text();
+                    var childrens = $("#" + currentNode).find('.jstree-children')[0];
+                    var scripts = function (childrens) {
+                        debugger;
+                        if (childrens != undefined && childrens != null) {
+                            for (var i = 0; i < childrens.childNodes.length; i++) {
+                                if (childrens.childNodes[i].classList.contains('jstree-open')) {
+                                    currentNode = childrens.childNodes[i].id
+                                    CurrentOperator = childrens.childNodes[i].textContent
+                                    var children = $("#" + currentNode).find('.jstree-children')[0];
+                                    var value1 = $("#" + currentNode + "_anchor").text()
+                                    var value = $("#" + children.childNodes[0].id + "_anchor").text()
+                                    //test=test+"{"+value1+"|"
+                                    scripts(children);
+                                }
+                                else {
+                                    currentNode = childrens.childNodes[i].id
+                                    CurrentOperator = $("#" + currentNode + "_anchor").text(); //childrens.childNodes[i].textContent
+                                    $.ajax({
+                                        type: 'POST',
+                                        url: '@Url.Action("GetRuleC", "XiLink")',
+                                        data: { iRuleID: currentNode },
+                                        cache: false,
+                                        async: false,
+                                        dataType: 'json',
+                                        success: function (data) {
+                                            debugger;
+                                            if (data.length > 0) {
+                                                //RulesC = "if|{";
+                                                var endCol = "";
+                                                for (var i = 0; i < data.length; i++) {
+                                                    //    RulesC = RulesC + data[i].sType + "|{xi.a|'" + data[i].sContext + "', 'id', '" + data[i].sValue + "', '','" + data[i].sName + "}";
+                                                    //}
+                                                    //RulesC = RulesC + "}"
+                                                    if (CurrentOperator == "and") {
+                                                        if (i == data.length - 1) {
+                                                            RulesC = RulesC + "{if|{" + /*"eq"*/data[i].sType + "|'" + data[i].sContext + "." + data[i].sName + "','" + data[i].sValue + "'},'true'";
+                                                        }
+                                                        else {
+                                                            RulesC = RulesC + "{if|{" + /*"eq"*/data[i].sType + "|'" + data[i].sContext + "." + data[i].sName + "','" + data[i].sValue + "'},";
+                                                        }
+                                                        endCol = endCol + ',false}'
+                                                    }
+                                                    else if (CurrentOperator == "or") {
+                                                        if (i == data.length - 1) {
+                                                            RulesC = RulesC + "{if|{" + /*"eq"*/data[i].sType + "|'" + data[i].sContext + "." + data[i].sName + "','" + data[i].sValue + "'},'true','false'}";
+                                                        }
+                                                        else {
+                                                            RulesC = RulesC + "{if|{" + /*"eq"*/data[i].sType + "|'" + data[i].sContext + "." + data[i].sName + "','" + data[i].sValue + "'},'true',";
+                                                        }
+                                                        endCol = endCol /*+ '}'*/
+                                                    }
+                                                    else if (CurrentOperator == "nand") {
+                                                        if (i == data.length - 1) {
+                                                            RulesC = RulesC + "{if|{" + /*"eq"*/data[i].sType + "|'" + data[i].sContext + "." + data[i].sName + "','" + data[i].sValue + "'},'false','true'";
+                                                        }
+                                                        else {
+                                                            RulesC = RulesC + "{if|{" + /*"eq"*/data[i].sType + "|'" + data[i].sContext + "." + data[i].sName + "','" + data[i].sValue + "'},'false',";
+                                                        }
+                                                        endCol = endCol + '}'
+                                                    }
+                                                    else if (CurrentOperator == "nor") {
+                                                        if (i == data.length - 1) {
+                                                            RulesC = RulesC + "{if|{" + /*"eq"*/data[i].sType + "|'" + data[i].sContext + "." + data[i].sName + "','" + data[i].sValue + "'},'false','true'";
+                                                        }
+                                                        else {
+                                                            RulesC = RulesC + "{if|{" + /*"eq"*/data[i].sType + "|'" + data[i].sContext + "." + data[i].sName + "','" + data[i].sValue + "'},'false',";
+                                                        }
+                                                        endCol = endCol + '}'
+                                                    }
+
+                                                }
+                                                //RulesP = RulesP + "}";
+                                                RulesC = RulesC + endCol;
+                                            }
+                                            //RulesC=JSON.parse(data);
+                                        }
+
+                                    });
+                                    var value1 = $("#" + currentNode + "_anchor").text()
+                                    var value = $("#" + childrens.childNodes[i].id + "_anchor").text()
+                                }
+                            }
+                        }
+                    };
+                    scripts(childrens);
+                    var currentNode = $(".jstree-node")[index].id;
+                    var CurrentOperator = $("#" + currentNode + "_anchor").text();//$(".jstree-node")[index].textContent;
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("GetRuleC", "XiLink")',
+                        data: { iRuleID: currentNode },
+                        cache: false,
+                        async: false,
+                        dataType: 'json',
+                        success: function (data) {
+                            debugger;
+                            if (data.length > 0) {
+                                var RulesP = "";//"if|{";
+                                var endCol = "";
+                                var ChildNodeCount = 0;
+                                if (childrens != undefined && childrens != null) {
+                                    ChildNodeCount = childrens.childNodes.length;
+                                }
+                                for (var i = 0; i < data.length; i++) {
+                                    if (CurrentOperator == "and") {
+                                        RulesP = RulesP + "{if|{" + /*"eq"*/data[i].sType + "|'" + data[i].sContext + "." + data[i].sName + "','" + data[i].sValue + "'},";
+                                        //}
+                                        if (i == data.length - 1) {
+                                            if (ChildNodeCount > 0) { endCol = ",'false'}" + endCol }
+                                            else {
+                                                endCol = "'true','false'}" + endCol
+                                            }
+                                        }
+                                        else {
+                                            endCol = endCol + ",'false'}"
+                                        }
+
+                                    }
+                                    else if (CurrentOperator == "or") {
+                                        RulesP = RulesP + "{if|{" + /*"eq"*/data[i].sType + "|'" + data[i].sContext + "." + data[i].sName + "','" + data[i].sValue + "'},'true',";
+                                        //}
+                                        if (i == data.length - 1) {
+                                            endCol = "'false'}" + endCol
+                                        }
+                                        else {
+                                            endCol = endCol + '}'
+                                        }
+                                    }
+                                    else if (CurrentOperator == "nand") {
+                                        RulesP = RulesP + "{if|{" + /*"eq"*/data[i].sType + "|'" + data[i].sContext + "." + data[i].sName + "','" + data[i].sValue + "'},'false',";
+                                        //}
+                                        endCol = endCol + '}'
+                                    }
+                                    else if (CurrentOperator == "nor") {
+                                        RulesP = RulesP + "{if|{" + /*"eq"*/data[i].sType + "|'" + data[i].sContext + "." + data[i].sName + "','" + data[i].sValue + "'},'false',";
+                                        //}
+                                        endCol = endCol + '}'
+                                    }
+                                }
+                                RulesC = RulesP + RulesC + endCol;
+                            }
+                        }
+
+                    });
+                    test = 'xi.s|' + RulesC;/*+test.slice(0, n) + test.slice(n).replace(',', '')*/;
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("UpdateRulesCondition", "XiLink")',
+                        data: { iRuleID: currentNode, sCondition: test },
+                        cache: false,
+                        async: true,
+                        dataType: 'json',
+                        success: function (data) {
+                        }
+                    });
+                    $("#sScript").val(test);
+                }
+
+
+            </script>

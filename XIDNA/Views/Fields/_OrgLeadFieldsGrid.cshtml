@@ -1,0 +1,50 @@
+﻿@model XIDNA.Models.LeadMappings
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<style>
+    table {
+        width: 50%;
+    }
+
+    th, td {
+        text-align: left;
+        padding: 5px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1>Mapped Fields</h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i>MappedFields</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="table-clean">
+                    <table class="table table-striped custom-table dark-head dark-head2 table-condensed">
+                        <thead>
+                            <tr>
+                                <th>Field Name</th>
+                                <th>Add Field</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.MappedFields)
+                            {
+                                <tr>
+                                    <td>@item.Name</td>
+                                    <td>@item.Type</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

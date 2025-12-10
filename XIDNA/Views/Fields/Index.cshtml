@@ -1,0 +1,158 @@
+﻿@model XIDNA.Models.AddFields
+
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+    <style>
+        #ClassButtons {
+            padding-top: 7px;
+        }
+        /*input[type=radio] {
+            padding-right: 15px;
+        }*/
+    </style>
+    <script>
+        $(document).ready(function () {
+            $('#ClassButtons input[type=radio]').change(function () {
+                var value = $(this).val();
+                if ($(this).val() == "True") {
+                    $('#Class').prop("disabled", false);
+                } else {
+                    $('#Class').prop("disabled", true);
+                }
+            });
+            $('#FieldType').change(function () {
+                if ($(this).val() == "VARCHAR") {
+                    $('#Length').prop("disabled", false);
+                }
+                else {
+                    $('#Length').prop("disabled", true);
+                }
+            });
+        });
+    </script>
+
+    <section class="content-header hedr">
+        <h1> Add Field </h1>
+        <ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-dashboard"></i> Field</a></li>
+            <li class="active">Home</li>
+        </ol>
+    </section>
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-body">
+                        <div id="AddFieldForm">
+                            @using (Ajax.BeginForm("SaveField", "AddFields", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnComplete()" }, new { @id = "FieldsForm", @class = "form-horizontal" }))
+                            {
+                                @Html.HiddenFor(m => m.OrgName)
+                                <div class="form-group">
+                                    <label for="inputName" class="col-sm-2 control-label">Class Specific</label>
+                                    <div class="col-sm-4" id="ClassButtons">
+                                        @Html.RadioButtonFor(m => m.ClassSpecific, false, new { @id = "Yes", @Value=true }) Yes
+                                        @Html.RadioButtonFor(m => m.ClassSpecific, true, new { @id = "No", @Value=false}) No
+                                    </div>
+                                    <div class="col-sm-2">
+                                        @Html.ValidationMessageFor(m => m.ClassSpecific, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputName" class="col-sm-2 control-label">Class</label>
+                                    <div class="col-sm-3">
+                                        @Html.DropDownListFor(m => m.Class, new SelectList(new List<Object>{
+                                               new { key= "" , value = "--Select--" },
+                       new { key= "Car" , value = "Car" },
+                       new { key= "Home", value = "Home" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Class" })
+
+                                    </div>
+                                    <div class="col-sm-2">
+                                        @Html.ValidationMessageFor(m => m.Class, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputName" class="col-sm-2 control-label">Field Name</label>
+                                    <div class="col-sm-3">
+                                        @Html.TextBoxFor(m => m.FieldName, new { @class = "form-control", @placeholder = "Enter Name" })
+                                    </div>
+                                    <div class="col-sm-2">
+                                        @Html.ValidationMessageFor(m => m.FieldName, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputName" class="col-sm-2 control-label">Field Type</label>
+                                    <div class="col-sm-3">
+                                        @Html.DropDownListFor(m => m.FieldType, new SelectList(new List<Object>{
+                                               new { key= "" , value = "--Select--" },
+                       new { key= "INT" , value = "int" },
+                       new { key= "VARCHAR", value = "varchar" },
+                       new { key= "DATETIME", value = "datetime" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "FieldType" })
+                                    </div>
+                                    <div class="col-sm-2">
+                                        @Html.ValidationMessageFor(m => m.FieldType, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputName" class="col-sm-2 control-label">Length</label>
+                                    <div class="col-sm-3">
+                                        @Html.DropDownListFor(m => m.Length, new SelectList(new List<Object>{
+                                               new { key= "" , value = "--Select--" },
+                       new { key= "32" , value = "32" },
+                       new { key= "64" , value = "64" },
+                       new { key= "128" , value = "128" },
+                       new { key= "256" , value = "256" },
+                       new { key= "512" , value = "512" },
+                       new { key= "MAX" , value = "MAX" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Length" })
+                                    </div>
+                                    <div class="col-sm-2">
+                                        @Html.ValidationMessageFor(m => m.Length, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-offset-2 col-sm-10">
+                                        <button type="submit" class="btn btn-theme" id="FieldSave">Save</button>
+                                        <button type="button" class="btn btn-theme reverse" id="FieldReset">Reset</button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div id="FieldsGrid">
+                            @{
+                                Html.RenderAction("GetOrgFields", "AddFields");
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        var form = $('#FieldsForm');
+        $.validator.unobtrusive.parse(form);
+        function OnComplete() {
+            var classspecific = $('#ClassButtons input[type=radio]:checked').val();
+            var classname = $('#Class').val();
+            $('#FieldsForm')[0].reset();
+            $('#Class').val(classname);
+            if (classspecific == "True") {
+                $('input#Yes').prop('checked', true);
+                $('#Length').prop("disabled", false);
+            }
+            else {
+                $('input#No').prop('checked', true);
+                $('#Class').prop("disabled", true);
+                $('#Length').prop("disabled", false);
+            }
+            $("#FieldsGrid").load('@Url.Action("GetOrgFields", "AddFields")');
+        }
+        $('#FieldReset').click(function () {
+            $('#FieldsForm')[0].reset();
+            $('#Class').prop("disabled", false);
+            $('#Length').prop("disabled", false);
+        });
+    </script>

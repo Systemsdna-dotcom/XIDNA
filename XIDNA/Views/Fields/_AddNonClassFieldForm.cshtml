@@ -1,0 +1,133 @@
+﻿@model XIDNA.Models.AddFields
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<style>
+    #ClassButtons {
+        padding-top: 7px;
+    }
+
+    .danger {
+        color: red;
+    }
+
+    .fielderror {
+        margin-top: 30px;
+    }
+    /*input[type=radio] {
+            padding-right: 15px;
+        }*/
+</style>
+<script>
+    $(document).ready(function () {
+        $('#FieldType').change(function () {
+            if ($(this).val() == "VARCHAR") {
+                $('#Length').prop("disabled", false);
+            }
+            else {
+                $('#Length').prop("disabled", true);
+            }
+        });
+        if ('@Model.OrganizationID' == 0) {
+            $('.Fieldheading').append(" Admin - Non Class Specific Field");
+        } else {
+            $('.Fieldheading').append("Non Class Specific Field");
+        }
+    });
+</script>
+<section class="content-header hedr">
+    <h1> Create Non Class Specific Field </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Field</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="box-body">
+    <div id="AddFieldForm" class="innerborder">
+        <h6 class="Fieldheading"></h6>
+        @using (Ajax.BeginForm("SaveField", "Fields", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnComplete()" }, new { @id = "FieldsForm", @class = "form-horizontal" }))
+        {
+            @Html.HiddenFor(m => m.ID, new { @Value = 0 })
+            @Html.HiddenFor(m => m.OrgName)
+            @Html.HiddenFor(m => m.ClassSpecific, new { @Value = "NonClassSpecific" })
+            @Html.HiddenFor(m => m.TableName, new { @value = Model.TableName })
+            @Html.HiddenFor(m => m.CreationType, new { @Value = "Create" })
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">Field Name<span class="danger">*</span></label>
+                    @Html.TextBoxFor(m => m.FieldName, new { @class = "form-control", @placeholder = "Enter Name" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.FieldName, "", new { @class = "red" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">Field Type<span class="danger">*</span></label>
+                    @Html.DropDownListFor(m => m.FieldType, new SelectList(new List<Object>{
+                                                                       new { key= "" , value = "--Select--" },
+                                               new { key= "INT" , value = "int" },
+                                               new { key= "VARCHAR", value = "varchar" },
+                                               new { key= "DATETIME", value = "datetime" }
+                                            }, "key", "Value"), new { @class = "form-control", @id = "FieldType" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.FieldType, "", new { @class = "red" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">Field Length<span class="danger">*</span></label>
+                    @Html.DropDownListFor(m => m.Length, new SelectList(new List<Object>{
+                                                                       new { key= "" , value = "--Select--" },
+                                               new { key= "32" , value = "32" },
+                                               new { key= "64" , value = "64" },
+                                               new { key= "128" , value = "128" },
+                                               new { key= "256" , value = "256" },
+                                               new { key= "512" , value = "512" },
+                                               new { key= "MAX" , value = "MAX" }
+                                            }, "key", "Value"), new { @class = "form-control", @id = "Length" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.Length, "", new { @class = "red" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-5">
+                    <button type="submit" class="btn btn-theme" id="FieldSave">Save</button>
+                    <button type="button" class="btn btn-theme reverse" id="FieldReset">Reset</button>
+                    <button type="button" class="btn btn-theme decline" id="FieldCancel">Cancel</button>
+                </div>
+            </div>
+        }
+        <div id="SelectedNonClass">
+            @{
+                Html.RenderAction("SelectedNonFields", "Fields");
+            }
+        </div>
+    </div>
+</div>
+<div class="dialog-box AddNonFieldDlg" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    var form = $('#FieldsForm');
+    $.validator.unobtrusive.parse(form);
+    function OnComplete(e) {
+        $(".AddNonFieldDlg").unblock();
+        opener.location.reload();
+        CustomMessage(e.ResponseMessage, e.Status);
+        $('#FieldsForm')[0].reset();
+        $("#SelectedNonClass").load("SelectedNonFields", "Fields");
+        $('#Length').prop('disabled', false);
+        opener.location.reload();
+    }
+    $('#FieldReset').click(function () {
+        $('#FieldsForm')[0].reset();
+        $('#Length').prop("disabled", false);
+        $('#FieldsForm .fielderror').find('span').html('');
+    });
+    $('#FieldCancel').click(function () {
+        window.close();
+    });
+</script>

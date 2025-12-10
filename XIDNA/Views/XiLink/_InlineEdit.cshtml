@@ -1,0 +1,456 @@
+﻿@model XIDNA.Models.cBODisplay
+@{
+    var oBOInstance = Model.BOInstance;
+    var oVisualisations = Model.Visualisations;
+}
+<script src="~/Scripts/ajaxfileupload.js"></script>
+<div class="box-body">
+    <div class="innerborder">
+        <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+        </div>
+        <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+        </div>
+        <div class="EditFormDiv">
+            <form class="InlineEditForm">
+
+                @if (oBOInstance != null)
+                {
+                    <div class="form-horizontal">
+                        @foreach (var items in oBOInstance.NVPairs.Where(m => m.bDirty == true).ToList())
+                        {
+                            var FieldOrigin = oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).FirstOrDefault();
+                            if (FieldOrigin.IsOptionList || FieldOrigin.FKiType > 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn">@oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()</label>
+                                        <select name="@items.sName" class="form-control" id="DDL-@items.sName" data-attrname="@items.sName">
+                                            @if (FieldOrigin.IsOptionList == true || FieldOrigin.FKiType > 0)
+                                            {
+                                                foreach (var opt in FieldOrigin.FieldDDL)
+                                                {
+                                                    if (!string.IsNullOrEmpty(FieldOrigin.DefaultValue))
+                                                    {
+                                                        if (opt.Expression == FieldOrigin.DefaultValue)
+                                                        {
+                                                            <option value="@opt.ID" selected>@opt.Expression</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@opt.ID">@opt.Expression</option>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        var iTypeID = oBOInstance.NVPairs.Where(m => m.sName == items.sName).Select(m => m.sValue).FirstOrDefault();
+                                                        if (opt.ID.ToString() == iTypeID)
+                                                        {
+                                                            <option value="@opt.Type" selected>@opt.Expression</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@opt.Type">@opt.Expression</option>
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            }
+
+                            else if (oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.FKiFileTypeID).FirstOrDefault() > 0 && oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.FKiType).FirstOrDefault() == 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn">@oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()</label>
+                                        <input type="file" class="UploadImage" id="UploadImage-@items.sName" name="UploadImage" data-attrname="@items.sName" onchange="fncShowImgPreview(this)" data-bofieldid="@oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.ID).FirstOrDefault()" multiple />
+                                        <input type="hidden" name="@items.sName" id="ImageID-@items.sName" value="@items.sValue" />
+                                        <div class=form-group id="dvPreview-@items.sName" data-attrname="@items.sName">
+                                            @if (oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.ImagePathDetails).Count() > 0)
+                                            {
+                                                var Images = oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.ImagePathDetails);
+                                                foreach (var img in Images)
+                                                {
+                                                    foreach (var item in img)
+                                                    {
+                                                        <img src="@item.Expression" width="50" height="50" />
+                                                    }
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        <span class="@oBOInstance.Definition.Name-@items.sName"></span>
+                                    </div>
+                                </div>
+                            }
+
+                            else if (oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.TypeID == 150).FirstOrDefault())
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn">@oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()</label>
+                                        @Html.TextBoxFor(m => items.sValue, new { @Name = items.sName, @class = "form-control Txtbx-DATETIME", @style = "padding:1px 5px;" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        <span class="@oBOInstance.Definition.Name-@items.sName"></span>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn">@oBOInstance.Definition.BOFields.Where(m => m.Name == items.sName).Select(m => m.LabelName).FirstOrDefault()</label>
+                                        @Html.TextBoxFor(m => items.sValue, new { @Name = items.sName, @class = "form-control", @style = "padding:1px 5px;" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        <span class="@oBOInstance.Definition.Name-@items.sName"></span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <button type="button" class="InlineEditSaveBtn btn btn-theme">Update</button>
+                    <button type="button" class="ApproveBtn btn btn-theme">Approve</button>
+                    <button type="button" class="ApproveBtn1 btn btn-theme">Approve1</button>
+                }
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .thumbnail {
+        float: left;
+        margin-left: 10px;
+    }
+
+    .Logo {
+        float: left;
+        margin-right: 10px;
+    }
+
+    .Delete {
+        margin-top: -95px;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        var oBOInstance = @Html.Raw(Json.Encode(Model));
+        if(oBOInstance.BOInstance){
+            for(k =0;k<oBOInstance.BOInstance.Definition.BOFields.length;k++)
+            {
+                var IsOptionList = oBOInstance.BOInstance.Definition.BOFields[k].IsOptionList;
+                if(IsOptionList == true)
+                {
+                    var sPriceAttrName = oBOInstance.BOInstance.Definition.BOFields[k].Name;
+                    for(i=0;i<oBOInstance.BOInstance.NVPairs.length;i++){
+                        if(oBOInstance.BOInstance.NVPairs[i].sName == sPriceAttrName)
+                        {
+                            var sValue = oBOInstance.BOInstance.NVPairs[i].sValue.split('.');
+                            $('#DDL-' + sPriceAttrName).val(sValue[0]);
+                        }
+                    }
+                }
+
+                var sMD = oBOInstance.BOInstance.Definition.BOFields[k].iMasterDataID;
+                if(sMD!=0)
+                {
+                    var MDAttrName = oBOInstance.BOInstance.Definition.BOFields[k].Name;
+                    for(i=0;i<oBOInstance.BOInstance.NVPairs.length;i++){
+                        if(oBOInstance.BOInstance.NVPairs[i].sName == MDAttrName)
+                        {
+                            var sValue = oBOInstance.BOInstance.NVPairs[i].sValue;
+                            $('#MD-' + MDAttrName).val(sValue);
+                        }
+                    }
+                }
+            }
+        }
+        $('.InlineEditSaveBtn').click(function () {
+            var oBOInstance = @Html.Raw(Json.Encode(Model.BOInstance));
+            DataUpdate(this,oBOInstance);
+        });
+
+        $('.Txtbx-DATETIME').datepicker({
+            changeMonth: true,
+            changeYear: true,
+            inline: true,
+            yearRange: '1990:2030'
+        });
+
+        $(document.body).on('click', 'button.ClaimTermBtn', function () {
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            var Component = @Html.Raw(Json.Encode(Model.BOInstance));
+            var iInstID=0;
+            for(i=0;i<Component.NVPairs.length;i++){
+                if(Component.NVPairs[i].sName == "ID"){
+                    iInstID= Component.NVPairs[i].sValue;
+                }
+            }
+
+            var BOID=Component.Definition.BOID;
+            var iInstID = $("input[name=ID]").val();
+            var pvalue = {XILinkID:58,
+                sGUID:sGUID,
+                iInstanceID: iInstID,
+                iBOID:BOID}
+            $.ajax({
+                url: '@Url.Action("XIScripting", "XiLink")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: JSON.stringify(pvalue),
+                success: function (data) {
+                    if(data!="")
+                    {                        
+                        var sSplitData=data.split("_");
+                        var sStatusVal=sSplitData[0];
+                        var sStatusMessage=sSplitData[1];
+                        if(sStatusVal=="10")
+                        {
+                            $("#BootstrpAlertSuccess").show();
+                            $("#BootstrpAlertSuccess").html(sStatusMessage);
+                            $(function () {
+                                setTimeout(function () {
+                                    $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                                }, 5000);
+                            });
+                        }
+                        else if(sStatusVal=="20")
+                        {
+                            $("#BootstrpError").show();
+                            $("#BootstrpError").html(sStatusMessage);
+                            $(function () {
+                                setTimeout(function () {
+                                    $("#BootstrpError").hide('blind', {}, 500)
+                                }, 5000);
+                            });
+                        }
+                        else
+                        {
+                            $("#BootstrpError").show();
+                            $("#BootstrpError").append(sStatusMessage);
+                            $(function () {
+                                setTimeout(function () {
+                                    $("#BootstrpError").hide('blind', {}, 500)
+                                }, 5000);
+                            });
+                        }
+                    }
+                }
+            });
+        });
+
+        $(document.body).on('click', 'button.ApproveBtn', function () {
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            var Component = @Html.Raw(Json.Encode(Model.BOInstance));
+            var iInstID=0;
+            for(i=0;i<Component.NVPairs.length;i++){
+                if(Component.NVPairs[i].sName == "ID"){
+                    iInstID= Component.NVPairs[i].sValue;
+                }
+            }
+
+            var BOID=Component.Definition.BOID;
+            var iInstID = $("input[name=ID]").val();
+            var pvalue = {XILinkID:49,
+                sGUID:sGUID,
+                iInstanceID: iInstID,
+                iBOID:BOID}
+            $.ajax({
+                url: '@Url.Action("XIScripting", "XiLink")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: JSON.stringify(pvalue),
+                success: function (data) {
+                    if(data!="")
+                    {                        
+                        var sSplitData=data.split("_");
+                        var sStatusVal=sSplitData[0];
+                        var sStatusMessage=sSplitData[1];
+                        if(sStatusVal=="10")
+                        {
+                            $("#BootstrpAlertSuccess").show();
+                            $("#BootstrpAlertSuccess").html(sStatusMessage);
+                            $(function () {
+                                setTimeout(function () {
+                                    $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                                }, 5000);
+                            });
+                        }
+                        else if(sStatusVal=="20")
+                        {
+                            $("#BootstrpError").show();
+                            $("#BootstrpError").html(sStatusMessage);
+                            $(function () {
+                                setTimeout(function () {
+                                    $("#BootstrpError").hide('blind', {}, 500)
+                                }, 5000);
+                            });
+                        }
+                        else
+                        {
+                            $("#BootstrpError").show();
+                            $("#BootstrpError").append(sStatusMessage);
+                            $(function () {
+                                setTimeout(function () {
+                                    $("#BootstrpError").hide('blind', {}, 500)
+                                }, 5000);
+                            });
+                        }
+                    }
+                }
+            });
+        });
+
+        $(document.body).on('click', 'button.ApproveBtn1', function () {
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            var Component = @Html.Raw(Json.Encode(Model.BOInstance));
+            var iInstID=0;
+            for(i=0;i<Component.NVPairs.length;i++){
+                if(Component.NVPairs[i].sName == "ID"){
+                    iInstID= Component.NVPairs[i].sValue;
+                }
+            }
+
+            var BOID=Component.Definition.BOID;
+            var iInstID = $("input[name=ID]").val();
+            var pvalue = {XILinkID:50,
+                sGUID:sGUID,
+                iInstanceID: iInstID,
+                iBOID:BOID}
+            $.ajax({
+                url: '@Url.Action("XIScripting", "XiLink")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: JSON.stringify(pvalue),
+                success: function (data) {
+                    if(data!="")
+                    {
+                        var sSplitData=data.split("_");
+                        var sStatusVal=sSplitData[0];
+                        var sStatusMessage=sSplitData[1];
+                        if(sStatusVal=="10")
+                        {
+                            $("#BootstrpAlertSuccess").show();
+                            $("#BootstrpAlertSuccess").html(sStatusMessage);
+                            $(function () {
+                                setTimeout(function () {
+                                    $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                                }, 5000);
+                            });
+                        }
+                        else if(sStatusVal=="20")
+                        {
+                            $("#BootstrpError").show();
+                            $("#BootstrpError").html(sStatusMessage);
+                            $(function () {
+                                setTimeout(function () {
+                                    $("#BootstrpError").hide('blind', {}, 500)
+                                }, 5000);
+                            });
+                        }
+                        else
+                        {
+                            $("#BootstrpError").show();
+                            $("#BootstrpError").append(sStatusMessage);
+                            $(function () {
+                                setTimeout(function () {
+                                    $("#BootstrpError").hide('blind', {}, 500)
+                                }, 5000);
+                            });
+                        }
+                    }
+                }
+            });
+        });
+    });
+
+    function fncShowImgPreview($this){
+        var AttrName = $($this).attr('data-attrname');
+        var oBOInstance = @Html.Raw(Json.Encode(Model));
+        var  ID = 0;
+        imagesPreview($this, AttrName);
+        var BOFieldID = $($this).attr('data-bofieldid');
+        if ($("#UploadImage-" + AttrName).val() != "") {
+            $.ajaxFileUpload({
+                url: '@Url.Action("SaveFiles", "XiLink")',
+                data: { ID: ID , BOFieldID: BOFieldID },
+                secureuri: false,
+                type: 'POST',
+                fileElementId: "UploadImage-" + AttrName,
+                dataType: 'json',
+                success: function (response, ID) {
+                    if (ID && ID.length > 0) {
+                        $('#ImageID-' + AttrName).val(ID);
+                    }
+                },
+                error: function (respose, ID) {
+                }
+            })
+        }
+    }
+    var imagesPreview = function (input, AttrName) {
+        if (input.files) {
+            var filesAmount = input.files.length;
+            $('div#dvPreview-' + AttrName).html('');
+            for (i = 0; i < filesAmount; i++) {
+                var reader = new FileReader();
+                reader.onload = function (event) {
+                    $($.parseHTML('<img>')).attr('src', event.target.result).attr('width', '50').attr('height','50').appendTo("div#dvPreview-" + AttrName);
+                }
+                reader.readAsDataURL(input.files[i]);
+            }
+        }
+
+    };
+
+    @*window.onload = function () {
+        var oBOInstance = @Html.Raw(Json.Encode(Model));
+        for(k =0;k<oBOInstance.BOInstance.Definition.BOFields.length;k++)
+        {
+            var FKiFileTypeID = oBOInstance.BOInstance.Definition.BOFields[k].FKiFileTypeID;
+            if(FKiFileTypeID > 0)
+            {
+                var sImageName = oBOInstance.BOInstance.Definition.BOFields[k].Name
+                if (window.File && window.FileList && window.FileReader) {
+                    var filesInput = document.getElementById("UploadImage-" + sImageName );
+                    filesInput.addEventListener("change", function (event) {
+                        var files = event.target.files;
+                        var output = document.getElementById("dvPreview-" + sImageName);
+                        for (var i = 0; i < files.length; i++) {
+                            var file = files[i];
+                            if (!file.type.match('image'))
+                                continue;
+                            var picReader = new FileReader();
+                            picReader.addEventListener("load", function (event) {
+                                var picFile = event.target;
+                                var div = document.createElement("div");
+                                div.innerHTML = "<img class='thumbnail' src='" + picFile.result + "'" + "title='" + picFile.name + "'width='50px' height='50px'/>";
+                                output.insertBefore(div, null);
+                            });
+                            picReader.readAsDataURL(file);
+                        }
+
+                    });
+                }
+                else
+                {
+                    console.log("Your browser does not support File API");
+                }
+            }
+        }
+    }*@
+
+</script>

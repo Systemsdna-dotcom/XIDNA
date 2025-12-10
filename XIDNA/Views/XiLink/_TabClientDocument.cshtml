@@ -1,0 +1,126 @@
+﻿@model int
+@{
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["WalletPath"];
+}
+<script src="~/Content/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="~/Content/plugins/datatables/dataTables.bootstrap.min.js"></script>
+<link href="~/Content/plugins/datatables/dataTables.bootstrap.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        var popups = new Array();
+        var editpopups = new Array();
+        var table = $('#ClientDocstbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("GetClientDocsList", "Lead", new {LeadID=Model })",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+        {},
+                             {
+                                 "sName": "ID",
+                                 "visible": false
+                             },
+                             {
+                                 "sName": "OrganizationID",
+                                 "visible": false
+                             },
+                            {
+                                "sName": "DocumentName",
+                                "visible": false
+                            },
+                             {
+                                 "sName": "OriginalName",
+                             },
+                            {
+                                "sName": "Message",
+                            },
+                            {
+                                "sName": "UploadedOn",
+                            },
+                            {
+                                "sName": "Status",
+                            },
+                            {}
+
+            ],
+            "columnDefs": [{
+                "targets": [7],
+                "createdCell": function (td, cellData, rowData, row, col) {
+                    if (cellData == 10)
+                        $(td).replaceWith('<td>Active</td>')
+                    else
+                        $(td).replaceWith('<td>Inactive</td>')
+                }
+            }],
+
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(5)', nRow).html('<input type="button" class="ViewDoc btn btn-primary btn2 btn-xs" id="' + aData[3] + '" value="View"/>');
+                return nRow;
+            }
+        });
+        $('#ClientDocstbl').on('click', 'input.ViewDoc', function () {
+            var Name = $(this).attr('id');
+            $("#ViewDocumentDlg").html('<iframe src="@PhysicalPath/Content/images/' + Name + '" width="1000px" height="700px"></iframe>');
+            $("#ViewDocumentDlg").dialog({
+                title: "Uploaded Document",
+                modal: true,
+                width: 1000,
+                height:700,
+                buttons: [
+                   {                       
+                       text: "Ok",
+                       click: function () {
+                           $("#ViewDocumentDlg").dialog("close");
+                       }
+                   }
+                ]
+            });
+        })
+        $('#Popuptbl').on('click', 'input.EditPopup', function () {
+            var url = $(this).attr('data-url');
+            if (editpopups.length > 0) {
+                for (i = 0; i < editpopups.length; i++) {
+                    editpopups[i].close();
+                }
+            }
+            var editpopup = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            editpopups.push(editpopup);
+            editpopup.moveTo(0, 0);
+        })
+        $('#PopupButton').on('click', 'input', function (e) {
+            e.preventDefault();
+            var url = $(this).attr('data-url');
+            if (popups.length > 0) {
+                for (i = 0; i < popups.length; i++) {
+                    popups[i].close();
+                }
+            }
+            var newpopup = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            popups.push(newpopup);
+            newpopup.moveTo(0, 0);
+        });
+
+    });
+</script>
+<div id="ViewDocumentDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<div class="table-clean">
+    <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="ClientDocstbl">
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th>ID</th>
+                <th>Organization ID</th>
+                <th>Document Name</th>
+                <th>Document</th>
+                <th>Message</th>
+                <th>Uploded On</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>

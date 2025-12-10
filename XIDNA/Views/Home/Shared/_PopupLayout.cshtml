@@ -1,0 +1,581 @@
+﻿@using Microsoft.AspNet.Identity
+@using XIDNA.Models
+@using XIDNA.ViewModels
+@using XIDNA
+@{
+    string sImagePath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+    var Title = "XIDNA";
+    var Role = string.Empty;
+    if (SessionManager.AppName != null)
+    {
+        Title = SessionManager.AppName;
+    }
+    var iUserID = SessionManager.UserID;
+    Role = SessionManager.sRoleName;
+    string sAppName = SessionManager.AppName;
+    string BColour = SessionManager.BColor;
+    string FColour = SessionManager.FColor;
+    string FSize = SessionManager.FSize;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport1" content="width=device-width, minimum-scale=0.1">
+    <title>@Title</title>
+    <link rel="icon" type="image/png" href="~/favicon.ico" />
+    <link href="@Url.Content("~/Content/css/plugins/jquery-ui/jquery-ui.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/css/plugins/jquery-ui/jquery-ui-custom.css")" rel="stylesheet" />
+    <!-- Bootstrap 3.3.5 -->
+    <link href="@Url.Content("~/Content/css/bootstrap.min.css")" rel="stylesheet" />
+    <!-- Font Awesome -->
+    @*<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+        <link href="~/Content/font-awesome/css/font-awesome.min.css" rel="stylesheet" />*@
+    <!-- <link href="~/Content/font-awesome/css/fontawesome-all.min.css" rel="stylesheet" /> -->
+    <link href="~/Content/font-awesome/css/all.min.css" rel="stylesheet" />
+    <link href="~/Content/ionicons/css/ionicons.min.css" rel="stylesheet" />
+    <!-- Ionicons -->
+    @*<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">*@
+    <link rel="stylesheet" href="@Url.Content("~/Content/plugins/datatables/dataTables.bootstrap.css")">
+    <link href="@Url.Content("~/Content/css/main.css")" rel="stylesheet" />
+    @*<link href="@Url.Content("~/Content/plugins/tabScroll/jquery.scrolling-tabs.css")" rel="stylesheet" />*@
+    <link href="@Url.Content("~/Content/css/custom.css")" rel="stylesheet" />
+    @*<link href="@Url.Content("~/Content/css/SystemLayout.css")" rel="stylesheet" />*@
+
+    <link rel="stylesheet" href="~/Content/css/skins/@SessionManager.Theme.ToString()">
+    @*@if (User.Identity.GetGroupName().Contains(EnumRoles.SuperAdmin.ToString()))
+        {
+            <link rel="stylesheet" href="~/Content/css/skins/dark-theme.css">
+        }
+        else
+        {
+            <link rel="stylesheet" href="~/Content/css/skins/@User.Identity.GetOrganizationTheme()">
+        }*@
+
+    <!-- DataTables -->
+    <!--<link rel="stylesheet" href="plugins/datatables/dataTables.bootstrap.css">-->
+    <link href="@Url.Content("~/Content/css/animate.css")" rel="stylesheet" />
+    @RenderSection("Styles", false)
+    <script src="@Url.Content("~/Scripts/JQuery/jQuery-2.1.4.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/js/plugins/EasyAlert.js")"></script>
+    @*<link href="@Url.Content("~/Content/plugins/tabScroll/jquery.scrolling-tabs.css")" rel="stylesheet" />*@
+    <script src="@Url.Content("~/Content/plugins/mCustomScrollbar/jquery.mCustomScrollbar.concat.min.js")"></script>
+    <link href="@Url.Content("~/Content/plugins/mCustomScrollbar/jquery.mCustomScrollbar.min.css")" rel="stylesheet" />
+    @*<script src="@Url.Content("~/Scripts/ajaxfileupload.js")"></script>*@
+    <script src="@Url.Content("~/Scripts/CommonFunctions.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.unobtrusive-ajax.min.js")"></script>
+    <script src="@Url.Content("~/Content/plugins/datatables/jquery.dataTables.min.js")"></script>
+    <script src="@Url.Content("~/Content/plugins/datatables/dataTables.bootstrap.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.validate.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")"></script>
+    <!-- jQuery UI -->
+    <script src="@Url.Content("~/Scripts/JQuery/jquery-ui.js")"></script>
+    <script src="@Url.Content("~/Scripts/js/bootstrap.min.js")"></script>
+    @*<link href="~/Scripts/JSTree/themes/default/style.css" rel="stylesheet" />*@
+    <!-- JSTree -->
+    <link href="@Url.Content("~/Content/jsTree/themes/default/style.min.css")" rel="stylesheet" />
+    <script src="@Url.Content("~/Scripts/treeview/jstree.min.js")"></script>
+    <!-- Loading Js -->
+    <script src="@Url.Content("~/Scripts/jquery.blockUI.js")"></script>
+    <!-- AdminLTE App -->
+    <script src="@Url.Content("~/Scripts/app.js")"></script>
+    <!-- ChartJS-->
+    <script src="@Url.Content("~/Scripts/js/plugins/chartJs/Chart.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/js/plugins/easypiechart/jquery.easypiechart.js")"></script>
+    <script src="@Url.Content("~/Scripts/C3/d3.v3.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/C3/c3.min.js")"></script>
+    <script src="~/Scripts/tinymce/tinymce.min.js"></script>
+    <link href="@Url.Content("~/Scripts/C3/c3.css")" rel="stylesheet" />
+    @*<link href="@Url.Content("~/Content/plugins/tabScroll/jquery.scrolling-tabs.css")" rel="stylesheet" />*@
+    <script src="@Url.Content("~/Content/plugins/timepicker/bootstrap-datetimepicker.js")"></script>
+    <link href="@Url.Content("~/Content/plugins/timepicker/bootstrap-datetimepicker.min.css")" rel="stylesheet" />
+    <script src="@Url.Content("~/Content/plugins/timepicker/jquery.timepicker.js")"></script>
+    <link href="@Url.Content("~/Content/plugins/timepicker/jquery.timepicker.min.css")" rel="stylesheet" />
+    <script src="@Url.Content("~/Scripts/bluebird.min.js")"></script>
+    @*//Charts//*@
+    <script src="@Url.Content("~/Scripts/core.js")"></script>
+    <script src="@Url.Content("~/Scripts/charts.js")"></script>
+    <script src="@Url.Content("~/Scripts/dataviz.js")"></script>
+    <script src="@Url.Content("~/Scripts/animated.js")"></script>
+
+    <script type="text/javascript">
+        function GetRemiderList() {
+            var userid = parseInt('@User.Identity.GetUserId()');
+            $.ajax({
+                url: '@Url.Action("GetReminderUserCount", "Inbox")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { UserID: userid },
+                success: function (data) {
+                    var Count = parseInt(data.length);
+                    $('.ReminderCount').html(Count);
+                    $.each(data, function (i, val) {
+                        var Message = val.Message;
+                        var MessageLength = parseInt(Message.length);
+                        var dots = "......"
+                        if (MessageLength > 30) {
+                            var message = Message.substring(0, 30) + dots;
+                        }
+                        else {
+                            var message = Message;
+                        }
+                        $('#ReminderMessage').append('<li><a href="#"><div class="pull-left"><img src="/Content/images/human.png" class="img-circle" alt="User Image"/></div> <h4> Support Team <small><i class="fa fa-clock"></i> 5 mins</small> </h4><p>' + message + '</p></a></li>');
+                        $('#NotificationMessages').append('<li> <a href="#"> <i class="fa fa-users text-aqua"></i>' + message + '</a></li>');
+                    });
+
+
+                }
+            });
+        }
+        $(document).ready(function () {
+            var thmColour='@BColour';
+            Themechange(thmColour,null,null,null,null,null,'@FSize'+'px');
+            UserID = '@iUserID';
+            if ('@Role' == "XISuperAdmin") {
+                SignalRAlerts();
+            }
+            AutoCreateLayoutURL = '@Url.Action("AutoCreateLayout", "Popup")';
+            AddEditLayoutURL = '@Url.Action("AddEditPopupLayout","Popup")';
+            LayoutMappingsURL = '@Url.Action("GetLayoutMappings", "Popup")';
+            AddEditXiLinkURL = '@Url.Action("AddEditXiLink", "XiLink")';
+            XiLinkListByOrgURL = '@Url.Action("GetXiLinkListByOrg", "QueryGeneration")';
+            ViewXiLinkURL = '@Url.Action("ViewXiLink", "XiLink")';
+            SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+            SaveBOGridURL = '@Url.Action("SaveGrid", "XiLink")';
+            AddEditXiParameterURL = '@Url.Action("AddEditXiParameter", "XiLink")';
+            ViewXiParameterURL = '@Url.Action("ViewXiParameter", "XiLink")';
+            XiParameterListByOrgURL = '@Url.Action("GetXiParameterListByOrg", "QueryGeneration")';
+            AddEditXiLayoutURL = '@Url.Action("AddEditLayoutDetails", "Popup")';
+            XiLayoutListByOrgURL = '@Url.Action("GetXiLayoutListByOrg", "Popup")';
+            UpdateXIParamsURL = '@Url.Action("UpdateXIParams", "XIComponents")';
+            StepContentURL = '@Url.Action("GetStepContent", "XiLink")';
+            StepDataURL = '@Url.Action("GetStepData", "XiLink")';
+            CallQSEventURL = '@Url.Action("CallQSEvent", "XIComponents")';
+            ComponentParmsByStepURL = '@Url.Action("GetComponentParmsByStep", "XIComponents")';
+            ComponentURL = '@Url.Action("LoadComponentByID", "XIComponents")';
+            UpdateInstanceIDURL = '@Url.Action("UpdateInstanceID", "XiLink")';
+            ParentGUIDURL = '@Url.Action("GetParentGUID", "XiLink")';
+            XILinkLoadURL = '@Url.Action("XILinkLoad", "XiLink")';
+            XILinkLoadJsonURL = '@Url.Action("XILinkLoadJson", "XiLink")';
+            XIContentURL = '@Url.Action("XIContent", "XiLink")';
+            XIContentLoadURL = '@Url.Action("XIContentLoad", "XiLink")';
+            DeleteBOURL = '@Url.Action("DeleteBO", "XiLink")';
+            LoadStepURL = '@Url.Action("TriggerStep", "XiLink")';
+            LoadStepContentURL = '@Url.Action("LoadStep", "XiLink")';
+            LoadLayoutURL = '@Url.Action("LoadLayout", "XiLink")';
+            XILinkDefinitionURL = '@Url.Action("GetXILinkDefinition", "XiLink")';
+            PopupDefinitionURL = '@Url.Action("GetPopupDefinition", "XiLink")';
+            OpenInPopupURL = '@Url.Action("OpenInPopup", "XiLink")';
+            SetParamUrl = '@Url.Action("SetParams", "XiLink")';
+            AutoCompleteLarge = '@Url.Action("GetAutoCompleteData", "XiLink")';
+            AutoCompleteMedium = '@Url.Action("GetAutoCompleteList", "BusinessObjects")';
+            NextStepURL = '@Url.Action("GetNextStep", "XiLink")';
+            PrevStepURL = '@Url.Action("GetPreviousStep", "XiLink")';
+            SaveQSStepURL = '@Url.Action("SaveQSStep", "XiLink")';
+            LogSignalRURL = '@Url.Action("LogSignalR", "XiLink")';
+            AmendDetailsURL = '@Url.Action("AmendDetails", "XiLink")';
+            UpdateQuoteURL = '@Url.Action("UpdateQuotePrice", "XiLink")';
+            PaymentURL = '@Url.Action("Payment", "Payment")';
+            SaveGridURL = '@Url.Action("SaveGrid", "XiLink")';
+            RemoveSectionURL = '@Url.Action("RemoveSectionInstance", "XiLink")';
+            sImagePath = '@sImagePath';
+            ExecuteXIScriptURL = '@Url.Action("ExecuteXIScript", "XiLink")';
+            SecureKeyURL = '@Url.Action("CheckSecureKey", "Account")';
+            GetCacheParameterValueURL = '@Url.Action("GetCacheParameterValue", "XiLink")';
+            TriggerXILinkURL = '@Url.Action("TriggerXILink", "XiLink")';
+            AddTriggerXILinkURL = '@Url.Action("AddTriggerXILink", "XiLink")';
+            GetQSDefinitionURL = '@Url.Action("GetQSDefinitionByInstanceID", "XiLink")';
+            GetTemplateDefinitionURL = '@Url.Action("GetTemplateIDByClass", "XiLink")';
+            RemoveStepXIIValuesURL = '@Url.Action("RemoveStepXIIValues", "XiLink")';
+            UpdateQuoteRankURL = '@Url.Action("UpdateQuoteRank", "XiLink")';
+            GetGridDataURL = '@Url.Action("GetGridData", "XiLink")';
+            DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+            ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+            LogJQueryURL = '@Url.Action("LogJqueryError", "XiLink")';
+            //SignalR
+            GetLeadsData = '@Url.Action("GetLeadData", "XiSignalR")';
+            ReqirementOSCount = '@Url.Action("ReqirementOSCount", "XiSignalR")';
+            NotificationCount = '@Url.Action("GetNotificationCount", "XiSignalR")';
+            BODependencyGroupDropDown = '@Url.Action("GetBoDependencyGroupDropDown", "XiLink")';
+            GetSignalROneClickContent = '@Url.Action("SignalROneClickContent", "XiSignalR")';
+            HeatMapReport = '@Url.Action("HeatMapReports", "XiSignalR")';
+
+            //END SingalR
+            GetDependencyDropDownSearch = '@Url.Action("GetDependencyDropDownSearch", "XiLink")';
+            GetDependencyMenuDropDown = '@Url.Action("GetDependencyMenuDropDown", "XiLink")';//For Menu Dependency
+            GetDependencyGroupDropDown = '@Url.Action("GetDependencyGroupDropDown", "XiLink")';
+            BOStructureDependencyDropDown = '@Url.Action("GetStructureDependency", "XiLink")';
+            GetNextHTMLRowsURL = '@Url.Action("GetNextHTMLRows", "XiLink")';
+            GetParentDDLURL = '@Url.Action("GetParentDDL", "BusinessObjects")';
+            GetXIScriptEditorURL = '@Url.Action("XIScriptEditor", "XIInterpreter")';
+            GetXIScriptValidatorURL = '@Url.Action("GetXIScriptValidator", "XIInterpreter")';
+            LoadScriptToEditorURL = '@Url.Action("LoadScriptToEditor", "XIInterpreter")';
+            AddNewScriptURL = '@Url.Action("AddNewScript", "XIInterpreter")';
+            FilterInstanceTreeURL = '@Url.Action("FilterInstanceTree", "XIComponents")';
+            GetInstanceTreeURL = '@Url.Action("GetInstanceTree", "XIComponents")';
+            DispalyTemplate = '@Url.Action("DispalyTemplate", "XiLink")';
+            HTMLDataTemplate = '@Url.Action("HTMLDataTemplate", "XiLink")';
+            TriggerBOActionURL = '@Url.Action("TriggerBOAction", "BusinessObjects")';
+            SaveAuditBO = '@Url.Action("SaveAuditBO", "XiLink")';
+            LoadSectionContentURL = '@Url.Action("Load_Component", "XIComponents")';
+            GetBOInstanceIDURL = '@Url.Action("GetBOInstanceID", "BusinessObjects")';
+            GetBOAttributeValueURL = '@Url.Action("GetBOAttributeValue", "BusinessObjects")';
+            GetCacheDataURL = '@Url.Action("GetCacheData", "XIComponents")';
+            DownloadDocURL = '@Url.Action("Download_Document", "File")';
+            SaveMultiRowURL = '@Url.Action("SaveMultiRow", "XiLink")';
+            @*$('.MoreMessages').on('click', function () {
+                var url = $(this).attr('data-url');
+                window.open('@Url.Action("ViewMessage", "Inbox")', "_blank", "scrollbars=1,resizable=1,width=1400, height=700,left=0,top=0");
+            })*@
+            if ('@Role' == 'WMBeneficier') {
+                XIRun(null,5434, 0, null, null, false);
+            }
+            $(document).on('click', 'button.XIInterpreterBtn', function () {
+                //$('.XIInterpreterBtn').on('click', function () {
+                var XICode = $('.XICode').val();
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("XIInterpreter", "XIInterpreter")',
+                    data: { XICode: XICode },
+                    cache: false,
+                    async: true,
+                    dataType: 'json',
+                    success: function (data) {
+
+                    }, error: function (err) {
+
+                    }
+                });
+            })
+        });
+        var changeTimer = false;
+        function GetQuickSearchResults() {
+            var SearchText = $('#QuickSearchTextBox').val();
+            var ReportID = parseInt($('#SearchBO :selected').val());
+            var IsDefined = $('#SearchBO :selected').attr('data-isdefined');
+            if (SearchText.length > 0) {
+                if (ReportID > 0) {
+                    if (IsDefined == 'True') {
+                        if (changeTimer !== false) clearTimeout(changeTimer);
+                        changeTimer = setTimeout(function () {
+                            if ('@sAppName.ToLower()' == 'createif') {
+                                var BID = $('.slctpro').attr('data-bid');
+                            }
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("ReportResult", "XILink")',
+                                data: { QueryID: ReportID, PageIndex: 1, ResultIn: "Quick", SearchText: SearchText, SearchType: "Quick", iPID: BID },
+                                cache: false,
+                                async: false,
+                                dataType: 'html',
+                                success: function (data) {
+                                    if ('@sAppName.ToLower()' == 'createif') {
+                                        var div = '<div class="fluid-container vh-fluid"><div class="fluid-cell"><div class="fluid-container vh-100"><div class="fluid-cell six-twelve" id="srchResult">' + data + '</div><div class="fluid-cell six-twelve vh-90" id="srchView"></div></div></div></div>';
+                                        var dlgExist = $('.cifsrchdlg');
+                                        if (dlgExist && dlgExist.length > 0) {
+                                            $('.cifsrchdlg').html(div);
+                                        }
+                                        else {
+                                            $('#CIFDlg').html('<div class="cifsrchdlg">' + div + '</div>');
+                                            var DialogDivID = 'cifsrchdlg';
+                                            var windowclose = '<i class="windowClose fa fa-close" onclick="fncdialogclose(this, ' + false + ', &quot;' + DialogDivID + '&quot;)"></i>';
+                                            //$('.' + DialogDivID).html('');
+                                            $("." + DialogDivID).dialog({
+                                                title: 'Search Result',
+                                                //modal: true,
+                                                height: screen.height-150,
+                                                width: screen.width,
+                                                position: { my: 'center center', at: 'left top+400' },
+                                                open: function () {
+                                                    $(this).parent().promise().done(function () {
+                                                        $(this).children('.ui-dialog-titlebar').append('<div class="dialogIcons">' + windowclose + '</div>');
+                                                    })
+                                                }
+                                            });
+                                        }
+                                        $('#CreateIFHome').find('.OneClickResDiv').height(screen.height - 190);
+                                    }
+                                    else if ('@SessionManager.sRoleName.ToString()' == '@EnumRoles.Admin.ToString()') {
+                                        $('.content-wrapper').html(data);
+                                        $('.content-wrapper').find('.OneClickResDiv').height(screen.height - 190);
+                                    }
+                                    else {
+                                        $('#ZeeadminMainContent').html(data);
+                                        $('#ZeeadminMainContent').find('.OneClickResDiv').height(screen.height - 190);
+                                    }
+                                }, error: function (err) {
+
+                                }
+                            });
+                            changeTimer = false;
+                        }, 300);
+                    }
+                    else {
+                        $('.content-wrapper').html('<section class="content-header hedr"><h1> Quick search group is not defined on this BO </h1></section>');
+                    }
+                }
+                else {
+                    $('.content-wrapper').html('<section class="content-header hedr"><h1> 1-Click not assigned to this BO for Quick search </h1></section>');
+                }
+            }
+        }
+        function SignalRAlerts() {
+            var chat = $.connection.notifyHub;
+            chat.client.addNewMessageToPage = function (model) {
+                $('#NotificationMessages').append('<li><a href="#">' + model + '</a></li>');
+                var Count = parseInt($('.ReminderCount1').html());
+                Count = Count + 1;
+                $('.ReminderCount1').html(Count);
+                $('.ReminderCount2').html(Count);
+                //Showing log messages in a Dialog
+                @*var DialogDivID = "SignalR-@iUserID";
+                var bIsExist = $('.' + DialogDivID);
+                if (bIsExist.length > 0) {
+
+                    $("." + DialogDivID).append(model + "<br/>");
+                    $("." + DialogDivID).scrollTop($("." + DialogDivID)[0].scrollHeight);
+                }
+                else {
+                    var Div = '<div class="' + DialogDivID + '"></div>';
+                    $('#Dialogs').html(Div);
+                    $("." + DialogDivID).html(model + "<br/>");
+                    var windowclose = '<i class="windowClose fa fa-times" onclick="fncdialogclose(this, ' + false + ', &quot;' + DialogDivID + '&quot;)"></i>';
+                    $("." + DialogDivID).dialog({
+                        title: 'XI Progress',
+                        //modal: true,
+                        height: 200,
+                        width: 1600,
+                        position: { my: 'left bottom', at: 'left+150 top+1150' },
+                        open: function () {
+                            $(this).parent().promise().done(function () {
+                                $(this).children('.ui-dialog-titlebar').append('<div class="dialogIcons">' + windowclose + '</div>');
+                            })
+                        }
+                    });
+                }*@
+            }
+            $.connection.hub.start({ transport: ['longPolling', 'webSockets'] }, function () { console.log('connection started!'); }).done(function () {
+                var ConnectionID = $.connection.hub.id;
+                fncSetParam(ConnectionID, '@iUserID', "SignalRConnectionID", "", "Session");
+            });
+        }
+        function fncXIInterpreter() {
+            var DialogDivID = "XIInterpreter";
+            var Div = '<div class="' + DialogDivID + '"></div>';
+            $('#Dialogs').html(Div);
+            $("." + DialogDivID).html('<textarea class="XICode" rows="11" cols="222"></textarea>' + "<br/>" + '<div class="footer-form-btn"><button type="button" class="btn btn-theme XIInterpreterBtn">Run</button></div>');
+            var windowclose = '<i class="windowClose fa fa-times" onclick="fncdialogclose(this, ' + false + ', &quot;' + DialogDivID + '&quot;)"></i>';
+            $("." + DialogDivID).dialog({
+                title: 'XI Interpreter',
+                //modal: true,
+                height: 300,
+                width: 1600,
+                position: { my: 'left bottom', at: 'left+150 top+1020' },
+                open: function () {
+                    $(this).parent().promise().done(function () {
+                        $(this).children('.ui-dialog-titlebar').append('<div class="dialogIcons">' + windowclose + '</div>');
+                    })
+                }
+            });
+        }
+        function DownloadfncPDFRecipt(InstanceID, stGUID, StructureID, TemplateName) {
+            $("#imgh").show();
+            window.location.href = '@Url.Action("DownloadPDF", "XiLink")?iInstanceID=' + InstanceID + '&sGUID=' + stGUID + '&iStructureID=' + StructureID + '&sTemplateID=' + TemplateName;
+            $('#imgh').hide();
+        }
+        function OneClickHandler(OneClick) {
+            var iUserID1 = @SessionManager.UserID;
+            var PopupOrDialog="Popup";
+            //var URl=GetSignalROneClickContent;
+            $.ajax({
+                url: GetSignalROneClickContent,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                cache: false,
+                async: false,
+                data: JSON.stringify({ userID: iUserID1, oneclick: OneClick, PopupOrDialog: PopupOrDialog }),
+                success: function (data) {
+                    if (PopupOrDialog.toLowerCase() == "popup") {
+                        //var Popup = window.open('', '_blank', "scrollbars=1,resizable=1,"+ window.innerWidth, window.innerHeight+""); var Popup = window.open('', '_blank', "scrollbars=1,resizable=1,width=1600, height=800");
+                        var Popup = window.open('', '_blank', "scrollbars=1,resizable=1,width=1600, height=800");
+                        with (Popup.document) {
+                            open();
+                            write(data);
+                            close();
+                        }
+                    }
+                }
+            });
+        }
+
+    </script>
+
+    @*<script type="text/javascript">GetRemiderList();</script>*@
+    <script src="~/Scripts/jquery.signalR-2.2.1.js"></script>
+    <!--Reference the autogenerated SignalR hub script. -->
+    <script src="~/signalr/hubs"></script>
+    @*<script src="@Url.Content("~/Scripts/SignalRFunctions.js")"></script>*@
+
+    <style>
+        .SigRError {
+            color: red;
+        }
+
+        .SigRSuccess {
+            color: #06e806;
+        }
+
+        .XICode {
+            color: black;
+        }
+    </style>
+</head>
+<body class="@SessionManager.Theme.Replace(".css","") sidebar-collapse">
+    <div id="wrapper" class="wrapper">
+        @if (SessionManager.sRoleName.ToLower() != EnumRoles.Admin.ToString().ToLower())
+        {
+            <div id="HomeHeader">
+                @{
+                    Html.RenderAction("GetHomeHeader", "Inbox");
+                }
+            </div>
+        }
+        else
+        {
+            <header class="main-header">
+                <!-- Logo -->
+                <a href="@Url.Action("Landingpages","Home")" class="logo">
+                    <!-- mini logo for sidebar mini 50x50 pixels -->
+                    <span class="logo-mini"><b>CN</b>R</span>
+                    <!-- logo for regular state and mobile devices -->
+                    @*<span class="logo-lg"><img src="~/Content/images/ICON10.png" width="30" /> <b> CONVERTER</b></span>*@
+                    <span class="logo-lg"><img src="~/Content/images/@SessionManager.Logo" width="80" /><b> </b> </span>
+                    @*@if (User.Identity.GetGroupName().Contains(EnumRoles.SuperAdmin.ToString()))
+                        {
+                            <span class="logo-lg"><img src="~/Content/images/ICON10.png" width="30" /><b> XIDynaware</b> </span>
+                        }
+                        else
+                        {
+                            <span class="logo-lg"> @User.Identity.GetFirstName().ToUpper() </span>
+                        }*@
+                </a>
+                <!-- Header Navbar -->
+                <nav class="navbar navbar-static-top" role="navigation">
+                    <div class="navbar-custom-menu">
+                        <ul class="nav navbar-nav">
+
+                            <!-- Messages: style can be found in dropdown.less-->
+                            <li class="dropdown messages-menu">
+                                <!-- Menu toggle button -->
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <i class="fa fa-envelope"></i> <span class="label label-success ReminderCount">0</span> </a>
+                                <ul class="dropdown-menu">
+                                    <li class="header">You have <span class="ReminderCount">0</span> messages</li>
+                                    <li>
+                                        <!-- inner menu: contains the messages -->
+                                        <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 200px;">
+                                            <ul class="menu" id="ReminderMessage" style="overflow: hidden; width: 100%; height: 200px;">
+                                                @*<li>
+            <!-- start message -->
+            <a href="#">
+                <div class="pull-left">
+                    <!-- User Image -->
+                    <img src="~/Content/images/human.png" class="img-circle" alt="User Image">
+                </div>
+                <!-- Message title and timestamp -->
+                                                        <h4> Support Team <small><i class="fa fa-clock"></i> 5 mins</small> </h4>
+                                                                        <!-- The message -->
+                <p id="ReminderMessage"></p>
+            </a>
+        </li>*@
+                                                <!-- end message -->
+                                            </ul><div class="slimScrollBar" style="width: 3px; position: absolute; top: 0px; opacity: 0.4; display: block; border-radius: 7px; z-index: 99; right: 1px; background: rgb(0, 0, 0);"></div><div class="slimScrollRail" style="width: 3px; height: 100%; position: absolute; top: 0px; display: none; border-radius: 7px; opacity: 0.2; z-index: 90; right: 1px; background: rgb(51, 51, 51);"></div>
+                                        </div>
+                                        <!-- /.menu -->
+                                    </li>
+                                    <li class="footer MoreMessages"><a>See All Messages</a></li>
+                                </ul>
+                            </li>
+                            <!-- /.messages-menu -->
+                            <!-- Notifications Menu -->
+                            <li class="dropdown notifications-menu">
+                                <!-- Menu toggle button -->
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <i class="fa fa-bell"></i> <span class="label label-warning ReminderCount">0</span> </a>
+                                <ul class="dropdown-menu">
+                                    <li class="header">You have <span class="ReminderCount">0</span> notifications</li>
+                                    <li>
+                                        <!-- Inner Menu: contains the notifications -->
+                                        <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 200px;">
+                                            <ul class="menu" id="NotificationMessages" style="overflow: hidden; width: 100%; height: 200px;">
+                                                @*<li>*@
+                                                <!-- start notification -->
+                                                @*<a href="#"> <i class="fa fa-users text-aqua"></i> <span class="ReminderCount"></span> new members joined today </a>*@
+                                                @*</li>*@
+                                                <!-- end notification -->
+                                            </ul><div class="slimScrollBar" style="width: 3px; position: absolute; top: 0px; opacity: 0.4; display: block; border-radius: 7px; z-index: 99; right: 1px; background: rgb(0, 0, 0);"></div><div class="slimScrollRail" style="width: 3px; height: 100%; position: absolute; top: 0px; display: none; border-radius: 7px; opacity: 0.2; z-index: 90; right: 1px; background: rgb(51, 51, 51);"></div>
+                                        </div>
+                                    </li>
+                                    <li class="footer MoreMessages"><a>View all</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="dropdown user user-menu">
+                                <!-- Menu Toggle Button -->
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    <!-- The user image in the navbar-->
+                                    <img src="~/Content/images/human.png" class="user-image" alt="User Image">
+                                    <!-- hidden-xs hides the username on small devices so only the image appears. -->
+                                    @*<span class="hidden-xs">@Session["UserName"].ToString()</span>*@
+                                    <span class="hidden-xs">@User.Identity.GetUserName()</span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <!-- The user image in the menu -->
+                                    <li class="user-header">
+                                        <img src="~/Content/images/human.png" class="img-circle" alt="User Image">
+                                        @*<p> @User.Identity.GetFirstName()<small>@User.Identity.GetGroupName()</small> </p>*@
+                                    </li>
+                                    <!-- Menu Body -->
+                                    <!-- Menu Footer-->
+                                    <li class="user-footer">
+                                        <div class="pull-left"> <a id="UserProfile" class="btn  btn-theme">Profile</a> </div>
+                                        <div class="pull-right">
+                                            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <a href="javascript:document.getElementById('logoutForm').submit()" class="btn  btn-warning">Sign out</a>
+                                            }
+                                        </div>
+                                    </li>
+                                </ul>
+                            </li>
+
+                        </ul>
+                    </div>
+                </nav>
+            </header>
+        }
+
+        @*<div class="" style="overflow-y: auto;height: calc(100vh - 40px);">
+                @RenderBody()
+            </div>*@
+            <div class="content-wrapper user-control" style="overflow-y: auto;">
+                <section class="fluid-container">
+                    @RenderBody()
+                </section>
+            </div>
+    </div>
+    <div id="Dialogs"></div>
+    <div id="DialogGroups" class="no-padding" style="display:none;">
+        <div id="VerticalLeftBar" class="col-xs-1 btn-popover gutter6"></div>
+        @*<div id="HorizontalTopBar" class="col-xs-12 btn-popover bottom"></div>*@
+        <div id="DialogContent" class="col-xs-11">
+        </div>
+        @*<div id="VerticalRightBar" class="col-xs-1 btn-popover left gutter6 pull-right"></div>
+            <div id="HorizontalBottonBar" class="col-xs-12 btn-popover top"></div>*@
+    </div>
+    <div id="CIFDlg"></div>
+</body>
+</html>

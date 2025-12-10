@@ -1,0 +1,132 @@
+﻿@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<section class="content-header hedr">
+    <h1>Import Leads</h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i>Leads</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-primary">
+                <div class="row">
+                    <div class="col-xs-12 tree_btn">
+                        <div id="Import">
+                            <button class="savebtn btn btn-primary btn2 pull-right" type="submit" id="ImportEmail">Import Email</button>
+
+                        </div>
+                        @* Emails display *@
+                        <div id="EmailBox">
+                            <div id="FolderList">
+                                @* Display folders *@
+                            </div>
+                            <div id="SubjectList">
+                                @* Display subject *@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document.body).on('click', 'button#folderName', function () {
+        var sSelectedFolder = $(this).attr("value")
+        var sValues = { sFolder: sSelectedFolder };
+        $.ajax({
+            url: '@Url.Action("GetSubjectWithIMAP", "Mail")',
+            type: 'POST',
+            datatype: 'JSON',
+            contentType: "application/json; charset=utf-8",
+            cache: false,
+            data: JSON.stringify(sValues),
+            success: function (data) {//SubjectList
+                 for (i = 0; i < data.length; i++) {
+                    var sSubjectDetails = data[i];
+                    var sDetailsSplit = sSubjectDetails.split(" : ");
+                    var iUID = sDetailsSplit[0];
+                    var sFolder = sDetailsSplit[1];
+                    var sSubject = sDetailsSplit[2];
+                    var sFromName = sDetailsSplit[3];
+                    var sDate = sDetailsSplit[4];
+                    $("#SubjectList").append("<div style='background-color: #DCDCDC;' class='SubjectClick' id='" + iUID + "-" + sFolder + "'><p>" + sFromName + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + sSubject + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + sDate + "</p></div>");
+
+                }
+            }
+        });
+    });
+
+    $(document.body).on('click', 'div.SubjectClick', function () {
+        var sSelectedID = $(this).attr("id");
+        var sSubjectSplit = sSelectedID.split("-");
+        var iUID = sSubjectSplit[0];
+        var sFolder = sSubjectSplit[1];
+        var sValues = { iUID: iUID, sFolder: sFolder };
+        $.ajax({
+            url: '@Url.Action("GetEmailDetailsByUID", "Mail")',
+            type: 'POST',
+            datatype: 'JSON',
+            contentType: "application/json; charset=utf-8",
+            cache: false,
+            data: JSON.stringify(sValues),
+            success: function (data) {
+ for (i = 0; i < data.length; i++) {
+                    var sEmailDetails = data[i];
+                    var sDetailsSplit = sEmailDetails.split(" : ");
+                    var sFrom = sDetailsSplit[0];
+                    var sSubject = sDetailsSplit[1];
+                    var sText = sDetailsSplit[2];
+                    var sHtml = sDetailsSplit[3];
+                    var sAttachment = sDetailsSplit[4];
+                    $("#dialog-Success").append(sFrom+"<br/>");
+                    $("#dialog-Success").append(sSubject + "<br/>");
+                    $("#dialog-Success").append(sText + "<br/>");
+                    $("#dialog-Success").append(sHtml + "<br/>");
+                    $("#dialog-Success").append(sAttachment + "<br/>");
+                }
+                $("#dialog-Success").dialog({
+                    autoOpen: true,
+                    modal: true,
+                    title: 'Success',
+                    width: 400,
+                    buttons: {
+                        Ok: function () {
+                            $(this).dialog("close"); //closing on Ok click
+                        }
+                    },
+
+                });
+            }
+        });
+
+    });
+
+    $(document).ready(function () {
+           $("#dialog-Success").dialog({ autoOpen: false });
+           $.ajax({
+               url: '@Url.Action("SelectFoldersWithIMAP", "Mail")',
+               type: 'POST',
+               datatype: 'JSON',
+               contentType: "application/json; charset=utf-8",
+               cache: false,
+               success: function (data) {
+                   $("#FolderList").append("<button style='background-color: #DC143C;color:#FFFAF0;' id='createemail' type='submit' value='Compose'>Compose</button>");
+                   $("#FolderList").append(" <h3>Folders</h3>");
+                   for (i = 0; i < data.length; i++) {
+
+                       $("#FolderList").append("<button type='submit' id='folderName' value='" + data[i] + "'>" + data[i] + "</button>");
+                   }
+               }
+           });
+        //Import Email
+        $('#ImportEmail').click(function () {
+            
+        });
+    });
+</script>

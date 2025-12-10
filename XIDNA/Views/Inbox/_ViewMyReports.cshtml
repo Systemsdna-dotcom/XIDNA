@@ -1,0 +1,99 @@
+﻿@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        var prepopups = new Array();
+        var table = $('#MyReports').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("ViewReportsList", "Inbox")",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+          { "bSortable": false },
+                               {
+                                   "sName": "ID",
+                                   "visible": false,
+                               },
+                               {
+                                   "sName": "Role",
+                                   "visible": false,
+                               },
+                               {
+                                   "sName": "ReportName",
+                               },
+                               {
+                                   "sName": "Discription",
+                               },
+                               {
+                                   "sName": "Display As"                                   
+                               },
+                               {
+                                   "sName": "Location",
+                                   "visible": false,
+                               },
+                               { "bSortable": false }
+
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(4)', nRow).html('<input type="button" class="btn btn-theme RunReport btn-xs" data-url="@Url.Action("GetOneClickResult", "Inbox")?ReportID=' + aData[1] + '&PageIndex=1" data-ajax-update="#QueryPreview"  data-ajax-method="POST" data-ajax="true" value="Run"/>');
+                return nRow;
+            }
+        });
+        $('#MyReports').on('click', 'input.RunReport', function () {
+            var url = $(this).attr('data-url');
+            if (prepopups.length > 0) {
+                for (i = 0; i < prepopups.length; i++) {
+                    prepopups[i].close();
+                }
+            }
+            var preview = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            prepopups.push(preview);
+        })
+    });
+
+</script>
+<style>
+    .Server {
+        margin-bottom: 10px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> My Reports </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i>Reports</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="table-clean">
+                        <table id="MyReports" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>S.No</th>
+                                    <th>ID</th>
+                                    <th>Role</th>
+                                    <th>1-Click</th>
+                                    <th>Description</th>
+                                    <th>Display Type</th>
+                                    <th>Location</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

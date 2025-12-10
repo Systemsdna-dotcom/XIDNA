@@ -1,0 +1,141 @@
+﻿@model XICore.XIDComponent
+@using XICore
+
+<script>
+    $(document).ready(function () {
+
+        $(document.body).unbind().on('click', 'input.SaveXIComponentParamsBtn', function () {
+            var Component = @Html.Raw(Json.Encode(Model));
+            var ComponentType= "QSStepSection";
+
+            var MappingID = '@Model.XIGUID';
+
+            var ID = '@ViewBag.SectionID';
+            var NVPairs = [];
+            $('.NVPairs').each(function () {
+                var Name; var Value; var PID;
+                $(this).find('label').each(function (i, obj) {
+                    Name = $(this).attr('data-sName');
+                });
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "Names") {
+                        Value = $(this).val();
+                    }
+                    if(Nname== "paramid"){
+                        PID = $(this).val();
+                    }
+                });
+                if ((Name && Name.length > 0) && (Value && Value.length > 0)) {
+                    //NVPairs.push(Name + "-" + Value);
+                    for(i=0;i<Component.Params.length;i++){
+                        if(Component.Params[i].sName == Name){
+                            Component.Params[i].sValue = Value;
+                            Component.Params[i].XIGUID = PID;
+                        }
+                    }
+                }
+            });
+            $('.TNVPairs').each(function () {
+                var Name; var Value;
+                $(this).find('label').each(function (i, obj) {
+                    Name = $(this).attr('data-sName');
+                });
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "Names") {
+                        Value = $(this).val();
+                    }
+                });
+                if ((Name && Name.length > 0) && (Value && Value.length > 0)) {
+                    //NVPairs.push(Name + "-" + Value);
+                    for(i=0;i<Component.Triggers.length;i++){
+                        if(Component.Triggers[i].sName == Name){
+                            Component.Triggers[i].sValue = Value;
+                        }
+                    }
+                }
+            });
+            debugger
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Save_ComponentParams", "XIComponents")',
+                data: JSON.stringify({ oComponent: Component, sType:ComponentType, iLoadID: ID }),//JSON.stringify(Component),
+                contentType: 'application/json;',
+                dataType: 'json',
+                traditional: true,
+                success: function (data) {
+                    debugger
+                    if(ComponentType == "QSStep"){
+                        $('#SaveSecCompoParams').val(data);
+                    }
+                    else if(ComponentType == "QSStepSection"){
+                        $('#SaveSecCompoParams').val(data);
+                    }
+                    $("."+MappingID+'-'+ComponentType+'-div').dialog('close');
+                    $("."+MappingID+'-'+ComponentType+'-div').dialog('destroy').remove();
+                    ComponentType = null;
+                }
+            });
+        });
+
+       //Paste
+    });
+</script>
+
+<div class="content" id="XICParams">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div id="XIComponentParams">
+                    <input type="hidden" id="IsValueSet" value="@ViewBag.IsValueSet" />
+                    @if (Model.Params.Count() > 0)
+                    {
+                        foreach (var items in Model.Params)
+                        {
+                            <div class="form-group col-md-12 NVPairs">
+                                <input type="hidden" value="@items.XIGUID" name="paramid" />
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn" data-sname="@items.sName"> @items.sName <span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" name="Names" placeholder="Value" class="form-control" value="@items.sValue" />
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        foreach (var items in Model.NVs)
+                        {
+                            <div class="form-group col-md-12 NVPairs">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn" data-sname="@items.sName"> @items.sName <span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" name="Names" placeholder="Value" class="form-control" value="@items.sValue" />
+                                </div>
+                            </div>
+                        }
+                        foreach (var items in Model.Triggers)
+                        {
+                            <div class="form-group col-md-12 TNVPairs">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn" data-sname="@items.sName"> @items.sName <span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" name="Names" placeholder="Output Area" class="form-control" value="@items.sValue" />
+                                </div>
+                            </div>
+                        }
+                    }
+                    <div class="form-group col-md-12">
+                        <div class="col-md-2">
+                            <input type="button" value="Update" class="btn btn-theme SaveXIComponentParamsBtn" id="" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,113 @@
+﻿@model XIDNA.ViewModels.VMDropDown
+
+<script>
+    $(document).ready(function () {
+        var table = $('#OrgMaptbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Html.Raw(@Url.Action("OrgMappedFieldsGrid", "Fields", new { ClassID = @Model.Value, Type=Model.text }))",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+    {},
+                            {
+                                "sName": "ID",
+                                "visible": false
+                            },
+                            {
+                                "sName": "FieldName",
+                            },
+                            {
+                                "sName": "AddField",
+                            },
+                            {
+                                "sName": "IsDropDown",
+                            },
+                            {}
+            ], "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+
+                $('td:eq(4)', nRow).html('<input type="button" class="Delete btn btn-theme" id="' + aData[1] + '" value="Delete"/> ');
+                return nRow;
+            }
+        });
+        $('#OrgMaptbl').css({ 'width': '100%' });
+        $('#OrgMaptbl').on('click', 'input.Delete', function () {
+            var id = $(this).attr('id');
+            $('.DeleteMapField').html('Do you want to delete this mapping?');
+            $('.DeleteMapField').dialog({
+                modal: true,
+                title: 'Delete Mapped Field',
+                buttons: {
+                    Yes: function () {
+                        $('.DeleteMapField').dialog("close");
+                        $.ajax({
+                            url: '@Url.Action("DeleteMappedField", "Fields")',
+                            type: 'Post',
+                            datatype: 'json',
+                            cache: false,
+                            data: { ID: id },
+                            success: function (data) {
+                                $.ajax({
+                                    url: '@Url.Action("GetOrgLeadFields", "Fields")',
+                                    type: 'POST',
+                                    datatype: 'JSON',
+                                    cache: false,
+                                    data: { ClassID: '@Model.Value', Category: '@Model.text', Type: "Edit" },
+                                    success: function (data) {
+                                        $("#SelectLeadFields").show();
+                                        $("#HideButton").show();
+                                        $("#LeadFieldsGrid").show();
+                                        $('#LeadFields').empty();
+                                        $('#OrgFields').empty();
+                                        for (i = 0; i < data.NonClassFields.length; i++) {
+                                            $('#LeadFields').append("<li><input type='radio' name='Lead' value='" + data.NonClassFields[i] + "'>" + data.NonClassFields[i] + "</li>")
+                                        }
+                                        for (i = 0; i < data.ExistingFields.length; i++) {
+                                            $('#OrgFields').append("<li><input type='radio' name='OrgField' value='" + data.ExistingFields[i] + "'>" + data.ExistingFields[i] + "</li>")
+                                        }
+                                    }
+                                });
+                                $.ajax({
+                                    url: '@Url.Action("GetOrgMappedFields", "Fields")',
+                                    type: 'POST',
+                                    datatype: 'HTML',
+                                    cache: false,
+                                    data: { ClassID: '@Model.Value', Type: '@Model.text' },
+                                    success: function (data) {
+                                        $('#LeadFieldsGrid').empty();
+                                        $('#LeadFieldsGrid').append(data);
+                                    }
+                                });
+                                opener.location.reload();
+                            }
+                        });
+                    },
+                    No: function () {
+                        $(this).dialog("close"); //closing on Ok click
+                    },
+                },
+
+            });
+        })
+    });
+</script>
+
+<div id="box-body">
+    <div class="table-clean">
+        <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="OrgMaptbl">
+            <thead>
+                <tr role="row">
+                    <th>S.No</th>
+                    <th>ID</th>
+                    <th>My Field</th>
+                    <th>XIDynaware Field</th>
+                    <th>Dropdown</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,184 @@
+﻿@model List<XIDNA.Models.BOFields>
+
+
+@*<script src="~/Scripts/jquery.validate.unobtrusive.js"></script>*@
+<style>
+    .attributestable th {
+        padding: 0px 12px;
+    }
+
+    .attributestable td {
+        padding: 0px 12px;
+    }
+
+    .condata {
+        margin-top: 0px;
+    }
+
+    .heading {
+        font-size: 13px;
+        font-weight: bolder;
+    }
+
+    #Buttons {
+        margin-top: 10px;
+    }
+
+    .attributestable {
+        width: 75%;
+    }
+</style>
+<div class="tab_scroll">
+    <div id="BOAttributesFormGrid">
+        <p class="heading">Assign Attributes</p>
+        @using (Ajax.BeginForm("SaveBOAttributes", "BusinessObjects", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "AttributeForm", OnComplete = "OnComplete()" }))
+{
+    <table class="attributestable table table-bordered table-striped dataTable no-footer">
+        <thead>
+            <tr>
+                <th rowspan="2" style="border-left: #1560bd !important;">Field</th>
+                <th rowspan="2">Type</th>
+                <th rowspan="2">Alias</th>
+                <th colspan="5" style="text-align:center; border-right: #1560bd !important;">IS</th>
+            </tr>
+            <tr>
+                <th>Visible</th>
+                <th>Where</th>
+                <th>Total</th>
+                <th>GroupBy</th>
+                <th style="border-right: #1560bd !important;">OrderBy</th>
+            </tr>
+        </thead>
+        <tbody>
+            @Html.AntiForgeryToken()
+            @if (Model.FirstOrDefault().BOTreeViewModel == null)
+            {
+                int j = 0;
+                foreach (var attributes in Model)
+                {
+                    @Html.HiddenFor(m => m[j].Name)
+                    @Html.HiddenFor(m => m[j].BOID)
+                    @Html.HiddenFor(m => m[j].ID)
+                    <tr>
+                        <td>
+                            <div class="form-group">
+                                @Html.Label(attributes.Name)
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="form-group">
+                                @Html.Label(attributes.FieldType)
+                            </div>
+                        </td>
+                        <td>
+                            <div class="form-group">
+                                @Html.TextBoxFor(m => m[j].AliasName, new { @class = "", @placeholder = "Enter Alias Name", @Name = "[" + j + "].AliasName" })
+                                @Html.ValidationMessageFor(m => m[j].AliasName, null, new { @class = "red" })
+                            </div>
+                        </td>
+                        <td style="text-align:center">
+                            <div class="form-group">
+                                @Html.CheckBoxFor(m => m[j].IsVisible, new { @Name = "[" + j + "].IsVisible" })
+                            </div>
+                        </td>
+                        <td style="text-align:center">
+                            <div class="form-group">
+                                @Html.CheckBoxFor(m => m[j].IsWhere, new { @Name = "[" + j + "].IsWhere" })
+                            </div>
+                        </td>
+                        <td style="text-align:center">
+                            <div class="form-group">
+                                @Html.CheckBoxFor(m => m[j].IsTotal, new { @Name = "[" + j + "].IsTotal" })
+                            </div>
+                        </td>
+                        <td style="text-align:center">
+                            <div class="form-group">
+                                @Html.CheckBoxFor(m => m[j].IsGroupBy, new { @Name = "[" + j + "].IsGroupBy" })
+                            </div>
+                        </td>
+                        <td style="text-align:center">
+                            <div class="form-group">
+                                @Html.CheckBoxFor(m => m[j].IsOrderBy, new { @Name = "[" + j + "].IsOrderBy" })
+                            </div>
+                        </td>
+                    </tr>
+                    { j++; }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < Model.Count(); i++)
+                {
+                    int j = 0;
+                    foreach (var items in Model[i].BOTreeViewModel.ColumnName)
+                    {
+                        @Html.HiddenFor(m => m[i].Name, new { @Value = items, @Name = "[" + j + "].Name" })
+                        @Html.HiddenFor(m => m[i].FieldType, new { @Value = Model[i].BOTreeViewModel.DataType[j], @Name = "[" + j + "].FieldType" })
+                        @Html.HiddenFor(m => m[i].BOID, new { @Value = Model.FirstOrDefault().BOID, @Name = "[" + j + "].BOID" })
+                        <tr>
+                            <td>
+                                <div class="form-group">
+                                    @Html.Label(items)
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    @Html.Label(Model[i].BOTreeViewModel.DataType[j])
+                                </div>
+                            </td>
+                            <td>
+                                <div class="form-group">
+                                    @Html.TextBoxFor(m => m[i].AliasName, new { @class = "", @placeholder = "Enter Alias Name", @Name = "[" + j + "].AliasName" })
+                                </div>
+                            </td>
+                            <td style="text-align:center">
+                                <div class="form-group">
+                                    @Html.CheckBoxFor(m => m[i].IsVisible, new { @Name = "[" + j + "].IsVisible" })
+                                </div>
+                            </td>
+                            <td style="text-align:center">
+                                <div class="form-group">
+                                    @Html.CheckBoxFor(m => m[i].IsWhere, new { @Name = "[" + j + "].IsWhere" })
+                                </div>
+                            </td>
+                            <td style="text-align:center">
+                                <div class="form-group">
+                                    @Html.CheckBoxFor(m => m[i].IsTotal, new { @Name = "[" + j + "].IsTotal" })
+                                </div>
+                            </td>
+                            <td style="text-align:center">
+                                <div class="form-group">
+                                    @Html.CheckBoxFor(m => m[i].IsGroupBy, new { @Name = "[" + j + "].IsGroupBy" })
+                                </div>
+                            </td>
+                            <td style="text-align:center">
+                                <div class="form-group">
+                                    @Html.CheckBoxFor(m => m[i].IsOrderBy, new { @Name = "[" + j + "].IsOrderBy" })
+                                </div>
+                            </td>
+                        </tr>
+                        { j++; }
+                    }
+                }
+            }
+
+
+
+        </tbody>
+    </table>
+    <div class="form-group" id="Buttons">
+        <input type="submit" class="save_btn btn-theme BO-tab" value="Save" id="save">
+        <input type="button" class="btn btn-theme decline CancelButn" value="Cancel">
+    </div>
+}
+    </div>
+    </div>
+    <script>
+        function OnComplete() {
+            $('#AttibutesfromGrid').empty();
+        }
+        $('.CancelButn').click(function () {
+            $('#AttibutesfromGrid').empty();
+        });
+    </script>

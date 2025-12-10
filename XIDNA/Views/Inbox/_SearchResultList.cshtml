@@ -1,0 +1,148 @@
+﻿@model XIDNA.ViewModels.VMResultList
+
+<script>
+    var pageIndex = 1;
+    var PageCount = 40;
+    $(window).scroll(function () {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            GetRecords();
+        }
+    });
+    function GetRecords() {
+        var SearchType = "";
+        if ('@Model.ResultListDisplayType' == 0) {
+            var SearchText = "";
+            if ('@Model.IsFilterSearch' == "True") {
+                SearchText = $('#QuickSearchTBox').val();
+            }
+            else {
+                var text = $('#QuickSearchTextBox').val();
+                if (text.length > 0) {
+                    SearchText = $('#QuickSearchTextBox').val();
+                    SearchType = "Quick";
+                }
+                else {
+                    SearchType = null;
+                }
+            }
+            pageIndex++;
+            var sTable = "";
+            var QueryID = '@Model.QueryID';
+            if (SearchText.length > 0) {
+                $.ajax({
+                    url: '@Url.Action("GetSearchResult", "Inbox")',
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "JSON",
+                    cache: false,
+                    async: false,
+                    data: { SearchText: SearchText, ReportID: QueryID, PageIndex: pageIndex, SearchType: SearchType },
+                    success: function (data) {
+                        for (i = 0; i < data.length; i++) {
+                            sTable = sTable + "<tr>";
+                            for (j = 0; j < data[i].length; j++) {
+                                @*if ('@Model.IDExists' == "True") {
+                                    sTable = sTable + "<td>" + data[i][j] + "</td>";
+                                }
+                                else {
+                                    if (j == 0) {
+                                        sTable = sTable + "<tdstyle='display:none'>" + data[i][j] + "</td>";
+                                    }
+                                    else {
+                                        sTable = sTable + "<td>" + data[i][j] + "</td>";
+                                    }
+                                }*@
+                                sTable = sTable + "<td>" + data[i][j] + "</td>";
+                            }
+                            sTable = sTable + "</tr>";
+                        }
+                        $("#ReportResultList").append(sTable);
+                    }
+                });
+            }
+            else {
+                $.ajax({
+                    url: '@Url.Action("QuickSearch", "Inbox")',
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "JSON",
+                    cache: false,
+                    async: false,
+                    data: { QueryID: QueryID, PageIndex: pageIndex },
+                    success: function (data) {
+                        for (i = 0; i < data.length; i++) {
+                            sTable = sTable + "<tr>";
+                            for (j = 0; j < data[i].length; j++) {
+                                @*if ('@Model.IDExists' == "True") {
+                                    sTable = sTable + "<td>" + data[i][j] + "</td>";
+                                }
+                                else {
+                                    if (j == 0) {
+                                        sTable = sTable + "<tdstyle='display:none'>" + data[i][j] + "</td>";
+                                    }
+                                    else {
+                                        sTable = sTable + "<td>" + data[i][j] + "</td>";
+                                    }
+                                }*@
+                                sTable = sTable + "<td>" + data[i][j] + "</td>";
+                            }
+                            sTable = sTable + "</tr>";
+                        }
+                        $("#ReportResultList").append(sTable);
+                    }
+                });
+            }
+        }
+    }
+</script>
+@if (Model.SearchType == "Quick")
+{
+    <section class="content-header hedr">
+
+        @if (Model.QueryIcon != null)
+        {
+            <h1 class="col-md-4"><i class="@Model.QueryIcon" aria-hidden="true"></i> - @Model.QueryName</h1>
+        }
+        else
+        {
+            <h1 class="col-md-4">@Model.QueryName</h1>
+        }
+
+    </section>
+}
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="table-clean">
+                        <table id="ReportResultList" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+                            <thead>
+                                <tr>
+                                    @foreach (var items in Model.Headings)
+                                    {
+                                        <th>@items</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.ResultListDisplayType == 0)
+                                {
+                                    foreach (var item in @Model.Rows)
+                                    {
+                                        <tr>
+                                            @foreach (var value in item)
+                                            {
+                                                <td>@value</td>
+                                            }
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

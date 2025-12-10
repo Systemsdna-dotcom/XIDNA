@@ -1,0 +1,255 @@
+﻿@model Converter.ViewModels.VMAppNotifications
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+}
+<script src="~/Scripts/ajaxfileupload.js"></script>
+<script>
+    $(document).ready(function () {
+        $('div.fa-hover').click(function () {
+            var Text = $(this).text();
+            var icon1 = $(this).closest('.fa-hover').find('i');
+            var Name = $(icon1).attr('class');
+            var icon2 = $(this).closest('.fa-hover').find('img');
+            var src = $(icon2).attr('src');
+            $('#IconName').val(Name);
+            $('#IconDisplay').html('<img src = "' + src + '" style="height:50px;width:50px; "></img><i class="' + Name + '" aria-hidden="true"></i>' + Text);
+            $(".close").click();
+        });
+        if ('@Model.ID' > 0) {
+            //$('#IconDisplay').html('<i class="' + 'Model.Icon' + '" aria-hidden="true"></i>' + 'Model.Icon');
+            $('#IconDisplay').html('<img src = "/Content/images/AppImages/' + '@Model.Icon' + '" style="height:50px;width:50px; "></img><i class="' + '@Model.Icon' + '" aria-hidden="true"></i>' + '@Model.Icon');
+           
+        }
+            });
+</script>
+
+<section class="content-header hedr">
+    <h1> Add Notifications </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Notifications</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <section>
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-body">
+                    <div id="SourceForm" class="tab-pane innerborder">
+                        @using (Ajax.BeginForm("SaveAppNotification", "Mail", new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "AddNotificationForm", @class = "form-horizontal" }))
+                        {
+                            @Html.HiddenFor(m => m.ID);
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Icon<span class="danger"></span></label>
+                                    <button type="button" data-original-title="Click to select icons" data-toggle="modal" data-target="#img_select_modal" class="text-yellow">Select Icon</button>
+                                    <span id="IconDisplay" style="padding-left:10px;"></span>
+                                    <input id="IconName" type="hidden" name="Icon"/>
+                                    @{
+                            Html.RenderPartial("~/Views/Mail/_AppImages.cshtml");
+                                    }
+                                </div>
+                            </div>
+                            @*<div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn"> Image<span class="danger"></span></label>
+                                    <input type="file" id="UploadFile" name="ImageName" />
+                                </div>
+                            </div>*@
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Role<span class="danger"></span></label>
+                                        @Html.DropDownListFor(m => m.RoleID, new SelectList(Model.Roles, "Value", "text"), "--Select--", new { @class = "form-control" ,@id="Role"})
+                                </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.RoleID, null, new { @class = "red" })
+                                </div>
+                            </div>
+                        <div class="form-group" id="User">
+                               <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">User</label>
+                                     @Html.DropDownListFor(m => m.UserID, new SelectList(Model.GetUsers, "Value", "text"), "--Select--", new { @class = "form-control", @id = "ddlUser"})
+                                </div>
+                                 <div class="col-sm-4 taberrormsg">
+                                 @Html.ValidationMessageFor(m => m.UserID, null, new { @class = "red" })
+                                </div>
+                           </div>
+                            <div class="form-group">
+                                    <div class="col-md-3">
+                            <label for="inputEmail" class="gn">Message<span class="danger">*</span></label>
+                            @Html.TextAreaFor(m => m.Message, new { @class = "form-control", @placeholder = "Message", @rows = 4, @cols = 10 })
+                                    </div>
+                     <div class="col-sm-7 orgsorerror">
+                                 @Html.ValidationMessageFor(m => m.Message, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <button type="submit" class="btn btn-primary m-r-10">Save</button>
+                                    @if (Model.ID == 0)
+                                    {
+                                        <button type="reset" class="btn btn-info m-r-10" id="Reset">Reset</button>
+                                    }
+                                    <button type="button" class="btn btn-danger m-r-10" id="Cancel">Cancel</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#UploadFile').change(function () {
+            if ($('#UploadFile').val() != "") {
+                $('#Image').val("True");
+            }
+            else {
+                $('#Image').val("False");
+            }
+        });
+        //$('#IconDisplay').click(function () {
+        //    if ($('#IconDisplay').val() != "") {
+        //        $('#IconName').val("True");
+        //    }
+        //    else {
+        //        $('#IconName').val("False");
+        //    }
+        //});
+        if ('@Model.ID' > 0) {
+
+            if ('@Model.UserID' > 0) {
+                $('#Role').prop("disabled", true);
+            }
+            if ('@Model.RoleID' > 0) {
+                $('#ddlUser').prop("disabled", true);
+            }
+        }
+
+        
+
+        @*if ('@Model.RoleID' > 0) {
+            $('#ddlUser').prop("disabled", true);
+        }
+        else {
+            if ('@Model.UserID' > 0) {
+                $('#ddlUser').prop("disabled", false);
+            }
+        }*@
+
+        $("#Role").change(function () {
+            var value = $(this).val();
+            if (value.length > 0) {
+                $('#ddlUser').prop("disabled", true);
+            }
+            else {
+                $('#ddlUser').prop("disabled", false);
+            }
+            var id = $(this).val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetOrgRoles", "Mail")',
+                dataType: 'json',
+                data: { OrgID: id },
+                success: function (data) {
+                    $('#ddlUser').empty();
+                    $('#ddlUser').val('0');
+                    optionArray = [];
+                    optionArray[0] = "<option value='0'>" + "--Select--" + "</option>";
+                    $.each(data, function (i, option) {
+                        optionArray[i + 1] = "<option value='" + option.Value + "'>" + option.text + "</option>";
+                    });
+                    $('#ddlUser').append(optionArray.join(''));
+
+                },
+                error: function (ex) {
+                    //alert('Failed to retrieve Users.' + id);
+                }
+            });
+            return false;
+        });
+
+        $("#ddlUser").change(function () {
+            var value = $(this).val();
+            if (value.length > 0) {
+                $('#Role').prop("disabled", true);
+            }
+            else {
+                $('#Role').prop("disabled", false);
+            }
+            var id = $(this).val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetOrgRoles", "Mail")',
+                dataType: 'json',
+                data: { OrgID: id },
+                success: function (data) {
+                    $('#Role').val('0');
+                    $('#Role').empty();
+                    optionArray = [];
+                    optionArray[0] = "<option value='0'>" + "--Select--" + "</option>";
+                    $.each(data, function (i, option) {
+                        optionArray[i + 1] = "<option value='" + option.Value + "'>" + option.text + "</option>";
+                    });
+                    $('#Role').append(optionArray.join(''));
+
+                },
+                error: function (ex) {
+                    //alert('Failed to retrieve Users.' + id);
+                }
+            });
+            return false;
+        });
+
+
+        $('#Reset').click(function () {
+            $('#AddNotificationForm')[0].reset();
+            $('#IconName').val('');
+            $('#IconDisplay').html('');
+            $('#ddlUser').prop("disabled", false);
+            $('#ddlUser').val('');
+            $('#Role').prop("disabled", false);
+            $('#Role').val('');
+        });
+        $('#Cancel').click(function () {
+            window.close();
+        });
+    });
+
+    function OnComplete(id) {
+        if ($('#UploadFile').val() != "") {
+            $.ajaxFileUpload({
+                url: '@Url.Action("UploadFiles", "Mail")',
+                secureuri: false,
+                async: false,
+                type: 'POST',
+                fileElementId: 'UploadFile',
+                dataType: 'json',
+                data: {
+                    id: id,
+                },
+                success: function (data, result) {
+                    $('#AddNotificationForm')[0].reset();
+                    opener.location.reload();
+                }
+            });
+        }
+        else {
+            $('#AddNotificationForm')[0].reset();
+            opener.location.reload();
+        }
+    }
+</script>

@@ -1,0 +1,134 @@
+﻿@using XIDNA.Models
+
+
+    <script>
+
+        $(document).ready(function () {
+
+            var table = $('#usertbl').dataTable({
+                //"bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Url.Action("GetUsersList", "Users", new {OrganizationID=User.Identity.GetOrganizationID() })",
+                "aaSorting": [1, 'desc'],
+                "aoColumns": [
+                {},
+                                 {
+                                     "sName": "ID",
+                                     "visible": false
+                                 },
+                                 {
+                                     "sName": "UserName",
+
+                                 },
+                                 {
+                                     "sName": "Role",
+
+                                 },
+                                 {
+                                     "sName": "PhoneNumber",
+
+                                 },
+                                 {
+                                     "sName": "Email",
+                                 },
+                              
+                                  
+                                    {
+                                        "sName": "Actions",
+                                          
+                                    },
+
+
+
+                ],
+                @*"fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                    var id = aData[1];
+                    $('td:eq(5)', nRow).html('<a href="@Url.Action( "Edit")?id=' + id + '" class="savebtn btn btn-primary btn2">Edit</a><a href="@Url.Action("Delete")?id=' + id + '"class="savebtn btn btn-primary btn2">Delete</a>');
+                },*@
+                "columnDefs": [{
+                    "targets": 6, "data": "name", "render": function (nRow, aData, iDisplayIndex) {
+
+                        return ("<input class='savebtn btn btn-theme btn2' onclick='edit(this)' id='editq-" + parseInt(iDisplayIndex[1]) + "' value='EDIT'  type='button'  data-url='@Url.Action("GetUser", "Users")?userid=" + parseInt(iDisplayIndex[1]) + "'/>" 
+
+
+                            //+"<input class='savebtn btn btn-primary btn2' onclick='viewcontact(this)' id='viewcon-" + parseInt(iDisplayIndex[1]) + "' value='DELETE'  type='button'  data-url='GetOrganizationView/Users?id=" + parseInt(iDisplayIndex[1]) + "'/>"
+                          )
+                    }
+                }]
+            })
+            //$('#usertbl tbody').on('click', 'tr', function () {
+            //    var table = $('#usertbl').DataTable();
+            //   var data= table.row(this).data()
+            //   var selid = parseInt(data[1]);
+            //   var username = data[2];
+            //    var url = "UserDetails?userid=" + selid+"&UserName="+username ;
+            //    window.open(url, 'UsersWindow', "scrollbars=1,resizable=1,width=1400, height=700,left=100,top=100");
+
+            //});
+            $('#UserButton').on('click', 'input', function (e) {
+                e.preventDefault();
+                var url = $(this).attr('data-url');
+                window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            });
+        })
+        function edit(r) {
+            var id = r.id;
+            var url = $('[id*=' + id + ']').attr('data-url');
+            window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+
+        }
+       
+    </script>
+    <style>
+        .subnav {
+            margin-bottom: 10px;
+        }
+    </style>
+    @*<section class="content-header hedr">
+        <h1>Users  Management </h1>
+        <ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-dashboard"></i>Inbox</a></li>
+            <li class="active">Home</li>
+        </ol>
+    </section>*@
+
+    <div class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="">
+                    <div class="box-body">
+                        <div class="row">
+                            @*<div class="col-xs-12 tree_btn" id="UserButton">
+                                <input class="savebtn btn btn-primary btn2 pull-right" type="button" value="Create User" data-url="AddUserForm/Users" />
+                            </div>*@
+                        </div>
+                        <div id="box-body">
+                            <div class="tab_scroll main-table">
+                                <div class="dataTables_wrapper no-footer table-responsive">
+                                    <table class="table table-bordered table-striped dataTable" id="usertbl" style="width:100%!important;">
+                                        <thead>
+                                            <tr role="row">
+                                                <th>S.No</th>
+                                                <th>ID</th>
+                                                <th>User Name</th>
+                                                <th>Role</th>
+                                                <th>Phone Number</th>
+                                                <th>Email</th>
+                                                <th>Actions</th>
+
+                                            </tr>
+                                        </thead>
+
+                                        <tbody></tbody>
+
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+

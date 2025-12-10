@@ -1,0 +1,102 @@
+﻿@model XIDNA.Models.GoogleReviews.GoogleReviews.Venue
+@{
+    ViewBag.Title = "About";
+}
+<script src="~/Scripts/jquery-1.12.4.js"></script>
+<script src="~/Scripts/jquery-1.12.4.min.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            @Html.LabelFor(m => m.Name, new { @class = "col-md-2 control-label" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(m => m.Name, new { @class = "form-control", id = "TextBoxVenueLocation" })
+                @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger" })
+                @Html.HiddenFor(m => m.Id, new { @id = "EventVenueId" })
+
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="form-group">
+    <div id="GoogleReviews"></div>
+</div>
+<script type="text/javascript">
+
+    $("#TextBoxVenueLocation").autocomplete({
+
+        source: function (request, response) {
+           // debugger;
+            $('#GoogleReviews').html('');
+                $.ajax({
+                    url: "@Url.Action("GetEventVenuesList", "GoogleReview")",
+                    data: { SearchText: request.term },
+                    dataType: "json",
+                    type: "GET",
+                    success: function (data) {
+                        if (data.length == 0) {
+                            $('#EventVenueId').val("");
+
+                            //$('#VenueLocationMesssage').show();
+                            return false;
+                        }
+                        else {
+                            response($.map(data, function (item) {
+                                return {
+                                    label: item.description,
+                                    value: item.place_id
+                                }
+                            }));
+                        }
+                    },
+                    error: function (x, y, z) {
+                        alert('error');
+                    }
+                });
+            },
+            messages: {
+                noResults: "", results: ""
+            },
+            select: function (event, ui) {
+                $('#TextBoxVenueLocation').val(ui.item.label);
+                //PlaceId = $('#EventVenueId').val();
+                PlaceId = $('#EventVenueId').val(ui.item.value);
+                PlacedID = PlaceId[0].value;
+                $.ajax({
+                    type: "GET",
+                    url: '@Url.Action("GettingReviews", "GoogleReview")',
+                    contentType: "application/json; charset=utf-8",
+                    data: {
+                        placeId: PlacedID
+                    },
+                    async: false,
+                    cache: false,
+                    dataType: "html",
+                    success: function (data) {
+                       // debugger;
+                        //var Result="";
+                        //$.each(data, function (key, val) {
+                        //    Result += "<span style='font-weight:bold'>Author Name:</span> " + val.AuthorName + "</br>" + "<span style='font-weight:bold'>Rating: </span>" + val.Rating + "</br> <span  style='font-weight:bold'>Review: </span>" + val.Review + "</br> <span  style='font-weight:bold'>How Many Days: </span>" + val.Months + "</br> </br></br>"
+                        //});
+                        $('#GoogleReviews').html(data);
+                    },
+                    error: function (xhr, status, error) {
+                        var err = eval("(" + xhr.responseText + ")");
+                        toastr.error(err.message);
+                    }
+                });
+                return false;
+            }
+        }).autocomplete("widget").addClass("CitiesAutocomplete");
+    //});
+    //select: function (event, ui) {
+    //    $('#TextBoxVenueLocation').val(ui.item.label);
+    //    $('#EventVenueId').val(ui.item.value);
+    //    GetVenueDetailsByPlaceId(ui.item.value);
+    //    return false;
+    //}
+
+</script>

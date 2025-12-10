@@ -1,0 +1,1224 @@
+﻿@model XIDNA.Models.BOFields
+@{
+    if (ViewBag.IsLayout)
+    {
+        Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    }
+}
+
+<script src="~/Scripts/ajaxfileupload.js"></script>
+
+<style>
+    #TextBoxContainer {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        width: 70%;
+    }
+
+    #EditTextBoxContainer {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        width: 70%;
+    }
+
+    #sortable li {
+        margin: 0 3px 3px 3px;
+        padding: 0.4em;
+        padding-left: 1.5em;
+        font-size: 1.4em;
+        height: 18px;
+    }
+
+        #sortable li span {
+            position: absolute;
+            margin-left: -1.3em;
+        }
+</style>
+@*
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>*@
+<script>
+
+    $(function () {
+        $("#TextBoxContainer").sortable();
+        $("#TextBoxContainer").disableSelection();
+        $("#EditTextBoxContainer").sortable();
+        $("#EditTextBoxContainer").disableSelection();
+    });
+
+
+</script>
+<script src="~/Scripts/jquery.blockUI.js"></script>
+@*
+    <style>
+            .attributestable th {
+                padding: 0px 12px;
+            }
+
+            .attributestable td {
+                padding: 0px 12px;
+            }
+
+            .condata {
+                margin-top: 0px;
+            }
+
+            .heading {
+                font-size: 13px;
+                font-weight: bolder;
+            }
+
+            #Buttons {
+                margin-top: 10px;
+            }
+
+            .attributestable {
+                width: 75%;
+            }
+
+            #BOAttributesForm a {
+                display: none;
+            }
+
+            .AliasName {
+                width: 265px;
+            }
+        </style>*@
+<script>
+
+    $(document).ready(function () {
+        $('input.wherebox[type=checkbox]').on('change', function () {
+            var id = this.id;
+            var type = $(this).attr('fieldtype');
+            var name = $(this).attr('field');
+            var attribute = type + "-" + name;
+            if ($(this).prop('checked') == true) {
+                var Fieldid = $('input.FID[id="' + id + '"]').val();
+                var pid = $('a[name="' + attribute + '"]').attr('data-fieldid');
+                if (pid) { }
+                else {
+                    $(this).prop('checked', true);
+                    $(this).attr('checked', true);
+                    var values = "", checkboxes = "", fieldname, labels = "", rowid;
+                    $(this).closest('tr').find('td').each(function () {
+                        rowid = this.id;
+                        $(this).find('label').each(function () {
+                            labels = labels + $(this).text() + ',';
+                        });
+                        $(this).find('input.FieldName').each(function () {
+                            fieldname = this.value;
+                        });
+                        $(this).find("input:checkbox").each(function () {
+                            if ($(this).is(':checked')) {
+                                checkboxes = checkboxes + 'True' + ',';
+                            }
+                            else {
+                                checkboxes = checkboxes + 'False' + ',';
+                            }
+                        });
+                        $(this).removeClass('wherebox');
+                    });
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("CreateAttributeForField", "BusinessObjects")',
+                        data: { Labels: labels, FieldName: fieldname, Checkboxes: checkboxes },
+                        cache: false,
+                        dataType: 'json',
+                        success: function (data) {
+                            $('#IsWhere-' + name + '-' + id).attr('data-fieldid', data);
+                            $('#IsExpression-' + name + '-' + id).attr('data-fieldid', data);
+                            //$('#IsDefault-' + name + '-' + id).attr('data-fieldid', data);
+                            $('p.FieldIDs[id="' + id + '"]').empty();
+                            $('p.FieldIDs[id="' + id + '"]').append(data);
+                            $('input.FID[id="' + id + '"]').val(data);
+                        }
+                    });
+                }
+            }
+
+            if ($(this).prop('checked') == true) {
+                if (type == "IsWhere") {
+                    $('#IsWhere-' + name + '-' + id).addClass('whereactive');
+                }
+                else {
+                    $('#IsExpression-' + name + '-' + id).addClass('whereactive');
+                }
+            }
+            else {
+                if (type == "IsWhere") {
+                    $('#IsWhere-' + name + '-' + id).removeClass('whereactive');
+                }
+                else {
+                    $('#IsExpression-' + name + '-' + id).removeClass('whereactive');
+                }
+            }
+
+        });
+        $('#BOAttributesForm a').click(function (e) {
+            e.preventDefault();
+            var id = this.id;
+            id = id.split('-')[2];
+            var type = $(this).attr('data-type');
+            var fieldid = $(this).next('p').text();
+            window.open("@Url.Action("WherePopup", "BusinessObjects")?FieldID=" + fieldid + "&Type=" + type, '_blank', "scrollbars=1,resizable=1,width=1200, height=500,left=200,top=100");
+        })
+    });
+</script>
+
+<section class="content">
+    <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    <div id="BOAttributesForm">
+                        <p class="heading">Assign Attributes</p>
+                        @using (Ajax.BeginForm("SaveFormBOAttributes", "BusinessObjects", new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnComplete", UpdateTargetId = "AttributeForm" }, new { @id = "BOFormWithAttributes", @class = "form-horizontal" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.ValidationSummary(true)
+                            @Html.HiddenFor(m => m.ID, new { @id = "AttrID" })
+                            @Html.HiddenFor(m => m.BOID, new { @id = "BOID" })
+                            @Html.HiddenFor(m => m.MaxLength, new { @Value = Model.FieldMaxLength })
+                            <div id="clear-text" class="box-body">
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(m => m.Name, new { @readonly = "readonly", @placeholder = "Enter Name Here", @class = "form-control", @id = "AttributeName" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Datatype<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(m => m.DataType, new { @placeholder = "Enter DataType", @class = "form-control" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Label Name<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(m => m.LabelName, new { @placeholder = "Enter Label Name", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.LabelName, null, new { @class = "red" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Description<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.Description, new { @placeholder = "Enter Description", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-7 fielderror">
+                                        @Html.ValidationMessageFor(m => m.Description, null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Placeholder<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.sPlaceHolder, new { @placeholder = "Enter Placeholder text", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-7 fielderror">
+                                        @Html.ValidationMessageFor(m => m.sPlaceHolder, null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Help Text<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.sHelpText, new { @placeholder = "Enter Help text", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-7 fielderror">
+                                        @Html.ValidationMessageFor(m => m.sHelpText, null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Formatting<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(m => m.Format, new { @placeholder = "Enter Format", @class = "form-control" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Foreign Key BO <span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.FKTableName, new { @placeholder = "Foregin key table name", @class = "form-control" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Foreign Key Type<span class="danger"></span></label>
+                                        @Html.DropDownListFor(m => m.FKiType, new SelectList(new List<Object>
+                                        {
+                                        new { key= 0 , value = "--Select--" },
+                                        new { key= 10 , value = "FK" },
+                                        new { key= 20 , value = "Master Data" },
+                                        new { key= 30 , value = "Class" },
+                                       new { key= 40 , value = "One Click" },
+                                        }, "key", "Value"), new { @id = "ForeignKeyType", @class = "form-control" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="OneClickID">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">1-Click</label>
+                                        <input type="text" placeholder="Enter 1-Click Name Here" class="form-control" id="FKOneClickID" name="sOneClickName" value="@Model.sOneClickName" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3" id="SysType">
+                                        <label for="inputEmail" class="gn">Sys Type<span class="danger"></span></label>
+                                        @Html.DropDownListFor(m => m.iMasterDataID, new SelectList(Model.SysType, "Value", "Expression"), "--Select--", new { @id = "SysTypeData", @class = "form-control" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Is OptionList<span class="danger"></span></label>
+                                        @Html.CheckBoxFor(m => m.IsOptionList, new { @id = "OptionList" })
+                                        <i style="Color:#0094ff;" class="OptionListChecked fa fa-search" aria-hidden="true"></i>
+                                        <i style="Color:#0094ff;" class="AddOptionList fa fa-plus-circle" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Default Value<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.DefaultValue, new { @placeholder = "Enter Default Value", @class = "form-control" })
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12" id="Options_trMain" style="display:none;">
+                                    <div class="col-md-12">
+                                        <input type="hidden" id="HiddenName" name="myhidden" value=@Model.Name />
+                                        <input type="hidden" id="HiddenID" name="myhidden" value=@Model.BOID />
+                                        <div id="EditTextBoxContainer" class="col-md-12">
+                                        </div>
+                                        <div class="input-group col-md-10">
+                                            <input id="btnAddEdit" class="btn btn-theme BO-tab m-r-10" type="button" value="Add Details" />
+                                            <input id="UpdateOptionList" class="btn btn-theme BO-tab m-r-10" type="button" value="Update Details" />
+                                            @*<input id="DeleteOptionList" class="btn btn-theme BO-tab m-r-10" type="button" value="Delete Details" />*@
+                                            <input id="Cancel_OptionList" class="btn btn-theme BO-tab m-r-10" type="button" value="Cancel" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-10" id="Options_tr" style="display:none;">
+                                    <div class="col-md-10">
+                                        <input type="hidden" id="HiddenName" name="myhidden" value=@Model.Name />
+                                        <input type="hidden" id="HiddenID" name="myhidden" value=@Model.BOID />
+                                        <div id="TextBoxContainer" class="col-md-10">
+                                        </div>
+                                        <div class="input-group col-md-10">
+                                            <input id="btnAdd" class="btn btn-theme BO-tab m-r-10" type="button" value="Add Details" />
+                                            <input id="Save_OptionList" class="btn btn-theme BO-tab m-r-10" type="button" value="Save Details" />
+                                        </div>
+                                    </div>
+                                </div>
+                                @*<div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Foreign Key Table <span class="danger"></span></label>
+                                            @Html.TextBoxFor(m => m.FKTableName, new { @placeholder = "Foregin key table name", @class = "form-control" })
+                                        </div>
+                                    </div>*@
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Is Visible <span class="danger">*</span></label>
+                                        @Html.CheckBoxFor(m => m.IsVisible)
+                                    </div>
+                                </div>
+
+                                @if (Model.IsWhere == true)
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Is Where<span class="danger">*</span></label>
+                                            @Html.CheckBoxFor(m => m.IsWhere, new { @Name = Model.IsWhere, @class = "wherebox", @id = 0, @checked = "checked", @field = Model.Name, @fieldtype = "IsWhere", })
+                                            <a href="where" class="whereactive" data-type="wherecheckbox" data-fieldid="@Model.ID" id="IsWhere-@Model.Name" name="IsWhere-@Model.Name"><i class="fa fa-search" aria-hidden="true"></i></a>
+                                            <p style="display:none;" id="where" class="FieldID">@Model.ID</p>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Is Where<span class="danger"></span></label>
+                                            @Html.CheckBoxFor(m => m.IsWhere, new { @Name = Model.IsWhere, @class = "wherebox", @id = "where", @field = Model.Name, @fieldtype = "IsWhere", })
+                                            <a href="Where" id="IsWhere-@Model.Name" data-type="wherecheckbox" class="WhereCheckBox" name="IsWhere-@Model.Name" data-fieldid="@Model.ID"><i class="fa fa-search" aria-hidden="true"></i></a>
+                                            <p style="display:none;" id="Where" class="FieldID">@Model.ID</p>
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">IsTextArea <span class="danger"></span></label>
+                                        @Html.CheckBoxFor(m => m.IsTextArea)
+                                    </div>
+                                </div>
+
+                                @if (Model.DataType == "INT" || Model.DataType == "DECIMAL")
+                                {
+
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Is Total <span class="danger">*</span></label>
+                                            @Html.CheckBoxFor(m => m.IsTotal, new { @Name = Model.IsTotal })
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Is Total <span class="danger"></span></label>
+                                            @Html.CheckBoxFor(m => m.IsTotal, new { @Name = Model.IsTotal, @disabled = "disabled" })
+                                        </div>
+                                    </div>
+                                }
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Is GroupBy <span class="danger"></span></label>
+                                        @Html.CheckBoxFor(m => m.IsGroupBy, new { @Name = Model.IsGroupBy })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Is OrderedBy <span class="danger"></span></label>
+                                        @Html.CheckBoxFor(m => m.IsOrderBy, new { @Name = Model.IsOrderBy })
+                                    </div>
+                                </div>
+
+                                @if (Model.IsExpression == true)
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Is Expression <span class="danger"></span></label>
+                                            @Html.CheckBoxFor(m => m.IsExpression, new { @Name = Model.IsExpression, @class = "wherebox", @id = "Expression", @field = Model.Name, @fieldtype = "IsExpression", @checked = "checked" })
+                                            <a href="Expresn" class="whereactive" data-type="exprcheckbox" id="IsExpression-@Model.Name" data-fieldid="@Model.ID" name="IsExpression-@Model.Name"><i class="fa fa-search" aria-hidden="true"></i></a>
+                                            <p style="display:none;" id="Expression" class="FieldID">@Model.ID</p>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Is Expression <span class="danger"></span></label>
+                                            @Html.CheckBoxFor(m => m.IsExpression, new { @Name = Model.IsExpression, @class = "wherebox", @field = Model.Name, @fieldtype = "IsExpression", @id = "Expression" })
+                                            <a href="Expresn" class="ExpressionCheckBox" data-type="exprcheckbox" id="IsExpression-@Model.Name" name="IsExpression-@Model.Name" data-fieldid="@Model.ID"><i class="fa fa-search" aria-hidden="true"></i></a>
+                                            <p style="display:none;" id="Expression" class="FieldID">@Model.ID</p>
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">FK Where Clause<span class="danger"></span></label>
+                                        @Html.TextAreaFor(m => m.FKWhere, new { @rows = 2, @cols = 50, @placeholder = "Where Clause for FK", @class = "form-control" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Script<span class="danger"></span></label>
+                                        @Html.TextAreaFor(m => m.Script, new { @rows = 2, @cols = 50, @placeholder = "Script", @class = "form-control" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">File Type<span class="danger"></span></label>
+                                        @Html.DropDownListFor(m => m.FKiFileTypeID, new SelectList(Model.FileDetails, "Value", "text"), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                                @if (Model.Type != null && Model.Type != "")
+                                {
+                                    if (Model.Type.ToLower() == "masterentity")
+                                    {
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">Is KPI <span class="danger"></span></label>
+                                                @Html.CheckBoxFor(m => m.bKPI, new { @id = "KPIChecked" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group" id="DrpSystemType">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">System Type<span class="danger"></span></label>
+                                                @Html.DropDownListFor(m => m.iSystemType, new SelectList(new List<Object>
+                                        {
+                                        new { key= 0 , value = "--Select--" },
+                                        new { key= 10 , value = "status" },
+                                        new { key= 20 , value = "type" },
+                                        new { key= 30 , value = "value" },
+                                        new { key= 40 , value = "quantity" },
+                                        new { key= 50 , value = "user" },
+                                        new { key= 60 , value = "3rd party (customer user)" },
+                                        new { key= 70 , value = "day date" },
+                                        new { key= 80 , value = "month date" },
+                                        new { key= 90 , value = "time" },
+                                        new { key= 100 , value = "year" },
+                                        }, "key", "Value"), new { @id = "SystemType", @class = "form-control" })
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <input type="button" class="btn btn-theme BO-tab m-r-10" value="Generate KPI" id="KPI_Generate">
+                                        </div>
+                                    }
+                                }
+                                <div class="col-md-10">
+                                    <div class="col-md-1"></div>
+                                    <div class="col-md-3">
+                                        <div class="CreateButtons">
+
+
+
+                                            <input type="submit" class="sv_bt btn btn-theme BO-tab m-r-10" value="Save" id="save">
+                                            <input type="button" class="btn btn-theme reverse m-r-10 BO-tab CancelBtn" value="Cancel" id="CancelBtn">
+                                            <input type="button" class="btn btn-theme decline m-r-10 BO-tab DeleteBtn" value="Delete" id="Delete_Attribute">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript">
+    $('#DrpSystemType').hide();
+    $("#KPI_Generate").hide();
+    CheckBox();
+    $(document).ready(function () {
+        $(document.body).on('click', 'button.DeleteNVPair', function () {
+            $(this).closest(".NVPairs").hide();
+        });
+
+        var OneClicks = @Html.Raw(Json.Encode(Model.ddlOneClicks));
+        var availableOneClicks = Object.keys(OneClicks);
+        $( "#FKOneClickID" ).autocomplete({
+            source: availableOneClicks
+        });
+
+        $(".OptionListChecked").hide();
+        $('.AddOptionList').hide();
+        $('#SysType').hide();
+        $('#OneClickID').hide();
+        $('#OneClickType').hide();
+        if(@Model.ID > 0)
+        {
+            var SysTypeValue = @Model.FKiType;
+            if(SysTypeValue == 20)
+            {
+                var iMasteDataID = @Model.iMasterDataID;
+                $('#SysType').show();
+                $('#SysType').val(iMasteDataID);
+            }
+            else if(SysTypeValue == 40)
+            {
+                $('#OneClickID').show();
+                $('#OneClickID').val('@Model.sOneClickName');
+            }
+
+            var IsOptionList = '@Model.IsOptionList';
+            if(IsOptionList == "True")
+            {
+                $("#ForeignKeyType").prop('disabled', true);
+                $("#OptionList").prop('disabled', false);
+            }
+            else if(IsOptionList == "False")
+            {
+                $("#ForeignKeyType").prop('disabled', false);
+                $("#OptionList").prop('disabled', false);
+            }
+        }
+
+        var IsChecked = $('#OptionList:checkbox:checked').length > 0;
+        if (IsChecked == true) {
+            var sName = $("#HiddenName").val();
+            var sID = $("#HiddenID").val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CheckBoOptionList", "BusinessObjects")',
+                data: { BOID: sID, AtrName: sName },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data == true) {
+                        $('.OptionListChecked').show();
+                        $('.AddOptionList').hide();
+                    }
+                    else {
+                        $('.AddOptionList').show();
+                        $('.OptionListChecked').hide();
+                    }
+                }
+            });
+
+        }
+        else {
+            //$('.AddOptionList').show();
+            $('.OptionListChecked').hide();
+        }
+
+        $("#BootstrpAlert").hide();
+        $("#BootstrpAlertSuccess").hide();
+
+        $(".OptionListChecked").click(function (ev) {
+            $('.AddOptionList').hide();
+            $(".OptionListChecked").hide();
+            $('#Options_tr').hide();
+            var sName = $("#HiddenName").val();
+            var sID = $("#HiddenID").val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("EditBoOptionList", "BusinessObjects")',
+                data: { BOID: sID, AtrName: sName },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.length != "") {
+                        $('#Options_trMain').show();
+                        for (var i = 0; i < data.length ; i++) {
+                            var sNameDetails = data[i][0].split('^');
+                            var iID = sNameDetails[1];
+                            var sOptionName = sNameDetails[0];
+                            var sOptionStatus = data[i][3];
+                            var sOptionCode = data[i][2];
+                            if(sOptionCode == undefined)
+                            {
+                                sOptionCode ="";
+                            }
+                            $('#EditTextBoxContainer').append('<input type="hidden" id="HiddenDBID" name="myhidden" value="' + iID + '" />')
+                            //$('#EditTextBoxContainer').append('<div class="form-group NVPairs"><div class="col-md-4"><label for="inputEmail" class="gn">Name</label><input name="DynamicTextBoxName" type="text" value="' + sOptionName+ '" class="form-control"></div><div class="col-md-4"><label for="inputEmail" class="gn">Value</label><input name="DynamicTextBoxValues" type="text" value="' + data[i][1] + '" class="form-control"></div><br><div class="col-md-2"><button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button></div></div>')
+                            if(sOptionStatus == "10")
+                            {
+                                $('#EditTextBoxContainer').append('<div class="form-group NVPairs"><div class="col-md-3"><label for="inputEmail" class="gn">Name</label><input name="DynamicTextBoxName" type="text" value="' + sOptionName+ '" class="form-control"></div><div class="col-md-3"><label for="inputEmail" class="gn">Value</label><input name="DynamicTextBoxValues" type="text" value="' + data[i][1] + '" class="form-control"></div><div class="col-md-2"><label for="inputEmail" class="gn">Code</label><input name="DynamicTextBoxCode" type="text" value="' + sOptionCode + '" class="form-control"></div><div class="col-md-3"><label for="inputEmail" class="gn">Status</label><select name="DynamicTextBoxStatus" class="form-control"><option value="' + sOptionStatus + '" selected>Active</option><option value="20">Inactive</option></select></div><br><div class="col-md-1"><button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button></div></div>')
+                            }
+                            if(sOptionStatus == "20")
+                            {
+                                $('#EditTextBoxContainer').append('<div class="form-group NVPairs"><div class="col-md-3"><label for="inputEmail" class="gn">Name</label><input name="DynamicTextBoxName" type="text" value="' + sOptionName+ '" class="form-control"></div><div class="col-md-3"><label for="inputEmail" class="gn">Value</label><input name="DynamicTextBoxValues" type="text" value="' + data[i][1] + '" class="form-control"></div><div class="col-md-2"><label for="inputEmail" class="gn">Code</label><input name="DynamicTextBoxCode" type="text" value="' + sOptionCode + '" class="form-control"></div><div class="col-md-3"><label for="inputEmail" class="gn">Status</label><select name="DynamicTextBoxStatus" class="form-control"><option value="10">Active</option><option value="' + sOptionStatus + '" selected>Inactive</option></select></div><br><div class="col-md-1"><button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button></div></div>')
+                            }
+                        }
+                    }
+                    else {
+                        $('#Options_trMain').hide();
+                        $('#Options_tr').show();
+                    }
+                }
+            });
+        });
+
+        //Delete option list
+        $("#DeleteOptionList").on('click', function () {
+            var sName = $("#HiddenName").val();
+            var sBOID = $("#HiddenID").val();
+            var sID = $("#HiddenDBID").val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("DeleteBoOptionList", "BusinessObjects")',
+                data: { BOID: sBOID, iID: sID, AtrName: sName },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data == 1) {
+                        $('#Options_trMain').hide();
+                        $('#Options_tr').show();
+                        $("#BootstrpAlertSuccess").show();
+                        $("#BootstrpAlertSuccess").append("<strong>Success!</strong> The option list have been deleted.");
+                        $(function () {
+                            // setTimeout() function will be fired after page is loaded
+                            // it will wait for 5 sec. and then will fire
+                            // $("#successMessage").hide() function
+                            setTimeout(function () {
+                                $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                            }, 5000);
+                        });
+                        $('.AddOptionList').show();
+                        $('#Options_trMain').hide();
+                        $('#Options_tr').show();
+                    }
+
+                }
+            });
+        });
+
+
+
+        //Cancel the edit option List
+        $("#Cancel_OptionList").on('click', function () {
+            $('#Options_trMain').hide();
+            $('#Options_tr').hide();
+            $(".OptionListChecked").show();
+            $("#EditTextBoxContainer div").empty();
+        });
+
+        //Close window
+        $("#CancelBtn").on('click', function () {
+            window.close();
+        });
+
+        $("#ForeignKeyType").change(function () {
+            $("#OptionList").prop('disabled', true);
+            var KeyValue = $(this).val();
+            if(KeyValue == "0")
+            {
+                $("#OptionList").prop('disabled', false);
+                $("#SysType").hide();
+                $("#SysTypeData")[0].selectedIndex = 0;
+                $("#OneClickID").hide();
+                $("#OneClickType").hide();
+            }
+            else if(KeyValue == "10")
+            {
+                $("#OneClickID").show();
+                $("#FKOneClickID").val('');
+                $("#OneClickType").show();
+                $("#SysType").hide();
+                $("#SysTypeData")[0].selectedIndex = 0;
+            }
+            else if (KeyValue == "20")
+            {
+                $("#SysType").show();
+                $("#OneClickID").hide();
+                $("#OneClickType").hide();
+            }
+            else if(KeyValue == "30")
+            {
+                $("#OneClickID").hide();
+                $("#OneClickType").hide();
+                $("#SysType").hide();
+                $("#SysTypeData")[0].selectedIndex = 0;
+            }
+            else if(KeyValue == "40")
+            {
+                $("#OneClickID").show();
+                $("#FKOneClickID").val('');
+                $("#OneClickType").hide();
+                $("#SysType").hide();
+                $("#SysTypeData")[0].selectedIndex = 0;
+            }
+        });
+
+        $('#OptionList').change(function () {
+            if (this.checked) {
+                $("#ForeignKeyType").prop('disabled', true);
+                $('.AddOptionList').show();
+                //$('#Options_tr').show();
+                $('#Options_trMain').hide();
+                $(".OptionListChecked").hide();
+            }
+            else {
+                $("#ForeignKeyType").prop('disabled', false);
+                $('#Options_tr').hide();
+                $('#Options_trMain').hide();
+                $('.AddOptionList').hide();
+            }
+        });
+
+        $(".AddOptionList").on('click', function () {
+            {
+                $('#Options_tr').show();
+                $('#Options_trMain').hide();
+
+            }
+        });
+
+        $("#Save_OptionList").on('click', function () {
+            var Names = [];
+            var Values = [];
+            var Status = [];
+            var Codes = [];
+            var DumNames = [];
+            var DumValues = [];
+            var DumStatus = [];
+            var DumCodes = [];
+            $("input[name=DynamicTextBoxName]:visible").each(function () {
+                var CName = $(this).val();
+                if(CName == "")
+                {
+                    Names.push("");
+                    DumNames.push("");
+                }
+                else
+                {
+                    Names.push(CName);
+                    DumNames.push(CName);
+                }
+            });
+
+            $("input[name=DynamicTextBoxValues]:visible").each(function () {
+                var CValue = $(this).val();
+                if(CValue == "")
+                {
+                    Values.push("");
+                    DumValues.push("");
+                }
+                else
+                {
+                    Values.push(CValue);
+                    DumValues.push(CValue);
+                }
+            });
+
+            $("select[name=DynamicTextBoxStatus]:visible").each(function () {
+                var CValue = $(this).val();
+                if(CValue == "")
+                {
+                    Status.push("");
+                    DumStatus.push("");
+                }
+                else
+                {
+                    Status.push(CValue);
+                    DumStatus.push(CValue);
+                }
+            });
+
+            $("input[name=DynamicTextBoxCode]:visible").each(function () {
+                var CCode = $(this).val();
+                if(CCode == "")
+                {
+                    Codes.push("");
+                    DumCodes.push("");
+                }
+                else
+                {
+                    Codes.push(CCode);
+                    DumCodes.push(CCode);
+                }
+            });
+
+            var NamearrLength = Names.length;
+            var ValuearrLength = Names.length;
+            var StatusarrLength = Names.length;
+            var CodearrLength = Codes.length;
+            var sNameValues = [];
+            var iCheckNames = 0;
+            var iCheckValues = 0;
+            var iCheckStatus = 0;
+            var iCheckCode = 0;
+
+            //find if any element is empty
+            for (i = 0; i < NamearrLength; i++) {
+                if (Names[i] == "") {
+                    iCheckNames = -1;
+                }
+            }
+            for (i = 0; i < ValuearrLength; i++) {
+                if (Values[i] == "") {
+                    iCheckValues = -1;
+                }
+            }
+            for (i = 0; i < StatusarrLength; i++) {
+                if (Status[i] == "") {
+                    iCheckStatus = -1;
+                }
+            }
+            for(i = 0;i<CodearrLength;i++)
+            {
+                if(Codes[i] == "")
+                {
+                    iCheckCode = -1;
+                }
+            }
+            if (iCheckNames == 0 && iCheckValues == 0 && iCheckCode == 0) {
+                var sDuplicateNames = [];
+                //Check if the array has repeated values.
+                var Names_arr = DumNames.slice().sort(); // You can define the comparing function here.
+                // JS by default uses a crappy string compare.
+                // (we use slice to clone the array so the
+                // original array won't be modified)
+                for (var i = 0; i < DumNames.length - 1; i++) {
+                    if (Names_arr[i + 1] == Names_arr[i]) {
+                        sDuplicateNames.push(Names_arr[i]);
+                    }
+                }
+                var sDuplicateValues = [];
+                //Check if the array has repeated values.
+                var Values_arr = DumValues.slice().sort();
+                for (var i = 0; i < DumValues.length - 1; i++) {
+                    if (Values_arr[i + 1] == Values_arr[i]) {
+                        sDuplicateValues.push(Values_arr[i]);
+                    }
+                }
+                var sDuplicateStatus = [];
+                ////Check if the array has repeated values.
+                //var Status_arr = DumStatus.slice().sort();
+                //for (var i = 0; i < DumStatus.length - 1; i++) {
+                //    if (Status[i + 1] == Status_arr[i]) {
+                //        sDuplicateStatus.push(Status_arr[i]);
+                //    }
+                //}
+                var sDuplicateCode = [];
+                //Check if the array has repeated values.
+                //var Codes_arr = DumCodes.slice().sort();
+                //for (var i = 0; i < DumCodes.length - 1; i++) {
+                //    if (Codes[i + 1] == Codes_arr[i]) {
+                //        sDuplicateCode.push(Codes_arr[i]);
+                //    }
+                //}
+                if (sDuplicateNames.length === 0 && sDuplicateValues.length === 0 && sDuplicateCode.length === 0) {
+                    for (var i = 0; i < NamearrLength ; i++) {
+                        sNameValues.push(Names[i] + ':' + Values[i] + ':' + Codes[i] + ':' + Status[i]);
+                    }
+                    var sValues = sNameValues.join(",");
+                    var sName = $("#HiddenName").val();
+                    var sBOID = $("#HiddenID").val();
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("SaveBoOptionList", "BusinessObjects")',
+                        data: { Values: sValues, BOID: sBOID, iID: 0, AtrName: sName },
+                        cache: false,
+                        dataType: 'json',
+                        success: function (data) {
+                            if (data == 1) {
+                                $("#BootstrpAlertSuccess").show();
+                                $("#BootstrpAlertSuccess").append("<strong>Success!</strong> The option list have been added successfully.");
+                                $(function () {
+                                    setTimeout(function () {
+                                        $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                                    }, 5000);
+                                });
+
+                            }
+                            $("#TextBoxContainer div").empty();
+                        }
+                    });
+                }
+                else {
+                    $("#BootstrpAlert").show();
+                    $("#BootstrpAlert").append("<strong>Warning!</strong> Details entered has to be unique.");
+                    $(function () {
+                        // setTimeout() function will be fired after page is loaded
+                        // it will wait for 5 sec. and then will fire
+                        // $("#successMessage").hide() function
+                        setTimeout(function () {
+                            $("#BootstrpAlert").hide('blind', {}, 500)
+                        }, 5000);
+                    });
+                }
+            }
+            else {
+                $("#BootstrpAlert").show();
+                $("#BootstrpAlert").append("<strong>Warning!</strong> Text box cannot be left empty.");
+                $(function () {
+                    // setTimeout() function will be fired after page is loaded
+                    // it will wait for 5 sec. and then will fire
+                    // $("#successMessage").hide() function
+                    setTimeout(function () {
+                        $("#BootstrpAlert").hide('blind', {}, 500)
+                    }, 5000);
+                });
+            }
+
+        });
+    });
+
+    $("#UpdateOptionList").on('click', function () {
+        var Names = [];
+        var Values = [];
+        var Status = [];
+        var Codes = [];
+        var DumNames = [];
+        var DumValues = [];
+        var DumStatus = [];
+        var DumCodes = [];
+
+        $("input[name=DynamicTextBoxName]:visible").each(function () {
+            var CName = $(this).val();
+            if(CName == "")
+            {
+                Names.push("");
+                DumNames.push("");
+            }
+            else
+            {
+                Names.push(CName);
+                DumNames.push(CName);
+            }
+        });
+
+        $("input[name=DynamicTextBoxValues]:visible").each(function () {
+            var CValue = $(this).val();
+            if(CValue == "")
+            {
+                Values.push("");
+                DumValues.push("");
+            }
+            else
+            {
+                Values.push(CValue);
+                DumValues.push(CValue);
+            }
+        });
+
+        $("select[name=DynamicTextBoxStatus]:visible").each(function () {
+            var CValue = $(this).val();
+            if(CValue == "")
+            {
+                Status.push("");
+                DumStatus.push("");
+            }
+            else
+            {
+                Status.push(CValue);
+                DumStatus.push(CValue);
+            }
+        });
+
+        $("input[name=DynamicTextBoxCode]:visible").each(function () {
+            var CCode = $(this).val();
+            if(CCode == "")
+            {
+                Codes.push("");
+                DumCodes.push("");
+            }
+            else
+            {
+                Codes.push(CCode);
+                DumCodes.push(CCode);
+            }
+        });
+
+        var NamearrLength = Names.length;
+        var ValuearrLength = Names.length;
+        var StatusarrLength = Names.length;
+        var CodesarrLength = Names.length;
+        var iCheckNames = 0;
+        var iCheckValues = 0;
+        var iCheckStatus = 0;
+        var iCheckCodes = 0;
+
+        //find if any element is empty
+        for (i = 0; i < NamearrLength; i++) {
+            if (Names[i] == "") {
+                iCheckNames = -1;
+            }
+        }
+        for (i = 0; i < ValuearrLength; i++) {
+            if (Values[i] == "") {
+                iCheckValues = -1;
+            }
+        }
+        for (i = 0; i < StatusarrLength; i++) {
+            if (Status[i] == "") {
+                iCheckStatus = -1;
+            }
+        }
+        for(i=0;i<CodesarrLength;i++)
+        {
+            if(Codes[i] == "")
+            {
+                iCheckCodes = -1;
+            }
+        }
+        var sNameValues = [];
+
+        if (iCheckNames == 0 && iCheckValues == 0 && iCheckStatus == 0) {
+            var sDuplicateNames = [];
+            //Check if the array has repeated values.
+            var Names_arr = DumNames.slice().sort(); // You can define the comparing function here.
+            // JS by default uses a crappy string compare.
+            // (we use slice to clone the array so the
+            // original array won't be modified)
+            for (var i = 0; i < DumNames.length - 1; i++) {
+                if (Names_arr[i + 1] == Names_arr[i]) {
+                    sDuplicateNames.push(Names_arr[i]);
+                }
+            }
+            var sDuplicateValues = [];
+            //Check if the array has repeated values.
+            var Values_arr = DumValues.slice().sort();
+            for (var i = 0; i < DumValues.length - 1; i++) {
+                if (Values_arr[i + 1] == Values_arr[i]) {
+                    sDuplicateValues.push(Values_arr[i]);
+                }
+            }
+            var sDuplicateStatus = [];
+            //Check if the array has repeated values.
+            //var Status_arr = DumStatus.slice().sort();
+            //for (var i = 0; i < DumStatus.length - 1; i++) {
+            //    if (Status_arr[i + 1] == Status_arr[i]) {
+            //        sDuplicateStatus.push(Status_arr[i]);
+            //    }
+            //}
+            var sDuplicateCodes = [];
+            //Check if the array has repeated values.
+            //var Codes_arr = DumCodes.slice().sort();
+            //for (var i = 0; i < DumCodes.length - 1; i++) {
+            //    if (Codes_arr[i + 1] == Codes_arr[i]) {
+            //        sDuplicateCodes.push(Codes_arr[i]);
+            //    }
+            //}
+            if (sDuplicateNames.length === 0 && sDuplicateValues.length === 0) {
+                for (var i = 0; i < NamearrLength ; i++) {
+                    sNameValues.push(Names[i] + ':' + Values[i] + ':' + Codes[i] + ':' + Status[i]);
+                }
+                var sValues = sNameValues.join(",");
+                var sName = $("#HiddenName").val();
+                var sBOID = $("#HiddenID").val();
+                var sID = $("#HiddenDBID").val();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SaveBoOptionList", "BusinessObjects")',
+                    data: { Values: sValues, BOID: sBOID, iID: sID, AtrName: sName },
+                    cache: false,
+                    dataType: 'json',
+                    success: function (data) {
+
+                        if (data == 1) {
+                            $("#BootstrpAlertSuccess").show();
+                            $("#BootstrpAlertSuccess").append("<strong>Success!</strong> The option list have been added successfully.");
+                            $(function () {
+                                setTimeout(function () {
+                                    $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                                }, 5000);
+                            });
+                        }
+                        //$("#EditTextBoxContainer div").empty();
+                    }
+                });
+            }
+            else {
+                $("#BootstrpAlert").show();
+                $("#BootstrpAlert").append("<strong>Warning!</strong> Details entered has to be unique.");
+                $(function () {
+                    // setTimeout() function will be fired after page is loaded
+                    // it will wait for 5 sec. and then will fire
+                    // $("#successMessage").hide() function
+                    setTimeout(function () {
+                        $("#BootstrpAlert").hide('blind', {}, 500)
+                    }, 5000);
+                });
+            }
+        }
+        else {
+            $("#BootstrpAlert").show();
+            $("#BootstrpAlert").append("<strong>Warning!</strong> Text box cannot be left empty.");
+            $(function () {
+                // setTimeout() function will be fired after page is loaded
+                // it will wait for 5 sec. and then will fire
+                // $("#successMessage").hide() function
+                setTimeout(function () {
+                    $("#BootstrpAlert").hide('blind', {}, 500)
+                }, 5000);
+            });
+        }
+
+    });
+
+    $(function () {
+
+        $("#btnAdd").bind("click", function () {
+            var div = $("<div style='border: 1px solid #000000,Height:75px'/>");
+            div.html(GetDynamicTextBox(""));
+            $("#TextBoxContainer").append(div);
+        });
+        $("#btnAddEdit").bind("click", function () {
+            var div = $("<div style='border: 1px solid #000000,Height:75px'/>");
+            div.html(GetDynamicTextBox(""));
+            $("#EditTextBoxContainer").append(div);
+        });
+
+
+        $("body").on("click", ".remove", function () {
+            $(this).closest("div").remove();
+        });
+    });
+    function GetDynamicTextBox(value) {
+        //return '&nbsp;<ul><li>&nbsp;<label>Name: </label>&nbsp;<input style="float:right" name = "DynamicTextBoxName" type="text" value = "' + value + '" /></li><li>&nbsp;<label>Value:</label>&nbsp;<input style="float:right" name = "DynamicTextBoxValues" type="text" value = "' + value + '" /></li><li>&nbsp;<input style="float:right" type="button" value="Remove" class="remove" /></li></ul>'
+        //return '<div class="form-group"><div class="col-md-3"><label for="inputEmail" class="gn">Enter Name and Value:</label><input name="DynamicTextBoxName" type="text" value="' + value + '" class = "form-control" placeholder = "Enter Name"><input name="DynamicTextBoxValues" type="text" value= "' + value + '" class = "form-control" placeholder = "Enter Value"><input type="button" value="Remove" class="btn btn-theme remove"></div></div>'
+
+        //return '<div class="form-group NVPairs"><div class="col-md-4"><label for="inputEmail" class="gn"> Name</label><input name="DynamicTextBoxName" type="text" value="' + value + '" class="form-control" placeholder="Enter Name"></div><div class="col-md-4"><label for="inputEmail" class="gn">Value</label><input name="DynamicTextBoxValues" type="text" value="' + value + '" class="form-control" placeholder="Enter Value"></div><div class="col-md-3"><label for="inputEmail" class="gn">Status</label><select name="DynamicTextBoxStatus" class="form-control"><option value="10">Active</option><option value="20">Inactive</option></select></div><div class="col-md-4"><label for="inputEmail" class="gn"> Code</label><input name="DynamicTextBoxCode" type="text" value="' + value + '" class="form-control" placeholder="Enter Code"></div><br><div class="col-md-1"><button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button></div></div>'
+        return '<div class="form-group NVPairs"><div class="col-md-3"><label for="inputEmail" class="gn"> Name<span class="danger"></span></label><input name="DynamicTextBoxName" type="text" value="' + value + '" class="form-control" placeholder="Enter Name"></div><div class="col-md-3"><label for="inputEmail" class="gn"> Value<span class="danger"></span></label><input name="DynamicTextBoxValues" type="text" value="' + value + '" class="form-control" placeholder="Enter Value"></div><div class="col-md-2"><label for="inputEmail" class="gn"> Code<span class="danger"></span></label><input name="DynamicTextBoxCode" type="text" value="' + value + '" class="form-control" placeholder="Code"></div><div class="col-md-3"><label for="inputEmail" class="gn"> Status<span class="danger"></span></label><select class="form-control" name="DynamicTextBoxStatus"><option value="10">Active</option><option value="20">Inactive</option></select></div><br /><div class="col-md-1"><button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button></div></div>'
+
+    }
+
+    $("#Delete_Attribute").on('click', function () {
+        var sName = $("#HiddenName").val();
+        var sBOID = $("#HiddenID").val();
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("DeleteAttribute", "BusinessObjects")',
+            data: { BOID: sBOID, AtrName: sName },
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                if (data == 1) {
+                    //$("#BootstrpAlertSuccess").show();
+                    //$("#BootstrpAlertSuccess").append("<strong>Success!</strong> The option list have been deleted.");
+                    //$(function () {
+                    //   setTimeout(function () {
+                    //        $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                    //    }, 5000);
+                    //});
+                    window.close();
+                    // opener.location.reload();
+                }
+
+            }
+        });
+    });
+
+    function OnComplete(response) {
+        CustomMessage(response.ResponseMessage, response.Status);
+        $('#BOFormWithAttributes').unblock();
+    }
+
+    $('#KPIChecked').on('change', function() {
+        //debugger;
+        CheckBox();
+    });
+    function CheckBox(){
+        var kpichckbox=$('#KPIChecked').prop('checked');
+        if(kpichckbox==true){
+            $("#KPI_Generate").show();
+            $('#DrpSystemType').show();
+        }
+        else{
+            $("#KPI_Generate").hide();
+            $('#DrpSystemType').hide();
+        }
+    }
+    $("#KPI_Generate").on('click', function () {
+        //debugger;
+        var kpichckbox=$('#KPIChecked').prop('checked');
+        //var kpichckbox=$('#KPIChecked').val();
+        var sBOID =parseInt($("#HiddenID").val());
+        var sType=$('#AttributeName').val();
+        var sSystemType=$('#SystemType').val();
+        var oneclickid="";
+        var tempnvalue = {
+            BOID: sBOID,
+            SearchType: sType,
+            sType:kpichckbox,
+            sSystemType:sSystemType
+        }
+        $.ajax({
+            url: '@Url.Action("DefaultboDashboards", "BusinessObjects")',
+            type: 'POST',
+            dataType: 'json',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(tempnvalue),
+            cache: false,
+            async: true,
+        });
+        $('#save').trigger('click');
+    });
+</script>

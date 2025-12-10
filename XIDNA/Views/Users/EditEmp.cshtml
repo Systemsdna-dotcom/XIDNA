@@ -1,0 +1,92 @@
+﻿@model XIDNA.Models.EditUserViewModel
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+@*<script src="~/Scripts/jquery-1.10.2.min.js"></script>*@
+    <script src="~/Scripts/JSTree/jstree.js"></script>
+    <link href="~/Scripts/JSTree/themes/default/style.css" rel="stylesheet" />
+    <script src="~/Scripts/js/jquery.jstree.js"></script>
+<section class="content-header hedr">
+    <h1>Edit User  </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li class="active">Edit User </li>
+    </ol>
+</section>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <h4>Edit User Form</h4>
+        <hr />
+        @Html.ValidationSummary(true)
+        @Html.HiddenFor(model => model.Id)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.FirstName, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.FirstName, null, new { @class = "EmpErrormsg" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.LastName, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(m => m.LastName, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.LastName, null, new { @class="EmpErrormsg"})
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Email, new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.Email, null, new { @class = "EmpErrormsg" })
+            </div>
+        </div>
+
+        @*<div class="form-group">
+                @Html.Label("Roles", new { @class = "control-label col-md-2" })
+                <span class=" col-md-10">
+                    @foreach (var item in Model.RolesList)
+                    {
+                        <input type="checkbox" name="SelectedRole" value="@item.Value" checked="@item.Selected" class="checkbox-inline" />
+                        @Html.Label(item.Value, new { @class = "control-label" })
+                    }
+                </span>
+            </div>*@
+        <input type="hidden" name="GroupID" value="@Model.GroupID" id="GroupID" />
+
+        <div id="UserMainTree">
+            @Html.Partial("~/Views/Users/GroupTree.cshtml", Model.Group)
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <input type="submit" value="Save" class="btn btn-default btn-theme" />
+            </div>
+        </div>
+    </div>
+}
+
+@*<div>
+    @Html.ActionLink("Back to List Of Users", "Index")
+</div>*@
+
+<script>
+    $('#UserMainTree').jstree('select_node', '#@Model.GroupID')
+    @*$('#UserMainTree ul').children('li').each(function () {
+        var Role = $(this).attr('data-name');
+        var id = $(this).attr('id');
+        if (id == parseInt('@Model.GroupID')) {
+            $('#UserMainTree').jstree('select_node', $(this));
+        }
+        else {
+
+        }
+    })*@
+
+    @*//$('#MainTree').jstree("open_node", $('#@Model.GroupID'));*@
+</script>
+

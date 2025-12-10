@@ -1,0 +1,46 @@
+﻿@model XIDNA.ViewModels.VMQueryPreview
+@{
+
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<link href="~/Content/DataTables/css/jquery.dataTables.min.css" rel="stylesheet" />
+<script src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#tblEvents').dataTable({
+
+        });
+
+    });
+</script>
+
+<table class="display" id="tblEvents">
+    <thead>
+        <tr>
+            @foreach (var item in Model.Headings)
+            {
+                <th>@item</th>
+            }
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @for (var j = 0; j < Model.Rows.Count; j++)
+        {
+            <tr>
+                @for (var i = 0; i < Model.Rows[j].Length; i++)
+                {
+
+                    <td>@Model.Rows[j][i]</td>
+
+                }
+            </tr>
+        }
+    </tbody>
+
+</table>
+

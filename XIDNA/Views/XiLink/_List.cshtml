@@ -1,0 +1,232 @@
+﻿@model XIDNA.ViewModels.VMResultList
+
+@{
+    if (Model.PreviewType == "Inline")
+    {
+        Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    }
+    var ReportID = Model.ReportID;
+    var BOName = Model.BO;
+}
+
+<script>
+    var Section;
+    $(document).ready(function () {
+        var Fields = "";
+        var Optrs = "";
+        var Values = "";
+        var nParams = @Html.Raw(Json.Encode(Model.nParams));
+        for(i=0;i<nParams.length;i++){
+            if(nParams[i].sName == "Section"){
+                Section = nParams[i].sValue;
+            }
+            else{
+                Fields = Fields + nParams[i].sName+",";
+                Optrs = Optrs +"=,";
+                Values = Values +nParams[i].sValue+",";
+            }            
+        }
+        if(Fields.length>0){
+            Fields = Fields.substring(0, Fields.length-1);
+            Optrs = Optrs.substring(0, Optrs.length-1);
+            Values = Values.substring(0, Values.length-1);
+        }
+        var poppopups = new Array();
+        var respopups = new Array();
+        var table = $('#tbl_main-' + @ReportID).dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Html.Raw(Url.Action("GetReportResult", "XiLink", new { ReportID = Model.ReportID, sGUID= Model.sGUID, nParams = Model.nParams }))",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"l<"new-query">f><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "initComplete": function () {
+                $("div.new-query").html('<button type="button" class="savebtn btn btn-theme" id="GridAddBtn" data-bo="@Model.BO" data-group="@Model.sCreateGroup">Add</button>');
+            },
+            "autoWidth": false,
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+            },
+            "fnServerParams": function (aoData) {
+                aoData.push({ "name": "Fields", "value": Fields });
+                aoData.push({ "name": "Optrs", "value": Optrs });
+                aoData.push({ "name": "Values", "value": Values });
+            },
+        });
+
+        $('#tbl_main-@ReportID tbody').on('click', 'tr', function () {
+            var Headings =@Html.Raw(Json.Encode(Model.Headings));
+            if('@Model.ResultListDisplayType'==1)
+            {
+                var tr = $(this).closest('tr');
+                var data1 = dtable.fnGetData(tr);
+            }
+            else{
+                var data1 = $(this).children("td").map(function() {
+                    return $(this).text();
+                }).get();
+            }
+            var id;
+            if(data1){
+                for (var i = 0; i < Headings.length; i++) {
+                    if (Headings[i] == "ID") {
+                        id = data1[i];
+                    }
+                }
+                var iInstanceID = parseInt(id);
+                if(iInstanceID>0){
+                    if('@Model.IsRowClick'=="True"){
+                        XIRun(null,'@Model.XiLinkID', parseInt(iInstanceID), null, parseInt('@Model.BOID'), false);
+                    }
+                }
+            }
+        });
+
+        @*$('#tbl_main-@ReportID tbody').on('click', 'tr', function () {
+            var Headings =@Html.Raw(Json.Encode(Model.Headings));
+            if('@Model.ResultListDisplayType'==1)
+            {
+                var tr = $(this).closest('tr');
+                var data1 = dtable.fnGetData(tr);
+            }
+            else{
+                var data1 = $(this).children("td").map(function() {
+                    return $(this).text();
+                }).get();
+            }
+            var id;
+            if(data1){
+                for (var i = 0; i < Headings.length; i++) {
+                    if (Headings[i] == "ID") {
+                        id = data1[i];
+                    }
+                }
+                var iInstanceID = parseInt(id);
+                if(iInstanceID>0){
+                    GUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+                    var OnClickComponentID = 0;
+                    var OutputArea = "";
+                    $.ajax({
+                        type: 'GET',
+                        url: '@Url.Action("ListClick", "XIComponents")',
+                        data: {sGUID: GUID},
+                        contentType: 'application/json;',
+                        dataType: 'json',
+                        traditional: true,
+                        async:false,
+                        success: function (data) {
+                            for(i=0;i<data.length;i++){
+                                if(data[i].sName=="OnClick"){
+                                    OnClickComponentID = data[i].sValue;
+                                }
+                                else if(data[i].sName=="List Click"){
+                                    OutputArea = data[i].sValue;
+                                }
+                            }
+                        }
+                    });
+                    var Params = [];
+                    var NVPair = {};
+                    NVPair["sName"] = "BO";
+                    NVPair["sValue"] = '@BOName';
+                    NVPair["bDirty"] = false;
+                    NVPair["sGroupValue"] = "1";
+                    Params.push(NVPair);
+                    var NVPair2 = {};
+                    NVPair2["sName"] = "FC_InstanceID";
+                    NVPair2["sValue"] = iInstanceID;
+                    NVPair2["bDirty"] = false;
+                    NVPair2["sGroupValue"] = "2";
+                    Params.push(NVPair2);
+                    //var NVPair3 = {};
+                    //NVPair3["sName"] = "FC_GroupName";
+                    //NVPair3["sValue"] = "Save Group";
+                    //NVPair3["bDirty"] = false;
+                    //NVPair3["sGroupValue"] = "3";
+                    //Params.push(NVPair3);
+                    var oParams = {oParams:Params, sGUID:GUID};
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("SetXIParams", "XIComponents")',
+                        data: JSON.stringify(oParams),
+                        contentType: 'application/json;',
+                        dataType: 'html',
+                        traditional: true,
+                        async:false,
+                        success: function (data) {
+                            if(OnClickComponentID >0){
+                                $.ajax({
+                                    type: 'GET',
+                                    url: '@Url.Action("LoadComponentByID", "XIComponents")',
+                                    data: {iXIComponentID:OnClickComponentID, sGUID: GUID},
+                                    contentType: 'application/json;',
+                                    dataType: 'html',
+                                    traditional: true,
+                                    success: function (data) {
+                                        Type = "XILoad";
+                                        $('#'+OutputArea+'-'+GUID).html(data);
+                                        //$('#ComponentParamsDialog').html(data);
+                                        //$("#ComponentParamsDialog").dialog({
+                                        //    //modal: true,
+                                        //    width: 600
+                                        //});
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+        });*@
+
+        $(document.body).on('click', 'button#GridAddBtn', function(){
+            var GUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetLayoutDetails", "XiLink")',
+                data: {iLayoutID: parseInt('@Model.iLayoutID'), sParentGUID: GUID, sSection: Section},
+                contentType: 'application/json;',
+                dataType: 'html',
+                traditional: true,
+                success: function (data) {
+                    $('#GridAddFormDlg').html(data);
+                    $("#GridAddFormDlg").dialog({
+                        width: 700,
+                        close: function (event, ui) {
+                            $('#GridAddFormDlg').dialog('close');
+                            //$('#my_dialog').parent().hide();
+                            //$(this).dialog('destroy').remove();
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+<div class="panel-default">
+    <div class="panel-heading usericon Lead1 bg-transparent p-t-none p5">
+        @*@if (Model.IsCreate)
+            {
+            <button type="button" class="btn btn-theme" id="GridAddBtn" data-bo="@Model.BO" data-group="@Model.sCreateGroup">Add</button>
+        }*@
+    </div>
+    <div class="panel-collapse collapse in">
+        <div class="panel-body LeadContent no-padding m-t-10">
+            <div class="table-clean">
+                <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="tbl_main-@ReportID">
+                    <thead>
+                        <tr>
+                            @for (int i = 0; i < Model.Headings.Count(); i++)
+                            {
+                                <th>@Model.Headings[i]</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="GridAddFormDlg"></div>

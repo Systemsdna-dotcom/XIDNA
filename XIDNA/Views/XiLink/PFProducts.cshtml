@@ -1,0 +1,36 @@
+﻿@using XISystem
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    ViewBag.Title = "PFProducts";
+    var result = Model.oResult.OResult.LiveRateQuoteResponseType;
+}
+
+<h2>PF Products</h2>
+
+<table border="1">
+    <thead>
+        <tr>
+            <td>Product Code</td>
+            <td>Apr</td>
+            <td>Insurance Type</td>
+            <td>Min Deposit Rate</td>
+            <td>ROP Rate Type</td>
+            <td>Sellout Rate</td>
+            <td>Term</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in result)
+            {
+            <tr>
+                <td>@item.CreditProductCode</td>
+                <td>@item.Apr</td>
+                <td>@item.InsuranceType</td>
+                <td>@item.MinDepositRate</td>
+                <td>@item.RopRateType</td>
+                <td>@item.SelloutRate</td>
+                <td>@item.Term</td>
+            </tr>
+        }
+    </tbody>
+</table>

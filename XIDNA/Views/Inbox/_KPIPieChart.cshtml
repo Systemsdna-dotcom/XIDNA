@@ -1,0 +1,319 @@
+﻿@model XIDNA.ViewModels.GraphData
+@using XIDNA.ViewModels
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: '@Url.Action("GetPieChart", "Inbox")',
+            type: 'POST',
+            data: JSON.stringify({ ReportID: '@Model.ReportID' }),
+            contentType: "application/json; charset=utf-8",
+            datatype: 'JSON',
+            cache: false,
+            success: function (data) {
+                fncDeviceChart(data);
+            },
+            error: function (data) {
+            }
+        });
+        //var JsonData = @Html.Raw(Json.Encode(Model));
+        //fncDeviceChart(JsonData);
+        var idname = '';
+        $("#PieChartGraphClose-" + idname).click(function () {
+            var Type = $(this).attr('data-Type');
+            var Name = $(this).attr('data-name');
+            $('input[data-id=' + Name + ']').prop('checked', false);
+            var visibility = $(this).closest('.portlet').attr('data-id');
+            visibility = visibility.replace("true", "false");
+            $(this).closest('.portlet').attr('data-id', visibility);
+            $(this).closest('.portlet').hide();
+            var Rows = $('.sortable').find('.portlet');
+            var ReportIDs = new Array();
+            for (i = 0; i < Rows.length; i++) {
+                var Row = Rows[i].attributes;
+                for (j = 0; j < Row.length; j++) {
+                    if (Row[j].name == "data-id") {
+                        id = Row[j].nodeValue;
+                    }
+                }
+                var type = id.split('-')[0];
+                if (type == "Row") {
+                    var ids = "";
+                    var circles = $('.KPICircles');
+                    for (k = 0; k < circles.length; k++) {
+                        var circle = circles[k].attributes;
+                        for (l = 0; l < circle.length; l++) {
+                            if (circle[l].name == "data-id") {
+                                ids = ids + circle[l].nodeValue + ",";
+                            }
+                        }
+                    }
+                    ids = ids.substring(0, ids.length - 1);
+                    id = "{" + ids + "}"
+                }
+                ReportIDs.push(id);
+                var RowData = {
+                    ColOrder: ReportIDs, UserID: parseInt(@Model.UserID)
+                }
+            }
+            $.ajax({
+                url: '@Url.Action("SaveColSettings", "Inbox")',
+                type: 'POST',
+                data: JSON.stringify(RowData),
+                contentType: "application/json; charset=utf-8",
+                datatype: 'JSON',
+                cache: false,
+                success: function (data) {
+                },
+                error: function (data) {
+                }
+            });
+        })
+        $('#@Model.QueryName.Replace(" ", "_")-ddlClassPieChart').change(function () {
+            var ClassValue = $('#@Model.QueryName.Replace(" ", "_")-ddlClassPieChart').val();
+            var DateValue = $('#@Model.QueryName.Replace(" ", "_")-ddlDatePieChart').val();
+            $.ajax({
+                url: '@Url.Action("GetPieChart", "Inbox")',
+                type: 'GET',
+                cache: false,
+                async: false,
+                contentType: 'application/json; charset=utf-8',
+                data: { ReportID: '@Model.ReportID', ClassValue: ClassValue, DateValue: DateValue },
+                success: function (data) {
+                    fncDeviceChart(data);
+                }
+            });
+        });
+        $('#@Model.QueryName.Replace(" ", "_")-ddlDatePieChart').change(function () {
+            var ClassValue = $('#@Model.QueryName.Replace(" ", "_")-ddlClassPieChart').val();
+            var DateValue = $('#@Model.QueryName.Replace(" ", "_")-ddlDatePieChart').val();
+            $.ajax({
+                url: '@Url.Action("GetPieChart", "Inbox")',
+                type: 'GET',
+                cache: false,
+                async: false,
+                contentType: 'application/json; charset=utf-8',
+                data: { ReportID: '@Model.ReportID', ClassValue: ClassValue, DateValue: DateValue },
+                success: function (data) {
+                    fncDeviceChart(data);
+                }
+            });
+        });
+        @*var id = "#Piechart-@Model.QueryName.Replace(" ","_")";
+        html2canvas($(id), {
+            onrendered: function (canvas) {
+                // canvas is the final rendered <canvas> element
+                var myImage = canvas.toDataURL("image/png");
+                var image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");  // here is the most important part because if you dont replace you will get a DOM 18 exception.
+                window.open(myImage);
+                window.location.href = image;
+                document.getElementById(id).innerHTML = "<img src='" + myImage + "'>";
+            }
+        });*@
+    });
+
+    function fncDeviceChart(jsonData) {
+        $("#Piechart").empty();
+        if (jsonData != null) {
+            if (jsonData.PieData.length > 0) {
+                var data = {};
+                var sites = [];
+                for (i = 0; i < jsonData.PieData.length; i++) {
+                    if (jsonData.PieData[i].label) {
+                        sites.push(jsonData.PieData[i].label);
+                        data[jsonData.PieData[i].label] = jsonData.PieData[i].value;
+                    }
+                }
+                var Name = "#Piechart-" + jsonData.ReportID;
+                if ('@Model.Type' == '@EnumLocations.Dashboard.ToString()') {
+                    var chart = c3.generate({
+                        bindto: Name,
+                        data: {
+                            json: [data],
+                            keys: {
+                                value: sites,
+                            },
+                            type: 'pie',
+                            size: {
+                                //width: 380,
+                                height: 300
+                            },
+                            onclick: function (d, element) {
+                                if (jsonData.IsColumnClick == true) {
+                                    var SearchText = jsonData.OnClickColumn + "=" + d.id;
+                                    var Url = "@Url.Action("ReportResult", "Inbox")?QueryID=" +jsonData.OnClickResultID +"&PageIndex=1&ResultIn=Popup&SearchText=" + SearchText;
+                                    window.open(Url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+                                }
+                            },
+                        },
+                        color: {
+                            pattern: ['#e58c7a', '#d789a3', '#eeba6f', '#e47b78']
+                        },
+                        tooltip: {
+                            format: {
+                                value: function (value, ratio, id) {
+                                    //var format = d3.format('');
+                                    return d3.format('')(value);
+                                }
+                            }
+                        },
+                        size: {
+                            //width:380,
+                            height: 300
+                        },
+                        legend: {
+                            position: 'right'
+                        },
+                    });
+                }
+                else if ('@Model.Type' == "Run") {
+                    var chart = c3.generate({
+                        bindto: Name,
+                        data: {
+                            json: [data],
+                            keys: {
+                                value: sites,
+                            },
+                            type: 'pie',
+                            size: {
+                                //width: 380,
+                                height: 300
+                            },
+                            onclick: function (d, element) {
+                                if ('@Model.IsColumnClick' == "True") {
+                                    var SearchText = '@Model.OnClickColumn' + "=" + d.id;
+                                    var Url = "@Url.Action("ReportResult", "Inbox")?QueryID=" +@Model.OnClickResultID +"&PageIndex=1&ResultIn=Popup&SearchText=" + SearchText;
+                                    window.open(Url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+                                }
+                            },
+                        },
+                        color: {
+                            pattern: ['#e58c7a', '#d789a3', '#eeba6f', '#e47b78']
+                        },
+                        tooltip: {
+                            format: {
+                                value: function (value, ratio, id) {
+                                    //var format = d3.format('');
+                                    return d3.format('')(value);
+                                }
+                            }
+                        },
+                        size: {
+                            width: 380,
+                            height: 300
+                        },
+                        legend: {
+                            position: 'right'
+                        },
+                    });
+                }
+                else {
+                    var chart = c3.generate({
+                        //bindto: "#Piechart",
+                        data: {
+                            json: [data],
+                            keys: {
+                                value: sites,
+                            },
+                            type: 'pie',
+                            //onclick: function (d, element) {
+                            //},
+                        },
+                        color: {
+                            pattern: ['#e58c7a', '#d789a3', '#eeba6f', '#e47b78']
+                        },
+                        tooltip: {
+                            format: {
+                                value: function (value, ratio, id) {
+                                    //var format = d3.format('');
+                                    return d3.format('')(value);
+                                }
+                            }
+                        },
+                        size: {
+                            //width: 300,
+                            height: 200
+                        },
+                        legend: {
+                            position: 'right'
+                        },
+                    });
+                }
+            }
+        }
+    }
+</script>
+<style>
+    .c3-legend-item text {
+        color: white;
+    }
+</style>
+<div>
+    @if (Model.Type != EnumLocations.Dashboard.ToString() && Model.Type != "Run")
+    {
+        if (Model.SectionName != null)
+        {
+            <div class="panel panel-default">
+                @if (Model.SectionName != null)
+                {
+                    <div class="panel-heading usericon Lead1">
+                        <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#@Model.SectionName.Replace(" ","")@Model.TabID">
+                            <h4 class="panel-title">@Model.SectionName</h4>
+                        </a>
+                    </div>
+                }
+                <div class="panel-collapse collapse in" id=@Model.SectionName.Replace(" ","")@Model.TabID>
+                    <div class="panel-body LeadContent">
+                        <div class="statistic-box">
+                            <div class="row text-center">
+                                <div id="Piechart-@Model.TabID@Model.SectionName.Replace(" ","")"></div>
+                                @*<div class="col-lg-6">
+                                        <canvas id="1Pie-@Model.TabID@Model.SectionName.Replace(" ","")" width="115" height="115"></canvas>
+                                        <h5>Leads By Source</h5>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <canvas id="2Pie-@Model.TabID@Model.SectionName.Replace(" ","")" width="115" height="115"></canvas>
+                                        <h5>Leads By Class</h5>
+                                    </div>*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="box PieChartGraph">
+            <div class="box-header with-border">
+                <h3 class="box-title">@Model.QueryName</h3>
+                <div class="pull-right box-tools form-inline">
+                    @if (Model.Type != "Run")
+                    {
+                        @Html.DropDownList("ddlPieChart", new SelectList(@Model.ClassDDL, "Value", "text", ""), "-Class-", new { @class = "form-control PieClassDropDown", @id = Model.QueryName.Replace(" ", "_") + "-ddlClassPieChart" })
+                        @Html.DropDownList("ddlDatePieChart", new SelectList(@Model.DateDDL, "Value", "text", ""), "-Date-", new { @class = "form-control PieDateDropDown", @id = Model.QueryName.Replace(" ", "_") + "-ddlDatePieChart" })
+                        <button class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove" id="PieChartGraphClose-@Model.QueryName.Replace(" ","_")" data-type="PieChart" data-name="@Model.QueryName.Replace(" ","_")"><i class="fa fa-times"></i></button>
+                    }
+                    <!--@*<a href="#" class="btn-minimize btn-default"><i class="fa fa-angle-down"></i></a>*@
+                    <a href="#" class="btn-close btn-default" id="PieChartGraphClose-@Model.QueryName.Replace(" ","_")" data-type="PieChart" data-name="@Model.QueryName.Replace(" ","_")"><i class="fa fa-close"></i></a>-->
+                    
+                </div>
+            </div>
+            <div class="box-body PieChartData">
+                <div class="statistic-box">
+                    <div class="row text-center">
+                        @if (Model.Type != "Run")
+                        {
+                            <div id="Piechart-@Model.ReportID"></div>
+                        }
+                        else
+                        {
+                            <div id="Piechart-@Model.ReportID" style=" width:500px;"></div>
+                        }
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    }
+</div>

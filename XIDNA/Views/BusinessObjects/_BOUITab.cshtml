@@ -1,0 +1,329 @@
+﻿@model IEnumerable<XIDNA.ViewModels.VMDropDown>
+<div id="DefaultUIDiv" class="innerborder">
+    <div class="form-group col-md-3">
+        <div class="col-md-12">
+            <label for="inputEmail" class="gn">Structure<span class="danger">*</span></label>
+            <select class="form-control" id="StructDDL">
+                <option value="0">--Select--</option>
+                @foreach (var items in Model)
+                {
+                    <option value="@items.Value">@items.text</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div id="TreeWrap" class="col-md-4">
+
+    </div>
+    <div id="DfltUIForm" class="col-md-5"></div>
+</div>
+
+<script type="text/javascript">
+
+    var BOName;
+    var TreeUI = @Html.Raw(Json.Encode(Model));
+    //LoadDUITree(TreeUI);
+    $(document).ready(function(){
+        $('#StructDDL').change(function(){
+            var ID = $(this).val();
+            if(ID > 0){
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetXIStructureTreeDetails", "BusinessObjects")',
+                    data: JSON.stringify({ iStuctureID: ID }),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    async: false,
+                    success: function (data) {
+                        $('#DfltUIForm').empty();
+                        $('#TreeWrap').empty();
+                        $('#TreeWrap').html('<div id="BOUITree"></div>');
+                        LoadDUITree(data);
+                    }
+                });
+            }
+        });
+    });
+
+    function LoadDUITree(data){
+        var UIjsondata = [];
+        var Nodes = data;
+        if (Nodes && Nodes != null) {
+            var j = 0;
+            for (var i = 0; i < Nodes.length; i++) {
+                var item = {}
+                item["id"] = Nodes[i].ID
+                if (Nodes[i].FKiParentID == null || Nodes[i].FKiParentID == "#") {
+                    item["parent"] = "#";
+                }
+                else {
+                    item["parent"] = Nodes[i].FKiParentID;
+                }
+
+                item["text"] = Nodes[i].sName;
+                UIjsondata.push(item);
+            }
+            if (UIjsondata.length > 0) {
+                var jsonStringUI = JSON.stringify(UIjsondata);
+                createUIJSTree(JSON.parse(jsonStringUI));
+                $('body').unblock();
+            }
+        }
+    }
+
+
+    //check if main node "Add Menu"
+    function CheckIfMain($node) {
+        var NodeID = $node.id;
+        if (NodeID == "1") {
+            return 0;
+        }
+        else {
+            return 1;
+        }
+
+    }
+
+    //rename and save the details
+    function RenameAndSaveToDB($node, action) {
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        if (NodeID != "MainPrnt") {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("RenameTreeNode", "BusinessObjects")',
+                data: { ParentNode: ParentID, NodeID: NodeID, NodeTitle: NodeTitle },
+                cache: false,
+                dataType: 'json',
+                success: function (data) { 
+                    if(parseInt(data) > 0){
+
+                    }
+                    else{
+                        CustomMessage("Error! BO doesn't exist. Please check", false)
+                    }
+                }
+            });
+        }
+        else {
+
+        }
+    }
+    //Add details form
+    function AddDetails($node) {
+        var AddPopups = [];
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+
+        if (NodeID != "1") {
+            var ID = $(this).attr('id');
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddDetailsForStructure", "BusinessObjects")',
+                data: { ParentNode: ParentID, NodeID: NodeID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    if (data != null) {
+                        $("#DfltUIForm").empty();
+                        $("#DfltUIForm").append(data);
+                    }
+                }
+            });
+        }
+        else {
+
+        }
+    }
+    //delete
+    function DeleteNodeDetails($node, action) {
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ChildrnID = "";
+        for (var i = 0; i < ChldnID.length; i++) {
+            var chldID = ChldnID[i];
+            ChildrnID = chldID + "," + ChildrnID;
+
+        }
+        var ChildrnIDs = ChildrnID.substring(0, ChildrnID.length - 1);
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        if (NodeID != "1" && ParentID != "#") {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("DeleteNodeDetails", "BusinessObjects")',
+                data: { ParentNode: ParentID, NodeID: NodeID, ChildrnIDs: ChildrnIDs, Type: action },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    //you can also remove this... as client side has the details and on load we are displaying above
+                    if (data != null) {
+                        $('#DfltUIForm').empty();
+                        var jsondata = [];
+                        for (var i = 0; i < data.length; i++) {
+                            var ID = data[i].ID;
+                            var Parent = data[i].FKiParentID;
+                            var text = data[i].sName;
+
+                            item = {}
+                            item["id"] = ID;
+                            item["parent"] = Parent;
+                            item["text"] = text;
+                            jsondata.push(item);
+
+                        }
+                        var jsonString = JSON.stringify(jsondata);
+                    }
+                    else {
+                        jsonString = [
+                           { "id": "1", "parent": "#", "text": "XIStructure" }
+                        ];
+                    }
+                    //call function to recreate tree
+                    //createUIJSTree(JSON.parse(jsonString));
+                    //$('#jstree').jstree(true).settings.core.data = jsonString;
+                    //$('#jstree').jstree(true).refresh();
+                }
+            });
+        }
+        else {
+
+        }
+
+    }
+
+
+
+    function createUIJSTree(UIjsondata) {
+        $('#BOUITree').jstree({
+            "core": {
+                "themes": {
+                    "variant": "large"
+                },
+                "check_callback": true,
+                'data': UIjsondata,
+            },
+            "state" : { "key" : "BOUITree" },
+            "types": {
+                "#": {
+                    "valid_children": ["default"]
+                },
+                //les dossiers
+                "default": {
+                    "valid_children": ["default", "presentation"],
+                    //"icon": "img/icons/etablissement.png"
+                }
+            },
+            //"plugins": ["contextmenu", "types", "dnd", "state"],
+            "plugins": ["types", "state"],
+            "dnd": {},
+            "contextmenu": {
+                "items": function ($node) {
+                    var tree = $("#BOUITree").jstree(true);
+                    return {
+                        "Create": {
+                            "separator_before": false,
+                            "separator_after": true,
+                            "label": "Create",
+                            action: function (obj) {
+                                var ID = 0;
+                                var ParentNode = $node.id;
+
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("CreateAndSaveTreeNode", "BusinessObjects")',
+                                    data: { ParentNode: ParentNode, NodeID: '', NodeTitle: 'New BO', Type: 'create' },
+                                    cache: false,
+                                    dataType: 'json',
+                                    success: function (data) {
+                                        if (parseInt(data) > 0) {
+                                            ID = parseInt(data);
+                                            $node = tree.create_node($node, { text: 'New BO', type: 'default', id: ID });
+                                            tree.deselect_all();
+                                            tree.select_node($node);
+                                            $('#DfltUIForm').empty();
+                                        }
+                                        else {
+                                            CustomMessage("Error! BO doesn't exist. Please check", false)
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                        "Rename": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Rename",
+                            "action": function (obj) {
+                                var CheckNode = CheckIfMain($node);
+                                if (CheckNode == '1') {
+                                    tree.edit($node, null, function (node, status) {
+                                        if (node.original.text != node.text) {
+                                            RenameAndSaveToDB($node, "rename");
+                                        }
+                                    });
+                                }
+
+                            }
+                        },
+                        "Remove": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Remove",
+                            "action": function (obj) {
+                                var CheckNode = CheckIfMain($node);
+                                if (CheckNode == '1') {
+                                    tree.delete_node($node);
+                                    DeleteNodeDetails($node, "delete");
+                                }
+                            }
+                        },
+                        "AddDetails": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Add Details",
+                            "action": function (obj) {
+                                var CheckNode = CheckIfMain($node);
+                                if (CheckNode == '1') {
+                                    AddDetails($node);
+                                }
+                            }
+                        }
+                    };
+                }
+            },
+            //}).bind("move_node.jstree", function (e, data) {
+            //    DragAndDropNodes(data)
+        }).bind("loaded.jstree", function (event, data) {
+            $(this).jstree("close_all");
+        }).on("select_node.jstree", function (e, data) {
+            var id = data.node.id;
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetBOUIDetails", "BusinessObjects")',
+                data: JSON.stringify({ ID: id }),
+                contentType: 'application/json;',
+                dataType: 'html',
+                traditional: true,
+                async: false,
+                success: function (data) {
+                    if (data.Status && !data.Status) {
+                        CustomMessage(data.ResponseMessage, data.Status)
+                        $('#DfltUIForm').html('');
+                    }
+                    else {
+                        $('#DfltUIForm').html(data);
+                    }
+
+                }
+            });
+        });;
+
+    }
+</script>

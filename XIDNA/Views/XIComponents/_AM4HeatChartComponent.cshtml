@@ -1,0 +1,78 @@
+﻿
+@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Globalization;
+@{
+    XIGraphData oXIGraph = new XIGraphData();
+    List<XIIBO> values = new List<XIIBO>();
+    List<string> Keys = new List<string>();
+    List<XIVisualisationNV> oXIVisualisations = new List<XIVisualisationNV>();
+    oXIGraph = (XIGraphData)Model.oContent[XIConstant.AM4HeatChartComponent];
+    var colours = string.Empty;
+    var Fontsize = string.Empty;
+    var BarTypes = string.Empty;
+    var BarAxis = string.Empty;
+    if (Model.oContent.ContainsKey(XIConstant.AM4HeatChartComponent))
+    {
+        Dictionary<List<string>, List<XIIBO>> OneClickRes = new Dictionary<List<string>, List<XIIBO>>();
+        if (Model.oContent.Count() != 0)
+        {
+            OneClickRes = oXIGraph.ComOneClick;
+            values = OneClickRes.Select(s => s.Value).FirstOrDefault();
+            Keys = OneClickRes.Select(s => s.Key).FirstOrDefault();
+            oXIVisualisations = oXIGraph.oXIVisualisations;
+        }
+        if (oXIVisualisations != null)
+        {
+            colours = oXIVisualisations.Where(s => s.sName == "BarColours").Select(s => s.sValue).FirstOrDefault();
+            BarTypes = oXIVisualisations.Where(s => s.sName == "BarTypes").Select(s => s.sValue).FirstOrDefault();
+            BarAxis = oXIVisualisations.Where(s => s.sName == "BarAxis").Select(s => s.sValue).FirstOrDefault();
+        }
+        if (string.IsNullOrEmpty(colours))
+        {
+            colours = "yellow,blue,red";
+        }
+        if (string.IsNullOrEmpty(BarTypes))
+        {
+            BarTypes = "bar,bar,bar";
+        }
+        if (BarAxis.ToLower() == "datetime")
+        {
+            BarAxis = "timeseries";
+        }
+        else if (string.IsNullOrEmpty(BarAxis))
+        {
+            BarAxis = "category";
+        }
+    }
+}
+<div style="text-align: right"><label>Last Updated:-<strong>@oXIGraph.sLastUpdated</strong></label></div>
+<p class="chart-title">@oXIGraph.QueryName</p>
+
+<div class="main-wrapper side-menu">
+    <div class="page-content">
+        <div class="row">
+            <div class="col-sm-6 col-md-10 col-lg-10">
+                <div id="AM4HeatChart-@oXIGraph.iOneClickID" class="section">
+                </div>
+            </div>
+        </div><!-- /.page-content -->
+    </div>
+</div><!-- /.main-wrapper -->
+
+<script>
+    $(document).ready(function () {
+        debugger;
+        var JsonData=@Html.Raw(Json.Encode(values));
+        JsonData.colours='@colours';
+        JsonData.BarTypes='@BarTypes';
+        JsonData.BarAxis='@BarAxis';
+        JsonData.OneClick='@oXIGraph.iOneClickID';
+        JsonData.RowXilinkID='@oXIGraph.RowXilinkID';
+        var Keys=@Html.Raw(Json.Encode(Keys));
+        fncDeviceAM4HeatComChart(JsonData,Keys);
+
+    });
+
+</script>

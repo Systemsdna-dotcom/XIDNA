@@ -1,0 +1,264 @@
+﻿@model XIDNA.Models.OrganizationTeams
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<style>
+    #btnLeft {
+        background: none;
+        Border: none;
+    }
+
+    #btnRight {
+        background: none;
+        Border: none;
+    }
+
+    .selected {
+        background-color: #367fa9;
+        color: #fff !important;
+    }
+
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+<script>
+
+</script>
+<section class="content-header hedr">
+    @if (@Model.ID == 0)
+    {
+        <h1> Add Organization Teams </h1>
+    }
+    else
+    {
+        <h1> Edit Organization Teams </h1>
+    }
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i>Organization Teams</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    @using (Ajax.BeginForm("", "", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnComplete" }, new { @id = "OrganizationTeamsForm", @class = "form-horizontal" }))
+                        {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.ID);
+                        <div id="clear-text">
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">Team Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.Name, new { @placeholder = "Enter Team Name", @class = "form-control", @id = "Name" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red", @id = "TeamNameError" })
+                                </div>
+                            </div>
+
+                            <div id="SelectLeadFields">
+                                <div class="box_filters">
+                                    <div class="col-xs-5 feature-box">
+                                        <label for="inputEmail" class="gn">Available Users</label>
+                                        <div class="">
+                                            <div class="">
+                                                <ul class="list1 task availableTasks form-control listbox" id="AvailableUsers">
+                                                    @if (Model.aUsers.Count() > 0 && Model.aUsers != null)
+                                                        {
+                                                            for (int i = 0; i < Model.aUsers.Count(); i++)
+                                                            {
+                                                        <li id="@Model.aUserIDs[i]">@Model.aUsers[i]</li>
+                                                            }
+                                                        }
+
+                                                </ul>
+                                            </div>
+                                            <div class="col-sm-7 errormsg">
+                                                @*@Html.ValidationMessageFor(m => m.Field, null, new { @class = "red" })*@
+                                            </div>
+                                        </div>
+                                    </div><div class="arrows_div col-xs-2" id="FirstDiv">
+                                        <div>
+                                            <button class="btn btn-rr" type="button" id="btnRight"> <i class="fa fa-chevron-right" aria-hidden="true"></i> </button>
+                                            <br>
+                                            <button class="btn btn-ll" id="btnLeft" type="button"> <i class="fa fa-chevron-left" aria-hidden="true"></i> </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-5 feature-box">
+                                        <label for="inputEmail" class="gn">Selected Users<span class="danger">*</span></label>
+                                        <div class="">
+                                            <div class="">
+                                                <ul class="list1 task availableTasks form-control listbox" id="SelectedUsers">
+                                                    @if (Model.sUsers.Count() > 0 && Model.sUsers != null)
+                                                        {
+                                                            for (int i = 0; i < Model.sUsers.Count(); i++)
+                                                            {
+                                                        <li id="@Model.sUserIDs[i]">@Model.sUsers[i]</li>
+                                                            }
+                                                        }
+
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">Status</label>
+                                @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="submit" class="btn btn-theme" id="Submit" value="Save" />
+                                @if (Model.ID == 0)
+                                {
+                                    <button type="button" class="btn btn-theme reverse" id="TeamReset">Reset</button>
+                                }
+                                <button type="button" class="btn btn-theme decline CancelOrgTeams">Cancel</button>
+                            </div>
+                        </div>
+                        }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="OrgTeamsDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    $(document).ready(function () {
+        $('.CancelOrgTeams').click(function () {
+            window.close();
+        });
+        $('#TeamReset').click(function () {
+            $('#AvailableUsers').empty();
+            $('#SelectedUsers').empty();
+            $('#OrganizationTeamsForm .taberrormsg').find('span').html('');
+            var Users =@Html.Raw(Json.Encode(Model.aUsers));
+            var UserIds =@Html.Raw(Json.Encode(Model.aUserIDs));
+            for (i = 0; i < Users.length; i++)
+            {
+                $('#AvailableUsers').append('<li id="'+UserIds[i]+'">'+Users[i]+'</li>');
+            }
+        });
+        @*$(function () {
+            $.ajax({
+                url: '@Url.Action("UsersList", "Organization")',
+                type: 'POST',
+                datatype: 'JSON',
+                cache: false,
+                data: {TypeC:'@Model.TypeC'},
+                success: function (data) {
+                        $("SelectedUsers").empty();
+                        for (i = 0; i < data.length; i++) {
+                            $('#AvailableUsers').append("<li value='" + data[i] + "' data-type='Extra'>" + data[i] + "</li>")
+                        }
+                }
+            });
+
+        });*@
+        $('.feature-box ul').on('click', 'li', function () {
+            $('.feature-box ul').each(function (i, li) {
+                $('li').removeClass('selected');
+            })
+            $(this).toggleClass('selected');
+        });
+        $("#btnRight").click(function () {
+            var selectedItem = $("#AvailableUsers .selected");
+            if (selectedItem.length != 0) {
+                $("#SelectedUsers").append(selectedItem);
+            }
+        })
+
+        $("#AvailableUsers").dblclick(function () {
+            var selectedItem = $("#AvailableUsers .selected");
+            if (selectedItem.length != 0) {
+                $("#SelectedUsers").append(selectedItem);
+            }
+        })
+
+        $("#btnLeft").click(function () {
+            var selectedItem = $("#SelectedUsers .selected");
+            if (selectedItem.length != 0) {
+                $("#AvailableUsers").append(selectedItem);
+            }
+        })
+
+        $("#SelectedUsers").dblclick(function () {
+            var selectedItem = $("#SelectedUsers .selected");
+            if (selectedItem.length != 0) {
+                $("#AvailableUsers").append(selectedItem);
+            }
+        })
+
+        $("#Submit").click(function () {
+            var Error = $('#TeamNameError').text();
+            var UserNames = [], UserIDs = [];
+            var TempName = $('#Name').val();
+            var Status = $('#Status').val();
+            $("ul#SelectedUsers").find("li").each(function () {
+                UserNames.push($(this).text());
+                UserIDs.push($(this).attr('id'));
+            });
+            if (Error.length == 0) {
+                if (TempName !== "" && TempName.length > 0) {
+                    if (UserNames.length > 0) {
+                        var Values = { Name: TempName, SelectedUsers: UserNames, UserIDs: UserIDs, ID: '@Model.ID', StatusTypeID: Status }
+                        $.ajax({
+                            url: '@Url.Action("SaveOrganizationTeams", "Organization")',
+                            type: 'POST',
+                            datatype: 'JSON',
+                            contentType: "application/json; charset=utf-8",
+                            cache: false,
+                            data: JSON.stringify(Values),
+                            success: function (data) {
+                                if (data > 0) {
+                                    if ('@Model.ID' > 0) {
+                                        $("#OrgTeamsDlg").unblock();
+                                        opener.location.reload();
+                                        CustomMessage(data.ResponseMessage, data.Status);
+                                    }
+                                    else {
+                                        $("#OrgTeamsDlg").unblock();
+                                        opener.location.reload();
+                                        CustomMessage(data.ResponseMessage, data.Status);
+                                    }
+                                }
+                                else {
+                                    $("#OrgTeamsDlg").unblock();
+                                    opener.location.reload();
+                                    CustomMessage(data.ResponseMessage, data.Status);
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        $("#OrgTeamsDlg").html('Select users before saving');
+                        $("#OrgTeamsDlg").dialog({
+                            title: "Organization Team",
+                            modal: true,
+                            buttons: [
+                               {
+                                   text: "Ok",
+                                   click: function () {
+                                       $("#OrgTeamsDlg").dialog("close");
+                                   }
+                               },
+                            ]
+                        });
+                    }
+                }
+            }
+        });
+    });
+</script>

@@ -1,0 +1,809 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:idu" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns="http://schemas.xmlsoap.org/wsdl/" name="idu" targetNamespace="urn:idu" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types xmlns="http://schemas.xmlsoap.org/wsdl/">
+    <xsd:schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:idu">
+      <xsd:complexType name="Request">
+        <xsd:sequence>
+          <xsd:element name="IDU" type="tns:IDUDetails" />
+          <xsd:element name="Login" type="tns:LoginDetails" />
+          <xsd:element name="Person" type="tns:PersonDetails" />
+          <xsd:element name="Services" type="tns:ServiceDetails" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="IDUDetails">
+        <xsd:sequence>
+          <xsd:element name="Reference" type="xsd:string" />
+          <xsd:element name="ID" type="xsd:string" />
+          <xsd:element name="IKey" type="xsd:string" />
+          <xsd:element name="Scorecard" type="xsd:string" />
+          <xsd:element name="equifaxUsername" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="LoginDetails">
+        <xsd:sequence>
+          <xsd:element name="username" type="xsd:string" />
+          <xsd:element name="password" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="PersonDetails">
+        <xsd:sequence>
+          <xsd:element name="forename" type="xsd:string" />
+          <xsd:element name="middle" type="xsd:string" />
+          <xsd:element name="surname" type="xsd:string" />
+          <xsd:element name="gender" type="xsd:string" />
+          <xsd:element name="dob" type="xsd:string" />
+          <xsd:element name="address1" type="xsd:string" />
+          <xsd:element name="address2" type="xsd:string" />
+          <xsd:element name="address3" type="xsd:string" />
+          <xsd:element name="address4" type="xsd:string" />
+          <xsd:element name="address5" type="xsd:string" />
+          <xsd:element name="address6" type="xsd:string" />
+          <xsd:element name="postcode" type="xsd:string" />
+          <xsd:element name="passport1" type="xsd:string" />
+          <xsd:element name="passport2" type="xsd:string" />
+          <xsd:element name="passport3" type="xsd:string" />
+          <xsd:element name="passport4" type="xsd:string" />
+          <xsd:element name="passport5" type="xsd:string" />
+          <xsd:element name="passport6" type="xsd:string" />
+          <xsd:element name="passport7" type="xsd:string" />
+          <xsd:element name="passport8" type="xsd:string" />
+          <xsd:element name="drivinglicence1" type="xsd:string" />
+          <xsd:element name="drivinglicence2" type="xsd:string" />
+          <xsd:element name="drivinglicence3" type="xsd:string" />
+          <xsd:element name="cardnumber" type="xsd:string" />
+          <xsd:element name="ni" type="xsd:string" />
+          <xsd:element name="nhs" type="xsd:string" />
+          <xsd:element name="cardtype" type="xsd:string" />
+          <xsd:element name="bforename" type="xsd:string" />
+          <xsd:element name="bmiddle" type="xsd:string" />
+          <xsd:element name="bsurname" type="xsd:string" />
+          <xsd:element name="maiden" type="xsd:string" />
+          <xsd:element name="bdistrict" type="xsd:string" />
+          <xsd:element name="bcertificate" type="xsd:string" />
+          <xsd:element name="mpannumber1" type="xsd:string" />
+          <xsd:element name="mpannumber2" type="xsd:string" />
+          <xsd:element name="mpannumber3" type="xsd:string" />
+          <xsd:element name="mpannumber4" type="xsd:string" />
+          <xsd:element name="sortcode" type="xsd:string" />
+          <xsd:element name="accountnumber" type="xsd:string" />
+          <xsd:element name="travelvisa1" type="xsd:string" />
+          <xsd:element name="travelvisa2" type="xsd:string" />
+          <xsd:element name="travelvisa3" type="xsd:string" />
+          <xsd:element name="travelvisa4" type="xsd:string" />
+          <xsd:element name="travelvisa5" type="xsd:string" />
+          <xsd:element name="travelvisa6" type="xsd:string" />
+          <xsd:element name="travelvisa7" type="xsd:string" />
+          <xsd:element name="travelvisa8" type="xsd:string" />
+          <xsd:element name="travelvisa9" type="xsd:string" />
+          <xsd:element name="idcard1" type="xsd:string" />
+          <xsd:element name="idcard2" type="xsd:string" />
+          <xsd:element name="idcard3" type="xsd:string" />
+          <xsd:element name="idcard4" type="xsd:string" />
+          <xsd:element name="idcard5" type="xsd:string" />
+          <xsd:element name="idcard6" type="xsd:string" />
+          <xsd:element name="idcard7" type="xsd:string" />
+          <xsd:element name="idcard8" type="xsd:string" />
+          <xsd:element name="idcard9" type="xsd:string" />
+          <xsd:element name="idcard10" type="xsd:string" />
+          <xsd:element name="msubjectforename" type="xsd:string" />
+          <xsd:element name="msubjectsurname" type="xsd:string" />
+          <xsd:element name="mpartnerforename" type="xsd:string" />
+          <xsd:element name="mpartnersurname" type="xsd:string" />
+          <xsd:element name="mdate" type="xsd:string" />
+          <xsd:element name="mdistrict" type="xsd:string" />
+          <xsd:element name="mcertificate" type="xsd:string" />
+          <xsd:element name="pollnumber" type="xsd:string" />
+          <xsd:element name="email" type="xsd:string" />
+          <xsd:element name="email2" type="xsd:string" />
+          <xsd:element name="docfront" type="xsd:base64Binary" />
+          <xsd:element name="docback" type="xsd:base64Binary" />
+          <xsd:element name="docsize" type="xsd:string" />
+          <xsd:element name="landline1" type="xsd:string" />
+          <xsd:element name="landline2" type="xsd:string" />
+          <xsd:element name="mobile1" type="xsd:string" />
+          <xsd:element name="mobile2" type="xsd:string" />
+          <xsd:element name="otplandline1" type="xsd:string" />
+          <xsd:element name="otplandline2" type="xsd:string" />
+          <xsd:element name="otpmobile1" type="xsd:string" />
+          <xsd:element name="otpmobile2" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="otp" type="tns:OtpRequest" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="ServiceDetails">
+        <xsd:sequence>
+          <xsd:element name="address" type="xsd:boolean" />
+          <xsd:element name="deathscreen" type="xsd:boolean" />
+          <xsd:element name="dob" type="xsd:boolean" />
+          <xsd:element name="age" type="xsd:boolean" />
+          <xsd:element name="passport" type="xsd:boolean" />
+          <xsd:element name="driving" type="xsd:boolean" />
+          <xsd:element name="birth" type="xsd:boolean" />
+          <xsd:element name="smartlink" type="xsd:boolean" />
+          <xsd:element name="ni" type="xsd:boolean" />
+          <xsd:element name="nhs" type="xsd:boolean" />
+          <xsd:element name="cardnumber" type="xsd:boolean" />
+          <xsd:element name="sanction" type="xsd:boolean" />
+          <xsd:element name="insolvency" type="xsd:boolean" />
+          <xsd:element name="mpan" type="xsd:boolean" />
+          <xsd:element name="bankaccountvalidation" type="xsd:boolean" />
+          <xsd:element name="crediva" type="xsd:boolean" />
+          <xsd:element name="ccj" type="xsd:boolean" />
+          <xsd:element name="creditactive" type="xsd:boolean" />
+          <xsd:element name="travelvisa" type="xsd:boolean" />
+          <xsd:element name="idcard" type="xsd:boolean" />
+          <xsd:element name="bankaccountverification" type="xsd:boolean" />
+          <xsd:element name="companydirector" type="xsd:boolean" />
+          <xsd:element name="searchactivity" type="xsd:boolean" />
+          <xsd:element name="prs" type="xsd:boolean" />
+          <xsd:element name="marriage" type="xsd:boolean" />
+          <xsd:element name="pollnumber" type="xsd:boolean" />
+          <xsd:element name="onlineprofile" type="xsd:boolean" />
+          <xsd:element name="docauth" type="xsd:boolean" />
+          <xsd:element name="onetimepassword" type="xsd:boolean" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="emailaddresses" type="xsd:boolean" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="phonenumbers" type="xsd:boolean" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="OtpRequest">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:OtpRequestPart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="OtpRequestPart">
+        <xsd:sequence>
+          <xsd:element name="input" type="xsd:string" />
+          <xsd:element name="otp" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="Result">
+        <xsd:sequence>
+          <xsd:element name="Summary" type="tns:SummaryPart" />
+          <xsd:element name="Address" type="tns:AddressPart" />
+          <xsd:element name="Smartlink" type="tns:SmartlinkArray" />
+          <xsd:element name="Deathscreen" type="tns:DeathscreenArray" />
+          <xsd:element name="DrivingLicence" type="tns:DrivingLicencePart" />
+          <xsd:element name="DOB" type="tns:DOBPart" />
+          <xsd:element name="Age" type="tns:AgePart" />
+          <xsd:element name="NHS" type="tns:NHSPart" />
+          <xsd:element name="NI" type="tns:NIPart" />
+          <xsd:element name="Sanction" type="tns:SanctionArray" />
+          <xsd:element name="Passport" type="tns:PassportPart" />
+          <xsd:element name="Birth" type="tns:BirthPart" />
+          <xsd:element name="CardNumber" type="tns:CardNumberPart" />
+          <xsd:element name="Mpan" type="tns:MpanPart" />
+          <xsd:element name="Insolvency" type="tns:InsolvencyArray" />
+          <xsd:element name="BankAccountValidation" type="tns:BankAccountValidationPart" />
+          <xsd:element name="Crediva" type="tns:CredivaPart" />
+          <xsd:element name="Ccj" type="tns:CcjArray" />
+          <xsd:element name="CreditActive" type="tns:CreditActivePart" />
+          <xsd:element name="TravelVisa" type="tns:TravelVisaPart" />
+          <xsd:element name="IDCard" type="tns:IDCardPart" />
+          <xsd:element name="BankAccountVerification" type="tns:BankAccountVerificationPart" />
+          <xsd:element name="SearchActivity" type="tns:SearchActivityArray" />
+          <xsd:element name="CompanyDirector" type="tns:CompanyDirectorArray" />
+          <xsd:element name="PRS" type="tns:PrsPart" />
+          <xsd:element name="Marriage" type="tns:MarriagePart" />
+          <xsd:element name="PollNumber" type="tns:PollNumberPart" />
+          <xsd:element name="OnlineProfile" type="tns:OnlineProfilePart" />
+          <xsd:element name="DocumentAuthentication" type="tns:DocumentAuthenticationArray" />
+          <xsd:element name="OneTimePassword" type="tns:OneTimePasswordPart" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="EmailAddresses" type="tns:EmailAddressesArray" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="PhoneNumbers" type="tns:PhoneNumbersArray" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="Otp" type="tns:OtpResponseArray" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="SummaryPart">
+        <xsd:sequence>
+          <xsd:element name="Status" type="xsd:boolean" />
+          <xsd:element name="ID" type="xsd:string" />
+          <xsd:element name="IKey" type="xsd:string" />
+          <xsd:element name="equifaxUsername" type="xsd:string" />
+          <xsd:element name="Reference" type="xsd:string" />
+          <xsd:element name="Scorecard" type="xsd:string" />
+          <xsd:element name="Smartscore" type="xsd:int" />
+          <xsd:element name="ResultText" type="xsd:string" />
+          <xsd:element name="ProfileURL" type="xsd:string" />
+          <xsd:element name="Credits" type="xsd:int" />
+          <xsd:element name="Errors" type="tns:ErrorArray" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="ErrorArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:ErrorPart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="ErrorPart">
+        <xsd:sequence>
+          <xsd:element name="Service" type="xsd:string" />
+          <xsd:element name="Details" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="AddressPart">
+        <xsd:sequence>
+          <xsd:element name="Forename" type="xsd:string" />
+          <xsd:element name="MiddleName" type="xsd:string" />
+          <xsd:element name="Surname" type="xsd:string" />
+          <xsd:element name="MatchType" type="xsd:string" />
+          <xsd:element name="DOB" type="xsd:string" />
+          <xsd:element name="ForenameAppended" type="xsd:boolean" />
+          <xsd:element name="MiddleNameAppended" type="xsd:boolean" />
+          <xsd:element name="DOBAppended" type="xsd:boolean" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="Telephone" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="Telephonename" type="xsd:string" />
+          <xsd:element name="GoneAway" type="xsd:string" />
+          <xsd:element name="Source" type="xsd:string" />
+          <xsd:element name="Occupants" type="tns:OccupantsArray" />
+          <xsd:element name="Property" type="tns:PropertyArray" />
+          <xsd:element name="Phonematch" type="tns:PhonematchArray" />
+          <xsd:element name="Recency" type="xsd:string" />
+          <xsd:element name="AddressValidated" type="xsd:boolean" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="PhoneNumbersArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="xsd:string[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="OccupantsArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:OccupantPart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="OccupantPart">
+        <xsd:sequence>
+          <xsd:element name="Name" type="xsd:string" />
+          <xsd:element name="DOB" type="xsd:string" />
+          <xsd:element name="Recency" type="xsd:string" />
+          <xsd:element name="Residency" type="xsd:string" />
+          <xsd:element name="ResidencyScore" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="Telephone" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TelephoneName" type="xsd:string" />
+          <xsd:element name="Source" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="PropertyArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:PropertyPart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="PropertyPart">
+        <xsd:sequence>
+          <xsd:element name="Type" type="xsd:string" />
+          <xsd:element name="Tenure" type="xsd:string" />
+          <xsd:element name="Date" type="xsd:string" />
+          <xsd:element name="Price" type="xsd:string" />
+          <xsd:element name="Silhouette" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="PhonematchArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="xsd:string[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="SmartlinkArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:SmartlinkPart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="SmartlinkPart">
+        <xsd:sequence>
+          <xsd:element name="Title" type="xsd:string" />
+          <xsd:element name="Forename" type="xsd:string" />
+          <xsd:element name="Middle" type="xsd:string" />
+          <xsd:element name="Surname" type="xsd:string" />
+          <xsd:element name="DOB" type="xsd:string" />
+          <xsd:element name="Address" type="tns:AddressLabel" />
+          <xsd:element name="Recency" type="xsd:string" />
+          <xsd:element name="Residency" type="xsd:string" />
+          <xsd:element name="LinkSource" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="AddressLabel">
+        <xsd:sequence>
+          <xsd:element name="Address1" type="xsd:string" />
+          <xsd:element name="Address2" type="xsd:string" />
+          <xsd:element name="Address3" type="xsd:string" />
+          <xsd:element name="Address4" type="xsd:string" />
+          <xsd:element name="Address5" type="xsd:string" />
+          <xsd:element name="Postcode" type="xsd:string" />
+          <xsd:element name="DPS" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="DeathscreenArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:DeathscreenResult[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="DeathscreenResult">
+        <xsd:sequence>
+          <xsd:element name="Forename" type="xsd:string" />
+          <xsd:element name="SecondName" type="xsd:string" />
+          <xsd:element name="ThirdName" type="xsd:string" />
+          <xsd:element name="FourthName" type="xsd:string" />
+          <xsd:element name="Surname" type="xsd:string" />
+          <xsd:element name="District" type="xsd:string" />
+          <xsd:element name="DOB" type="xsd:string" />
+          <xsd:element name="DOD" type="xsd:string" />
+          <xsd:element name="DOR" type="xsd:string" />
+          <xsd:element name="VolumeNo" type="xsd:string" />
+          <xsd:element name="DistNo" type="xsd:string" />
+          <xsd:element name="PageNo" type="xsd:string" />
+          <xsd:element name="RegNo" type="xsd:string" />
+          <xsd:element name="EntryNo" type="xsd:string" />
+          <xsd:element name="PlaceOfBirth" type="xsd:string" />
+          <xsd:element name="MaidenName" type="xsd:string" />
+          <xsd:element name="GROReference" type="xsd:string" />
+          <xsd:element name="address1" type="xsd:string" />
+          <xsd:element name="address2" type="xsd:string" />
+          <xsd:element name="address3" type="xsd:string" />
+          <xsd:element name="address4" type="xsd:string" />
+          <xsd:element name="address5" type="xsd:string" />
+          <xsd:element name="postcode" type="xsd:string" />
+          <xsd:element name="MatchType" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="OneTimePasswordPart">
+        <xsd:sequence>
+          <xsd:element name="Landline1" type="tns:OneTimePasswordResultPart" />
+          <xsd:element name="Landline2" type="tns:OneTimePasswordResultPart" />
+          <xsd:element name="Mobile1" type="tns:OneTimePasswordResultPart" />
+          <xsd:element name="Mobile2" type="tns:OneTimePasswordResultPart" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="OneTimePasswordResultPart">
+        <xsd:sequence>
+          <xsd:element name="Number" type="xsd:string" />
+          <xsd:element name="PhoneMatchSources" type="xsd:int" />
+          <xsd:element name="Status" type="xsd:int" />
+          <xsd:element name="IndicatedStatus" type="xsd:string" />
+          <xsd:element name="IndicatedLocation" type="xsd:string" />
+          <xsd:element name="Result" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="DrivingLicencePart">
+        <xsd:sequence>
+          <xsd:element name="ResultFlag" type="xsd:boolean" />
+          <xsd:element name="MiddleNameWarning" type="xsd:boolean" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="DOBPart">
+        <xsd:sequence>
+          <xsd:element name="TracesmartDOB" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ExperianDOB" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="EquifaxDOB" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="EquifaxDOBStatus" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="AgePart">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" maxOccurs="1" name="AgeLower" type="xsd:boolean" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="AgeUpper" type="xsd:boolean" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="NHSPart">
+        <xsd:sequence>
+          <xsd:element name="ResultFlag" type="xsd:boolean" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="NIPart">
+        <xsd:sequence>
+          <xsd:element name="ResultFlag" type="xsd:boolean" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="SanctionArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:SanctionPart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="SanctionPart">
+        <xsd:sequence>
+          <xsd:element name="Name" type="xsd:string" />
+          <xsd:element name="Recency" type="xsd:string" />
+          <xsd:element name="MatchScore" type="xsd:int" />
+          <xsd:element name="Source" type="xsd:string" />
+          <xsd:element name="Type" type="xsd:string" />
+          <xsd:element name="Country" type="xsd:string" />
+          <xsd:element name="Addresses" type="tns:SanctionAddressArray" />
+          <xsd:element name="Aliases" type="tns:AliasArray" />
+          <xsd:element name="Exceptions" type="tns:ExceptionArray" />
+          <xsd:element name="Positions" type="tns:PositionArray" />
+          <xsd:element name="DOB" type="tns:DOBArray" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="SanctionAddressArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:SanctionAddressPart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="SanctionAddressPart">
+        <xsd:sequence>
+          <xsd:element name="Address1" type="xsd:string" />
+          <xsd:element name="Address2" type="xsd:string" />
+          <xsd:element name="Address3" type="xsd:string" />
+          <xsd:element name="Postcode" type="xsd:string" />
+          <xsd:element name="City" type="xsd:string" />
+          <xsd:element name="Country" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="AliasArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="xsd:string[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="ExceptionArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="xsd:string[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="PositionArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="xsd:string[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="DOBArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="xsd:string[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="PassportPart">
+        <xsd:sequence>
+          <xsd:element name="MRZValid" type="xsd:boolean" />
+          <xsd:element name="DOBValid" type="xsd:boolean" />
+          <xsd:element name="GenderValid" type="xsd:boolean" />
+          <xsd:element name="ExpiryValid" type="xsd:boolean" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="BirthPart">
+        <xsd:sequence>
+          <xsd:element name="ResultIndicator" type="xsd:string" />
+          <xsd:element name="Name" type="xsd:string" />
+          <xsd:element name="Maiden" type="xsd:string" />
+          <xsd:element name="RegDistrict" type="xsd:string" />
+          <xsd:element name="BirthIndexFlag" type="xsd:int" />
+          <xsd:element name="BirthCertificateFlag" type="xsd:int" />
+          <xsd:element name="RegYear" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="RegMonth" type="xsd:string" />
+          <xsd:element name="RegQuarter" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="CardNumberPart">
+        <xsd:sequence>
+          <xsd:element name="CardNumberValid" type="xsd:boolean" />
+          <xsd:element name="CardTypeValid" type="xsd:boolean" />
+          <xsd:element name="CardTypeConfirm" type="xsd:string" />
+          <xsd:element name="CardFraudCheck" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="MpanPart">
+        <xsd:sequence>
+          <xsd:element name="ResultFlag" type="xsd:boolean" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="BankAccountValidationPart">
+        <xsd:sequence>
+          <xsd:element name="BankAccountValid" type="xsd:boolean" />
+          <xsd:element name="BankName" type="xsd:string" />
+          <xsd:element name="BranchDetails" type="xsd:string" />
+          <xsd:element name="BACSPayments" type="xsd:boolean" />
+          <xsd:element name="CHAPSPayments" type="xsd:boolean" />
+          <xsd:element name="FasterPayments" type="xsd:boolean" />
+          <xsd:element name="DirectDebit" type="xsd:boolean" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="CredivaPart">
+        <xsd:sequence>
+          <xsd:element name="FullER" type="xsd:boolean" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="InsolvencyArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:InsolvencyResult[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="InsolvencyResult">
+        <xsd:sequence>
+          <xsd:element name="Type" type="xsd:string" />
+          <xsd:element name="Name" type="xsd:string" />
+          <xsd:element name="CaseNo" type="xsd:string" />
+          <xsd:element name="Address" type="tns:AddressLabel" />
+          <xsd:element name="DOB" type="xsd:string" />
+          <xsd:element name="Court" type="xsd:string" />
+          <xsd:element name="StartDate" type="xsd:string" />
+          <xsd:element name="Status" type="xsd:string" />
+          <xsd:element name="Occupation" type="xsd:string" />
+          <xsd:element name="Aliases" type="xsd:string" />
+          <xsd:element name="Description" type="xsd:string" />
+          <xsd:element name="ServiceOffice" type="xsd:string" />
+          <xsd:element name="TelephoneNumber" type="xsd:string" />
+          <xsd:element name="CaseType" type="xsd:string" />
+          <xsd:element name="TradingNames" type="xsd:string" />
+          <xsd:element name="DebtTotal" type="xsd:string" />
+          <xsd:element name="AssetTotal" type="xsd:string" />
+          <xsd:element name="PreviousAddress" type="tns:AddressLabel" />
+          <xsd:element name="PresentationDate" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="CcjArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:CcjResult[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="CcjResult">
+        <xsd:sequence>
+          <xsd:element name="name" type="xsd:string" />
+          <xsd:element name="dob" type="xsd:string" />
+          <xsd:element name="address1" type="xsd:string" />
+          <xsd:element name="address2" type="xsd:string" />
+          <xsd:element name="address3" type="xsd:string" />
+          <xsd:element name="address4" type="xsd:string" />
+          <xsd:element name="address5" type="xsd:string" />
+          <xsd:element name="postcode" type="xsd:string" />
+          <xsd:element name="judgementDate" type="xsd:string" />
+          <xsd:element name="judgementType" type="xsd:string" />
+          <xsd:element name="amount" type="xsd:string" />
+          <xsd:element name="caseNumber" type="xsd:string" />
+          <xsd:element name="courtName" type="xsd:string" />
+          <xsd:element name="dateEnd" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="CreditActivePart">
+        <xsd:sequence>
+          <xsd:element minOccurs="0" maxOccurs="1" name="InsightAccounts" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="InsightLenders" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="CIFAS" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="CAISLenders" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccounts" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccountsMonth1" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccountsMonth2" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccountsMonth3" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccountsMonth4" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccountsMonth5" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccountsMonth6" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccountsMonth7" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccountsMonth8" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccountsMonth9" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccountsMonth10" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccountsMonth11" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="ActiveInsightAccountsMonth12" type="xsd:int" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="TravelVisaPart">
+        <xsd:sequence>
+          <xsd:element name="MRZValid" type="xsd:boolean" />
+          <xsd:element name="InDate" type="xsd:boolean" />
+          <xsd:element name="UKResidenceValid" type="xsd:boolean" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="IDCardPart">
+        <xsd:sequence>
+          <xsd:element name="MRZValid" type="xsd:boolean" />
+          <xsd:element name="DOBValid" type="xsd:boolean" />
+          <xsd:element name="GenderValid" type="xsd:boolean" />
+          <xsd:element name="ExpiryValid" type="xsd:boolean" />
+          <xsd:element name="CountryCodeValid" type="xsd:boolean" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="BankAccountVerificationPart">
+        <xsd:sequence>
+          <xsd:element name="Sortcode" type="xsd:string" />
+          <xsd:element name="AccountNumber" type="xsd:string" />
+          <xsd:element name="AccountName" type="xsd:string" />
+          <xsd:element name="AccountAddress" type="xsd:string" />
+          <xsd:element name="AccountStatus" type="xsd:string" />
+          <xsd:element name="ErrorCode" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="SearchActivityArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:SearchActivityPart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="SearchActivityPart">
+        <xsd:sequence>
+          <xsd:element name="ProfileType" type="xsd:string" />
+          <xsd:element name="OneMonth" type="xsd:int" />
+          <xsd:element name="ThreeMonth" type="xsd:int" />
+          <xsd:element name="SixMonth" type="xsd:int" />
+          <xsd:element name="History" type="tns:SearchActivityHistoryArray" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="SearchActivityHistoryArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:SearchActivityHistoryPart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="SearchActivityHistoryPart">
+        <xsd:sequence>
+          <xsd:element name="Date" type="xsd:string" />
+          <xsd:element name="BusinessActivity" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="CompanyDirectorArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:CompanyDirectorPart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="CompanyDirectorPart">
+        <xsd:sequence>
+          <xsd:element name="MatchType" type="xsd:string" />
+          <xsd:element name="DateAppointed" type="xsd:string" />
+          <xsd:element name="CompanyRegNo" type="xsd:int" />
+          <xsd:element name="CompanyName" type="xsd:string" />
+          <xsd:element name="RegisteredOffice" type="xsd:string" />
+          <xsd:element name="CompanyAppointments" type="tns:CompanyAppointmentsArray" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="CompanyAppointmentsArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:CompanyAppointmentsPart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="CompanyAppointmentsPart">
+        <xsd:sequence>
+          <xsd:element name="Title" type="xsd:string" />
+          <xsd:element name="Name" type="xsd:string" />
+          <xsd:element name="Address" type="xsd:string" />
+          <xsd:element name="DOB" type="xsd:string" />
+          <xsd:element name="Occupation" type="xsd:string" />
+          <xsd:element name="Nationality" type="xsd:string" />
+          <xsd:element name="AppointmentDate" type="xsd:string" />
+          <xsd:element name="AppointmentType" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="PrsPart">
+        <xsd:sequence>
+          <xsd:element name="MatchResult" type="xsd:string" />
+          <xsd:element name="PropertyOwnership" type="xsd:string" />
+          <xsd:element name="TitleNumber" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="MarriagePart">
+        <xsd:sequence>
+          <xsd:element name="MarriageIndexMatch" type="xsd:int" />
+          <xsd:element name="MarriageCertificateMatch" type="xsd:int" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="PollNumberPart">
+        <xsd:sequence>
+          <xsd:element name="PollNumberMatch" type="xsd:int" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="OnlineProfilePart">
+        <xsd:sequence>
+          <xsd:element name="OnlineProfileStatus" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterUsername" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterActivityMonth1" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterActivityMonth2" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterActivityMonth3" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterActivityMonth4" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterActivityMonth5" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterActivityMonth6" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterActivityMonth7" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterActivityMonth8" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterActivityMonth9" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterActivityMonth10" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterActivityMonth11" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="TwitterActivityMonth12" type="xsd:int" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="DocumentAuthenticationArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:DocumentAuthenticationPart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="DocumentAuthenticationPart">
+        <xsd:sequence>
+          <xsd:element name="DocAuthStatus" type="xsd:int" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="DocumentType" type="xsd:string" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="DocumentName" type="xsd:string" />
+          <xsd:element name="DocumentAlerts" type="tns:DocumentAlertsPart" />
+          <xsd:element minOccurs="0" maxOccurs="1" name="DocumentOCR" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+      <xsd:complexType name="DocumentAlertsPart">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="xsd:string[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="EmailAddressesArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="xsd:string[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="OtpResponseArray">
+        <xsd:complexContent mixed="false">
+          <xsd:restriction base="SOAP-ENC:Array">
+            <xsd:attribute wsdl:arrayType="tns:OtpResponsePart[]" ref="SOAP-ENC:arrayType" />
+          </xsd:restriction>
+        </xsd:complexContent>
+      </xsd:complexType>
+      <xsd:complexType name="OtpResponsePart">
+        <xsd:sequence>
+          <xsd:element name="Type" type="xsd:string" />
+          <xsd:element name="Input" type="xsd:string" />
+          <xsd:element name="MatchSources" type="xsd:int" />
+          <xsd:element name="Status" type="xsd:int" />
+          <xsd:element name="IndicatedStatus" type="xsd:string" />
+          <xsd:element name="IndicatedLocation" type="xsd:string" />
+          <xsd:element name="Result" type="xsd:string" />
+        </xsd:sequence>
+      </xsd:complexType>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="IDUProcessRequest">
+    <wsdl:part name="params" type="tns:Request" />
+  </wsdl:message>
+  <wsdl:message name="IDUProcessResponse">
+    <wsdl:part name="Results" type="tns:Result" />
+  </wsdl:message>
+  <wsdl:portType name="iduPort">
+    <wsdl:operation name="IDUProcess">
+      <wsdl:input message="tns:IDUProcessRequest" />
+      <wsdl:output message="tns:IDUProcessResponse" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="iduBinding" type="tns:iduPort">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="rpc" />
+    <wsdl:operation name="IDUProcess">
+      <soap:operation soapAction="urn:idu#Idu#IDUProcess" />
+      <wsdl:input>
+        <soap:body use="encoded" namespace="urn:idu" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="encoded" namespace="urn:idu" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="iduService">
+    <documentation />
+    <wsdl:port name="iduPort" binding="tns:iduBinding">
+      <soap:address location="https://ws-idu.tracesmart.co.uk/v5.1/index.php" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

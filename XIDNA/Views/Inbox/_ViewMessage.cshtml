@@ -1,0 +1,37 @@
+﻿@model XIDNA.Models.AddFields
+@using Microsoft.AspNet.Identity
+@*@using XIDNA.Models*@
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        var iUserID = SessionManager.UserID;
+        var userid = parseInt(iUserID);
+        $.ajax({
+            url: '@Url.Action("GetViewMessage", "Inbox")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            cache: false,
+            data: { UserID: userid },
+            success: function (data) {
+                $.each(data, function (i, val) {
+                    $('.Message').append($('<li></li>').html('<i class="fa fa-envelope-square" aria-hidden="true"></i><a> ' + val.Message + '</a>'));
+                })
+            }
+        })
+ })    
+</script>
+@*<style>
+    ul.Message {
+        list-style-type: circle;
+    }
+</style>*@
+  <div class="col-xs-12">
+      <div><h3><i class="fa fa-envelope-o" aria-hidden="true"></i> List of Reminder Messages:</h3><hr /></div>
+      <ul class="Message" > 
+
+      </ul>
+  </div>

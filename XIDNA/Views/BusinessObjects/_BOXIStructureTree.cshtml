@@ -1,0 +1,854 @@
+﻿@model IEnumerable<XIDNA.Models.cXIStructure>
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<section class="content-header hedr">
+    <h1>BO Structure Management </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> BO</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+
+<div class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body padding10Tab">
+                <div class="innerborder">
+                    <div class="form-horizontal">
+                        @Html.HiddenFor(model => model.FirstOrDefault().ID)
+                        @Html.HiddenFor(model => model.FirstOrDefault().sSavingType)
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                @Html.TextBoxFor(model => model.FirstOrDefault().sStructureName, new { @class = "form-control", @placeholder = "Structure name here" })
+                            </div>
+                            <div class="col-sm-4 taberrormsg">
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Code<span class="danger">*</span></label>
+                                @Html.TextBoxFor(model => model.FirstOrDefault().sCode, new { @class = "form-control", @placeholder = "Structure code here" })
+                            </div>
+                            <div class="col-sm-4 taberrormsg">
+
+                            </div>
+                        </div>
+                        <div class="form-group" id="BusinessObj">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Business Objects<span class="danger"></span></label>
+                                <select class="form-control" name="BO" id="BODDL">
+                                    <option value="0">--Select--</option>
+                                    @foreach (var items in Model.FirstOrDefault().BOList)
+                                    {
+                                        <option value=@items.Value>@items.text</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Entity Type<span class="danger"></span></label>
+                                <select class="form-control" name="sType" id="TypesDDL">
+                                    <option value="0">--Select--</option>
+                                    <option value="Main BO">Main Entity</option>
+                                    <option value="Sub Entity">Sub Entity</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Mode<span class="danger"></span></label>
+                                <select class="form-control" name="sMode" id="ModeDDL">
+                                    <option value="0">--Select--</option>
+                                    <option value="Single">Single</option>
+                                    <option value="Multiple">Multiple</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                @Html.CheckBoxFor(model => model.FirstOrDefault().bIsVisible)
+                                <label for="inputEmail" class="gn">Is Visible<span class="danger"></span></label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Parent FK Column<span class="danger">*</span></label>
+                                @Html.TextBoxFor(model => model.FirstOrDefault().sParentFKColumn, new { @class = "form-control", @placeholder = "Parent Foregin key column name" })
+                            </div>
+                            <div class="col-sm-4 taberrormsg">
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Linking Type<span class="danger"></span></label>
+                                <select class="form-control" name="sLinkingType" id="LinkingTypeDDL">
+                                    <option value="0">--Select--</option>
+                                    <option value="PtoC">Parent to child</option>
+                                    <option value="CtoP">Child to parent</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Default Step<span class="danger">*</span></label>
+                                @Html.TextBoxFor(model => model.FirstOrDefault().FKiStepDefinitionName, new { @class = "form-control Defaultstep", @id = "DefaultStep", @placeholder = "Enter Step Name" })
+                                @Html.HiddenFor(model => model.FirstOrDefault().FKiStepDefinitionID, new { @id = "stepdefinationID" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Output Area<span class="danger">*</span></label>
+                                @Html.TextBoxFor(model => model.FirstOrDefault().sOutputArea, new { @class = "form-control", @id = "soutputareaid", @placeholder = "Enter PlaceHolderUnique Name" })
+                            </div>
+                            <div class="col-sm-4 taberrormsg">
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                <select class="form-control" name="StatusTypeID" id="StatusTypeDDL">
+                                    <option value="0">--Select--</option>
+                                    <option value="10">Active</option>
+                                    <option value="20">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="MainDiv">
+                            <div id="BOStructTree">
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="button" class="btn btn-theme" id="BOStructSaveBtn" value="Save" />
+                                <button type="button" class="btn btn-theme decline" id="CancelBOStruct">Cancel</button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div id="DetailsForm" class="col-md-9"></div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+<script type="text/javascript">
+    var BOName;
+    var BODID;
+    var IsExists = false;
+    var NodeId = 1;
+    var SelectedNode;
+    var Tree = @Html.Raw(Json.Encode(Model));
+    LoadTree(Tree);
+    //if(Tree && Tree.length > 0){
+    //    BOName = Tree[0].sBO;
+    //    BOID = Tree[0].BOID;
+    //    IsExists = Tree[0].bIsExists;
+    //}
+    //if(IsExists){
+    //    LoadTree(Tree);
+    //}
+    $('#DefaultStep').autocomplete({
+        source: function(request, response) {
+            var Allqslist = @Html.Raw(Json.Encode(Model.FirstOrDefault().AllQSSteps.Where(m => !string.IsNullOrEmpty(m.Key))));
+            var List = [];
+            $.each(Allqslist, function (key, value) {
+                List.push({ label: value.Value, value: value });
+            });
+            response($.ui.autocomplete.filter(List, request.term));
+        },
+        select: function (event, ui) {
+            $("#DefaultStep").val(ui.item.value.Value);
+            $("#stepdefinationID").val(ui.item.value.Key);
+            return false;
+        },
+        focus: function (event, ui) {
+            $("#DefaultStep").val(ui.item.value.Value);
+            return false;
+        }
+    });
+
+    $(document).ready(function () {
+        $('#bIsVisible').prop('checked', false);
+        $('#BOStructSaveBtn').click(function(){
+            var sStructureName = $('#sStructureName').val();
+            var sCode = $('#sCode').val();
+            var iStructID = $('#ID').val();
+            var FKiStepDefinitionID = $('#stepdefinationID').val();
+            var sOutputArea = $('#soutputareaid').val();
+            if(sStructureName && sCode && sStructureName.length > 0 && sCode.length > 0){
+                $('body').block({
+                    message: '<h4>Saving</h4>',
+                    blockMsgClass: 'report-success',
+                });
+                for(i=0;i<Tree.length;i++){
+                    if(i==0){
+                        Tree[i].sStructureName = sStructureName;
+                        Tree[i].sCode = sCode;
+                        Tree[i].FKiStepDefinitionID = FKiStepDefinitionID;
+                        Tree[i].sOutputArea = sOutputArea;
+
+                    }
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SaveBOStructure", "BusinessObjects")',
+                    data: JSON.stringify({ model:Tree, iStructureID : iStructID }),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    async: false,
+                    success: function (data) {
+                        CustomMessage(data.ResponseMessage, data.Status)
+                        $('body').unblock();
+                    }
+                });
+            }
+            else{
+                CustomMessage('Plese fill * marked fields', false);
+            }
+        });
+
+        $('#CancelBOStruct').click(function (){
+            window.close();
+        });
+
+        $('#BODDL').change(function(){
+            $('#TypesDDL').val(0);
+            $('#ModeDDL').val(0);
+
+            var BOName;
+            if($(this).val()>0){
+                BOName = $('#BODDL :selected').text();
+                BODID = $('#BODDL :selected').val();
+            }
+            if(SelectedNode.id > 0 && BOName.length>0){
+                var id = SelectedNode.id;
+                var ChangeText = SelectedNode.text;
+                $("#BOStructTree").jstree('rename_node', SelectedNode , BOName );
+                //if(ChangeText == 'New Node')
+                //{
+                //    $("#BOStructTree").jstree('rename_node', SelectedNode , BOName );
+                //}
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].ID == id){
+                        Tree[i].sName = BOName;
+                        Tree[i].BOID = BODID;
+                    }
+                }
+            }
+        });
+
+        $('#TypesDDL').change(function(){
+            var sType;
+            if($(this).val().length>0 && $(this).val() != 0){
+                sType = $('#TypesDDL :selected').val();
+            }
+            else if($(this).val() == 0){
+                if(SelectedNode.id > 0){
+                    var id = SelectedNode.id;
+                    $('#BOStructTree').jstree(true).get_node(id).data.Type = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].ID == id){
+                            Tree[i].sType = null;
+                        }
+                    }
+                }
+            }
+            if(SelectedNode.id > 0 && sType && sType.length>0){
+                var id = SelectedNode.id;
+                if($('#BOStructTree').jstree(true).get_node(id).data != null)
+                {
+                    $('#BOStructTree').jstree(true).get_node(id).data.Type = sType;
+                }
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].ID == id){
+                        Tree[i].sType = sType;
+                    }
+                }
+            }
+        });
+
+        $('#ModeDDL').change(function(){
+            var sMode;
+            if($(this).val().length>0 && $(this).val() != 0){
+                sMode = $('#ModeDDL :selected').val();
+            }
+            else if($(this).val() == 0){
+                if(SelectedNode.id > 0){
+                    var id = SelectedNode.id;
+                    $('#BOStructTree').jstree(true).get_node(id).data.sMode = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].ID == id){
+                            Tree[i].sMode = null;
+                        }
+                    }
+                }
+            }
+            if(SelectedNode.id > 0 && sMode && sMode.length>0){
+                var id = SelectedNode.id;
+                if($('#BOStructTree').jstree(true).get_node(id).data != null)
+                {
+                    $('#BOStructTree').jstree(true).get_node(id).data.sMode = sMode;
+                }
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].ID == id){
+                        Tree[i].sMode = sMode;
+                    }
+                }
+            }
+        });
+
+        $('#StatusTypeDDL').change(function(){
+            var StatusTypeID;
+            if($(this).val().length>0 && $(this).val() != 0){
+                StatusTypeID = $('#StatusTypeDDL :selected').val();
+            }
+            else if($(this).val() == 0){
+                if(SelectedNode.id > 0){
+                    var id = SelectedNode.id;
+                    $('#BOStructTree').jstree(true).get_node(id).data.StatusTypeID = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].ID == id){
+                            Tree[i].StatusTypeID = null;
+                        }
+                    }
+                }
+            }
+            if(SelectedNode.id > 0 && StatusTypeID && StatusTypeID.length>0){
+                var id = SelectedNode.id;
+                if($('#BOStructTree').jstree(true).get_node(id).data != null)
+                {
+                    $('#BOStructTree').jstree(true).get_node(id).data.StatusTypeID = StatusTypeID;
+                }
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].ID == id){
+                        Tree[i].StatusTypeID = StatusTypeID;
+                    }
+                }
+            }
+        });
+
+        $('#LinkingTypeDDL').change(function(){
+            var sLinkingType;
+            if($(this).val().length>0 && $(this).val() != 0){
+                sLinkingType = $('#LinkingTypeDDL :selected').val();
+            }
+            else if($(this).val() == 0){
+                if(SelectedNode.id > 0){
+                    var id = SelectedNode.id;
+                    $('#BOStructTree').jstree(true).get_node(id).data.sLinkingType = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].ID == id){
+                            Tree[i].sLinkingType = null;
+                        }
+                    }
+                }
+            }
+            if(SelectedNode.id > 0 && sLinkingType && sLinkingType.length>0){
+                var id = SelectedNode.id;
+                if($('#BOStructTree').jstree(true).get_node(id).data != null)
+                {
+                    $('#BOStructTree').jstree(true).get_node(id).data.sLinkingType = sLinkingType;
+                }
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].ID == id){
+                        Tree[i].sLinkingType = sLinkingType;
+                    }
+                }
+            }
+        });
+        $('#sParentFKColumn').change(function(){
+            var sParentFKColumn;
+            if($(this).val().length>0 && $(this).val() != 0){
+                sParentFKColumn = $('#sParentFKColumn').val();
+            }
+            else if($(this).val() == '' || $(this).val().length == 0){
+                if(SelectedNode.id > 0){
+                    var id = SelectedNode.id;
+                    $('#BOStructTree').jstree(true).get_node(id).data.sParentFKColumn = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].ID == id){
+                            Tree[i].sParentFKColumn = null;
+                        }
+                    }
+                }
+            }
+            if(SelectedNode.id > 0 && sParentFKColumn && sParentFKColumn.length>0){
+                var id = SelectedNode.id;
+                $('#BOStructTree').jstree(true).get_node(id).data.sParentFKColumn = sParentFKColumn;
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].ID == id){
+                        Tree[i].sParentFKColumn = sParentFKColumn;
+                    }
+                }
+            }
+        })
+
+        $('#bIsVisible').change(function(){
+            if($('#bIsVisible').is(':checked')){
+                var bIsVisible = true;
+                if(SelectedNode.id > 0){
+                    var id = SelectedNode.id;
+                    $('#BOStructTree').jstree(true).get_node(id).data.bIsVisible = bIsVisible;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].ID == id){
+                            Tree[i].bIsVisible = bIsVisible;
+                        }
+                    }
+                }
+            }
+            else{
+                var bIsVisible = false;
+                if(SelectedNode.id > 0){
+                    var id = SelectedNode.id;
+                    $('#BOStructTree').jstree(true).get_node(id).data.bIsVisible = false;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].ID == id){
+                            Tree[i].bIsVisible = false;
+                        }
+                    }
+                }
+            }
+        });
+
+
+        $('#CreateStructure').click(function () {
+            $('body').block({
+                message: '<h4>Saving</h4>',
+                blockMsgClass: 'report-success',
+            });
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SaveBODetailsToXIStructure", "BusinessObjects")',
+                data: JSON.stringify({ BOID: 0, BOName: BOName }),
+                contentType: 'application/json;',
+                dataType: 'json',
+                traditional: true,
+                async: false,
+                success: function (data) {
+                    if (data.Status && !data.Status) {
+                        CustomMessage(data.ResponseMessage, data.Status)
+                        $('body').unblock();
+                    }
+                    else {
+                        if(data.length > 0){
+                            LoadTree(data);
+                        }
+                        else {
+                            $('body').unblock();
+                        }
+                    }
+                }
+            });
+        });
+    });
+
+    function LoadTree(data){
+        var jsondata = [];
+        var Nodes = data;
+        if (Nodes && Nodes != null) {
+            var j = 0;
+            for (var i = 0; i < Nodes.length; i++) {
+                var item = {}
+                item["id"] = Nodes[i].ID;
+                if (Nodes[i].FKiParentID == null) {
+                    item["parent"] = "#";
+                }
+                else {
+                    item["parent"] = Nodes[i].FKiParentID;
+                }
+
+                item["text"] = Nodes[i].sName;
+                var data = [];
+                var attr={};
+                attr["BODID"] = Nodes[i].BOID;
+                data.push(attr);
+                var attr={};
+                attr["Type"] = Nodes[i].sType;
+                data.push(attr);
+                var attr={};
+                attr["sMode"] = Nodes[i].sMode;
+                data.push(attr);
+                var attr={};
+                attr["bIsVisible"] = Nodes[i].bIsVisible;
+                data.push(attr);
+                var attr={};
+                attr["sParentFKColumn"] = Nodes[i].sParentFKColumn;
+                data.push(attr);
+                var attr={};
+                attr["sLinkingType"] = Nodes[i].sLinkingType;
+                data.push(attr);
+                var attr={};
+                attr["FKiStepDefinitionID"] = Nodes[i].FKiStepDefinitionID;
+                data.push(attr);
+                var attr={};
+                attr["sOutputArea"] = Nodes[i].sOutputArea;
+                data.push(attr);
+                var attr={};
+                attr["StatusTypeID"] = Nodes[i].StatusTypeID;
+                data.push(attr);
+                item["data"] = data;
+
+                jsondata.push(item);
+            }
+            if (jsondata.length > 0) {
+                var jsonString = JSON.stringify(jsondata);
+                createJSTree(JSON.parse(jsonString));
+                $('body').unblock();
+            }
+        }
+    }
+
+
+    //check if main node "Add Menu"
+    function CheckIfMain($node) {
+        var NodeID = $node.id;
+        if (NodeID == "1") {
+            return 0;
+        }
+        else {
+            return 1;
+        }
+
+    }
+    //rename and save the details
+    @*function RenameAndSaveToDB($node, action) {
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        if (NodeID != "MainPrnt") {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("RenameTreeNode", "BusinessObjects")',
+                data: { ParentNode: ParentID, NodeID: NodeID, NodeTitle: NodeTitle },
+                cache: false,
+                dataType: 'json',
+                success: function (data) { }
+            });
+        }
+        else {
+
+        }
+    }*@
+
+    function RenameNode($node, action) {
+        var NodeID = $node.id;
+        var NodeTitle = $node.text;
+        for(i=0;i<Tree.length;i++){
+            if(Tree[i].ID == NodeID)
+            {
+                Tree[i].sName = NodeTitle;
+            }
+        }
+    }
+
+    //Add details form
+    function AddDetails($node) {
+        var AddPopups = [];
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+
+        if (NodeID != "1") {
+            var ID = $(this).attr('id');
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddDetailsForStructure", "BusinessObjects")',
+                data: { ParentNode: ParentID, NodeID: NodeID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    if (data != null) {
+                        $("#DetailsForm").empty();
+                        $("#DetailsForm").append(data);
+                    }
+                }
+            });
+        }
+        else {
+
+        }
+    }
+    //delete
+    function DeleteNodeDetails($node, action) {
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ChildrnID = "";
+        for (var i = 0; i < ChldnID.length; i++) {
+            var chldID = ChldnID[i];
+            ChildrnID = chldID + "," + ChildrnID;
+
+        }
+        var ChildrnIDs = ChildrnID.substring(0, ChildrnID.length - 1);
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        if (NodeID != "1" && ParentID != "#") {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("DeleteNodeDetails", "BusinessObjects")',
+                data: { BOID: BOID, ParentNode: ParentID, NodeID: NodeID, ChildrnIDs: ChildrnIDs, Type: action },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    //you can also remove this... as client side has the details and on load we are displaying above
+                    if (data != null) {
+                        var jsondata = [];
+                        for (var i = 0; i < data.length; i++) {
+                            var ID = data[i].ID;
+                            var Parent = data[i].FKiParentID;
+                            var text = data[i].sName;
+
+                            item = {}
+                            item["id"] = ID;
+                            item["parent"] = Parent;
+                            item["text"] = text;
+                            jsondata.push(item);
+
+                        }
+                        var jsonString = JSON.stringify(jsondata);
+                    }
+                    else {
+                        jsonString = [
+                           { "id": "1", "parent": "#", "text": "XIStructure" }
+                        ];
+                    }
+                    //call function to recreate tree
+                    //createJSTree(JSON.parse(jsonString));
+                    //$('#jstree').jstree(true).settings.core.data = jsonString;
+                    //$('#jstree').jstree(true).refresh();
+                }
+            });
+        }
+        else {
+
+        }
+
+    }
+
+
+
+    function createJSTree(jsondata) {
+        $('#BOStructTree').jstree({
+            "core": {
+                "themes": {
+                    "variant": "large"
+                },
+                "check_callback": true,
+                'data': jsondata,
+            },
+            "plugins": ["contextmenu", "dnd"],
+            "dnd": {},
+            "contextmenu": {
+                "items": function ($node) {
+                    var tree = $("#BOStructTree").jstree(true);
+                    return {
+                        "Create": {
+                            "separator_before": false,
+                            "separator_after": true,
+                            "label": "Create",
+                            action: function (obj) {
+                                var ID = 0;
+                                var ParentNode = $node.id;
+                                $node = tree.create_node($node, { text: 'New Node', type: 'default', id: NodeId });
+                                tree.deselect_all();
+                                tree.select_node($node);
+                                var item = {};
+                                item["ID"] = NodeId
+                                item["FKiParentID"] = ParentNode;
+                                item["sName"] = 'New Node';
+                                Tree.push(item);
+                                NodeId++;
+                                @*$.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("CreateAndSaveTreeNode", "BusinessObjects")',
+                                    data: { BOID: BOID, ParentNode: ParentNode, NodeID: '', NodeTitle: 'New Menu', Type: 'create' },
+                                    cache: false,
+                                    dataType: 'json',
+                                    success: function (data) {
+                                        if (parseInt(data) > 0) {
+                                            ID = parseInt(data);
+                                            $node = tree.create_node($node, { text: 'New Menu', type: 'default', id: ID });
+                                            tree.deselect_all();
+                                            tree.select_node($node);
+                                        }
+                                        else {
+                                            alert('Error Occurred');
+                                        }
+                                    }
+                                });*@
+                            }
+                        },
+                        "Rename": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Rename",
+                            "action": function (obj) {
+                                tree.edit($node, null, function (node, status) {
+                                    if (node.original.text != node.text) {
+                                        RenameNode($node, "rename");
+                                        //var id = $node.id;
+                                        //for(i=0;i<Tree.length;i++){
+                                        //    if(Tree[i].ID == id){
+                                        //        Tree[i].sName = $node.text;
+                                        //    }
+                                        //}
+                                    }
+                                });
+
+                                //var CheckNode = CheckIfMain($node);
+                                //if (CheckNode == '1') {
+                                //    tree.edit($node, null, function (node, status) {
+                                //        if (node.original.text != node.text) {
+                                //            //RenameAndSaveToDB($node, "rename");
+                                //        }
+                                //    });
+                                //}
+
+                            }
+                        },
+                        "Remove": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Remove",
+                            "action": function (obj) {
+                                tree.delete_node($node);
+                                var id =  $node.id;
+                                for(i=0;i<Tree.length;i++){
+                                    if(Tree[i].ID== id){
+                                        Tree.splice(i, 1);
+                                    }
+                                }
+                                //var CheckNode = CheckIfMain($node);
+                                //if (CheckNode == '1') {
+                                //    tree.delete_node($node);
+                                //    //DeleteNodeDetails($node, "delete");
+                                //}
+                            }
+                        },
+                        "AddDetails": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Add Details",
+                            "action": function (obj) {
+                                var CheckNode = CheckIfMain($node);
+                                if (CheckNode == '1') {
+                                    //AddDetails($node);
+                                    AddStructureDetails($node);
+                                }
+                            }
+                        }
+                    };
+                }
+            },
+            //}).bind("move_node.jstree", function (e, data) {
+            //    DragAndDropNodes(data)
+        }).bind("move_node.jstree", function (e, data) {
+            DragAndDropNodes(data)
+        }).bind("loaded.jstree", function (event, data) {
+            $(this).jstree("close_all");
+        }).bind("select_node.jstree", function (NODE, REF_NODE) {
+            var BODID;
+            var Type;
+            var sMode;
+            var bIsVisible;
+            var sParentFKColumn;
+            var sLinkingType;
+            var StatusTypeID;
+            SelectedNode = REF_NODE.node;
+            if(SelectedNode.data != null)
+            {
+                BODID = SelectedNode.data[0].BODID;
+                Type = SelectedNode.data[1].Type;
+                sMode = SelectedNode.data[2].sMode;
+                bIsVisible = SelectedNode.data[3].bIsVisible;
+                sParentFKColumn = SelectedNode.data[4].sParentFKColumn;
+                sLinkingType = SelectedNode.data[5].sLinkingType;
+                StatusTypeID = SelectedNode.data[8].StatusTypeID;
+                if(!Type){
+                    Type = $('#BOStructTree').jstree(true).get_node(SelectedNode.id).data.Type;
+                }
+                if(!sMode){
+                    sMode = $('#BOStructTree').jstree(true).get_node(SelectedNode.id).data.sMode;
+                }
+                if(!bIsVisible){
+                    bIsVisible = $('#BOStructTree').jstree(true).get_node(SelectedNode.id).data.bIsVisible;
+                }
+                if(!sParentFKColumn){
+                    sParentFKColumn = $('#BOStructTree').jstree(true).get_node(SelectedNode.id).data.sParentFKColumn;
+                }
+                if(!sLinkingType){
+                    sLinkingType = $('#BOStructTree').jstree(true).get_node(SelectedNode.id).data.sLinkingType;
+                }
+                if(!StatusTypeID){
+                    StatusTypeID = $('#BOStructTree').jstree(true).get_node(SelectedNode.id).data.StatusTypeID;
+                }
+                if(BODID && BODID > 0){
+                    $('#BODDL').val(BODID);
+                }
+                if(Type && Type.length > 0){
+                    $('#TypesDDL').val(Type);
+                }
+                else{
+                    $('#TypesDDL').val(0);
+                }
+                if(sMode && sMode.length > 0){
+                    $('#ModeDDL').val(sMode);
+                }
+                else{
+                    $('#ModeDDL').val(0);
+                }
+                if(bIsVisible){
+                    $('#bIsVisible').prop('checked', true);
+                }
+                else{
+                    $('#bIsVisible').prop('checked', false);
+                }
+                if(sParentFKColumn && sParentFKColumn.length > 0){
+                    $('#sParentFKColumn').val(sParentFKColumn);
+                }
+                else{
+                    $('#sParentFKColumn').val('');
+                }
+                if(sLinkingType && sLinkingType.length > 0){
+                    $('#LinkingTypeDDL').val(sLinkingType);
+                }
+                else{
+                    $('#LinkingTypeDDL').val(0);
+                }
+                if(StatusTypeID > 0){
+                    $('#StatusTypeDDL').val(StatusTypeID);
+                }
+                else{
+                    $('#StatusTypeDDL').val(0);
+                }
+            }
+        });
+    }
+
+    function DragAndDropNodes(data) {
+        var NodeID = data.node.id;
+        var OldParentID = data.old_parent;
+        var old_position = data.old_position;
+        var position = data.position;
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("DragAndDropNodes", "BusinessObjects")',
+            data: { NodeID: NodeID, OldParentID: OldParentID, Oldposition: old_position, Newposition: position },
+            cache: false,
+            dataType: 'json',
+            success: function (data) { }
+        });
+    }
+</script>

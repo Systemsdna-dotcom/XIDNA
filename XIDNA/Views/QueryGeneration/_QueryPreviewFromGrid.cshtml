@@ -1,0 +1,121 @@
+﻿@model XIDNA.ViewModels.VMQueryPreview
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        var dataSet =@Html.Raw(Json.Encode(Model.Rows));
+        var Columns = @Html.Raw(Json.Encode(Model.Headings));
+        var Cols = new Array();
+        for(i=0;i<Columns.length;i++){
+            Cols.push({title:Columns[i]});
+        }
+        if ('@Model.Headings.Count()' > 0 || '@Model.Rows.Count()' > 0) {
+            if ('@Model.ResultListDisplayType' == 1) {
+                var table = $('#QueryPreview').dataTable({
+                    data: dataSet,
+                    columns: Cols,
+                    "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+                        //$('td:eq(0)', nRow).attr('title', "NewAttr");
+                        return nRow;
+                    }
+                });
+            }
+            else {
+
+
+            }
+            @*
+            for(i=0;i<'@Model.Rows.Count()';i++){
+                table.rows(i).nodes().to$().attr("data-id", "Attrr");
+            }*@
+        }
+    });
+    var pageIndex = 1;
+    var PageCount = 40;
+    $(window).scroll(function () {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            GetRecords();
+        }
+    });
+    function GetRecords() {
+        pageIndex++;
+        var sTable = "";
+        var QueryID = '@Model.QueryID';
+        $.ajax({
+            url: '@Url.Action("GetQueryPreview", "QueryGeneration")',
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            cache: false,
+            async: false,
+            data: { PageIndex: pageIndex, QueryID: QueryID },
+            success: function (data) {
+                for (i = 0; i < data.length; i++) {
+                    sTable = sTable + "<tr>";
+                    for (j = 0; j < data[i].length; j++) {
+                        sTable = sTable + "<td>" + data[i][j] + "</td>";
+                    }
+                    sTable = sTable + "</tr>";
+                }
+                $("#Mastertbody").append(sTable);
+            }
+        });
+    }
+</script>
+<section class="content-header hedr">
+    <h1> Query Preview </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Query Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    @if (@Model.Headings.Count() > 0 || @Model.Rows.Count() > 0)
+                    {
+                        <div class="tab_scroll main-table">
+                            <div class="dataTables_wrapper no-footer table-responsive">
+                                <table id="QueryPreview" class="table table-bordered table-striped dataTable">
+
+                                    @if (Model.ResultListDisplayType == 0)
+                                    {
+                                        <thead>
+                                            <tr>
+                                                @foreach (var items in @Model.Headings)
+                                                {
+                                                    <th>@items</th>
+                                                }
+                                            </tr>
+                                        </thead>
+                                        <tbody id="Mastertbody">
+                                            @foreach (var item in @Model.Rows)
+                                            {
+
+                                                <tr>
+                                                    @foreach (var value in item)
+                                                    {
+                                                        <td>@value</td>
+                                                    }
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    }
+
+                                </table>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <h4>No Preview Available For This 1-Click</h4>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

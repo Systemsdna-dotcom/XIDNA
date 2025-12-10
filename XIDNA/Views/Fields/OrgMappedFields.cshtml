@@ -1,0 +1,146 @@
+﻿@model string
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        var Mappopups = new Array();
+        var editpopups = new Array();
+        var viewpopups = new Array();
+        var table = $('#Fieldstbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("DisplayOrgMappedFields", "Fields", new { SubsID = @Model })",
+            "aaSorting": [[1, 'asc']],
+            "sDom": 'r<"dtable-header"l<"new-query">f><"datatable-scroll"t><"dtable-footer"ip>',
+            "initComplete": function () {
+                $("div.new-query").html('<button type="button" class="savebtn btn btn-theme" id="NewMapBtn" data-url="@Url.Action("MapOrgFields", "Fields")" >Add</button>');
+            },
+            'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+    {"bSortable":false},
+                            {
+                                "sName": "ClassID",
+                                "visible": false
+                            },
+                            {
+                                "sName": "BOID",
+                                "visible": false
+                            },
+                            {
+                                "sName": "Class",
+                            },
+                            {"bSortable":false},
+
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+
+                $('td:eq(2)', nRow).attr('class', 'text-nowrap').html('<input type="button" class="Edit btn btn-theme btn-xs" id="' + aData[1] + '_' + aData[2] + '" value="Edit"/> ' +
+                    '<input type="button" class="View btn btn-theme btn-xs" id="' + aData[1] + '" value="View"/> ');
+                return nRow;
+            }
+        });
+        $('#Fieldstbl').on('click', 'input.Edit', function () {
+            var ClassID = $(this).attr('id').split('_')[0];
+            var BOID = $(this).attr('id').split('_')[1];
+            if (editpopups.length > 0) {
+                for (i = 0; i < editpopups.length; i++) {
+                    editpopups[i].close();
+                }
+            }
+            var editpopup = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("EditMapOrgFields", "Fields")',
+                data: { ClassID: ClassID , BOID: BOID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    with (editpopup.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    editpopups.push(editpopup);
+                    editpopup.moveTo(0, 0);
+                }
+            });
+        });
+        $('#Fieldstbl').on('click', 'input.View', function () {
+            var ClassID = $(this).attr('id');
+            if (viewpopups.length > 0) {
+                for (i = 0; i < viewpopups.length; i++) {
+                    viewpopups[i].close();
+                }
+            }
+            var view = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("OrgMappedFieldsList", "Fields")',
+                data: { ClassID: ClassID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    with (view.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    viewpopups.push(view);
+                    view.moveTo(0, 0);
+                }
+            });
+        });
+
+        $('.new-query').on('click', 'button#NewMapBtn', function () {
+            var url = $(this).attr('data-url');
+            if (Mappopups.length > 0) {
+                for (i = 0; i < Mappopups.length; i++) {
+                    Mappopups[i].close();
+                }
+            }
+            var newmap = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            Mappopups.push(newmap);
+            newmap.moveTo(0, 0);
+        });
+    });
+</script>
+<section class="content-header hedr">
+    <h1> Map Fields</h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Map Fields</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div id="MappingGrid">
+                    <div class="box-body">
+                        <div class="table-clean">
+                            <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="Fieldstbl">
+                                <thead>
+                                    <tr role="row">
+                                        <th>S.No</th>
+                                        <th>ClassID</th>
+                                        <th>BOID</th>
+                                        <th>Class</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

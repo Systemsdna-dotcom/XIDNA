@@ -1,0 +1,83 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+    <script>
+
+        $(document).ready(function () {
+
+            var table = $('#userqueries').dataTable({
+                //"bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Html.Raw(@Url.Action("UserQueriesList", "Inbox", new { UserID = @ViewBag.UserID, UserName = @ViewBag.UserName }))",
+                "aaSorting": [1, 'desc'],
+                "aoColumns": [
+                {},
+                                 {
+                                     "sName": "UserID",
+                                     "visible": false
+                                 },
+                                 {
+                                     "sName": "UserName",
+                                     "visible": false
+                                 },
+                                 {
+                                     "sName": "OneClickSerach",
+                                 },
+                                 {
+                                     "sName": "QueryID",
+                                     "visible": false
+                                 },
+                ],
+
+            });
+            //$('#userqueries tbody').on('click', 'tr', function () {
+            //    var table = $('#userqueries').DataTable();
+            //    var data = table.row(this).data()
+            //    var QueryID = parseInt(data[4]);
+            //    var url = "GetResultFormGrid?QueryID=" + QueryID;
+            //    window.open(url, 'QueryResult', "scrollbars=1,resizable=1,width=1400, height=700,left=0,top=0");
+            //});
+        });
+    </script>
+    <section class="content-header hedr">
+        <h1>One Click Search </h1>
+        <ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-dashboard"></i>Query</a></li>
+            <li class="active">Home</li>
+        </ol>
+    </section>
+    <div class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="row">
+                        <div class="col-xs-12 tree_btn">
+
+                        </div>
+                    </div>
+                    <div id="box-body" class="col-xs-12">
+                        <div class="tab_scroll main-table">
+                            <div class="dataTables_wrapper no-footer table-responsive">
+                                <table class="table table-bordered table-striped dataTable" id="userqueries" style="width:100%!important;">
+                                    <thead>
+                                        <tr role="row">
+                                            <th>S.No</th>
+                                            <th>UserID</th>
+                                            <th>User</th>
+                                            <th>One Click Serach</th>
+                                            <th>QueryID</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody></tbody>
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

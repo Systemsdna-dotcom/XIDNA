@@ -1,0 +1,10 @@
+﻿@model XIDNA.Models.cXIComponents
+    
+<script>
+    var Component = @Html.Raw(Json.Encode(Model));
+    $(document).ready(function () {
+        fncLoadComponent('@Model.ID', '@Model.sName.Replace(" ", "")', '@ViewBag.sGUID', null, '@ViewBag.XiLinkID','@Model.XIComponentParams.Where(m=>m.sName == "BODID").Select(m=>m.sValue).FirstOrDefault()');
+    });
+</script>
+
+<div id="Component_@ViewBag.XiLinkID" data-identifier="Component_@Model.sName.Replace(" ","")" data-type="Component" data-name="@Model.sName.Replace(" ","")"></div>

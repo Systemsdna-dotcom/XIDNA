@@ -1,0 +1,27 @@
+﻿@model XICore.XIDLayout
+@using Newtonsoft.Json;
+<script>
+    $(document).ready(function () {
+        var iID = '@Model.sGUID';
+        @*var Details = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model, Formatting.Indented));*@
+        var Details = @Html.Raw(Json.Encode(Model));
+        ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+        DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+        PopupURL = '@Url.Action("GetPopupDetails", "XiLink")';
+        PopupORDialogURL = '@Url.Action("GetPopupORDialog", "XiLink")';
+        DialogURL = '@Url.Action("GetDialog", "XiLink")';
+        SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+        SemanticURL = '@Url.Action("GetSemanticDetails", "XiLink")';
+        ComponentURL = '@Url.Action("LoadComponentByID", "XIComponents")';
+        StepURL = '@Url.Action("GetStepContent", "XiLink")';
+        StepContentURL = '@Url.Action("GetStepContent", "XiLink")';
+        StepDataURL = '@Url.Action("GetStepData", "XiLink")';
+        ComponentParmsByStepURL = '@Url.Action("GetComponentParmsByStep", "XIComponents")';
+        XIContentURL = '@Url.Action("XIContent", "XiLink")';
+        DeleteBOURL = '@Url.Action("DeleteBO", "XiLink")';
+        ShowLayoutContent(Details, iID);
+    });
+</script>
+<div class="LayoutCode_@Model.sGUID" data-guid="@Model.sGUID" data-name="LayoutGUID">
+    @Html.Raw(Model.LayoutCode)
+</div>

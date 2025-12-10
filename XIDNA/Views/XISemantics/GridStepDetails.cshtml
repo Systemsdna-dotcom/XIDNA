@@ -1,0 +1,207 @@
+﻿@model int
+
+<script>
+
+    $(document).ready(function () {
+        //   var newpopups = new Array();
+        var editpopups = new Array();
+        var addpopups = new Array();
+        var table = $('#XIStepsTbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("GetStepDetails", "XISemantics", new { iXISemanticID = Model})",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"l<"new-querys">f><"datatable-scroll"t><"dtable-footer"ip>',
+            "initComplete": function () {
+                $("div.new-querys").html('<button type="button" class="savebtn btn btn-theme btn-xs" id="NewBtn" data-url="@Url.Action("AddXISemanticsSteps", "XISemantics")" >Add</button><button type="button" class="Refreshbtn btn btn-theme btn-xs" id="RefreshStepBtn" data-url="@Url.Action("AddXISemanticsSteps", "XISemantics")" >Refresh</button>');
+            },
+            'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+            { "bSortable": false },
+                            {
+                                "sName": "ID",
+                                "bSearchable": true
+                            },
+                            {
+                                "sName": "sName"
+                            },
+                             {
+                                 "sName": "iOrder",
+                             },
+                             {
+                                 "sName": "sCode"
+                             },
+                             {
+                                 "sName": "iDisplayAs"
+                             },
+                            {
+                                "sName": "StatusTypeID",
+                            },
+                            { "bSortable": false }
+            ],
+            "columnDefs": [
+                {
+                    "targets": [6],
+                    "createdCell": function (td, cellData, rowData, row, col) {
+                        if (cellData == 10)
+                            $(td).replaceWith('<td>Active</td>')
+                        else
+                            $(td).replaceWith('<td>Inactive</td>')
+                    }
+                },
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(7)', nRow).html('<input type="button" class="EditBtn btn btn-theme btn-xs" id="' + aData[1] + '" value="Edit"/>&nbsp;<input type="button" class="DeleteButton btn btn-theme btn-xs" id="' + aData[1] + '" value="Delete"/>');
+                return nRow;
+            }
+        });
+        $('.new-querys').on('click', 'button#NewBtn', function () {
+            var XISemanticID = '@Model';
+            var url = $(this).attr('data-url');
+            var XISemanticIDForStep = $("#XISemanticIDForStep").attr('data-xisemanticid');
+            if (XISemanticID == 0) {
+                XISemanticID = XISemanticIDForStep;
+            }
+            url = url + '?iXISemanticID=' + XISemanticID;
+            if (addpopups.length > 0) {
+                for (i = 0; i < addpopups.length; i++) {
+                    addpopups[i].close();
+                }
+            }
+            var newbo = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            addpopups.push(newbo);
+            newbo.moveTo(0, 0);
+        });
+
+        $('.new-querys').on('click', 'button#RefreshStepBtn', function () {
+            var iXISemanticID = '@Model';
+            var XISemanticIDForStep = $("#XISemanticIDForStep").attr('data-xisemanticid');
+            if (iXISemanticID == 0) {
+                iXISemanticID = XISemanticIDForStep;
+            }
+            $('#XiForm').load('@Url.Action("GridStepDetails", "XISemantics")?iXISemanticID=' + iXISemanticID);
+        });
+
+        $(document).on('click', '.EditBtn', function () {
+            var ID = $(this).attr('ID');
+            if (editpopups.length > 0) {
+                for (i = 0; i < editpopups.length; i++) {
+                    editpopups[i].close();
+                }
+            }
+            var editpopup = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddXISemanticsSteps", "XISemantics")',
+                data: { XISemanticID: '@Model', ID: ID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    with (editpopup.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    editpopups.push(editpopup);
+                    editpopup.moveTo(0, 0);
+                }
+            });
+        })
+
+        $(document).on('click', '.DeleteButton', function () {
+            var ID = $(this).attr('ID');
+            $("#Delete-Confirmation").dialog({
+                autoOpen: true,
+                modal: true,
+                title: 'Confirmation',
+                width: 400,
+                buttons: {
+                    Yes: function () {
+                        $(this).dialog("close");
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("DeleteXISemanticsStepsDetailsByID", "XISemantics")',
+                            data: { ID: ID },
+                            cache: false,
+                            async: false,
+                            dataType: 'html',
+                            success: function (data) {
+                                if (data == 1) {
+                                    $("#BootstrpAlertSuccess").show();
+                                    $("#BootstrpAlertSuccess").append("<strong>Success!</strong> The XISemanticsSteps have been deleted successfully.");
+                                    $(function () {
+                                        setTimeout(function () {
+                                            $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                                        }, 2000);
+                                        //window.location.href = "/XISemantics/Index";
+                                    });
+                                }
+                                else {
+                                    $("#BootstrpError").show();
+                                    $("#BootstrpError").append("<strong>Failure!</strong> OOPS looks like there is some error.");
+                                    $(function () {
+                                        setTimeout(function () {
+                                            $("#BootstrpError").hide('blind', {}, 500)
+                                        }, 2000);
+                                    });
+                                }
+                            }
+                        });
+
+                    },
+                    No: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+
+    });
+</script>
+
+<div class="content">
+    <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-primary">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="box-body">
+                            <div class="table-clean">
+                                <span id="XISemanticIDForStep"></span>
+                                <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="XIStepsTbl">
+                                    <thead>
+                                        <tr role="row">
+                                            <th>S.No</th>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Order</th>
+                                            <th>Code</th>
+                                            <th>Display As</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="Delete-Confirmation" title="Window title" style="display:none">
+    <p>Do you want to delete the XISemanticsStep.</p>
+</div>
+<div id="XISemanticIDForStep"></div>

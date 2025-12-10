@@ -1,0 +1,494 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@*@model IEnumerable<XICore.XIKPICircle>*@
+
+@{
+    XID1Click o1ClickD = new XID1Click();
+    Dictionary<string, XIIBO> XIValues = new Dictionary<string, XIIBO>();
+    if (Model.oContent.ContainsKey(XIConstant.XIValuesComponent))
+    {
+        o1ClickD = (XID1Click)Model.oContent[XIConstant.XIValuesComponent];
+    }
+    var sXIGUID = Guid.NewGuid().ToString();
+}
+<div class="OneClickResDiv p5 @o1ClickD.ID">
+    <div class="scroll_vh_100 section-container">
+        <div class="clearfix flex-head">
+            <h3 class="maintitle">@o1ClickD.Title</h3>
+        </div>
+        <div class="oneclickresponse clearfix">
+            <div class="header-form-btn">
+                <button type="button" class="btn btn-theme btnQuote" onclick="fnc1clickcreate('@o1ClickD.ID', '@o1ClickD.CreateGroupID', '@o1ClickD.BOID', '@o1ClickD.iCreateXILinkID', '',this, '@sXIGUID')">Add</button>
+                <button type="button" class="btn btn-theme btnQuote" onclick="fncRefreshXIValuesList('@o1ClickD.XIGUID', this, '@sXIGUID')">Refresh</button>
+            </div>
+            <div class="overflow-hide">
+                <div class="table-clean table-responsive">
+                    <table class="table table_v2 table-striped custom-table table-condensed table-hover tablesorter dataTable tablelook" id="OneClickResult_@sXIGUID">
+                        <thead>
+                            <tr>
+                                @foreach (var head in o1ClickD.Headings)
+                                {
+                                    <th>@head</th>
+                                }
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in o1ClickD.Rows)
+                            {
+                                <tr class="xivalue_@row[0]">
+                                    @foreach (var cell in row)
+                                    {
+                                        <td>@cell</td>
+                                    }
+                                    <td class="XIExpandBtn" data-identity="@o1ClickD.ID"><input type='button' class='btn btn-theme lbluebtn' value="+" /></td>
+                                    @*onclick="fncExpandXIValuesList('@o1ClickD.ID', this)"*@
+                                </tr>
+                            }
+                        </tbody>
+                        @*@{
+                                int iColCount = 0;
+                                List<string> Headings = new List<string>();
+                                Headings.Add("ID");
+                                foreach (var data in XIValues.Values.ToList())
+                                {
+                                    Headings.Add(data.AttributeI("sdisplayname").sValue);
+                                    iColCount++;
+                                    if (iColCount == 3)
+                                    {
+                                        break;
+                                    }
+                                }
+                                <thead>
+                                    <tr>
+                                        @foreach (var head in Headings)
+                                        {
+                                            <th>@head</th>
+                                        }
+                                    </tr>
+                                </thead>
+                            }
+                            @{ var rowCount = 0;
+                                List<List<string>> Rows = new List<List<string>>();
+                                List<string> Row = new List<string>();
+                                List<string> IDs = new List<string>();
+                            }
+                            @foreach (var data in XIValues.Values.ToList())
+                            {
+                                var id = data.AttributeI("id").sValue;
+                                if (!IDs.Contains(id))
+                                {
+                                    IDs.Add(id);
+                                }
+                                rowCount++;
+                                Row.Add(data.AttributeI("svalue").sValue);
+                                if (rowCount == 3)
+                                {
+                                    rowCount = 0;
+                                    Rows.Add(Row);
+                                    Row = new List<string>();
+                                }
+                            }
+                            @{ int i = 0;}
+                            @foreach (var row in Rows)
+                            {
+
+                                <tr>
+                                    <td>@IDs[i]</td>
+                                    @foreach (var data in row)
+                                    {
+                                        <td>@data</td>
+                                    }
+                                </tr>
+
+                                i++;
+                            }*@
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $(".simple1clickClose").on('click',function(){
+            debugger
+            $(".simple1clickInline").remove();
+            $('body').find('.trActive').removeClass('trActive trActiveBefore');
+            $('body').find('.simple1clickActive.btn-theme').removeClass('simple1clickActive');
+        })
+        $('#OneClickResult_@sXIGUID tbody').unbind().on('click', 'td', function (e) {
+            debugger
+            if($(this).hasClass('XIExpandBtn')){
+                var i1ClickID = $(this).attr('data-identity');
+                var iQSIID = $(this).attr('data-qsiid');
+                fncExpandXIValuesList(i1ClickID, iQSIID, this)
+            }
+            else if($(this).hasClass('simple1clickContent')){
+
+            }
+            else{
+                var tr = $(this).closest('tr');
+                var tddata = [];
+                //tddata = $(_this).closest('tr');
+                $(tr).children('td').each(function(ii, vv){
+                    tddata[ii] = $(this).text();
+                });
+                RowData = tddata;
+                var iInstanceID;
+                var sHiddenString = "";
+                if (RowData) {
+                    iInstanceID = RowData[0];
+                }
+
+                var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+                if('@o1ClickD.IsRowClick'=="True" && '@o1ClickD.OnRowClickType'=="TD"){
+                    fncTriggerXIValue1Click(this);
+                }
+                if('@o1ClickD.IsRowClick'=="True"){
+                    if('@o1ClickD.RowXiLinkID' > 0 || '@o1ClickD.OnRowClickType'=="20"){
+
+                        var InputParams = [];
+                        var param1 = {};
+                        param1["sName"] = 'sBOName';
+                        param1["sValue"] = '@o1ClickD.sBOName';
+                        InputParams.push(param1);
+                        var param2 = {};
+                        param2["sName"] = 'iBOIID';
+                        param2["sValue"] = iInstanceID;
+                        InputParams.push(param2);
+                        var param3 = {};
+                        param3["sName"] = 'iBODID';
+                        param3["sValue"] = '@o1ClickD.BOID';
+                        InputParams.push(param3);
+                        var param4 = {};
+                        param4["sName"] = '{-iInstanceID}';
+                        param4["sValue"] = iInstanceID;
+                        InputParams.push(param4);
+                        var param5 = {};
+                        param5["sName"] = '{XIP|'+'@o1ClickD.sBOName'+'.id}';
+                        param5["sValue"] = iInstanceID;
+                        InputParams.push(param5);
+                        var param6 = {};
+                        param6["sName"] = '{XIP|sBOName}';
+                        param6["sValue"] = '@o1ClickD.sBOName';
+                        InputParams.push(param6);
+                        var param7 = {};
+                        param7["sName"] = '{XIP|iInstanceID}';
+                        param7["sValue"] = iInstanceID;
+                        InputParams.push(param7);
+                        var param8 = {};
+                        param8["sName"] = '{XIP|ActiveBO}';
+                        param8["sValue"] = '@o1ClickD.sBOName';
+                        InputParams.push(param8);
+                        var param10 = {};
+                        param10["sName"] = '1ClickID';
+                        param10["sValue"] = '@o1ClickD.ID';
+                        InputParams.push(param10);
+                        if('@o1ClickD.sRowXiLinkType' == "run")
+                        {
+                            XIRun(null,'@o1ClickD.RowXiLinkIDXIGUID', parseInt(iInstanceID), sGUID, '@o1ClickD.sBOName', false,parseInt('@o1ClickD.BOID'),0,null,InputParams);
+                        }
+                        else
+                        {
+                            XILinkLoadJson('@o1ClickD.RowXiLinkIDXIGUID', sGUID, InputParams);
+                        }
+                    }
+                }
+            }
+        })
+    })
+
+    function fncTriggerXIValue1Click(_this) {
+        debugger
+        var RowClickAttributeParams = [];
+        var rt = $(_this).closest("tr");
+        var rt = $(rt).prop("checked");
+        if (rt == true) {
+            e.stopImmediatePropagation();
+        }
+        var tr = $(_this).closest('tr');
+        var tddata = [];
+        //tddata = $(_this).closest('tr');
+        $(tr).children('td').each(function(ii, vv){
+            tddata[ii] = $(this).text();
+        });
+        RowData = tddata;
+        var id;
+        var sHiddenString = "";
+        if (RowData) {
+            id = RowData[0];
+        }
+        var IDEParams = @Html.Raw(Json.Encode(o1ClickD.FilterGroup));
+        if(IDEParams){
+            if (Object.keys(IDEParams).length > 0){
+                var sMode = IDEParams["sMode"];
+                var sTreeGUID = IDEParams["sTreeGUID"];
+                var iNodeID = IDEParams["iNodeID"];
+                fncUpdateXIValueTree(id, iNodeID, sTreeGUID)
+            }
+        }
+    }
+
+    function fnc1clickcreate(ReportID, GroupID, BOID, CreateXILinkID, InstanceID, $this, sNewGuid, Operator) {
+        debugger
+        var newpopups = new Array();
+        var Operator=$($this).val();
+        if ($this != "") {
+            var bIsLoading = $($this).attr("data-IsLoading");
+            if (bIsLoading != "" && bIsLoading != undefined && bIsLoading.toLowerCase() == "yes") {
+                $($this).css("background-image", "url(" + sImagePath + "/loading.gif)").css("background-repeat", "no-repeat");
+                $($this).val('Please wait');
+            }
+        }
+        @*var sShowSections='@ShowSections';*@
+        var InputParams = [];
+        //if(sShowSections && InstanceID &&InstanceID!=""&&InstanceID!="0")
+        //{
+        //    var param1 = {};
+        //    param1["sName"] = 'ShowSections';
+        //    param1["sValue"] = sShowSections;
+        //    InputParams.push(param1);
+        //}
+        @*'@sIsFirstTime'!=null && '@sIsFirstTime' == 'yes'*@
+        if (BOID == 506)
+        {
+            var Name = "Addon_" + InstanceID;
+            var sBO ="ProductAddon_T"
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SetParams", "xilink")',
+                data: JSON.stringify({ sID: InstanceID, sGUID: '@Model.sGUID', sName: Name, sBO: sBO }),
+                contentType: 'application/json;',
+                dataType: 'json',
+                traditional: true,
+                success: function () {
+                    $("#Add_" + sBO + "_" + InstanceID).attr("disabled", "disabled");
+                    $("#Remove_" + sBO + "_" + InstanceID).removeAttr("disabled");
+                    //resolve(true);
+                }
+            });
+        }
+        debugger
+        if (InstanceID > 0) {
+            var DriverSNo = $($this).attr('data-sNo');
+            fncSetParam(DriverSNo, '@Model.sGUID', "{XIP|sDriverSNo}", "");
+        }
+        if(false){
+
+        }
+        else{
+            var Params = {
+                iBODID : BOID,
+                iGroupID : GroupID,
+                i1ClickID : ReportID,
+                //iRecordCount: iRecordCount,
+                iInstanceID :InstanceID,
+                sGUID: '@o1ClickD.sGUID',
+                sMode: '@o1ClickD.Code',
+                sOperator:Operator
+            }
+            if('@o1ClickD.Code'=="Advc"){
+                var url = '@Url.Action("GetQueryForm", "QueryGeneration")';
+                if (newpopups.length > 0) {
+                    for (i = 0; i < newpopups.length; i++) {
+                        newpopups[i].close();
+                    }
+                }
+                //var newquery = window.open(url, '_blank', 'fullscreen=yes,resizable=yes,scrollbars=yes,toolbar=yes,menubar=yes,location=yes,left=0,top=0');
+                //var newquery = window.open(url, '_blank', "scrollbars=1,resizable=1,width=1400, height=700,left=0,top=0");
+                var newquery = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+                newpopups.push(newquery);
+                newquery.moveTo(0, 0);
+                popups.push(newquery);
+            }
+            else if(CreateXILinkID > 0){
+                if('@o1ClickD.sRowXiLinkType' == "run" || ReportID == 0){
+                    var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', $this);
+                    XIRun(null,CreateXILinkID, InstanceID, sGUID, null, false, BOID, 121, null, InputParams)
+                }
+                else{
+                    XILinkLoadJson(CreateXILinkID, sGUID, InputParams);
+                }
+                //XIRun(CreateXILinkID, InstanceID, '@o1ClickD.sGUID', null, false, BOID, 121,null,InputParams)
+            }
+            else{
+                $.ajax({
+                    url: '@Url.Action("OneClickInsert", "QueryGeneration")',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    async: false,
+                    data: JSON.stringify(Params),
+                    success: function (BOForm) {
+                        //$('#InlineTop-'+ReportID).empty();
+                        var id=$($this).attr('id');
+                        var sFormID = $(BOForm).find('form').attr('id');
+                        if(sFormID)
+                        {
+                            var sAddformGUID=sFormID.split('_')[1];
+                            $('#' + id).attr("id", "Add_" + sAddformGUID);
+                            $('#hiderefresh').attr("id", "hiderefresh_" + '@o1ClickD.sGUID');
+                            //$("#"+id).attr("disabled", true);
+                            //$("#Add_" + @o1ClickD.BOID).attr("disabled", "disabled");
+                        }
+                        var sCreateType = '@o1ClickD.sCreateType';
+                        if(Operator=='+' || Operator=="Edit")
+                        {
+                            sCreateType = "rowinlinetop";
+                        }
+                        else if(Operator=='-'){
+                            sCreateType = "rowinlinebottom";
+                        }
+                        if('@o1ClickD.DisplayAs' == 50 || '@o1ClickD.DisplayAs' == 120){
+                            if(sCreateType && sCreateType!=null && sCreateType.length > 0){
+                                if(sCreateType.toLowerCase() == "rowinlinetop"){
+                                    $(".simple1clickInline").remove();
+                                    //var trClass = "simple1clickInline_" + sAddformGUID;
+                                    var sContentHTML = '<tr class="simple1clickInline"><td colspan="20" class="simple1clickContent"><div class="simple1clickClose">&times;</div>' + BOForm + '</td></tr>';
+                                    $(".simpleclick_" + InstanceID).after(sContentHTML);
+                                    $(".simple1clickClose").on('click',function(){
+                                        $(".simple1clickInline").remove();
+                                        $('body').find('.trActive').removeClass('trActive trActiveBefore');
+                                        $('body').find('.simple1clickActive.btn-theme').removeClass('simple1clickActive');
+                                    })
+                                    //$('#InlineTop_'+sNewGuid).prepend(BOForm);
+                                    //if(Operator=='+'){
+
+                                    //}
+                                    //$("#1ClickResponse").height($('.ui-dialog').height() - $("#DynamicQueryForm").height() - 100);
+                                }
+                                else if(sCreateType.toLowerCase() == "rowinlinebottom"){
+                                    $(".simple1clickInline").remove();
+                                    var sContentHTML = '<tr class="simple1clickInline beforeTR"><td colspan="20" class="simple1clickContent"><div class="simple1clickClose">&times;</div>' + BOForm + '</td></tr>';
+                                    $(".simpleclick_" + InstanceID).before(sContentHTML);
+                                    $(".simple1clickClose").on('click',function(){
+                                        $(".simple1clickInline").remove();
+                                        $('body').find('.trActive').removeClass('trActive trActiveBefore');
+                                        $('body').find('.simple1clickActive.btn-theme').removeClass('simple1clickActive');
+                                    })
+                                    //$('#InlineBottom-'+ReportID).html(BOForm);
+                                    //if(Operator=='-'){}
+                                }
+                                else if(sCreateType.toLowerCase() == "inlinetop"){
+                                    $('#InlineTop_'+sNewGuid).prepend(BOForm);
+                                }
+                                else if(sCreateType.toLowerCase() == "inlinebottom"){
+                                    $('#InlineBottom-'+ReportID).html(BOForm);
+                                }
+                                @*else if(sCreateType.toLowerCase() == "dialog"){
+                                    $('#GridAddFormDlg-@ReportID').html(data);
+                                    $("#GridAddFormDlg-@ReportID").dialog({
+                                        width: 700,
+                                        close: function (event, ui) {
+                                            $('#GridAddFormDlg-@ReportID').dialog('close');
+                                        }
+                                    });
+                                }*@
+                            }
+                        }
+                        else{
+                            iRecordCount++;
+                            $('.gridtbody').append(BOForm);
+                        }
+
+                    },
+                    error: function(err){
+                    }
+                });
+            }
+        }
+    }
+
+    function fncRefreshXIValuesList(i1ClickID, _this, stabGUID){
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+        var Params = {
+            i1ClickID : i1ClickID,
+            sGUID:sGUID
+        }
+        $.ajax({
+            url: '@Url.Action("RefreshXIValuesList", "XIComponents")',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            cache: false,
+            async: false,
+            data: JSON.stringify(Params),
+            success: function (Rows) {
+                debugger
+                var tbody="";
+                for(var i=0;i<Rows.length;i++){
+                    var td="";
+                    for(var j=0;j<Rows[i].length;j++){
+                        td = td+"<td>"+Rows[i][j]+"</td>";
+                    }
+                    td = td + '<td class="XIExpandBtn" data-identity="' + i1ClickID + '" data-qsiid="' + Rows[i][0] +'"><input type="button" class="btn btn-theme lbluebtn" value="+" /></td>';
+                    var tr = '<tr class="xivalue_'+Rows[i][0]+'">'+td+"</tr>";
+
+                    tbody=tbody+tr;
+                }
+                $('#OneClickResult_'+stabGUID).find('tbody').empty();
+                $('#OneClickResult_'+stabGUID).find('tbody').html(tbody);
+            }
+        })
+    }
+
+    function fncExpandXIValuesList(i1ClickID, iQSIID, _this){
+        debugger
+        $(_this).addClass('simple1clickActive').parent().parents('tr').siblings().find('.simple1clickActive').removeClass('simple1clickActive');
+        $(_this).addClass('simple1clickActive').siblings().removeClass('simple1clickActive');
+        $(_this).addClass('simple1clickActive').parent().parents('tr').removeClass('trActiveBefore');
+        $(_this).addClass('simple1clickActive').parent().parents('tr').addClass("trActive").siblings().removeClass('trActive trActiveBefore');
+        var tr = $(_this).closest('tr');
+        var tddata = [];
+        //tddata = $(_this).closest('tr');
+        $(tr).children('td').each(function(ii, vv){
+            tddata[ii] = $(this).text();
+        });
+        RowData = tddata;
+        var iInstanceID;
+        var sHiddenString = "";
+        if (RowData) {
+            iInstanceID = RowData[0];
+        }
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+        var Params = {
+            i1ClickID: i1ClickID,
+            iQSIID: iQSIID,
+            sGUID:sGUID
+        }
+        $.ajax({
+            url: '@Url.Action("ExpandXIValuesList", "XIComponents")',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            cache: false,
+            async: false,
+            data: JSON.stringify(Params),
+            success: function (Rows) {
+                debugger
+                var tbody="";
+                for(var i=0;i<Rows.length;i++){
+                    var td="";
+                    td='<div class="form-group"><div class="wrap-width clearfix control-block"><label class="form-label">'+Rows[i].sName+'</label><div class="form-input">'+Rows[i].sValue+'</div></div></div>'
+                    //td = td+"<tr><td>"+Rows[i].sName+"</td><td>"+Rows[i].sValue+"</td></tr>";
+                    tbody=tbody+td;
+                }
+                tbody= '<form class="form-h label-5 wrap-8 wrap-fullwidth">'+tbody+'</form>'
+                var sContentHTML = '<tr class="simple1clickInline_' + iInstanceID + '"><td colspan="20" class="simple1clickContent"><div class="simple1clickClose" onclick="fncExpandClose()">&times;</div>' + tbody + '</td></tr>';
+                $('.simple1clickInline_' + iInstanceID).remove();
+                $(".xivalue_"+iInstanceID).after(sContentHTML);
+            }
+        })
+    }
+
+    function fncExpandClose(){
+        debugger
+        $(".simple1clickInline").remove();
+        $('body').find('.trActive').removeClass('trActive trActiveBefore');
+        $('body').find('.simple1clickActive.btn-theme').removeClass('simple1clickActive');
+    }
+</script>

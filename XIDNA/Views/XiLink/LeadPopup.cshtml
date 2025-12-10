@@ -1,0 +1,66 @@
+﻿@model XIDNA.ViewModels.VMViewPopup
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+@if (Model.IsLeftMenu && Model.LayoutType == 1)
+{
+    <aside class="main-sidebar lead-popup-sidebar">
+        <section class="sidebar">
+            <div id="LeadPopupLeftContent">
+                @{Html.RenderAction("GetLeadPopupLeftContent", "XiLink", new { Popup = @Model }); }
+            </div>
+        </section>
+    </aside>
+}
+
+@if (@Model.LeadID != null && Model.IsLeftMenu && Model.LayoutType == 1)
+{
+    <div class="content-wrapper lead-popup-content">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <button class="btn toggleft visible-xs"> </button>
+                    <div id="renderbody">
+                        @{
+    Html.RenderAction("LeadContent", "XiLink", new { Popup = Model });
+                        }
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+}
+else
+{
+    <div class="lead-popup-content">
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <button class="btn toggleft visible-xs"> </button>
+                    <div id="renderbody">
+                        @{
+    Html.RenderAction("LeadContent", "XiLink", new { Popup = Model });
+                        }
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+}
+
+@if (Model.IsLeftMenu && Model.LayoutType ==2)
+{
+    <aside class="control-sidebar control-sidebar-dark sidebar control-sidebar-open">
+        <section class="sidebar-menu">
+            <div id="LeadPopupLeftContent">
+                @{Html.RenderAction("GetLeadPopupLeftContent", "XiLink", new { Popup = @Model }); }
+            </div>
+        </section>
+    </aside>
+}
+<script>
+    $(".toggleft").click(function () {
+        $("#LeadPopupLeftContent").toggleClass("leftzero");
+    });
+</script>

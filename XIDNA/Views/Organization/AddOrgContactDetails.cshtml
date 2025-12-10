@@ -1,0 +1,187 @@
+﻿@model XIDNA.Models.OrganizationContacts
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#viewcont").hide();
+        $('#Cancel').click(function () {
+            window.close();
+        });
+        $("#viewcontact").click(function () {
+            var id = parseInt('@Model.OrganizationID');
+            $.ajax({
+                url: '@Url.Action("GetOrganizationContactView", "Organization")',
+                type: 'GET',
+                datatype: 'JSON',
+                data: { ido: id },
+                success: function (data) {
+                    $("#general").hide();
+                    $("#viewcont").show();
+                    $("#viewcont").append(data);
+                },
+                error: function (data) {
+                },
+            });
+        })
+
+       
+    })
+   
+</script>
+<style>
+    .errormsg {
+        color: red;
+    }
+
+    .disabled a {
+        color: #777 !important;
+    }
+</style>
+
+
+@Html.AntiForgeryToken()
+@*<hr />*@
+@*<section class="content-header hedr">
+    <h1> Organization Management </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Organization</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>*@
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="nav-tabs-custom">
+
+                        <div class="nav-tabs-custom">
+                            <ul class="nav nav-tabs">
+                                <li id="generaldetails" class="disabled"><a href="#general">General Details</a></li>
+                                <li id="contactdetails" class="active"><a href="#contact">Contact Details</a></li>
+
+                            </ul>
+                            <div class="tab-content" id="tabs">
+                                @Html.ValidationSummary(true)
+                                <div class="active tab-pane" id="general">
+                                  @*@using (Html.BeginForm("AddOrganizationContact", "Organization", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data", id = "frm", OnComplete = "OnComplete();" }))*@
+                                       @using (Ajax.BeginForm("AddOrganizationContact", "Organization", new AjaxOptions { HttpMethod = "POST",  OnComplete = "OnComplete" }, new { @class = "form-horizontal", @id = "frm" }))
+
+                                        {
+                                            if (Model.ID != 0)
+                                            {
+                                                <div>
+                                                    <input type="button" value="View Contact Details" id="viewcontact" class="savebtn btn btn-theme pull-right" />
+                                                </div>
+                                            }
+
+                                            <div class="form-group">
+                                                <label for="inputName" class="col-sm-2 control-label">Name</label>
+                                                <div class="col-sm-4">
+                                                    @Html.HiddenFor(m => m.ID, new { @value = Model.ID })
+                                                    @Html.HiddenFor(m => m.OrganizationID, new { @value = Model.OrganizationID })
+                                                    @Html.TextBoxFor(model => model.Name, new { @Name = "Name", @placeholder = "Enter Name", @class = "form-control", @maxlength = "30" })
+                                                </div>
+                                                <div class="col-sm-4 errormsg" id="TitleError">
+                                                    @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputName" class="col-sm-2 control-label">Phone Number</label>
+                                                <div class="col-sm-4">
+
+                                                    @Html.TextBoxFor(model => model.Phone, new { @Name = "Phone", @placeholder = "Enter Phone", @class = "form-control", @maxlength = "30" })
+                                                </div>
+                                                <div class="col-sm-4 errormsg" id="TitleError">
+                                                    @Html.ValidationMessageFor(m => m.Phone, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputName" class="col-sm-2 control-label">Email</label>
+                                                <div class="col-sm-4">
+
+                                                    @Html.TextBoxFor(model => model.Email, new { @Name = "Email", @placeholder = "Enter Email", @class = "form-control", @maxlength = "30" })
+                                                </div>
+                                                <div class="col-sm-4 errormsg" id="TitleError">
+                                                    @Html.ValidationMessageFor(m => m.Email, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputName" class="col-sm-2 control-label">Address</label>
+                                                <div class="col-sm-4">
+
+                                                    @Html.TextBoxFor(model => model.Address, new { @Name = "Address", @placeholder = "Enter Address", @class = "form-control", @maxlength = "30" })
+                                                </div>
+                                                <div class="col-sm-4 errormsg" id="TitleError">
+                                                    @Html.ValidationMessageFor(m => m.Address, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="col-sm-offset-2 col-sm-10">
+                                                    <button type="submit" class="btn btn-theme" value="Save" id="saveorgcontact">Save</button>
+                                                    <button type="button" class="btn btn-theme decline" id="Cancel">Cancel</button>
+                                                </div>
+                                            </div>
+                                            }
+
+    </div>
+                                    <div id="viewcont" class="active tab-pane">
+
+                                        @*@using (Html.BeginForm("", "", FormMethod.Post, new { @class = "form-horizontal", enctype = "multipart/form-data", id = "frm1", OnComplete = "OnSuccess();" }))*@
+                                    @using (Ajax.BeginForm("", "", new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @class = "form-horizontal", @id = "AddEmpForm" }))
+                                    {
+
+                                        <div class="form-group">
+                                            <label for="inputName" class="col-sm-2 control-label">Name</label>
+                                            <div class="col-sm-4">
+                                                @Html.HiddenFor(m => m.ID)
+                                                @Html.DisplayFor(model => model.Name)
+
+                                            </div>
+
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="inputName" class="col-sm-2 control-label">Phone</label>
+                                            <div class="col-sm-4">
+                                                @Html.DisplayFor(model => model.Phone)
+                                            </div>
+
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="inputName" class="col-sm-2 control-label">Address</label>
+                                            <div class="col-sm-4">
+                                                @Html.DisplayFor(model => model.Address)
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="inputName" class="col-sm-2 control-label">Email</label>
+                                            <div class="col-sm-4">
+                                                @Html.DisplayFor(model => model.Email)
+                                            </div>
+
+                                        </div>
+
+                                    }
+                                    @Html.ActionLink("Back", "AddOrgContactDetails", "Organization", new { orgid = Model.OrganizationID }, new { @class = "btn savebtn btn btn-theme", @style = "line-height:30px;" })
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+<script>
+    function OnComplete(data) {
+        //$('#generaldetails').removeClass('active');
+        //$('#contactdetails').addClass('active');
+        window.close();
+         location.reload();
+    }
+</script>

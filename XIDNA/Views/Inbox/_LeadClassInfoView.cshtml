@@ -1,0 +1,69 @@
+﻿@model XIDNA.ViewModels.VMQueryPreview
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var popupheadings = @Html.Raw(Json.Encode(Model.Headings));
+        @*var popupvalues = @Html.Raw(Json.Encode(Model.LeadEditValues));*@
+        var leadid='@Model.LeadID';
+        $("#leadupdate").click(function () {
+          
+            var formData2 = JSON.parse(JSON.stringify(jQuery('#frm').serializeArray()))
+            var s1 = [];
+            var i, j, titleid = [];
+            for (i = 0, j = popupheadings.length; i < j; i++) {
+
+                s1.push({ Label: popupheadings[i], Value: formData2[i].value});
+            }
+            var pvalue = {
+                popupvalue: s1,
+                LeadID: leadid,
+            }
+            $.ajax({
+                url: '@Url.Action("EditLead", "Inbox")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                async:false,
+                data:JSON.stringify(pvalue),
+                success: function (data) {
+                    location.reload();
+                },
+                error: function (data) {
+                }
+            });
+        })
+
+    })
+</script>     
+<form id="frm">
+    <div style="padding: 15px;">
+        <table class="table table-striped tablebrd">
+            
+            @for (var j = 0; j < Model.Headings.Count; j++)
+            {
+            <tr>
+                <td class="lightblue">@Model.Headings[j]</td>
+                <td>:</td>
+              @if(Model.Headings[j]=="ID"){
+                   <td>@Html.TextBoxFor(model => model.Rows[0][j], new { @class = "form-control",@readonly="readonly" })</td>
+              }
+              else { 
+                <td>@Html.TextBoxFor(model => model.Rows[0][j], new { @class = "form-control" })</td>
+              }
+            </tr>
+            }
+            
+        </table>
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-theme" id="leadupdate">Update</button>
+                <button type="button" class="btn btn-theme decline" id="leadcancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    $('#leadcancel').click(function(){
+        window.close();
+    });
+</script>

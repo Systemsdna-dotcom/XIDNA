@@ -1,0 +1,47 @@
+﻿@model XIDNA.ViewModels.VMQueryPreview
+
+@*@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}*@
+<script>
+    $(document).ready(function () {
+        $('#QueryPreview').dataTable();
+    });
+</script>
+<section class="content-header hedr">
+    <h1 class="TabPreview"> Tab Preview </h1>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+                <div class="box-body">
+                    <div class="tab_scroll main-table">
+                        <div class="dataTables_wrapper no-footer table-responsive">
+                            <table id="QueryPreview" class="table table-bordered table-striped dataTable">
+                                <thead>
+                                    <tr>
+                                        @foreach (var items in @Model.Headings)
+                                        {
+                                            <th>@items</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in @Model.Rows)
+                                    {
+
+                                        <tr>
+                                            @foreach (var value in item)
+                                            {
+                                                <td>@value</td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+</section>

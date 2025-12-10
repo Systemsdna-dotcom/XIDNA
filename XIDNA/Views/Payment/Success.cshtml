@@ -1,0 +1,41 @@
+﻿
+
+@*<html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title>Success</title>
+    </head>
+    <body>
+        <div>
+        </div>
+    </body>
+    </html>*@
+@*@model string*@
+@{
+    ViewBag.Title = "Success";
+    Layout = "~/Views/Shared/UserLayout.cshtml";
+}
+<div class="success_page">
+    <div class="container">
+        <img src="~/Content/images/success.png" alt="img" />
+        <h2>Your order has been processed!</h2>
+        <strong>Order ID : @ViewBag.OrderNumber</strong><br />
+        <strong>Result : @ViewBag.Result</strong><br />
+        <strong>acthcode : @ViewBag.acthcode</strong><br />
+        <strong>message : @ViewBag.message</strong><br />
+        <strong>amount : @ViewBag.amount</strong><br />
+        <strong>sha1hash : @ViewBag.sha1hash</strong><br />
+        <strong>parsef : @ViewBag.parsef</strong><br />
+        <strong>Is Sha1hash Matched : @ViewBag.IsShaMatch</strong>
+        <p>
+            You can view your order history by going to my account page
+            and by clicking on order history.
+        </p>
+        <p>Thank you for shopping with us online!</p>
+        @*<a href="@Url.RouteUrl("GetCategoryProducts", new { CategoryID = System.Configuration.ConfigurationManager.AppSettings["CategoryID"] })">BACK TO HOME</a>*@      
+
+    </div>
+</div>
+
+
+

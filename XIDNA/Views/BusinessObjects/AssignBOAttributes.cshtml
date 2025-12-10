@@ -1,0 +1,276 @@
+﻿@model IEnumerable<XIDNA.Models.BOs>
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#BOsTree').jstree({
+            "core": {
+                "check_callback": function (op, node, par, pos, more) {
+                    if (op === "delete_node") {
+                        return confirm("Are you sure you want to delete?");
+                    }
+                }
+            },
+            "plugins": [
+               "themes", "html_data", "ui"
+            ],
+        });
+        ShowOrHideDivs("BOAttributesTab", "BOAttibutesForms");
+        @*$('#BOsTree').on('state_ready.jstree', function () {
+            var listItems = $("#BOsTree a");
+            listItems.each(function (idx, li) {
+                var product = $(li).removeClass('jstree-clicked');
+            });
+            $('#BOsTree').jstree('select_node', '@ViewBag.BOID');
+            $('#BOsTree li#@ViewBag.BOID a').addClass('jstree-clicked');
+        });*@
+
+        $('#BOsTree a').click(function () {
+            var BOName = $(this).attr('data-boname');
+            var BOID = $(this).attr('data-boid');
+            $('p.heading').html(BOName);
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("AddAttributes", "BusinessObjects")',
+                data: { BOName: BOName, BOID: BOID },
+                cache: false,
+                dataType: 'html',
+                success: function (data) {
+                    $('#BOAttibutesForms').empty();
+                    $('#BOAttibutesForms').append(data);
+                }
+            });
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("AddBOAttributeGroup", "BusinessObjects")',
+                data: { BOName: BOName, BOID: BOID },
+                cache: false,
+                dataType: 'html',
+                success: function (data) {
+                    $('#BoAttributeGrouping').empty();
+                    $('#BoAttributeGrouping').append(data);
+                }
+            });
+            $('#BOScripts').load('@Url.Action("BOScripts", "BusinessObjects")?BOID=' + BOID);
+            $('#BOXIStructure').load('@Url.Action("GetBOStructure", "BusinessObjects")?iBOID=' + BOID);
+        });
+        //$('#BOsTree').jstree('select_node', '@ViewBag.BOID');
+        $(document).on('click', 'button#RefreshBOBtn', function () {
+            $('#BOScripts').load('@Url.Action("BOScripts", "BusinessObjects")?BOID=@ViewBag.BOID&isFromBO=' + true +'');
+        });
+
+        $(document).on('click', 'button#RefreshStruBOBtn', function () {
+            $('#BOXIStructure').load('@Url.Action("GetBOStructure", "BusinessObjects")?iBOID=@ViewBag.BOID');
+        });
+
+        $(document).on('click', 'button#RefreshAttrBOBtn', function () {
+            $('#BOAttibutesForms').load('@Url.Action("AddAttributes", "BusinessObjects")?BOID=@ViewBag.BOID');
+        });
+
+    });
+    function ShowOrHideDivs(Class, ID) {
+        if (Class == "BoTab") {
+            $('#BOTree').hide();
+        }
+        else if (Class == "BOGroupingTab")
+        {
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("AddBOAttributeGroup", "BusinessObjects")',
+                data: { BOName: '@ViewBag.BOName', BOID: '@ViewBag.BOID' },
+                cache: false,
+                dataType: 'html',
+                success: function (data) {
+                    $('#BoAttributeGrouping').empty();
+                    $('#BoAttributeGrouping').append(data);
+                }
+            });
+            //$('#BoAttributeGrouping').load('@Url.Action("AddBOAttributeGroup", "BusinessObjects")?BOID=' + @ViewBag.BOID + "&Name=" + '@ViewBag.BOName');
+        }
+        else if (Class == "BOScriptsTab")
+        {
+            $('#BOScripts').load('@Url.Action("BOScripts", "BusinessObjects")?BOID=' + @ViewBag.BOID + "&isFromBO=" + true +'');
+        }
+        else if (Class == "BOClassAttrsTab")
+        {
+            $('#BOClassAttrs').load('@Url.Action("ClassAttributes", "BusinessObjects")');
+        }
+        else if (Class == "BOXIStrutureTab")
+        {
+            $('#BOXIStructure').load('@Url.Action("GetBOStructure", "BusinessObjects")?iBOID=' + @ViewBag.BOID);
+        }
+        else if (Class == "DefaultUITab")
+        {
+            $('#DefaultUI').load('@Url.Action("GetDefaultUI", "BusinessObjects")?iBOID=' + @ViewBag.BOID);
+        }
+        else if (Class == "BOUITab")
+        {
+            $('#BOUI').load('@Url.Action("GetBOUI", "BusinessObjects")?iBOID=' + @ViewBag.BOID);
+        }
+        $('#BOGrid').hide();
+        $('#BoAttributeGrouping').hide();
+        $('#BOAttibutesForms').hide();
+        $('#BOScripts').hide();
+        $('#BOClassAttrs').hide();
+        $('#BOXIStructure').hide();
+        $('#DefaultUI').hide();
+        $('#BOUI').hide();
+        $('#BOTree').show();
+        $('.BoTab').removeClass('active');
+        $('.BOAttributesTab').removeClass('active');
+        $('.BOGroupingTab').removeClass('active');
+        $('.BOScriptsTab').removeClass('active');
+        $('.BOClassAttrsTab').removeClass('active');
+        $('.BOXIStrutureTab').removeClass('active');
+        $('.DefaultUITab').removeClass('active');
+        $('.BOUITab').removeClass('active');
+        $('#' + ID).show();
+        $('.' + Class).addClass('active');
+    }
+</script>
+<style>
+    .treegroup {
+        width: 230px;
+        margin-top: 22px;
+        margin-bottom: 30px;
+        float: left;
+    }
+
+    .BOTabs li {
+        cursor: pointer;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Business Object Management </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> BO</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+
+            <div class="nav-tabs-custom">
+                <ul class="nav nav-tabs BOTabs">
+                    <li class="BoTab"><a onclick="ShowOrHideDivs('BoTab','BOGrid')">BO</a></li>
+                    <li class="active BOAttributesTab"><a onclick="ShowOrHideDivs('BOAttributesTab', 'BOAttibutesForms')">Attributes</a></li>
+                    <li class="BOGroupingTab"> <a onclick="ShowOrHideDivs('BOGroupingTab', 'BoAttributeGrouping')">Groups</a></li>
+                    <li class="BOScriptsTab"> <a onclick="ShowOrHideDivs('BOScriptsTab', 'BOScripts')">Scripts</a></li>
+                    <li class="BOClassAttrsTab"> <a onclick="ShowOrHideDivs('BOClassAttrsTab', 'BOClassAttrs')">Class Attributes</a></li>
+                    <li class="BOXIStrutureTab"> <a onclick="ShowOrHideDivs('BOXIStrutureTab', 'BOXIStructure')">XIStructure</a></li>
+                    <li class="BOUITab"> <a onclick="ShowOrHideDivs('BOUITab', 'BOUI')">BO UI</a></li>
+                    <li class="DefaultUITab"> <a onclick="ShowOrHideDivs('DefaultUITab', 'DefaultUI')">BO UI Defaults</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="box">
+        <div class="row">
+            <div class="col-xs-12">
+                <div id="BOGrid" class="m-t-b-15" style="display:none">
+                    @*@{
+                            Html.RenderAction("BusinessObjectsList", "BusinessObjects");
+                        }*@
+                </div>
+                <div id="AttributesFromGrid"></div>
+
+                <div id="BOAttributes">
+                    <div class="box-body col-md-2" id="BOTree">
+                        <p class="heading">@ViewBag.BOName</p>
+                        <div class="tree">
+                            <div id="BOsTree">
+                                <ul>
+                                    @TreeView(Model.OrderBy(m => m.Name))
+                                </ul>
+                            </div>
+                            @helper AttrTreeView(IEnumerable<XIDNA.Models.BOFields> Attrs)
+                            {
+foreach (var Attr in Attrs)
+{
+                                <li id="@Attr.ID-@Attr.Name">
+                                    <a>@Attr.Name.ToString()</a>
+                                </li>
+}
+}
+
+
+                            @helper TreeView(IEnumerable<XIDNA.Models.BOs> nodes)
+                            {
+foreach (var node in nodes)
+{
+                                <li id="@node.BOID">
+                                    @if (node.IsLeaf)
+            {
+                                        <a data-boid="@node.BOID" data-boname="@node.Name.ToString()">@node.Name.ToString()</a>
+            }
+            else
+            {
+                                        <a data-boid="@node.BOID" data-boname="@node.Name.ToString()">@node.Name.ToString()</a>
+                                        <ul>
+                                            @AttrTreeView(node.BOFields)
+                                        </ul>
+            }
+                                </li>
+}
+}
+
+                            @*@helper TreeView(IEnumerable<XIDNA.Models.BOs> nodes)
+                                                            {
+                                foreach (var node in nodes.OrderByDescending(m => m.BOID))
+                                {
+                                        <li id="@node.BOID">
+                                            <a data-boid="@node.BOID" data-boname="@node.Name.ToString()">@node.Name.ToString()</a>
+
+                                        </li>
+                                }
+                                }*@
+
+
+
+                        </div>
+                    </div>
+                    <div class="box-body col-md-10" id="addClass">
+                        <div id="BOAttibutesForms" class="condata">
+                            @{
+                                Html.RenderAction("AddAttributes", "BusinessObjects", new { BOName = @ViewBag.BOName, BOID = @ViewBag.BOID });
+                            }
+                        </div>
+                        <div id="BoAttributeGrouping" class="condata" style="display:none;">
+                            @*@{
+                                    Html.RenderAction("AddBOAttributeGroup", "BusinessObjects", new { BOID = @ViewBag.BOID, Name = @ViewBag.BOName });
+                                }*@
+                        </div>
+                        <div id="BOScripts" class="condata" style="display:none;">
+                            @*@{
+                                    Html.RenderAction("BOScripts", "BusinessObjects", new { BOID = @ViewBag.BOID, BO = @ViewBag.BOName });
+                                }*@
+                        </div>
+                        <div id="BOClassAttrs" class="condata" style="display:none;">
+                            @*@{
+                                    Html.RenderAction("BOScripts", "BusinessObjects", new { BOID = @ViewBag.BOID, BO = @ViewBag.BOName });
+                                }*@
+                        </div>
+                        <div id="BOXIStructure" class="condata" style="display:none;">
+                            @*@{
+                                    Html.RenderAction("GetBOStructure", "BusinessObjects", new { iBOID = @ViewBag.BOID });
+                                }*@
+                        </div>
+                        <div id="DefaultUI" class="condata" style="display:none;">
+                            @*@{
+                                    Html.RenderAction("GetDefaultUI", "BusinessObjects", new { iBOID = @ViewBag.BOID });
+                                }*@
+                        </div>
+                        <div id="BOUI" class="condata" style="display:none;">
+                            @*@{
+                                    Html.RenderAction("GetBOUI", "BusinessObjects", new { iBOID = @ViewBag.BOID });
+                                }*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

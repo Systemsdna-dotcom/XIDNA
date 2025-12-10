@@ -1,0 +1,370 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIParameter oXIP = new XIParameter();
+    if (Model.oContent.ContainsKey(XIConstant.XIParameterComponent))
+    {
+        oXIP = (XIParameter)Model.oContent[XIConstant.XIParameterComponent];
+        if (oXIP == null)
+        {
+            oXIP = new XIParameter();
+        }
+    }
+}
+
+<script>
+    $(document).ready(function () {
+        $('#AddMore').click(function () {
+            var Divs = $('.XINVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $('#NameValuePairs').append(Divs);
+            $('.XINVPairs').last().css("display", "block");
+        });
+        $(document.body).on('click', 'input.AddMoreList', function () {
+            var Divs = $('.LNVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $(Divs).filter('.LNVPairs').css("display", "block");
+            $(this).closest(".amlist").before(Divs);
+        });
+        $('.AddList').click(function () {
+            var Divs = $('.Lists').first().clone();
+            var TextBoxs = $(Divs).find('.LNVPairs').css("display", "block");
+            for (i = 0; i < TextBoxs.length; i++) {
+                if (i >= 1) {
+                    $(TextBoxs[i]).remove();
+                }
+            }
+            $(Divs).find('input[type=text]').val('');
+            $(this).closest(".alist").before(Divs);
+        });
+
+        $(document.body).on('click', 'button.XIDeleteNVPairs', function () {
+            $(this).closest(".XINVPairs").hide();
+        });
+
+        $(document.body).on('click', 'button.XIDeleteNVPairss', function () {
+            $(this).closest('.LNVPairs').hide();
+        });
+
+        $('#SaveXiParameter').click(function () {
+            var empty = $('#XiParameterForm').find("input.req").filter(function () {
+                return this.value === "";
+            });
+            if (empty.length) {
+                CustomMessage("Please fill * marked fields", false);
+            }
+            else {
+                var XiParameterName = $('#Name').val();
+                var Status = $('#StatusTypeID').val();
+                var ApplicationID = $('#FKiApplicationID').val();
+                var NVPairs = [];
+                $('.XINVPairs:visible').each(function () {
+                    var Name; var Value; var Type;
+                    $(this).find('input').each(function (i, obj) {
+                        var Nname = obj.name;
+                        if (Nname == "Names") {
+                            Name = $(this).val();
+                        }
+                        else if (Nname == "Values") {
+                            Value = $(this).val();
+                        }
+                        else if (Nname == "Type") {
+                            Type = $(this).val();
+                        }
+                    });
+                    if (Name.length > 0) {
+                        NVPairs.push(Name + "^" + Value + "^" + Type);
+                    }
+                });
+                var LNVPairs = [];
+                $('.Lists').each(function () {
+                    var LName = $(this).find('input.ListName').val();
+                    //LName = "ListName-" + LName;
+                    if (LName.length > 0) {
+                        LNVPairs.push(LName);
+                        $(this).find('.LNVPairs:visible').each(function (i, obj) {
+                            var Name; var Value; var Type;
+                            $(this).find('input').each(function (i, obj) {
+                                var Nname = obj.name;
+                                if (Nname == "ListNames") {
+                                    Name = $(this).val();
+                                }
+                                else if (Nname == "ListValues") {
+                                    Value = $(this).val();
+                                }
+                                else if (Nname == "ListType") {
+                                    Type = $(this).val();
+                                }
+                            });
+                            if (Name.length > 0 && Value.length > 0) {
+                                LNVPairs.push(LName + "^" + Name + "^" + Value + "^" + Type);
+                            }
+                        });
+                    }
+                });
+                var model = { XiParameterID: $('#XiParameterID').val(), Name: XiParameterName, FKiApplicationID: ApplicationID, NVPairs: NVPairs, LNVPairs: LNVPairs, Status: Status };
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("Save_XiParameter", "XiLink")',
+                    data: JSON.stringify(model),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    success: function (data) {
+                        CustomMessage(data.ResponseMessage, data.Status);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    <form id="XiParameterForm" class="form-horizontal">
+                        <div id="clear-text">
+                            <input type="hidden" value="@oXIP.XiParameterID" id="XiParameterID" />
+                            @if (oXIP.XiParameterID > 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Parameter ID:<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">@oXIP.XiParameterID<span class="danger"></span></label>
+                                    </div>
+                                </div>
+                            }
+                            @if (oXIP.FKiApplicationID == 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Application<span class="danger"></span></label>
+                                        @Html.DropDownList("FKiApplicationID", new SelectList(oXIP.ddlApplications, "Value", "text"), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" id="FKiApplicationID" name="FKiApplicationID" value="@oXIP.FKiApplicationID" />
+                            }
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn"> Name<span class="danger">*</span></label>
+                                    <input type="text" name="Name" id="Name" placeholder="XiParameter name" class="form-control req" value="@oXIP.Name" />
+                                </div>
+                            </div>
+                            @*<div class="form-group">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn"> URL<span class="danger">*</span></label>
+                                        <input type="text" name="URL" id="URL" placeholder="Controller/Action Method" class="form-control req" value="@Model.URL" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn"> 1-Click ID<span class="danger"></span></label>
+                                        <input type="text" name="OneClickID" id="OneClickID" placeholder="1-Click ID" class="form-control" value="@Model.OneClickID" />
+                                    </div>
+                                </div>*@
+                            <div class="form-group" style="margin-left:-10px">
+                                <div id="NameValuePairs" class="col-md-12">
+                                    @if (oXIP.XiParameterID == 0 || oXIP.XiParameterNVs.Count() == 0)
+                                    {
+                                        <div class="form-group XINVPairs">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                <input type="text" name="Names" placeholder="Name" class="form-control" />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                <input type="text" name="Values" placeholder="Value" class="form-control" />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn"> Type<span class="danger"></span></label>
+                                                <input type="text" name="Type" placeholder="Type" class="form-control" />
+                                            </div>
+                                            <br />
+                                            <div>
+                                                <button type="button" class="btn btn-theme btn-xs XIDeleteNVPairs">Delete</button>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        foreach (var NVs in oXIP.XiParameterNVs)
+                                        {
+                                            <div class="form-group XINVPairs">
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                    <input type="text" name="Names" placeholder="Name" class="form-control" value="@NVs.Name" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                    <input type="text" name="Values" placeholder="Value" class="form-control" value="@NVs.Value" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn"> Type<span class="danger"></span></label>
+                                                    <input type="text" name="Type" placeholder="Type" class="form-control" value="@NVs.Type" />
+                                                </div>
+                                                <br />
+                                                <div>
+                                                    <button type="button" class="btn btn-theme btn-xs XIDeleteNVPairs">Delete</button>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <input type="button" id="AddMore" value="Add" class="btn btn-theme btn-xs">
+                                </div>
+                            </div>
+                            @if (oXIP.XiParameterID == 0 || oXIP.XiParameterLists.Count() == 0)
+                            {
+                                <div class="form-group Lists" style="margin-left:-10px">
+                                    <div class="form-group col-md-12">
+                                        <div class="col-md-6">
+                                            <label for="inputEmail" class="gn"> List<span class="danger"></span></label>
+                                            <input type="text" name="List" placeholder="List name" class="form-control ListName" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-12 LNVPairs">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                            <input type="text" name="ListNames" placeholder="Name" class="form-control" />
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                            <input type="text" name="ListValues" placeholder="Value" class="form-control" />
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn"> Type<span class="danger"></span></label>
+                                            <input type="text" name="ListType" placeholder="Type" class="form-control" />
+                                        </div>
+                                        <br />
+                                        <div>
+                                            <button type="button" class="btn btn-theme btn-xs XIDeleteNVPairss">Delete</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-12 amlist">
+                                        <div class="col-md-2">
+                                            <input type="button" value="Add" class="AddMoreList btn btn-theme btn-xs">
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                foreach (var items in oXIP.XiParameterLists)
+                                {
+                                    if (items.XiParameterListNVs.Count() == 0)
+                                    {
+                                        <div class="form-group Lists" style="margin-left:-10px">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-6">
+                                                    <label for="inputEmail" class="gn"> List<span class="danger"></span></label>
+                                                    <input type="text" name="List" placeholder="List name" class="form-control ListName" value="@items.ListName" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 LNVPairs">
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                    <input type="text" name="ListNames" placeholder="Name" class="form-control" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                    <input type="text" name="ListValues" placeholder="Value" class="form-control" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn"> Type<span class="danger"></span></label>
+                                                    <input type="text" name="ListType" placeholder="Type" class="form-control" />
+                                                </div>
+                                                <br />
+                                                <div>
+                                                    <button type="button" class="btn btn-theme btn-xs XIDeleteNVPairss">Delete</button>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 amlist">
+                                                <div class="col-md-2">
+                                                    <input type="button" value="Add" class="AddMoreList btn btn-theme btn-xs">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="form-group Lists" style="margin-left:-10px">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-6">
+                                                    <label for="inputEmail" class="gn"> List<span class="danger"></span></label>
+                                                    <input type="text" name="List" placeholder="List name" class="form-control ListName" value="@items.ListName" />
+                                                </div>
+                                            </div>
+                                            @foreach (var NVs in items.XiParameterListNVs)
+                                            {
+                                                <div class="form-group col-md-12 LNVPairs">
+                                                    <div class="col-md-3">
+                                                        <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                        <input type="text" name="ListNames" placeholder="Name" class="form-control" value="@NVs.Name" />
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                        <input type="text" name="ListValues" placeholder="Value" class="form-control" value="@NVs.Value" />
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label for="inputEmail" class="gn"> Type<span class="danger"></span></label>
+                                                        <input type="text" name="ListType" placeholder="Type" class="form-control" value="@NVs.Type" />
+                                                    </div>
+                                                    <br />
+                                                    <div>
+                                                        <button type="button" class="btn btn-theme btn-xs XIDeleteNVPairss">Delete</button>
+                                                    </div>
+                                                </div>
+                                            }
+                                            <div class="form-group col-md-12 amlist">
+                                                <div class="col-md-2">
+                                                    <input type="button" value="Add" class="AddMoreList btn btn-theme btn-xs">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                            <div class="form-group alist">
+                                <div class="col-md-2">
+                                    <input type="button" value="Add List" class="AddList btn btn-theme btn-xs">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    <select class="form-control" id="StatusTypeID">
+                                        <option value="10">Active</option>
+                                        <option value="20">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="button" class="btn btn-theme" value="Save" id="SaveXiParameter" />
+                                <button type="button" class="btn btn-theme decline CancelXiParameter">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="SavePopupDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    $('.CancelXiParameter').click(function () {
+        window.close();
+    });
+</script>

@@ -1,0 +1,73 @@
+﻿@using Microsoft.AspNet.Identity
+@using XIDNA.Models
+@using XIDNA.ViewModels
+
+<style>
+    .HasItems {
+    }
+</style>
+<aside class="control-sidebar control-sidebar-dark sidebar control-sidebar-open control-sidebar-right">
+    <ul class="sidebar-menu" id="RightMenuDetails">
+        @*<li class="treeview">
+            <a href='@Url.Action("DisplayMenuDetails", "Home")' class="active">@*<img src="~/Content/images/master.png" alt="User Image"><span>Menu Management</span></a>
+        </li>*@
+        @TreeView(Model)
+        @helper TreeView(IEnumerable<XIDNA.Models.RightMenuTrees> nodes)
+{
+    foreach (var node in nodes)
+    {
+        int ID = node.ID;
+        if (node.SubGroups.Count == 0)
+        {
+            <li class="treeview">
+                @if (node.XiLinkID > 0)
+                {
+                    <a href="#" data-xilinkid="@node.XiLinkID" data-action="@node.ActionType"><span>@node.Name</span></a>
+                }
+                else if(!string.IsNullOrEmpty(node.MenuAction) && !string.IsNullOrEmpty(node.MenuController))
+                {
+                    <a href="@Url.Action(node.MenuAction, node.MenuController)"><span>@node.Name</span></a>
+                }
+                else
+                {
+                    <a><span>@node.Name</span></a>
+                }
+            </li>
+        }
+        else
+        {
+            <li class="treeview">
+                @if (node.XiLinkID > 0)
+                {
+                    <a href="#"><span>@node.Name</span> <i class="fa fa-angle-left pull-right"></i></a>
+                }
+                else
+                {
+                    <a href="#"><span>@node.Name</span> <i class="fa fa-angle-left pull-right"></i></a>
+                }
+                <ul class="treeview-menu">@TreeView(node.SubGroups)</ul>
+            </li>
+        }
+    }
+}
+
+    </ul>
+</aside>
+
+<script src="~/Scripts/CommonFunctions.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#RightMenuDetails').on('click', 'a', function () {
+            var XiLinkID = $(this).attr('data-xilinkid');
+            var ActionType = $(this).attr('data-action');
+            if (XiLinkID > 0) {
+                if (ActionType == 30) {
+                    XILinkLoadJson(XiLinkID);
+                }
+                else {
+                    XIRun(null,XiLinkID, 0, null, null, false, 0);
+                }                
+            }
+        });
+    });
+</script>

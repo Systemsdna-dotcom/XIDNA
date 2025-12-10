@@ -1,0 +1,245 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using XIDNA
+@{
+    XIIBO oBOIns = new XIIBO();
+    if (Model.oContent.ContainsKey(XIConstant.AccountComponent))
+    {
+        oBOIns = (XIIBO)Model.oContent[XIConstant.AccountComponent];
+    }
+    var AC = Model;
+    var sUserName = "";
+    if(oBOIns.Attributes.Count>0 && oBOIns.Attributes.ContainsKey("sUserName"))
+    {
+        sUserName = oBOIns.Attributes["sUserName"].sValue;
+    }
+    var UserID = "";
+    if (oBOIns.Attributes.Count > 0 && oBOIns.Attributes.ContainsKey("UserID"))
+    {
+        UserID = oBOIns.Attributes["UserID"].sValue;
+    }
+    var ApplicationID = SessionManager.ApplicationID;
+    var logo = SessionManager.Logo;
+    var formType = "Login";
+    var IsTwowayAuthentication = "";
+    var IsSMS = "";
+    var IsEmail = "";
+    var OTPCase = "";
+    var OTPLength = "";
+    var OTPType = "";
+    var SMS = "";
+    var Email = "";
+    var LoginType = "Login";
+    var IsRegistration = false; ;
+    if (oBOIns.oVisualisation != null)
+    {
+        var oVisual = oBOIns.oVisualisation.FirstOrDefault();
+        if (oVisual != null && oVisual.XiVisualisationNVs != null && oVisual.XiVisualisationNVs.Count() > 0)
+        {
+            var oVNVs = oVisual.XiVisualisationNVs;
+            formType = oVNVs.Where(m => m.sName.ToLower() == "AcType".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            IsTwowayAuthentication = oVNVs.Where(m => m.sName.ToLower() == "IsTwoWayAuthentication".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            IsSMS = oVNVs.Where(m => m.sName.ToLower() == "IsSMS".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if(!string.IsNullOrEmpty(IsSMS) && IsSMS.ToLower() == "true")
+            {
+                SMS = "Sms";
+            }
+            var Registration = oVNVs.Where(m => m.sName.ToLower() == "IsRegistration".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(Registration) && Registration.ToLower() == "true")
+            {
+                IsRegistration = true;
+            }
+            IsEmail = oVNVs.Where(m => m.sName.ToLower() == "IsEmail".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(IsEmail) && IsEmail.ToLower() == "true")
+            {
+                Email = "Email";
+            }
+            LoginType = oVNVs.Where(m => m.sName.ToLower() == "LoginType".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            OTPCase = oVNVs.Where(m => m.sName.ToLower() == "OTPCase".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            OTPLength = oVNVs.Where(m => m.sName.ToLower() == "OTPLength".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            OTPType = oVNVs.Where(m => m.sName.ToLower() == "OTPType".ToLower()).Select(m => m.sValue).FirstOrDefault();
+        }
+    }
+    var NewsGUID = Guid.NewGuid().ToString();
+}
+<div class="login-box">
+    <div class="login-box-logo">
+        <img src="~/Content/images/@logo">
+    </div>
+    <div class="login-box-body">
+        <form class="AccountComponent  wrap-fullwidth" id="Account_@NewsGUID" data-FormType="@formType" data-Twoway="@IsTwowayAuthentication" data-IsSMS="@IsSMS" data-IsEmail="@IsEmail" data-OTPCase="@OTPCase" data-OTPLength="@OTPLength" data-OTPType="@OTPType" data-AccountType="@LoginType">
+            <div class="AccountComponentdiv col-md-12">
+                @if (formType == "Login" || formType == "Registration")
+    {
+            <div>
+                <div class="form-group highlight--help">
+                    <div class="row">
+                        <label class="control-label col-sm-6">UserName</label>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(LoginType) && LoginType.ToLower() == "login")
+    {
+            <input type="text" class="form-control" value='@sUserName' name="UserName" />
+}
+else
+{
+            <input type="text" class="form-control" value='@sUserName' name="UserName" readonly />
+}
+            </div>
+            <div>
+                <div class="form-group highlight--help">
+                    <div class="row">
+                        <label class="control-label col-sm-6">Password</label>
+                    </div>
+                </div>
+                <input type="password" class="form-control" name="Password" />
+            </div>
+if (formType == "Registration")
+{
+            <div>
+                <div class="form-group highlight--help">
+                    <div class="row">
+                        <label class="control-label col-sm-6">Confirm Password</label>
+                    </div>
+                </div>
+                <input type="password" class="form-control" name="ConfirmPassword" />
+            </div>
+if (!string.IsNullOrEmpty(LoginType) && LoginType.ToLower() == "login")
+{
+            <button type="button" class="btn btn-theme btnQuote" onclick="SaveAccountComponent( this)">Sign Up</button>
+}
+}
+else
+{
+if (!string.IsNullOrEmpty(LoginType) && LoginType.ToLower() == "login")
+{
+            <button type="button" class="btn btn-theme btnQuote" onclick="SaveAccountComponent( this)">Sign In</button>
+if (IsRegistration == true)
+{
+            <button type="button" class="btn btn-theme btnQuote" onclick="fncLoadFPComponent( this)"  data-type="Registration">Register</button>
+}
+}
+            <button type="button" class="btn btn-theme btnQuote" onclick="fncLoadFPComponent( this)" data-type="FP">Forgot Password</button>
+}
+}
+else if (formType == "FP")
+{
+            <div hidden>
+                <div class="form-group highlight--help">
+                    <div class="row">
+                        <label class="control-label col-sm-6">UserName</label>
+                    </div>
+                </div>
+                <input type="text" class="form-control" value=@sUserName name="UserName" readonly />
+            </div>
+            <div>
+                <div class="form-group highlight--help">
+                    <div class="row">
+                        <label class="control-label col-sm-6">OTP</label>
+                    </div>
+                </div>
+                <input type="text" class="form-control" name="Password" />
+            </div>
+if (!string.IsNullOrEmpty(LoginType) && LoginType.ToLower() == "login")
+{
+            <button type="button" class="btn btn-loginForm" onclick="SaveAccountComponent(this)">Submit</button>
+}
+}
+else if (formType == "RP")
+{
+            <div>
+                <div class="form-group highlight--help">
+                    <div class="row">
+                        <label class="control-label col-sm-6">UserName</label>
+                    </div>
+                </div>
+                <input type="text" class="form-control" value=@sUserName name="UserName" readonly />
+            </div>
+            <div>
+                <div class="form-group highlight--help">
+                    <div class="row">
+                        <label class="control-label col-sm-6">New Password</label>
+                    </div>
+                </div>
+                <input type="text" class="form-control" name="Password" />
+            </div>
+            <div>
+                <div class="form-group highlight--help">
+                    <div class="row">
+                        <label class="control-label col-sm-6">Confirm Password</label>
+                    </div>
+                </div>
+                <input type="text" class="form-control" name="ConfirmPassword" />
+            </div>
+            <button type="button" class="btn btn-loginForm" onclick="SaveAccountComponent(this)">Submit</button>
+}
+else if (formType == "Authentication")
+{
+            <div>
+                @*<div class="login-box-logo">
+            <img src="~/Content/images/@ViewBag.Logo">
+        </div>*@
+                <div>
+                    @if (!string.IsNullOrEmpty(IsEmail) && IsEmail == "true")
+        {
+            <h4>Confirm via @sUserName </h4>
+}
+                    @if (!string.IsNullOrEmpty(IsSMS))
+        {
+            <h4>Confirm via SMS </h4>
+}
+                    <h5>We've sent a @OTPLength-digit verification code to systemsdna@outlook.com </h5>
+                    <h4>Enter code from </h4>
+                    <input type="text" class="form-control" value=@sUserName name="UserName" hidden />
+                    @*<input type="text" class="form-control" value=@sUserName name="UserName" readonly />*@
+                    <div class="form-multi-input">
+                        <input type="text" class="form-control" value="" name="Password" />
+                    </div>
+                    @if (!string.IsNullOrEmpty(LoginType) && LoginType.ToLower() == "login")
+        {
+            <button type="button" class="btn btn-loginForm" onclick="SaveAccountComponent(this)">Submit</button>
+}
+                    <p> Code hasn't arrived? Youcan retry in <span id="countdowntimer">51 </span> or contact us</p>
+
+                </div>
+            </div>
+}
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+     var timeleft = 51;
+    var downloadTimer = setInterval(function(){
+        
+        timeleft--;
+        if (timeleft < 0) {
+            document.getElementById("countdowntimer").textContent = "retry in " + timeleft + " Seconds";
+        }
+    if (timeleft == 0) {
+        debugger;
+        clearInterval(downloadTimer);
+        document.getElementById("countdowntimer").innerHTML = "<a onclick="+"Resendcode('@UserID','@ApplicationID','@SMS','@Email')"+"> re-send code</a>";
+    }
+    }, 1000);
+    Resendcode = function (UserID, ApplicationID,sSMS,sEmail) {
+        debugger;
+        $.ajax({
+            url: '@Url.Action("ResendOTP", "Account")',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            async: true,
+            cache: false,
+            data: JSON.stringify({ UserID: UserID, ApplicationID: ApplicationID, sSMS:sSMS,sEmail:sEmail }),
+            success: function (data) {
+                //debugger;
+                timeleft = 51;
+                }
+        });
+        //alert ("code done");
+    }
+</script>

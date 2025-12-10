@@ -1,0 +1,42 @@
+﻿@model XICore.XIDLayout
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+        DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+        PopupURL = '@Url.Action("GetPopupDetails", "XiLink")';
+        PopupORDialogURL = '@Url.Action("GetPopupORDialog", "XiLink")';
+        DialogURL = '@Url.Action("GetDialog", "XiLink")';
+        SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+        SemanticURL = '@Url.Action("GetSemanticDetails", "XiLink")';
+        ComponentURL = '@Url.Action("LoadComponentByID", "XIComponents")';
+        StepURL = '@Url.Action("GetStepContent", "XiLink")';
+        StepContentURL = '@Url.Action("GetStepContent", "XiLink")';
+        StepDataURL = '@Url.Action("GetStepData", "XiLink")';
+        ComponentParmsByStepURL = '@Url.Action("GetComponentParmsByStep", "XIComponents")';
+        XIContentURL = '@Url.Action("XIContent", "XiLink")';
+        DeleteBOURL = '@Url.Action("DeleteBO", "XiLink")';
+        SaveMultiRowURL = '@Url.Action("SaveMultiRow", "XiLink")';
+        var ilayoutID = '@Model.XIGUID';
+        fncLoadLayout(ilayoutID);
+    });
+</script>
+<div class="Layout_@Model.XIGUID fluid-row"></div>
+<div class="fluid-container">
+    <div class="fluid-cell"><div class="fluid-row"></div></div>
+</div>
+
+@*<div class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    @{
+                        Html.RenderAction("GetLayoutContent", "XiLink", new { model = Model });
+                    }
+                </div>
+            </div>
+        </div>
+    </div>*@

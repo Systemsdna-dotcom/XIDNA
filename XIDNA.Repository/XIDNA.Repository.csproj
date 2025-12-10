@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{FCE3C05D-F6D4-4782-AE25-446023544062}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>XIDNA.Repository</RootNamespace>
+    <AssemblyName>XIDNA.Repository</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Dapper">
+      <HintPath>..\packages\Dapper.1.50.4\lib\net451\Dapper.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Excel, Version=2.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Excel.1.0.0\lib\dotnet\Excel.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mail, Version=3.0.20308.1141, Culture=neutral, PublicKeyToken=6dc438ab78a525b3, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mail.dll.3.0.20308.1141\lib\net45\Mail.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.ConnectionInfo, Version=13.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.SQLServer.SMO.12.0.2000.8\lib\Microsoft.SqlServer.ConnectionInfo.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.ConnectionInfoExtended, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.SQLServer.SMO.12.0.2000.8\lib\Microsoft.SqlServer.ConnectionInfoExtended.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Management.Sdk.Sfc, Version=13.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.SQLServer.SMO.12.0.2000.8\lib\Microsoft.SqlServer.Management.Sdk.Sfc.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Smo, Version=13.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.SQLServer.SMO.12.0.2000.8\lib\Microsoft.SqlServer.Smo.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SmoExtended, Version=13.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.SQLServer.SMO.12.0.2000.8\lib\Microsoft.SqlServer.SmoExtended.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SqlClrProvider, Version=13.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.SQLServer.SMO.12.0.2000.8\lib\Microsoft.SqlServer.SqlClrProvider.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SqlEnum, Version=13.100.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.SQLServer.SMO.12.0.2000.8\lib\Microsoft.SqlServer.SqlEnum.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BusinessObjectsRepository\BusinessObjectsRepository.cs" />
+    <Compile Include="BusinessObjectsRepository\IBusinessObjectsRepository.cs" />
+    <Compile Include="Class1.cs" />
+    <Compile Include="Common\Common.cs" />
+    <Compile Include="Common\CommonRepository.cs" />
+    <Compile Include="Common\LinqExtensions.cs" />
+    <Compile Include="Common\QuerableUtil.cs" />
+    <Compile Include="Common\ServiceConstants.cs" />
+    <Compile Include="Common\ServiceUtil.cs" />
+    <Compile Include="ContentRepository\ContentRepository.cs" />
+    <Compile Include="ContentRepository\IContentRepository.cs" />
+    <Compile Include="DataContext.cs" />
+    <Compile Include="DataRepository\DataRepository.cs" />
+    <Compile Include="DataRepository\IDataRepository.cs" />
+    <Compile Include="FieldsRepository\FieldsRepository.cs" />
+    <Compile Include="FieldsRepository\IFieldsRepository.cs" />
+    <Compile Include="FileRepository\FileRepository.cs" />
+    <Compile Include="FileRepository\IFileRepository.cs" />
+    <Compile Include="GenerateQueryRepository\GenerateQueryRepository.cs" />
+    <Compile Include="GenerateQueryRepository\IGenerateQueryRepository.cs" />
+    <Compile Include="Home\HomeRepository.cs" />
+    <Compile Include="Home\IHomeRepository.cs" />
+    <Compile Include="InboxRepository\IInboxRepository.cs" />
+    <Compile Include="InboxRepository\InboxRepository.cs" />
+    <Compile Include="LeadEngine.cs" />
+    <Compile Include="LeadRepository\ILeadRepository.cs" />
+    <Compile Include="LeadRepository\LeadRepository.cs" />
+    <Compile Include="MailRepository\IMailRepository.cs" />
+    <Compile Include="MailRepository\MailRepository.cs" />
+    <Compile Include="MasterRepository\IMasterRepository.cs" />
+    <Compile Include="MasterRepository\MasterRepository.cs" />
+    <Compile Include="MultipleLogin\Login.cs" />
+    <Compile Include="OrganizationRepository\IOrganizationRepository.cs" />
+    <Compile Include="OrganizationRepository\OrganizationRepository.cs" />
+    <Compile Include="PopupRepository\IPopupRepository.cs" />
+    <Compile Include="PopupRepository\PopupRepository.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReportsRepository\IReportsRepository.cs" />
+    <Compile Include="ReportsRepository\ReportsRepository.cs" />
+    <Compile Include="ServerDetailsRepository\IIOServerDetailsRepository.cs" />
+    <Compile Include="ServerDetailsRepository\IOServerDetailsRepository.cs" />
+    <Compile Include="UsersRepository\IUsersRepository.cs" />
+    <Compile Include="UsersRepository\UsersRepository.cs" />
+    <Compile Include="WalletRepository\IWalletRepository.cs" />
+    <Compile Include="WalletRepository\WalletRepository.cs" />
+    <Compile Include="XIAPIRepository\CXIAPI.cs" />
+    <Compile Include="XIApplicationsRepository\IXIApplicationsRepository.cs" />
+    <Compile Include="XIApplicationsRepository\XIApplicationsRepository.cs" />
+    <Compile Include="XICacheRepository\XICache.cs" />
+    <Compile Include="XIComponentsRepository\IXIComponentsRepository.cs" />
+    <Compile Include="XIComponentsRepository\XIComponentsRepository.cs" />
+    <Compile Include="XiLinkRepository\Bitmap.cs" />
+    <Compile Include="XiLinkRepository\IXiLinkRepository.cs" />
+    <Compile Include="XiLinkRepository\XiLinkRepository.cs" />
+    <Compile Include="XISemanticsRepository\IXISemanticsRepository.cs" />
+    <Compile Include="XISemanticsRepository\XISemanticsRepository.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XIDNA.Models\XIDNA.Models.csproj">
+      <Project>{60488c5a-e677-441f-ba55-d952a6dcb410}</Project>
+      <Name>XIDNA.Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XIDNA.ViewModels\XIDNA.ViewModels.csproj">
+      <Project>{099e075a-0736-468d-aa77-74462d803162}</Project>
+      <Name>XIDNA.ViewModels</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

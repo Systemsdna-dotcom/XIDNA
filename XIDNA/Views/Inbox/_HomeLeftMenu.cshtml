@@ -1,0 +1,90 @@
+﻿@using Microsoft.AspNet.Identity
+@using XIDNA.Models
+@using XIDNA.ViewModels
+
+<style>
+    .HasItems {
+    }
+</style>
+<div class="inboxtreeview">
+    <ul class="sidebar-menu" id="LeftMenuDetails">
+        @TreeView(Model)
+        @helper TreeView(IEnumerable<XIDNA.Models.RightMenuTrees> nodes)
+        {
+foreach (var node in nodes)
+{
+    int ID = node.ID;
+    if (node.SubGroups.Count == 0)
+    {
+            <li class="treeview">
+                @if (node.XiLinkID > 0)
+                {
+                    if (node.XiLinkID == 4386 || node.XiLinkID == 4396 || node.XiLinkID == 4440 || node.XiLinkID == 4220 || node.XiLinkID == 4644 || node.XiLinkID == 4616 || node.XiLinkID == 4686 || node.XiLinkID == 5013 || node.XiLinkID == 5141 || node.XiLinkID == 5213 || node.XiLinkID == 5215 || node.XiLinkID == 5323 || node.XiLinkID == 5376 || node.XiLinkID == 5379 || node.XiLinkID == 5381 || node.XiLinkID == 5383 || node.XiLinkID == 5386 || node.XiLinkID == 5395)
+                    {
+                        <a onclick="XIRun(this,'@node.XiLinkID', 0, null, null, true, 0, 0,'@node.Name')" data-xilinkid="@node.XiLinkID"><span>@node.Name</span></a>
+                    }
+                    else if(node.ActionType == 30)
+                    {
+                        <a onclick="XILinkLoadJson('@node.XiLinkID',null,null,'@node.Name')"><span>@node.Name</span></a>
+                    }
+                    else if (node.ActionType == 20)
+                    {
+                        <a onclick="XIRun(this,'@node.XiLinkID', 0, null, null, true, 0, 0,'@node.Name')" data-xilinkid="@node.XiLinkID"><span>@node.Name</span></a>
+                    }
+                }
+                else
+                {
+                    <a href="@Url.Action(node.MenuAction, node.MenuController)"><span>@node.Name</span></a>
+                }
+            </li>
+    }
+    else
+    {
+            <li class="treeview">
+                @if (node.XiLinkID > 0)
+                {
+                    <a href="#"><span>@node.Name</span> <i class="fa fa-angle-left pull-right"></i></a>
+                }
+                else
+                {
+                    <a href="#"><span>@node.Name</span> <i class="fa fa-angle-left pull-right"></i></a>
+                }
+                <ul class="treeview-menu">@TreeView(node.SubGroups)</ul>
+            </li>
+    }
+}
+}
+
+    </ul>
+</div>
+<script>
+    ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+    DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+    PopupURL = '@Url.Action("GetPopupDetails", "XiLink")';
+    PopupORDialogURL = '@Url.Action("GetPopupORDialog", "XiLink")';
+    DialogURL = '@Url.Action("GetDialog", "XiLink")';
+    SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+    SemanticURL = '@Url.Action("GetSemanticDetails", "XiLink")';
+    ComponentURL = '@Url.Action("LoadComponentByID", "XIComponents")';
+    StepURL = '@Url.Action("GetStepContent", "XiLink")';
+    DeleteBOURL = '@Url.Action("DeleteBO", "XiLink")';
+    SaveMultiRowURL = '@Url.Action("SaveMultiRow", "XiLink")';
+</script>
+<script src="~/Scripts/CommonFunctions.js"></script>
+<script type="text/javascript">
+    //$(document).ready(function () {
+    //    $('#LeftMenuDetails').on('click', 'a', function () {
+    //        debugger
+    //        var XiLinkID = $(this).attr('data-xilinkid');
+    //        if (XiLinkID > 0) {
+    //            XIRun(XiLinkID, 0, null, null, true, 0, 0);
+    //        }
+    //    });
+    //    //$('#LeftMenuDetails').on('click', 'a', function () {
+    //    //    var XiLinkID = $(this).attr('data-xilinkid');
+    //    //    if (XiLinkID > 0) {
+    //    //        XIRun(XiLinkID, 0, null, null, true, 0, 0);
+    //    //    }
+    //    //});
+    //});
+</script>

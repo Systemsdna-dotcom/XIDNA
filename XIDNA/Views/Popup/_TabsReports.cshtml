@@ -1,0 +1,44 @@
+﻿@model IEnumerable<XIDNA.Models.Tabs>
+<script>
+    $(document).ready(function () {
+        $('#TabReportsPreview').dataTable();
+    });
+</script>
+<div class="col-xs-12 no-padding">
+    <div id="box-body">
+        <div class="table-clean">
+            <table id="TabReportsPreview" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+                <thead>
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th>Name</th>
+                        <th>Rank</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int i = 1;
+                        foreach (var item in @Model)
+                        {
+                            <tr>
+                                <td>@i</td>
+                                <td>@item.Name</td>
+                                <td>@item.Rank</td>
+                                @if (@item.StatusTypeID == 10)
+                                {
+                                    <td>Active</td>
+                                }
+                                else
+                                {
+                                    <td>Inactive</td>
+                                }
+                            </tr>
+                                i++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

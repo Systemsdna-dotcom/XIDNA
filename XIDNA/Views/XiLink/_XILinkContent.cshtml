@@ -1,0 +1,435 @@
+﻿@model XICore.XIInstanceBase
+@using XICore
+@using XISystem
+@using Newtonsoft.Json
+
+@if (Model.oContent != null)
+{
+    if (Model.oContent.ContainsKey(XIConstant.ContentXILink))
+    {
+        <div class="conXiLink">
+            @*<span>XiLink</span><br />*@
+            @{var oXILinkD = (XIILink)Model.oContent[XIConstant.ContentXILink];}
+            @if (oXILinkD.oContent.ContainsKey(XIConstant.ContentDialog))
+            {
+                var oDialogDef = (XIInstanceBase)oXILinkD.oContent[XIConstant.ContentDialog];
+                var oDialogD = (XIDDialog)oDialogDef.oContent[XIConstant.ContentDialog];
+                if (oDialogD.oContent != null)
+                {
+                    <div class="conDialog">
+                        @*<span>Dialog</span><br />*@
+                        @if (oDialogD.oContent.ContainsKey(XIConstant.ContentLayout))
+                        {
+                            var oLayoutDef = (XIInstanceBase)oDialogD.oContent[XIConstant.ContentLayout];
+                            var oLayoutD = (XIDLayout)oLayoutDef.oContent[XIConstant.ContentLayout];
+                            if (oLayoutD != null && oLayoutD.LayoutMappings != null)
+                            {
+                                <div class="conLayout-@oLayoutD.ID">
+                                    @*<span>Layout</span><br />*@
+                                    @foreach (var items in oLayoutD.LayoutMappings)
+                                    {
+                                        var oDiv = oLayoutD.LayoutDetails.Where(m => m.PlaceHolderID == items.PlaceHolderID).FirstOrDefault();
+                                        <div id="@oDiv.PlaceholderUniqueName" class="@oDiv.PlaceholderClass">
+                                            @if (items.oContent != null)
+                                            {
+                                                if (items.oContent.ContainsKey(XIConstant.ContentXIComponent))
+                                                {
+                                                    <div class="conComponent">
+                                                        @{ var oCompDef = (XIInstanceBase)items.oContent[XIConstant.ContentXIComponent];
+                                                            var oXICompI = (XIIComponent)oCompDef.oContent[XIConstant.ContentXIComponent];
+                                                            var ODef = JsonConvert.DeserializeObject<XIDComponent>(oXICompI.oDefintion.ToString());
+                                                            if (oXICompI.oContent.ContainsKey(XIConstant.QSComponent))
+                                                            {
+                                                                @*<span>@oXICompD.sName</span><br />*@
+                                                        XIIQS oQSD = new XIIQS();
+                                                        oQSD = (XIIQS)oXICompI.oContent[XIConstant.QSComponent];
+                                                        <div id="QSID" data-value="@oQSD.FKiQSDefinitionID" data-info="QuestionSet">
+                                                            @if (oQSD.Steps != null && oQSD.Steps.Count() > 0)
+                                                            {
+                                                                var oStepI = oQSD.Steps.Values.FirstOrDefault();
+                                                                XIInstanceBase oStetIns = new XIInstanceBase();
+                                                                oStetIns.oContent[XIConstant.ContentStep] = oStepI;
+                                                                { Html.RenderPartial("_XILinkContent", oStetIns); }
+                                                            }
+                                                        </div>
+                                                            }
+                                                            else
+                                                            {
+                                                                if (oXICompI.oContent.ContainsKey(XIConstant.XITreeStructure))
+                                                                {
+                                                                    var Result = oXICompI.oContent[XIConstant.XITreeStructure];
+                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                }
+                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.FormComponent))
+                                                                {
+                                                                    var Result = oXICompI.oContent[XIConstant.FormComponent];
+                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                }
+                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.OneClickComponent))
+                                                                {
+                                                                    var Result = oXICompI.oContent[XIConstant.OneClickComponent];
+                                                                    { Html.RenderPartial("~/views/xicomponents/_oneclickcomponent.cshtml", oXICompI); }
+                                                                }
+                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.HTMLComponent))
+                                                                {
+                                                                    var Result = oXICompI.oContent[XIConstant.HTMLComponent];
+                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                }
+                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.TabComponent))
+                                                                {
+                                                                    var Result = oXICompI.oContent[XIConstant.TabComponent];
+                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                }
+                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.MenuComponent))
+                                                                {
+                                                                    var Result = oXICompI.oContent[XIConstant.MenuComponent];
+                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                }
+                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.GridComponent))
+                                                                {
+                                                                    var Result = oXICompI.oContent[XIConstant.GridComponent];
+                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                }
+                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.GroupComponent))
+                                                                {
+                                                                    var Result = oXICompI.oContent[XIConstant.GroupComponent];
+                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                }
+                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.MappingComponent))
+                                                                {
+                                                                    var Result = oXICompI.oContent[XIConstant.MappingComponent];
+                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                }
+                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.MultiRowComponent))
+                                                                {
+                                                                    var Result = oXICompI.oContent[XIConstant.MultiRowComponent];
+                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                }
+                                                            }
+                                                        }
+                                                    </div>
+                                                            }
+                                                            else if (items.oContent.ContainsKey(XIConstant.ContentXILink))
+                                                            {
+                                                                XIInstanceBase oXILI = new XIInstanceBase();
+                                                                oXILI = (XIInstanceBase)items.oContent[XIConstant.ContentXILink];
+                                                                { Html.RenderPartial("_XILinkContent", oXILI); }
+                                                            }
+                                                            else if (items.oContent.ContainsKey(XIConstant.ContentHTML))
+                                                            {
+                                                                <div class="conHTML">
+                                                                    @*<span>HTML</span><br />*@
+                                                                    @{ Html.Raw(items.HTMLCode); }
+                                                                </div>
+
+                                                                            }
+                                                                            else if (items.oContent.ContainsKey(XIConstant.ContentStep))
+                                                                            {
+                                                                                XIInstanceBase oXILI = new XIInstanceBase();
+                                                                                oXILI = (XIInstanceBase)items.oContent[XIConstant.ContentStep];
+                                                                                { Html.RenderPartial("_XILinkContent", oXILI); }
+                                                                            }
+                                                                        }
+                                        </div>
+                                                                        }
+                                </div>
+
+                                                                            }
+                                                                        }
+
+                    </div>
+
+
+                                                                            }
+
+                                                                        }
+                                                                        else if (oXILinkD.oContent.ContainsKey(XIConstant.ContentLayout))
+                                                                        {
+                                                                            var Layoutdef = (XIInstanceBase)oXILinkD.oContent[XIConstant.ContentLayout];
+                                                                            var oLayoutD = (XIDLayout)Layoutdef.oContent[XIConstant.ContentLayout];
+                                                                            <div class="conLayout-@oLayoutD.ID" data-guid="@oLayoutD.sGUID" data-name="lguid">
+                                                                                @{ Html.RenderPartial("_LayoutData", oLayoutD);}
+                                                                            </div>
+                                                                                    }
+                                                                                    else if (oXILinkD.oContent.ContainsKey(XIConstant.ContentXIComponent))
+                                                                                    {
+                                                                                        var oCompDef = (XIInstanceBase)oXILinkD.oContent[XIConstant.ContentXIComponent];
+                                                                                        var oXICompI = (XIIComponent)oCompDef.oContent[XIConstant.ContentXIComponent];
+                                                                                        var ODef = JsonConvert.DeserializeObject<XIDComponent>(oXICompI.oDefintion.ToString());
+                                                                                        //var ODef = (XIDComponent)oXICompD.oDefintion;
+                                                                                        <div class="conComponent">
+
+                                                                                            @if (oXICompI.oContent.ContainsKey(XIConstant.QSComponent))
+                                                                                            {
+                                                                                                XIIQS oQSI = new XIIQS();
+                                                                                                oQSI = (XIIQS)oXICompI.oContent[XIConstant.QSComponent];
+                                                                                                //XIDQS oQSD = new XIDQS();
+                                                                                                //XIInfraCache oCache = new XIInfraCache();
+                                                                                                //oQSD = (XIDQS)oCache.GetObjectFromCache(XIConstant.CacheQuestionSet, null, oQSI.FKiQSDefinitionID.ToString());
+
+                                                                                                <div id="QSID" data-value="@oQSI.FKiQSDefinitionID" data-info="QuestionSet">
+                                                                                                    @if (oQSI.Steps != null && oQSI.Steps.Count() > 0)
+                                                                                                    {
+                                                                                                        var oStepI = oQSI.Steps.Values.FirstOrDefault();
+                                                                                                        XIInstanceBase oStetIns = new XIInstanceBase();
+                                                                                                        oStetIns.oContent[XIConstant.ContentStep] = oStepI;
+                                                                                                        { Html.RenderPartial("_XILinkContent", oStetIns); }
+                                                                                                    }
+                                                                                                </div>
+                                                                                            }
+                                                                                            else if (oXICompI.oContent.ContainsKey(XIConstant.XITreeStructure))
+                                                                                            {
+                                                                                                var Result = oXICompI.oContent[XIConstant.XITreeStructure];
+                                                                                                { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                            }
+                                                                                            else if (oXICompI.oContent.ContainsKey(XIConstant.FormComponent))
+                                                                                            {
+                                                                                                var Result = oXICompI.oContent[XIConstant.FormComponent];
+                                                                                                { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                            }
+                                                                                            else if (oXICompI.oContent.ContainsKey(XIConstant.OneClickComponent))
+                                                                                            {
+                                                                                                var Result = oXICompI.oContent[XIConstant.OneClickComponent];
+                                                                                                { Html.RenderPartial("~/views/xicomponents/_oneclickcomponent.cshtml", oXICompI); }
+                                                                                            }
+                                                                                            else if (oXICompI.oContent.ContainsKey(XIConstant.HTMLComponent))
+                                                                                            {
+                                                                                                var Result = oXICompI.oContent[XIConstant.HTMLComponent];
+                                                                                                { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                            }
+                                                                                            else if (oXICompI.oContent.ContainsKey(XIConstant.TabComponent))
+                                                                                            {
+                                                                                                var Result = oXICompI.oContent[XIConstant.TabComponent];
+                                                                                                { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                            }
+                                                                                            else if (oXICompI.oContent.ContainsKey(XIConstant.MenuComponent))
+                                                                                            {
+                                                                                                var Result = oXICompI.oContent[XIConstant.MenuComponent];
+                                                                                                { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                            }
+                                                                                            else if (oXICompI.oContent.ContainsKey(XIConstant.GridComponent))
+                                                                                            {
+                                                                                                var Result = oXICompI.oContent[XIConstant.GridComponent];
+                                                                                                { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                            }
+                                                                                            else if (oXICompI.oContent.ContainsKey(XIConstant.GroupComponent))
+                                                                                            {
+                                                                                                var Result = oXICompI.oContent[XIConstant.GroupComponent];
+                                                                                                { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                            }
+                                                                                            else if (oXICompI.oContent.ContainsKey(XIConstant.MappingComponent))
+                                                                                            {
+                                                                                                var Result = oXICompI.oContent[XIConstant.MappingComponent];
+                                                                                                { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                            }
+                                                                                            else if (oXICompI.oContent.ContainsKey(XIConstant.MultiRowComponent))
+                                                                                            {
+                                                                                                var Result = oXICompI.oContent[XIConstant.MultiRowComponent];
+                                                                                                { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                            }
+                                                                                        </div>
+                                                                                    }
+
+        </div>
+                                                                                    }
+                                                                                    else if (Model.oContent.ContainsKey(XIConstant.ContentStep))
+                                                                                    {
+                                                                                        {
+                                                                                            var oStepI = (XIIQSStep)Model.oContent[XIConstant.ContentStep];
+                                                                                            var oStepD = JsonConvert.DeserializeObject<XIDQSStep>(oStepI.oDefintion.ToString());
+                                                                                            if (oStepI.oContent.ContainsKey(XIConstant.ContentLayout))
+                                                                                            {
+                                                                                                XIInstanceBase oXILI = new XIInstanceBase();
+                                                                                                var oXILayout = (XIInstanceBase)oStepI.oContent[XIConstant.ContentLayout];
+                                                                                                oXILI.oContent[XIConstant.ContentLayout] = oXILayout;
+                                                                                                { Html.RenderPartial("_XILinkContent", oXILI); }
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <div class="conStep" data-info="QSStep" data-value="@oStepD.ID">
+                                                                                                    @if (oStepI.Sections != null && oStepI.Sections.Count() > 0)
+                                                                                                    {
+                                                                                                        foreach (var oSec in oStepI.Sections.Values)
+                                                                                                        {
+                                                                                                            var oSecDef = JsonConvert.DeserializeObject<XIDQSSection>(oSec.oDefintion.ToString());
+                                                                                                            <div class="conSection" data-info="QSSection" data-value="@oSecDef.ID">
+                                                                                                                @if (oSec.oContent.ContainsKey(XIConstant.ContentXIComponent))
+                                                                                                                {
+                                                                                                                    var oCompDef = (XIInstanceBase)oSec.oContent[XIConstant.ContentXIComponent];
+                                                                                                                    var oXICompI = (XIIComponent)oCompDef.oContent[XIConstant.ContentXIComponent];
+                                                                                                                    var ODef = JsonConvert.DeserializeObject<XIDComponent>(oXICompI.oDefintion.ToString());
+                                                                                                                    <div class="conComponent">
+                                                                                                                        @if (oXICompI.oContent.ContainsKey(XIConstant.XITreeStructure))
+                                                                                                                        {
+                                                                                                                            var Result = oXICompI.oContent[XIConstant.XITreeStructure];
+                                                                                                                            { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                        }
+                                                                                                                        else if (oXICompI.oContent.ContainsKey(XIConstant.FormComponent))
+                                                                                                                        {
+                                                                                                                            var Result = oXICompI.oContent[XIConstant.FormComponent];
+                                                                                                                            { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                        }
+                                                                                                                        else if (oXICompI.oContent.ContainsKey(XIConstant.OneClickComponent))
+                                                                                                                        {
+                                                                                                                            var Result = oXICompI.oContent[XIConstant.OneClickComponent];
+                                                                                                                            { Html.RenderPartial("~/views/xicomponents/_oneclickcomponent.cshtml", oXICompI); }
+                                                                                                                        }
+                                                                                                                        else if (oXICompI.oContent.ContainsKey(XIConstant.HTMLComponent))
+                                                                                                                        {
+                                                                                                                            var Result = oXICompI.oContent[XIConstant.HTMLComponent];
+                                                                                                                            { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                        }
+                                                                                                                        else if (oXICompI.oContent.ContainsKey(XIConstant.TabComponent))
+                                                                                                                        {
+                                                                                                                            var Result = oXICompI.oContent[XIConstant.TabComponent];
+                                                                                                                            { Html.RenderPartial("~/views/xicomponents/_tabcomponent.cshtml", oXICompI); }
+                                                                                                                        }
+                                                                                                                        else if (oXICompI.oContent.ContainsKey(XIConstant.MenuComponent))
+                                                                                                                        {
+                                                                                                                            var Result = oXICompI.oContent[XIConstant.MenuComponent];
+                                                                                                                            { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                        }
+                                                                                                                        else if (oXICompI.oContent.ContainsKey(XIConstant.GridComponent))
+                                                                                                                        {
+                                                                                                                            var Result = oXICompI.oContent[XIConstant.GridComponent];
+                                                                                                                            { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                        }
+                                                                                                                        else if (oXICompI.oContent.ContainsKey(XIConstant.GroupComponent))
+                                                                                                                        {
+                                                                                                                            var Result = oXICompI.oContent[XIConstant.GroupComponent];
+                                                                                                                            { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                        }
+                                                                                                                        else if (oXICompI.oContent.ContainsKey(XIConstant.MappingComponent))
+                                                                                                                        {
+                                                                                                                            var Result = oXICompI.oContent[XIConstant.MappingComponent];
+                                                                                                                            { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                        }
+                                                                                                                        else if (oXICompI.oContent.ContainsKey(XIConstant.MultiRowComponent))
+                                                                                                                        {
+                                                                                                                            var Result = oXICompI.oContent[XIConstant.MultiRowComponent];
+                                                                                                                            { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                        }
+                                                                                                                    </div>
+                                                                                                                }
+                                                                                                                else if (oSec.oContent.ContainsKey(XIConstant.ContentHTML))
+                                                                                                                {
+                                                                                                                    Html.Raw(oSec.oContent[XIConstant.ContentHTML]);
+                                                                                                                }
+                                                                                                                @if (oSecDef.QSLinks != null && oSecDef.QSLinks.Values.Count() > 0)
+                                                                                                                {
+                                                                                                                    foreach (var qslink in oSecDef.QSLinks)
+                                                                                                                    {
+                                                                                                                        foreach (var link in qslink.Value.XiLink.Values)
+                                                                                                                        {
+                                                                                                                            if (link.sType.ToLower() == "button")
+                                                                                                                            {
+                                                                                                                                if (link.sRunType != null && link.sRunType.ToLower() == "load")
+                                                                                                                                {
+                                                                                                                                    <button type="button" class="btn btn-theme" onclick="fncXILinkLoad('@link.FKiXILInkID', this)">@link.sName</button>
+                                                                                                                                }
+                                                                                                                                else
+                                                                                                                                {
+                                                                                                                                    <button type="button" class="btn btn-theme" onclick="XIRun(this,'@link.FKiXILInkID', 0, '@oSec.sGUID', null, false, 0, 0)">@link.sName</button>
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            </div>
+                                                                                                        }
+                                                                                                    }
+                                                                                                </div>
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    else if (Model.oContent.ContainsKey(XIConstant.ContentLayout))
+                                                                                    {
+                                                                                        var Layoutdef = (XIInstanceBase)Model.oContent[XIConstant.ContentLayout];
+                                                                                        var oLayoutD = (XIDLayout)Layoutdef.oContent[XIConstant.ContentLayout];
+                                                                                        <div class="conLayout" data-guid="@oLayoutD.sGUID" data-name="lguid">
+                                                                                            @{ Html.RenderPartial("_LayoutData", oLayoutD);}
+                                                                                        </div>
+                                                                                                }
+                                                                                                else if (Model.oContent.ContainsKey(XIConstant.ContentXIComponent))
+                                                                                                {
+                                                                                                    <div class="conComponent">
+                                                                                                        @{ var oXICompI = (XIInstanceBase)Model.oContent[XIConstant.ContentXIComponent];
+                                                                                                            //var oXICompD = (XIIComponent)oCompDef.oContent[XIConstant.ContentXIComponent];
+                                                                                                            var ODef = JsonConvert.DeserializeObject<XIDComponent>(oXICompI.oDefintion.ToString());
+                                                                                                            //var ODef = (XIDComponent)oXICompD.oDefintion;
+                                                                                                            if (oXICompI.oContent.ContainsKey(XIConstant.QSComponent))
+                                                                                                            {
+                                                                                                                XIIQS oQSD = new XIIQS();
+                                                                                                                oQSD = (XIIQS)oXICompI.oContent[XIConstant.QSComponent];
+                                                                                                                <div id="QSID" data-value="@oQSD.FKiQSDefinitionID" data-info="QuestionSet">
+                                                                                                                    @if (oQSD.sMode != null && oQSD.sMode.ToLower() == "QuestionSet".ToLower())
+                                                                                                                    {
+                                                                                                                        { Html.RenderPartial("QuestionSet", oQSD); }
+                                                                                                                    }
+                                                                                                                    else if (oQSD.Steps != null && oQSD.Steps.Count() > 0)
+                                                                                                                    {
+                                                                                                                        var oStepI = oQSD.Steps.Values.FirstOrDefault();
+                                                                                                                        XIInstanceBase oStetIns = new XIInstanceBase();
+                                                                                                                        oStetIns.oContent[XIConstant.ContentStep] = oStepI;
+                                                                                                                        { Html.RenderPartial("_XILinkContent", oStetIns); }
+                                                                                                                    }
+                                                                                                                </div>
+                                                                                                            }
+                                                                                                            else
+                                                                                                            {
+                                                                                                                if (oXICompI.oContent.ContainsKey(XIConstant.XITreeStructure))
+                                                                                                                {
+                                                                                                                    var Result = oXICompI.oContent[XIConstant.XITreeStructure];
+                                                                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                }
+                                                                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.FormComponent))
+                                                                                                                {
+                                                                                                                    var Result = oXICompI.oContent[XIConstant.FormComponent];
+                                                                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                }
+                                                                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.OneClickComponent))
+                                                                                                                {
+                                                                                                                    var Result = oXICompI.oContent[XIConstant.OneClickComponent];
+                                                                                                                    { Html.RenderPartial("~/views/xicomponents/_oneclickcomponent.cshtml", oXICompI); }
+                                                                                                                }
+                                                                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.HTMLComponent))
+                                                                                                                {
+                                                                                                                    var Result = oXICompI.oContent[XIConstant.HTMLComponent];
+                                                                                                                    { Html.RenderPartial("~/views/xicomponents/_htmlrepeatercomponent.cshtml", oXICompI); }
+                                                                                                                }
+                                                                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.TabComponent))
+                                                                                                                {
+                                                                                                                    var Result = oXICompI.oContent[XIConstant.TabComponent];
+                                                                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                }
+                                                                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.MenuComponent))
+                                                                                                                {
+                                                                                                                    var Result = oXICompI.oContent[XIConstant.MenuComponent];
+                                                                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                }
+                                                                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.GridComponent))
+                                                                                                                {
+                                                                                                                    var Result = oXICompI.oContent[XIConstant.GridComponent];
+                                                                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                }
+                                                                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.GroupComponent))
+                                                                                                                {
+                                                                                                                    var Result = oXICompI.oContent[XIConstant.GroupComponent];
+                                                                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                }
+                                                                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.MappingComponent))
+                                                                                                                {
+                                                                                                                    var Result = oXICompI.oContent[XIConstant.MappingComponent];
+                                                                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                }
+                                                                                                                else if (oXICompI.oContent.ContainsKey(XIConstant.MultiRowComponent))
+                                                                                                                {
+                                                                                                                    var Result = oXICompI.oContent[XIConstant.MultiRowComponent];
+                                                                                                                    { Html.RenderPartial("~/views/xicomponents/" + ODef.sHTMLPage + ".cshtml", oXICompI); }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    </div>
+                                                                                                                }
+
+                                                                                                            }

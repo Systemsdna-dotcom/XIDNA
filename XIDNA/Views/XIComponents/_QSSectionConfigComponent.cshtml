@@ -1,0 +1,1261 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIDQSSection oQSSec = new XIDQSSection();
+    if (Model.oContent.ContainsKey(XIConstant.QSSectionConfigComponent))
+    {
+        oQSSec = (XIDQSSection)Model.oContent[XIConstant.QSSectionConfigComponent];
+        if (oQSSec == null)
+        {
+            oQSSec = new XIDQSSection();
+        }
+    }
+    else
+    {
+
+    }
+}
+<script>
+    const content_height = $(window).height() - $('#HomeHeader').height() - 10;
+    $('.scroll_vh_100').slimScroll({
+        height: content_height,
+    });
+</script>
+<!-- <section class="">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="innerborder"> -->
+
+<div class="p5">
+    <div class="scroll_vh_100 form-container">
+        <div class="flex-head"><h3 class="maintitle">Section</h3></div>
+        <div class="SectionStatusMessages"></div>
+        @using (Ajax.BeginForm("CreateXISemanticsSteps", "XISematics", FormMethod.Post, new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "XISecForm", @class = "" }))
+        {
+            @Html.ValidationSummary(true);
+            <input type="hidden" id="ID" name="ID" value="@oQSSec.ID" />
+            <input type="hidden" id="SaveSecCompoParams" name="SaveSecCompoParams" />
+            <div id="clear-text" class="form-rows">
+                @if (oQSSec.ID != 0)
+                {
+                    <div class="form-group row">
+                        <label for="inputEmail" class="control-label">Section ID:<span class="danger"></span></label>
+                        <label for="inputEmail" class="control-label">@oQSSec.ID<span class="danger"></span></label>
+                    </div>
+                }
+                <div class="form-group row">
+                    <label for="inputEmail" class="control-label">QuestionSet Steps<span class="danger">*</span></label>
+                    <div class="col-sm-6">
+                        @if (oQSSec.FKiStepDefinitionID > 0 || (oQSSec.FKiStepDefinitionIDXIGUID != null && oQSSec.FKiStepDefinitionIDXIGUID != Guid.Empty))
+                        {
+                            @Html.DropDownList("FKiStepDefinitionID", new SelectList(oQSSec.oQSStepddl, "sGUID", "text", oQSSec.FKiStepDefinitionIDXIGUID), new { @class = "form-control", @disabled = "disabled" })
+                            //<input type="hidden" id="FKiStepDefinitionID" name="FKiStepDefinitionID" value="@oQSSec.FKiStepDefinitionID" />
+                            <input type="hidden" id="FKiStepDefinitionIDXIGUID" name="FKiStepDefinitionIDXIGUID" value="@oQSSec.FKiStepDefinitionIDXIGUID" />
+                        }
+                        else
+                        {
+                            @Html.DropDownList("FKiStepDefinitionID", new SelectList(oQSSec.oQSStepddl, "sGUID", "text", oQSSec.FKiStepDefinitionIDXIGUID), new { @class = "form-control" })
+                        }
+                        <div class="taberrormsg">
+                            @Html.ValidationMessage("FKiStepDefinitionID", null, new { @class = "red" })
+                        </div>
+                    </div>
+                </div>
+                @if (oQSSec.Sections != null && oQSSec.Sections.Count() > 0)
+                {
+                    <div id="SectionsDiv">
+                        <div class="form-group">
+                            <div id="SectionPairs" class="col-md-12">
+                                @{ int PairCount = 1;}
+                                @foreach (var items in oQSSec.Sections)
+                                {
+                                    <div class="form-inline SecPairs">
+                                        <label for="inputEmail" class="gn"> Display As <span class="danger"></span></label>
+                                        @*<div class="col-md-3 SectionNames">
+                                            <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" value="@items.sName" />
+                                        </div>*@
+                                        <select class="form-control SecDisplayAsDDL">
+                                            <option value="">--Select--</option>
+                                            @if (items.iDisplayAs == 10)
+                                            {
+                                                <option value="10" selected>Edit Form</option>
+                                                <option value="20">Section</option>
+                                                <option value="30">Fields</option>
+                                                <option value="40">XI Component</option>
+                                                <option value="50">HTML</option>
+                                                <option value="60">Bespoke</option>
+                                                <option value="70">1-Click</option>
+                                            }
+                                            else if (items.iDisplayAs == 20)
+                                            {
+                                                <option value="10">Edit Form</option>
+                                                <option value="20" selected>Section</option>
+                                                <option value="30">Fields</option>
+                                                <option value="40">XI Component</option>
+                                                <option value="50">HTML</option>
+                                                <option value="60">Bespoke</option>
+                                                <option value="70">1-Click</option>
+                                            }
+                                            else if (items.iDisplayAs == 30)
+                                            {
+                                                <option value="10">Edit Form</option>
+                                                <option value="20">Section</option>
+                                                <option value="30" selected>Fields</option>
+                                                <option value="40">XI Component</option>
+                                                <option value="50">HTML</option>
+                                                <option value="60">Bespoke</option>
+                                                <option value="70">1-Click</option>
+                                            }
+                                            else if (items.iDisplayAs == 40)
+                                            {
+                                                <option value="10">Edit Form</option>
+                                                <option value="20">Section</option>
+                                                <option value="30">Fields</option>
+                                                <option value="40" selected>XI Component</option>
+                                                <option value="50">HTML</option>
+                                                <option value="60">Bespoke</option>
+                                                <option value="70">1-Click</option>
+                                            }
+                                            else if (items.iDisplayAs == 50)
+                                            {
+                                                <option value="10">Edit Form</option>
+                                                <option value="20">Section</option>
+                                                <option value="30">Fields</option>
+                                                <option value="40">XI Component</option>
+                                                <option value="50" selected>HTML</option>
+                                                <option value="60">Bespoke</option>
+                                                <option value="70">1-Click</option>
+                                            }
+                                            else if (items.iDisplayAs == 60)
+                                            {
+                                                <option value="10">Edit Form</option>
+                                                <option value="20">Section</option>
+                                                <option value="30">Fields</option>
+                                                <option value="40">XI Component</option>
+                                                <option value="50">HTML</option>
+                                                <option value="60" selected>Bespoke</option>
+                                                <option value="70">1-Click</option>
+
+                                            }
+                                            else if (items.iDisplayAs == 70)
+                                            {
+                                                <option value="10">Edit Form</option>
+                                                <option value="20">Section</option>
+                                                <option value="30">Fields</option>
+                                                <option value="40">XI Component</option>
+                                                <option value="50">HTML</option>
+                                                <option value="60">Bespoke</option>
+                                                <option value="70" selected>1-Click</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="10">Edit Form</option>
+                                                <option value="20">Section</option>
+                                                <option value="30">Fields</option>
+                                                <option value="40">XI Component</option>
+                                                <option value="50">HTML</option>
+                                                <option value="60">Bespoke</option>
+                                                <option value="70">1-Click</option>
+                                            }
+                                        </select>
+                                        <input type="text" class="form-control" id="SecOrder" placeholder="0.00" value="@items.iOrder" />
+                                        @if (oQSSec.ID > 0 || (oQSSec.XIGUID != null && oQSSec.XIGUID != Guid.Empty))
+                                        {
+                                            <button type="button" class="btn btn-theme ShowSecDlg" data-sectionid="@items.XIGUID" data-secid="@items.XIGUID" data-showid="@PairCount" onclick="fncShowSecDlg(this)">Show</button>
+                                            @*<button type="button" class="btn btn-theme btn-xs DeleteSecNVPair" data-sectionid="@items.ID" data-secid="@items.ID" data-deleteid="@PairCount">Delete</button>*@
+                                            <button type="button" class="btn btn-theme btn-xs DeleteNVPairs" onclick="fncDeleteNVPairs(this)" data-sectionid="@items.XIGUID" data-secid="@items.XIGUID" data-deleteid="@PairCount">Delete</button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-theme ShowSecDlg" data-sectionid="0" data-secid="0" data-showid="0" onclick="fncShowSecDlg(this)">Show</button>
+                                            <button type="button" class="btn btn-theme btn-xs DeleteSecNVPair" onclick="fncDeleteSecNVPair(this)" data-sectionid="0" data-secid="0" data-deleteid="0">Delete</button>
+                                        }
+
+                                        @*<div class="col-md-2">
+                                            <button type="button" class="btn btn-theme btn-xs DeleteNVPairs">Delete</button>
+                                        </div>*@
+                                    </div>
+                                    PairCount++;
+                                }
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" id="AddMoreSections" class="btn btn-theme btn-xs">Add</button>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div id="SectionsDiv">
+                        <div class="form-group">
+                            <div id="SectionPairs">
+                                <div class="SecPairs form-inline">
+                                    <label for="inputEmail" class="gn"> Display As <span class="danger"></span></label>
+
+                                    @*<div class="col-md-2 SectionNames">
+                                        <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" />
+                                    </div>*@
+                                    <select class="form-control SecDisplayAsDDL">
+                                        <option value="">--Select--</option>
+                                        <option value="10">Edit Form</option>
+                                        <option value="20">Section</option>
+                                        <option value="30">Fields</option>
+                                        <option value="40">XI Component</option>
+                                        <option value="50">HTML</option>
+                                        <option value="60">Bespoke</option>
+                                        <option value="70">1-Click</option>
+                                    </select>
+
+                                    <input type="text" class="form-control" id="SecOrder" placeholder="0.00" />
+                                    <button type="button" class="btn btn-theme ShowSecDlg" data-sectionid="0" data-secid="0" data-showid="0" onclick="fncShowSecDlg(this)">Show</button>
+                                    @*<button type="button" class="btn btn-theme btn-xs DeleteSecNVPair" data-sectionid="0" data-secid="0" data-deleteid="0">Delete</button>*@
+                                    <button type="button" class="btn btn-theme btn-xs DeleteNVPairs" onclick="fncDeleteNVPairs(this)" data-sectionid="0" data-secid="0" data-deleteid="0">Delete</button>
+
+                                    @*<div class="col-md-2">
+                                        <button type="button" class="btn btn-theme btn-xs DeleteNVPairs">Delete</button>
+                                    </div>*@
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" id="AddMoreSections" class="btn btn-theme btn-xs">Add</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+<!-- </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</section>
+     -->
+<script>
+    var XIFields = "";
+    var availableXiLinkCodes = "";
+    var SecOrder = 0;
+    $(document).ready(function () {
+        $(document.body).on('click', 'button.DeleteNVPairs1', function () {
+            //$(this).closest(".SecPairs").hide();
+            var SectionID = $(this).attr('data-secid');
+            var SecPairsHide = $(this).closest(".SecPairs");
+            $("#Remove").dialog({
+                title: "Are you sure you want to delete ? ",
+                buttons: {
+                    "Yes": function () {
+                        if (SectionID > 0) {
+                            SecPairsHide.hide();
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("DeleteSectionFieldsBySectionID", "XISemantics")',
+                                data: { ID: SectionID },
+                                cache: false,
+                                async: false,
+                                dataType: 'json',
+                                success: function (data) {
+                                }
+                            });
+                        }
+                        else
+                        {
+                            SecPairsHide.hide();
+                        }
+                        $(this).dialog("close");
+                    },
+                    "No": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+
+        var sQSSecCounts = 0;
+        if('@oQSSec.Sections' != null)
+        {
+            sQSSecCounts='@oQSSec.Sections.Count()';
+        }
+
+        $('#GrpDescDiv').hide();
+        $('#IsFieldsGroup').change(function () {
+            if ($(this).prop("checked")) {
+                $('#GrpDescDiv').show();
+            }
+            else { $('#GrpDescDiv').hide(); }
+        });
+        if ('@oQSSec.bIsGroup' == "True") {
+            $('#IsFieldsGroup').attr('checked', 'checked')
+            $('#GrpDescDiv').show();
+        }
+        if ('@oQSSec.bIsHidden' == "True") {
+            $('#IsSectionHidden').attr('checked', 'checked')
+        }
+        @*if('@oQSSec.iDisplayAs' == 10 || '@oQSSec.iDisplayAs' == 30 || '@oQSSec.iDisplayAs' == 40 || '@oQSSec.iDisplayAs' == 50 || '@oQSSec.iDisplayAs' == 60 || '@oQSSec.iDisplayAs' == 70)
+        {
+            $('.SecDisplayAsDDL').val('@oQSSec.iDisplayAs');
+        }*@
+
+        var ComponentType;
+        var SecDisplayAs = 0;
+        
+        var SectionID =0;
+        var sSectionName = "";
+        var SectionCode;
+        var CssClass;
+        var ShowID = 0;
+        var PairCount = 0;
+
+        //XIFields Autocomplete
+        XIFields = @Html.Raw(Json.Encode(oQSSec.XIFields));
+        var availableTags = Object.keys(XIFields);
+        var XILinks = @Html.Raw(Json.Encode(oQSSec.XILinks));
+        var availableXiLinks = Object.keys(XILinks);
+        var XiLinkCodes = @Html.Raw(Json.Encode(oQSSec.XICodes));
+        availableXiLinkCodes = Object.keys(XiLinkCodes);
+
+        if (sQSSecCounts > 0)
+        {
+            PairCount = sQSSecCounts;
+        }
+        //Add More Sections
+        $('#AddMoreSections').click(function () {
+            var Divs = $('.SecPairs').first().clone();
+            $(Divs).find('select').val('');
+            $(Divs).find('input').val('');
+            $(Divs).find('button.ShowSecDlg').attr('data-sectionid', '0')
+            $(Divs).find('button.ShowSecDlg').attr('data-secid', '0')
+            $(Divs).find('button.ShowSecDlg').attr('data-showid', PairCount + 1);
+            $(Divs).find('button.DeleteNVPairs').attr('data-sectionid', '0')
+            $(Divs).find('button.DeleteNVPairs').attr('data-secid', '0')
+            $(Divs).find('button.DeleteNVPairs').attr('data-deleteid', PairCount + 1);
+            PairCount++;
+            $('#SectionPairs').append(Divs);
+            $('.SecPairs').last().css("display", "block");
+        });
+
+        $('button.ShowSecDlg1').click(function () {
+            debugger
+            //$('.ShowSecDlg').click(function () {
+            var iStepID = $('#FKiStepDefinitionID').val();
+            if(iStepID > 0)
+            {
+                ShowID = $(this).attr('data-showid');
+                SectionID =$(this).attr('data-sectionid');
+                SecDisplayAs = $(this).closest('div').prev('div').prev('div').find('.SecDisplayAsDDL').val();
+                SecOrder = $(this).closest('div').prev('div').find('#SecOrder').val();
+                sSectionName = $(this).closest('div').prev('div').prev('div').find('.SectionName').val();
+                var SecID = $(this).attr('data-secid');
+                var iQSStepDefID = '@oQSSec.FKiStepDefinitionID';
+                var sType = "IDE";
+                var Data = {StepDefID:iQSStepDefID, SectionID:SectionID, DisplayAs:SecDisplayAs, SecID:SecID, SectionName:sSectionName,Type:sType};
+                if(SecDisplayAs != "")
+                {
+                    $.ajax({
+                        url: '@Url.Action("GetSectionContentDialog", "XISemantics")',
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "html",
+                        cache: false,
+                        async: false,
+                        data: JSON.stringify(Data),
+                        success: function (data) {
+                            var DialogDivID = SectionID + '-' + SecDisplayAs + "-div";
+                            var Div = '<div class="' + DialogDivID + '"></div>';
+                            $('#Dialogs').html(Div);
+                            $("." + DialogDivID).html(data);
+                            var windowclose = '<i class="windowClose fa fa-times" onclick="fncdialogclose(this, ' + false + ', &quot;' + DialogDivID + '&quot;)"></i>';
+                            $("." + DialogDivID).dialog({
+                                title: 'Section',
+                                modal: true,
+                                height: 500,
+                                width: 700,
+                                open: function () {
+                                    $(this).parent().promise().done(function () {
+                                        $(this).children('.ui-dialog-titlebar').append('<div class="dialogIcons">' + windowclose + '</div>');
+                                    })
+                                },
+                                close: function (event, ui) {
+                                    $("." + DialogDivID).dialog('close');
+                                    $("." + DialogDivID).dialog('destroy').remove();
+                                }
+                            });
+
+                            //$('#SectionDlg').html(data);
+                            //$('#SectionDlg').dialog({
+                            //    modal:true,
+                            //    width: 700,
+                            //    height: 500,
+                            //    title:'Section',
+                            //    buttons:[
+                            //    {
+                            //        text: "Cancel",
+                            //        click: function () {
+                            //            $('#SectionDlg').dialog('close');
+                            //        }
+                            //    },
+                            //    ],
+                            //    close: function() {
+                            //        $(this).dialog('close');
+                            //    }
+                            //});
+                        }
+                    });
+                }
+            }
+            else
+            {
+                $('#SectionDlg').html('Please Select Atleast One QuestionSet Step!');
+                $('#SectionDlg').dialog({
+                    modal:true,
+                    width: 300,
+                    height: 200,
+                    title:'Warning..',
+                    buttons:[
+                    {
+                        text: "Cancel",
+                        click: function () {
+                            $('#SectionDlg').dialog('close');
+                        }
+                    }
+                    ]
+                });
+            }
+
+            //$( ".XIField" ).autocomplete({
+            //    source: availableTags
+            //});
+            $( ".XIField" ).autocomplete({
+                source: function(request, response){
+                    var List = [];
+                    for (var k = 0; k < XIFields.length; k++){
+                        List.push({ label: XIFields[k].text, value: XIFields[k].sGUID });
+                    }
+                    response($.ui.autocomplete.filter(List, request.term));
+                },
+                select: function (event, ui) {
+                    debugger
+                    $(this).val(ui.item.label);
+                    $(this).attr('data-value', ui.item.value);
+                    return false;
+
+                },
+                focus: function(event, ui) {
+                    $(this).val(ui.item.label);
+                    $(this).attr('data-value', ui.item.value);
+                    return false;
+                }
+            });
+            $( ".qslinkvalue" ).autocomplete({
+                source: availableXiLinkCodes
+            });
+        });
+
+        $(document.body).on('click', 'button.DeleteSecNVPair1', function () {
+            var SectionID = $(this).attr('data-secid');
+            var SecPairsHide = $(this).closest(".SecPairs");
+            $("#Remove").dialog({
+                title: "Are you sure you want to delete ? ",
+                buttons: {
+                    "Yes": function () {
+                        if (SectionID > 0) {
+                            SecPairsHide.hide();
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("DeleteSectionFieldsBySectionID", "XISemantics")',
+                                data: { ID: SectionID },
+                                cache: false,
+                                async: false,
+                                dataType: 'json',
+                                success: function (data) {
+                                }
+                            });
+                        }
+                        else
+                        {
+                            SecPairsHide.hide();
+                        }
+                        $(this).dialog("close");
+                    },
+                    "No": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+
+        //$(document.body).on('click', 'button.DeleteSecNVPair', function () {
+        //    var Div = $(this).closest('.SecNVPairs');
+        //    $(this).closest('.SecNVPairs').removeClass('visible').hide();
+        //    var available = $(this).closest('.SecNVPairs').removeClass('visible').hide();
+        //});
+
+        $(document.body).on('click', 'button.DeleteQSLinkPair1', function () {
+            $(this).closest(".QSLPairs").hide();
+        });
+
+        $(document.body).on('change', 'select.SecDisplayAsDDL ', function(){
+            $(this).closest('div').next('div').find('.ShowSecDlg').attr('data-sectionid', '0')
+            $(this).closest('div').next('div').find('.ShowSecDlg').attr('data-secid', '0')
+        })
+
+
+
+        $(document.body).on('click', 'button.ShowParamDlg', function () {
+            //$('.ShowParamDlg').click(function () {
+            debugger
+            var ComponentID = 0;
+            var ID = 0;
+            ComponentType = $(this).attr('data-type');
+            if(ComponentType == "QSStep"){
+                ComponentID = $('#FKiContentID').val();
+                ID = '@oQSSec.ID';
+            }
+            else if(ComponentType == "QSStepSection"){
+                ComponentID = $('#ContentDDL').val();
+                ID = SectionID;
+            }
+
+            if (ComponentID > 0) {
+                $.ajax({
+                    type: 'get',
+                    url: '@Url.Action("IDEGetXIComponentByID", "XIComponents")',
+                    contentType: "application/json; charset=utf-8",
+                    data: { iXIComponentID: ComponentID, sType : ComponentType, ID: ID },
+                    cache: false,
+                    async: false,
+                    dataType: 'html',
+                    success: function (data) {
+                        var DialogDivID = ComponentID + '-' + ComponentType + "-div";
+                        var Div = '<div class="' + DialogDivID + '"></div>';
+                        $('#Dialogs').html(Div);
+                        $("." + DialogDivID).html(data);
+                        var windowclose = '<i class="windowClose fa fa-times" onclick="fncdialogclose(this, ' + false + ', &quot;' + DialogDivID + '&quot;)"></i>';
+                        $("." + DialogDivID).dialog({
+                            title: 'Section',
+                            modal: true,
+                            height: 500,
+                            width: 700,
+                            open: function () {
+                                $(this).parent().promise().done(function () {
+                                    $(this).children('.ui-dialog-titlebar').append('<div class="dialogIcons">' + windowclose + '</div>');
+                                })
+                            },
+                            close: function (event, ui) {
+                                $("." + DialogDivID).dialog('close');
+                                $("." + DialogDivID).dialog('destroy').remove();
+                            }
+                        });
+
+                        //$('#XICParams').html(data);
+                        //$("#XICParams").dialog({
+                        //    modal: true,
+                        //    width: 600,
+                        //    close: function() {
+                        //        $(this).dialog('close');
+                        //        //$(this).dialog('destroy').remove();
+                        //    }
+                        //});
+                    }
+                });
+            }
+        });
+
+        //Add More Fields in Sections
+        $(document.body).unbind().on('click', 'button#SecAddMore1', function(){
+            debugger
+            var Divs = $('.SecNVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $(Divs).find('input').attr('data-value','');
+            $('#SecNameValuePairs').append(Divs);
+            $('.SecNVPairs').last().css("display", "block");
+            if(Divs.length > 0)
+            {
+                $( ".XIField" ).autocomplete({
+                    source: function(request, response){
+                        var List = [];
+                        for (var k = 0; k < XIFields.length; k++){
+                            List.push({ label: XIFields[k].text, value: XIFields[k].sGUID });
+                        }
+                        response($.ui.autocomplete.filter(List, request.term));
+                    },
+                    select: function( event, ui ) {
+                        $(this).val(ui.item.label);
+                        $(this).attr('data-value', ui.item.value);
+                        return false;
+                    },
+                    focus: function(event, ui) {
+                        $(this).val(ui.item.label);
+                        $(this).attr('data-value', ui.item.value);
+                        return false;
+                    }
+                });
+            }
+        });
+
+        $(document.body).on('click', 'button#SaveSecFieldsBtn1', function () {
+            debugger
+            var SecID = $('#SecID').val();
+            var StepID = $('#FKiStepDefinitionID').val();
+            var NVPairs = [];
+            var QSLNVPairs = [];
+            var IsGroup = false;
+            var GroupDescription;
+            var GroupLabel;
+            var IsHidden = false;
+            sSectionName = $('#SectionNametxtbox').val();
+            SectionCode = $('#SectionCodetxtbox').val();
+            var RuleID = $('#RuleDDL').val();
+            $('.SecNVPairs:visible').each(function () {
+                var Name; var Value;
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "StepXIFiled") {
+                        Value = $(this).attr('data-value');
+                    }
+                });
+                if (Value && Value.length > 0) {
+                    NVPairs.push(Value);
+                }
+            });
+            $('.QSLPairs:visible').each(function () {
+                var Name; var Value;
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "QSLinktbox") {
+                        Value = $(this).val();
+                    }
+                });
+                if (Value && Value.length > 0) {
+                    QSLNVPairs.push(Value);
+                }
+            });
+            if($('#IsFieldsGroup').is(":checked")){
+                IsGroup = true;
+                GroupDescription = $('#FieldsGroupDescription').val();
+                GroupLabel = $('#FieldsGroupLabel').val();
+            }
+            if($('#IsSectionHidden').is(":checked")){
+                IsHidden = true;
+            }
+
+            var Data = { StepID: StepID, SecNVPairs: NVPairs, DisplayAs: SecDisplayAs, SecID: SecID, SectionName: sSectionName, bIsGroup: IsGroup, sGroupDescription: GroupDescription, sGroupLabel: GroupLabel, bIsHidden: IsHidden, iOrder: SecOrder, sSectionCode: SectionCode, QSCodes: QSLNVPairs, RuleXIGUID: RuleID };
+            $.ajax({
+                url: '@Url.Action("SaveSectionFields", "XISemantics")',
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                cache: false,
+                async: false,
+                data: JSON.stringify(Data),
+                success: function (data) {
+                    var SectionID = data.ID;
+                    $('button[data-showid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                    $('button[data-showid="'+ShowID+'"]').attr('data-secid',SectionID);
+                    $('button[data-deleteid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                    $('button[data-deleteid="'+ShowID+'"]').attr('data-secid',SectionID);
+                    var ExistingIDs = $('#SectionIDs').val();
+                    if(ExistingIDs && ExistingIDs.length>0){
+                        ExistingIDs = ExistingIDs + ","+data.ID + ',';
+                    }
+                    else{
+                        ExistingIDs = ExistingIDs + data.ID + ',';
+                    }
+                    $("#SectionsShowDialog").dialog('close');
+                    ExistingIDs = ExistingIDs.substr(0, ExistingIDs.length -1);
+                    $('#SectionIDs').val(ExistingIDs);
+                }
+            });
+        });
+
+
+        $(document.body).unbind().on('click', 'button.IDESaveSecContentBtn1', function () {
+            debugger
+            var ShowID = 0;
+            var sParmas = $('#SaveSecCompoParams').val()
+            var iStepID = $('#FKiStepDefinitionID').val();
+            var DisplayAs = $('#SecContentDisplayAs').val();
+            var SecID = $('#SecID').val();
+            var IsHidden = false;
+            if($('#IsSectionHidden').is(":checked")){
+                IsHidden = true;
+            }
+            var QSLNVPairs = [];
+            $('.QSLPairs:visible').each(function () {
+                var Name; var Value;
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "QSLinktbox") {
+                        Value = $(this).val();
+                    }
+                });
+                if (Value && Value.length > 0) {
+                    QSLNVPairs.push(Value);
+                }
+            });
+            var RuleID = $(this).closest('div').prev('div').prev('div').find('#RuleDDL').val();
+            var ContentID = $(this).closest('div').prev('div').prev('div').find('#ContentDDL').val();
+            sSectionName = $(this).closest('div').prev('div').prev('div').prev('div').prev('div').prev('div').find('.SectionName').val();
+            SectionCode = $(this).closest('div').prev('div').prev('div').prev('div').prev('div').find('.SectionCode').val();
+            CssClass = $(this).closest('div').prev('div').prev('div').prev('div').prev('div').find('.CssClass').val();
+            debugger
+            if(ContentID > 0){
+                var Data = { StepID: iStepID, DisplayAs: DisplayAs, ContentID: ContentID, SecID: SecID, SectionName: sSectionName, sParams: sParmas, bIsHidden: IsHidden, iOrder: SecOrder, sSectionCode: SectionCode, QSCodes: QSLNVPairs, RuleXIGUID: RuleID, sCssClass: CssClass };
+                $.ajax({
+                    url: '@Url.Action("SaveSectionContent", "XISemantics")',
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    cache: false,
+                    async: false,
+                    data: JSON.stringify(Data),
+                    success: function (data) {
+                        debugger
+                        var SectionID = data.ID;
+                        $('button[data-showid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                        $('button[data-showid="'+ShowID+'"]').attr('data-secid',SectionID);
+                        $('button[data-deleteid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                        $('button[data-deleteid="'+ShowID+'"]').attr('data-secid',SectionID);
+                        var ExistingIDs = $('#SectionIDs').val();
+                        if(ExistingIDs && ExistingIDs.length>0){
+                            ExistingIDs = ExistingIDs +","+ data.ID + ',';
+                        }
+                        else{
+                            ExistingIDs = ExistingIDs + data.ID + ',';
+                        }
+                        $("#SectionDlg").dialog('close');
+                        ExistingIDs = ExistingIDs.substr(0, ExistingIDs.length -1);
+                        $('#SectionIDs').val(ExistingIDs);
+                    }
+                });
+            }
+            else{
+                $('#ContentDDL').focus();
+            }
+        });
+
+        $(document.body).on('click', 'button.SaveSecHTMLContentBtns', function () {
+            var iStepID = $('#FKiStepDefinitionID').val();
+            var DisplayAs = $('#SecContentDisplayAs').val();
+            var SecID = $('#SecID').val();
+            var IsHidden = false;
+            if($('#IsSectionHidden').is(":checked")){
+                IsHidden = true;
+            }
+            var RuleID = $(this).closest('div').prev('div').prev('div').prev('div').find('#RuleDDL').val();
+            var HTMLContent = $(this).closest('div').prev('div').find('#SecHTMLContent').val();
+            sSectionName = $(this).closest('div').prev('div').prev('div').prev('div').prev('div').find('.SectionName').val();
+            SectionCode = $(this).closest('div').prev('div').prev('div').prev('div').find('.SectionCode').val();
+            CssClass = $(_this).closest('div').prev('div').prev('div').prev('div').prev('div').prev('div').find('.CssClass');
+            //SecOrder = $(this).closest('div').prev('div').find('#SecOrder').val();
+            if(HTMLContent.length > 0){
+                var Data = { StepID: iStepID, DisplayAs: DisplayAs, sHTMLContent: HTMLContent, SecID: SecID, SectionName: sSectionName, bIsHidden: IsHidden, iOrder: SecOrder, sSectionCode: SectionCode, RuleXIGUID: RuleID, sCssClass: CssClass };
+                $.ajax({
+                    url: '@Url.Action("SaveSectionHTMLContent", "XISemantics")',
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    cache: false,
+                    async: false,
+                    data: JSON.stringify(Data),
+                    success: function (data) {
+                        var SectionID = data.ID;
+                        $('button[data-showid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                        $('button[data-showid="'+ShowID+'"]').attr('data-secid',SectionID);
+                        $('button[data-deleteid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                        $('button[data-deleteid="'+ShowID+'"]').attr('data-secid',SectionID);
+                        var ExistingIDs = $('#SectionIDs').val();
+                        if(ExistingIDs && ExistingIDs.length>0){
+                            ExistingIDs = ExistingIDs +","+ data.ID + ',';
+                        }
+                        else{
+                            ExistingIDs = ExistingIDs + data.ID + ',';
+                        }
+                        $("#SectionsShowDialog").dialog('close');
+                        ExistingIDs = ExistingIDs.substr(0, ExistingIDs.length -1);
+                        $('#SectionIDs').val(ExistingIDs);
+                        $('.HTMLStatusMsg').prepend($('<div class="StatusMessages"><div class="alert alert-success">Data Saved Succesfully</div></div>'));
+                    }
+                });
+            }
+            else{
+                $('#ContentDDL').focus();
+            }
+        });
+        $(document.body).on('click', 'button#AddMoreQSLink', function () {
+            var Divs = $('.QSLPairs').first().clone();
+            $(Divs).find('input').val('');
+            $('#QSLinkPairs').append(Divs);
+            $('#QSLinkPairs').last().css("display", "block");
+            $( ".qslinkvalue" ).autocomplete({
+                source: availableXiLinkCodes
+            });
+        });
+    });
+
+    function fncShowSecDlg(_this) {
+        //$('.ShowSecDlg').click(function () {
+        debugger
+        var iStepID = $('#FKiStepDefinitionIDXIGUID').val();
+        if (iStepID && iStepID.length> 0)
+        {
+            ShowID = $(_this).attr('data-showid');
+            SectionID =$(_this).attr('data-sectionid');
+            SecDisplayAs = $(_this).closest('div').find('.SecDisplayAsDDL').val();
+            SecOrder = $(_this).closest('div').find('#SecOrder').val();
+            sSectionName = $(_this).closest('div').prev('div').prev('div').find('.SectionName').val();
+            var SecID = $(_this).attr('data-secid');
+            var iQSStepDefID = '@oQSSec.FKiStepDefinitionIDXIGUID';
+            var sType = "IDE";
+            var Data = {StepDefID:iQSStepDefID, SectionID:SectionID, DisplayAs:SecDisplayAs, SecID:SecID, SectionName:sSectionName,Type:sType};
+            if(SecDisplayAs != "")
+            {
+                $.ajax({
+                    url: '@Url.Action("GetSectionContentDialog", "XISemantics")',
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    async: false,
+                    data: JSON.stringify(Data),
+                    success: function (data) {
+                        debugger
+                        var DialogDivID = SectionID + '-' + SecDisplayAs + "-div";
+                        $("." + DialogDivID).dialog('destroy').remove();
+                        var Div = '<div class="' + DialogDivID + '"></div>';
+                        $('#Dialogs').html(Div);
+                        $("." + DialogDivID).html(data);
+                        var windowclose = '<i class="windowClose fa fa-times" onclick="fncdialogclose(this, ' + false + ', &quot;' + DialogDivID + '&quot;)"></i>';
+                        $("." + DialogDivID).dialog({
+                            title: 'Section',
+                            modal: true,
+                            height: 500,
+                            width: 700,
+                            open: function () {
+                                $(this).parent().promise().done(function () {
+                                    $(this).children('.ui-dialog-titlebar').append('<div class="dialogIcons">' + windowclose + '</div>');
+                                })
+                            },
+                            close: function (event, ui) {
+                                $("." + DialogDivID).dialog('close');
+                                $("." + DialogDivID).dialog('destroy').remove();
+                            }
+                        });
+                        $( ".XIField" ).autocomplete({
+                            source: function(request, response){
+                                var List = [];
+                                for (var k = 0; k < XIFields.length; k++){
+                                    List.push({ label: XIFields[k].text, value: XIFields[k].sGUID });
+                                }
+                                response($.ui.autocomplete.filter(List, request.term));
+                            },
+                            select: function( event, ui ) {
+                                $(this).val(ui.item.label);
+                                $(this).attr('data-value', ui.item.value);
+                                return false;
+                            },
+                            focus: function(event, ui) {
+                                $(this).val(ui.item.label);
+                                $(this).attr('data-value', ui.item.value);
+                                return false;
+                            }
+                        });
+                        $( ".qslinkvalue" ).autocomplete({
+                            source: availableXiLinkCodes
+                        });
+                        //$('#SectionDlg').html(data);
+                        //$('#SectionDlg').dialog({
+                        //    modal:true,
+                        //    width: 700,
+                        //    height: 500,
+                        //    title:'Section',
+                        //    buttons:[
+                        //    {
+                        //        text: "Cancel",
+                        //        click: function () {
+                        //            $('#SectionDlg').dialog('close');
+                        //        }
+                        //    },
+                        //    ],
+                        //    close: function() {
+                        //        $(this).dialog('close');
+                        //    }
+                        //});
+                    }
+                });
+            }
+        }
+        else
+        {
+            $('#SectionDlg').html('Please Select Atleast One QuestionSet Step!');
+            $('#SectionDlg').dialog({
+                modal:true,
+                width: 300,
+                height: 200,
+                title:'Warning..',
+                buttons:[
+                {
+                    text: "Cancel",
+                    click: function () {
+                        $('#SectionDlg').dialog('close');
+                    }
+                }
+                ]
+            });
+        }
+
+        //$( ".XIField" ).autocomplete({
+        //    source: availableTags
+        //});
+    }
+
+    function fncSaveSecFields() {
+        var SecID = $('#SecID').val();
+        var StepID = $('#FKiStepDefinitionIDXIGUID').val();
+        var NVPairs = [];
+        var QSLNVPairs = [];
+        var IsGroup = false;
+        var GroupDescription;
+        var GroupLabel;
+        var IsHidden = false;
+        sSectionName = $('#SectionNametxtbox').val();
+        SectionCode = $('#SectionCodetxtbox').val();
+        CssClass = $('#CssClass').val();
+        var RuleID = $('#RuleDDL').val();
+        $('.SecNVPairs:visible').each(function () {
+            var Name; var Value;
+            $(this).find('input').each(function (i, obj) {
+                var Nname = obj.name;
+                if (Nname == "StepXIFiled") {
+                    Value = $(this).attr('data-value');
+                }
+            });
+            if (Value && Value.length > 0) {
+                NVPairs.push(Value);
+            }
+        });
+        $('.QSLPairs:visible').each(function () {
+            var Name; var Value;
+            $(this).find('input').each(function (i, obj) {
+                var Nname = obj.name;
+                if (Nname == "QSLinktbox") {
+                    Value = $(this).val();
+                }
+            });
+            if (Value && Value.length > 0) {
+                QSLNVPairs.push(Value);
+            }
+        });
+        if($('#IsFieldsGroup').is(":checked")){
+            IsGroup = true;
+            GroupDescription = $('#FieldsGroupDescription').val();
+            GroupLabel = $('#FieldsGroupLabel').val();
+        }
+        if($('#IsSectionHidden').is(":checked")){
+            IsHidden = true;
+        }
+
+        var Data = { StepID: StepID, SecNVPairs: NVPairs, DisplayAs: SecDisplayAs, SecID: SecID, SectionName: sSectionName, bIsGroup: IsGroup, sGroupDescription: GroupDescription, sGroupLabel: GroupLabel, bIsHidden: IsHidden, iOrder: SecOrder, sSectionCode: SectionCode, QSCodes: QSLNVPairs, RuleXIGUID: RuleID, sCssClass: CssClass };
+        $.ajax({
+            url: '@Url.Action("SaveSectionFields", "XISemantics")',
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            cache: false,
+            async: false,
+            data: JSON.stringify(Data),
+            success: function (data) {
+                var SectionID = data.ID;
+                $('button[data-showid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                $('button[data-showid="'+ShowID+'"]').attr('data-secid',SectionID);
+                $('button[data-deleteid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                $('button[data-deleteid="'+ShowID+'"]').attr('data-secid',SectionID);
+                var ExistingIDs = $('#SectionIDs').val();
+                if(ExistingIDs && ExistingIDs.length>0){
+                    ExistingIDs = ExistingIDs + ","+data.ID + ',';
+                }
+                else{
+                    ExistingIDs = ExistingIDs + data.ID + ',';
+                }
+                $("#SectionsShowDialog").dialog('close');
+                ExistingIDs = ExistingIDs.substr(0, ExistingIDs.length -1);
+                $('#SectionIDs').val(ExistingIDs);
+                $('#SecNameValuePairs').prepend($('<div class="StatusMessages"><div class="alert alert-success">Data Saved Succesfully</div></div>'));
+            }
+        });
+    }
+
+    function fncShowComponentParam(_this) {
+        debugger
+        var ComponentID = 0;
+        var ID = 0;
+        ComponentType = $(_this).attr('data-type');
+        if(ComponentType == "QSStep"){
+            ComponentID = $('#FKiContentID').val();
+            ID = '@oQSSec.ID';
+        }
+        else if(ComponentType == "QSStepSection"){
+            ComponentID = $('#ContentDDL').val();
+            ID = $(_this).attr('data-secid');
+        }
+
+        if (ComponentID && ComponentID.length > 0) {
+            $.ajax({
+                type: 'get',
+                url: '@Url.Action("Get_ComponentParamsDialog", "XIComponents")',
+                contentType: "application/json; charset=utf-8",
+                data: { iXIComponentID: ComponentID, sType : ComponentType, ID: ID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    debugger
+                    var DialogDivID = ComponentID + '-' + ComponentType + "-div";
+                    var Div = '<div class="' + DialogDivID + '"></div>';
+                    $('#Dialogs').html(Div);
+                    $("." + DialogDivID).html(data);
+                    var windowclose = '<i class="windowClose fa fa-times" onclick="fncdialogclose(this, ' + false + ', &quot;' + DialogDivID + '&quot;)"></i>';
+                    $("." + DialogDivID).dialog({
+                        title: 'Section',
+                        modal: true,
+                        height: 500,
+                        width: 700,
+                        open: function () {
+                            $(this).parent().promise().done(function () {
+                                $(this).children('.ui-dialog-titlebar').append('<div class="dialogIcons">' + windowclose + '</div>');
+                            })
+                        },
+                        close: function (event, ui) {
+                            $("." + DialogDivID).dialog('close');
+                            $("." + DialogDivID).dialog('destroy').remove();
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    function fncSaveSectionContent(_this) {
+        debugger
+        var ShowID = 0;
+        var sParmas = $('#SaveSecCompoParams').val()
+        var iStepID = $('#FKiStepDefinitionID').val();
+        var StepGUID = $('#FKiStepDefinitionIDXIGUID').val();
+        var DisplayAs = $('#SecContentDisplayAs').val();
+        var SecID = $('#SecID').val();
+        var IsHidden = false;
+        if($('#IsSectionHidden').is(":checked")){
+            IsHidden = true;
+        }
+        var QSLNVPairs = [];
+        $('.QSLPairs:visible').each(function () {
+            var Name; var Value;
+            $(this).find('input').each(function (i, obj) {
+                var Nname = obj.name;
+                if (Nname == "QSLinktbox") {
+                    Value = $(this).val();
+                }
+            });
+            if (Value && Value.length > 0) {
+                QSLNVPairs.push(Value);
+            }
+        });
+        debugger
+        var ContentID = $(_this).closest('div').prev('div').prev('div').find('#ContentDDL').val();
+        var RuleID = $(_this).closest('div').prev('div').prev('div').prev('div').prev('div').find('#RuleDDL').val()
+        sSectionName = $(_this).closest('div').prev('div').prev('div').prev('div').prev('div').prev('div').find('.SectionName').val();
+        SectionCode = $(_this).closest('div').prev('div').prev('div').prev('div').prev('div').find('.SectionCode').val();
+        CssClass = $(_this).closest('div').prev('div').prev('div').prev('div').prev('div').prev('div').find('.CssClass').val();
+        debugger
+        if (ContentID && ContentID.length > 0){
+            var Data = { StepID: iStepID, DisplayAs: DisplayAs, ContentID: ContentID, SecID: SecID, SectionName: sSectionName, sParams: sParmas, bIsHidden: IsHidden, iOrder: SecOrder, sSectionCode: SectionCode, QSCodes: QSLNVPairs, StepXIGUID: StepGUID, RuleXIGUID: RuleID, sCssClass: CssClass  };
+            $.ajax({
+                url: '@Url.Action("SaveSectionContent", "XISemantics")',
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                cache: false,
+                async: false,
+                data: JSON.stringify(Data),
+                success: function (data) {
+                    debugger
+                    var SectionID = data.ID;
+                    $('button[data-showid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                    $('button[data-showid="'+ShowID+'"]').attr('data-secid',SectionID);
+                    $('button[data-deleteid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                    $('button[data-deleteid="'+ShowID+'"]').attr('data-secid',SectionID);
+                    var ExistingIDs = $('#SectionIDs').val();
+                    if(ExistingIDs && ExistingIDs.length>0){
+                        ExistingIDs = ExistingIDs +","+ data.ID + ',';
+                    }
+                    else{
+                        ExistingIDs = ExistingIDs + data.ID + ',';
+                    }
+                    $('.'+SecID+'-'+DisplayAs+'-div').dialog('close');
+                    //$("#SectionDlg").dialog('close');
+                    ExistingIDs = ExistingIDs.substr(0, ExistingIDs.length -1);
+                    $('#SectionIDs').val(ExistingIDs);
+                }
+            });
+        }
+        else{
+            $('#ContentDDL').focus();
+        }
+    }
+
+    function fncSectionAddMore(_this){
+        var SecID = $(_this).attr('data-secid');
+        var Divs = $('.SecNVPairs').first().clone();
+        $(Divs).find('input').val('');
+        $(Divs).find('input').attr('data-value','');
+        $(Divs).find('.DeleteSecNVPair').attr('data-secid',SecID);
+        $('#SecNameValuePairs').append(Divs);
+        $('.SecNVPairs').last().css("display", "block");
+        if(Divs.length > 0)
+        {
+            $( ".XIField" ).autocomplete({
+                source: function(request, response){
+                    var List = [];
+                    for(var k=0;k<XIFields.length;k++){
+                        List.push({label:XIFields[k].text, value:XIFields[k].sGUID});
+                    }
+                    response($.ui.autocomplete.filter(List, request.term));
+                },
+                select: function( event, ui ) {
+                    $(this).val(ui.item.label);
+                    $(this).attr('data-value', ui.item.value);
+                    return false;
+                },
+                focus: function(event, ui) {
+                    $(this).val(ui.item.label);
+                    $(this).attr('data-value', ui.item.value);
+                    return false;
+                }
+            });
+        }
+    }
+
+    function fncDeleteNVPairs(_this) {
+    debugger
+        //$(this).closest(".SecPairs").hide();
+        var SectionID = $(_this).attr('data-secid');
+        var SecPairsHide = $(_this).closest(".SecPairs");
+        $("#Remove").dialog({
+            title: "Are you sure you want to delete ? ",
+            buttons: {
+                "Yes": function () {
+                    if (SectionID && SectionID.length > 0) {
+                        SecPairsHide.hide();
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("DeleteSectionBySectionID", "XISemantics")',
+                            data: { ID: SectionID },
+                            cache: false,
+                            async: false,
+                            dataType: 'json',
+                            success: function (data) {
+                                if (data && data.length > 0 && data != "0") {                                    
+                                    $('.SectionStatusMessages').prepend($('<div class="alert alert-success">Data Saved Succesfully</div>'));
+                                }
+                                else {
+                                    $('.SectionStatusMessages').prepend($('<div class="alert alert-danger">Failure! Error Occured</div>'));
+                                }                                
+                            }
+                        });
+                    }
+                    else
+                    {
+                        SecPairsHide.hide();
+                    }
+                    $(this).dialog("close");
+                },
+                "No": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+
+    function fncDeleteSecNVPair(_this) {
+    debugger
+    var SectionID = $(_this).attr('data-secid');
+    var SecPairsHide = $(_this).parent('div').parent('div');
+    var FieldID = $(SecPairsHide[0]).find('input[name="StepXIFiled"]').attr('data-value');
+        $("#Remove").dialog({
+            title: "Are you sure you want to delete ? ",
+            buttons: {
+                "Yes": function () {
+                    if (SectionID && SectionID.length > 0 && FieldID && FieldID.length > 0) {
+                        SecPairsHide.hide();
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("DeleteSectionFieldsBySectionID", "XISemantics")',
+                            data: { ID: SectionID, FieldID: FieldID },
+                            cache: false,
+                            async: false,
+                            dataType: 'json',
+                            success: function (data) {
+                            }
+                        });
+                    }
+                    else
+                    {
+                        SecPairsHide.hide();
+                    }
+                    $(this).dialog("close");
+                },
+                "No": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+
+    function fncDeleteQSLinkPair(_this){
+        debugger
+        var SecID= $(_this).parent().parent().parent().parent().parent().find('#SecID').attr('value');
+        var sCode = $(_this).parent().parent().find('input[name="QSLinktbox"]').val();
+        var QSLinkPairsHide = $(_this).parent('div').parent('div');
+        $("#Remove").dialog({
+            title: "Are you sure you want to delete ? ",
+            buttons: {
+                "Yes": function () {
+                    if (SecID.length > 0 && sCode.length >0) {
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("DeleteQSLinkMapping", "XISemantics")',
+                            data: { SectionID: SecID, sCode: sCode },
+                            cache: false,
+                            async: false,
+                            dataType: 'json',
+                            success: function (data) {
+                                if (data == "Success") {
+                                    $(this).dialog("close");
+                                    QSLinkPairsHide.hide();
+                                }
+                                else {
+
+                                }
+                            }
+                        });
+                    }
+                    else
+                    {
+                        QSLinkPairsHide.hide();
+                    }
+                },
+                "No": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    }
+
+</script>
+<div id="SectionDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<div id="Remove"></div>
+<div id="XICParams"></div>

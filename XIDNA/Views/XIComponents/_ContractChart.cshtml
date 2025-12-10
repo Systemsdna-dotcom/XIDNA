@@ -1,0 +1,107 @@
+﻿<style>
+    #chartdiv {
+        width: 100%;
+        height: 550px;
+    }
+</style>
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/hierarchy.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+<script>
+<!-- Chart code-- >
+    am5.ready(function () {
+
+
+        // Create root element
+        // https://www.amcharts.com/docs/v5/getting-started/#Root_element
+        var root = am5.Root.new("chartdiv");
+
+ 
+
+        // Set themes
+        // https://www.amcharts.com/docs/v5/concepts/themes/
+        root.setThemes([
+            am5themes_Animated.new(root)
+        ]);
+debugger
+        $.ajax('/BlockChain/XIComponents/Chart_Contract?Id=@TempData["Id"]',
+            {
+                dataType: 'json', // type of response data
+                timeout: 50000,     // timeout milliseconds
+                success: function (data, status, xhr) {   // success callback function
+                     // Create wrapper container
+        var container = root.container.children.push(
+            am5.Container.new(root, {
+                width: am5.percent(100),
+                height: am5.percent(100),
+                layout: root.verticalLayout
+            })
+        );
+
+ 
+
+        // Create series
+        // https://www.amcharts.com/docs/v5/charts/hierarchy/#Adding
+        var series = container.children.push(
+            am5hierarchy.ForceDirected.new(root, {
+                singleBranchOnly: false,
+                downDepth: 1,
+                topDepth: 1,
+                maxRadius: 25,
+                minRadius: 12,
+                valueField: "value",
+                categoryField: "name",
+                childDataField: "children",
+                idField: "name",
+                linkWithStrength: 0.3,
+                linkWithField: "linkWith",
+                manyBodyStrength: -15,
+                centerStrength: 0.5
+            })
+        );
+
+ 
+
+        series.get("colors").set("step", 2);
+
+
+ series.nodes.template.events.on("click", function (e) {
+  switch (e.target.dataItem.dataContext.name) {
+            case 'PIZZA':  window.open("google.com");
+		//case 'PIZZA' : XILinkLoadJson('e21dba5a-6fbc-4404-bb71-f572b090f8b8');
+        }
+});
+
+        series.data.setAll([data]);
+        series.set("selectedDataItem", series.dataItems[0]);
+
+ 
+
+        // Make stuff animate on load
+        series.appear(1000, 100);
+                },
+                error: function (jqXhr, textStatus, errorMessage) { // error callback
+debugger
+                   alert("error calling api")
+                }
+            });
+
+ 
+
+       
+
+
+ 
+
+    });
+</script>
+<div class="container">
+<h3>Public Contracts</h3>
+<div>
+<form method="post">
+<!--<button class="btn btn-outline-info" type="submit">Sync Contracts</button>-->
+</form>
+
+</div>
+<div id="chartdiv"></div>
+</div>

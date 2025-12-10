@@ -1,0 +1,83 @@
+﻿@model int
+
+<script>
+    $(document).ready(function () {
+        var popups = new Array();
+        var editpopups = new Array();
+        var table = $('#ExpressionsTable').dataTable({
+            //"bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("GetSelectedFields", "Master", new {Type=Model })",
+            "aaSorting": [[1, 'desc']],
+            "aoColumns": [
+            {},
+                             {
+                                 "sName": "ID",
+                                 "visible": false
+                             },
+                            {
+                                "sName": "Name"
+                            },
+                            {
+                                "sName": "Expression"
+                            },
+                            {
+                                "sName": "Icon"
+                            },
+                             {
+                                 "sName": "Status"
+                             },
+
+            ],
+            "columnDefs": [
+              {
+                  "targets": [5],
+                  "createdCell": function (td, cellData, rowData, row, col) {
+                      if (cellData == 10)
+                          $(td).replaceWith('<td>Active</td>')
+                      else
+                          $(td).replaceWith('<td>Inactive</td>')
+                  }
+              }
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(3)', nRow).html('<i class="' + aData[4] + '" style="padding-left:10px;" ></i>');
+                @*$('td:eq(5)', nRow).html('<input type="button" class="EditBtn btn btn-theme btn-xs" data-url="@Url.Action("EditMasterData", "Master")?DataID=' + aData[1] + '" value="Edit"/>');*@
+                return nRow;
+            }
+        });
+    });
+</script>
+<div class="table-clean">
+    <table id="ExpressionsTable" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Expression</th>
+                <th>Icon</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        @*<tbody>
+            @{int i = 1; }
+            @foreach (var items in Model)
+            {
+                <tr>
+                    <td>@i</td>
+                    <td>@items.Expression</td>
+                    @if (items.Status == 10)
+                    {
+                        <td>Active</td>
+                    }
+                    else
+                    {
+                        <td>Inactive</td>
+                    }
+                    @{i++;}
+                </tr>
+            }
+        </tbody>*@
+    </table>
+</div>

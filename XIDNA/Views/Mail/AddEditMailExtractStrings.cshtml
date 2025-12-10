@@ -1,0 +1,181 @@
+﻿@model Converter.ViewModels.VMMailExtractStrings
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        //Disabling DropDownList
+        if ('@Model.ID' != 0) {
+            $("#subscription").prop("disabled", true);
+        }
+        $.ajax({
+            url: '@Url.Action("MailExtractStringsPopUp", "Mail")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            data: { OrgID: 0 },
+            cache: false,
+            success: function (data) {
+
+                $('#SpecificSubscriptions').empty();
+                $('#SpecificSubscriptions').html(data);
+            },
+            error: function (data) { }
+        });
+    });
+</script>
+<style>
+    .orgsorerror {
+        margin-top: 28px;
+    }
+</style>
+<section class="content-header hedr">
+    @if (Model.ID == 0)
+    {
+        <h1> Add Mail Extraction Strings </h1>
+
+    }
+    else
+    {
+        <h1> Edit Mail Extraction Strings </h1>
+
+    }
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> MailExtractStrings</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="SubscriptionForm innerborder" id="SubscriptionForm">
+                    @using (Ajax.BeginForm("SaveMailExtractStrings", "Mail", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "SubID", OnSuccess = "OnSubComplete" }, new { @id = "SubForm", @class = "form-horizontal" }))
+                    {
+                        @Html.HiddenFor(m => m.ID)
+
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Subscription<span class="danger">*</span></label>
+                                @Html.DropDownListFor(m => m.SubscriptionID, new SelectList(Model.SubscriptionList, "Expression", "text"), "--Select--", new { @class = "form-control", @id = "subscription" })
+                            </div>
+                            <div class="col-sm-7 orgsorerror">
+                                @Html.ValidationMessageFor(m => m.SubscriptionID, "", new { @class = "red" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Start String<span class="danger">*</span></label>
+                                @Html.TextBoxFor(m => m.sStartString, new { @class = "form-control", @placeholder = "Enter Start String", @id = "startstring" })
+                            </div>
+                            <div class="col-sm-7 orgsorerror">
+                                @Html.ValidationMessageFor(m => m.sStartString, "", new { @class = "red" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">End String<span class="danger">*</span></label>
+                                @Html.TextBoxFor(m => m.sEndString, new { @class = "form-control", @placeholder = "Enter End String", @id = "endstring" })
+                            </div>
+                            <div class="col-sm-7 orgsorerror">
+                                @Html.ValidationMessageFor(m => m.sEndString, "", new { @class = "red" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Status</label>
+                                @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <button type="submit" class="btn btn-primary m-r-10" id="SubSave">Save</button>
+                                @if (Model.ID == 0)
+                                {
+                                    <button type="button" class="btn btn-info m-r-10" id="SubReset">Reset</button>
+
+                                }
+                                <button type="button" class="btn btn-danger m-r-10" id="SubCancel">Cancel</button>
+                            </div>
+                        </div>
+                    }
+                    <div id="SpecificSubscriptions">
+                    </div>
+                </div>                
+            </div>
+        </div>
+    </div>
+</section>
+<div class="dialog-box AddSubDlg" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    function OnSubComplete(e) {
+        if (e > 0) {
+            $('#SubReset').click();
+            opener.location.reload();
+            $('#SubID').val(e);
+            $.ajax({
+                url: '@Url.Action("MailExtractStringsPopUp", "Mail")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                data: { OrgID: 0 },
+                cache: false,
+                success: function (data) {
+                    $('#SpecificSubscriptions').empty();
+                    $('#SpecificSubscriptions').html(data);
+                },
+                error: function (data) { }
+            });
+            if (e == 0)
+                $(".AddSubDlg").html('Mail Extraction Strings Added Successfully!');
+            else if (e != 0)
+                $(".AddSubDlg").html('Mail Extraction Strings Updated Successfully!');
+
+            $(".AddSubDlg").dialog({
+                title: "Mail Extract Strings",
+                modal: true,
+                closeOnEscape: true,
+                buttons: [
+                {
+                    text: "Ok",
+                    click: function () {
+                        $(".AddSubDlg").dialog("close");
+                        //location.reload();
+                    }
+                }
+                ]
+            });
+        }
+        else {
+            $(".AddSubDlg").html('Error while saving mail extraction strings details!!!<br/> Please try again');
+
+            $(".AddSubDlg").dialog({
+                title: "Mail Extract Strings",
+                modal: true,
+                closeOnEscape: true,
+                buttons: [
+                {
+                    text: "Ok",
+                    click: function () {
+                        $(".AddSubDlg").dialog("close");
+                        //location.reload();
+                    }
+                }
+                ]
+            });
+        }
+    }
+    $('#SubReset').click(function () {
+        $('#startstring').val("");
+        $('#endstring').val("");
+        $('#subscription').prop('selectedIndex', 0);
+    });
+    $('#SubCancel').click(function () {
+        window.close();
+    });
+</script>
+
+

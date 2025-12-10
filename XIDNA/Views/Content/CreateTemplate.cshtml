@@ -1,0 +1,922 @@
+﻿@model XIDNA.Models.ContentEditors
+@{
+    string content = string.Empty;
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+    var oPolicyQuotesList = ViewBag.PolicyQuotesList as List<XIDNA.Models.cAggregations>;
+    var ModelPropertiesList = ViewBag.ModelList as List<XIDNA.ViewModels.VMDropDown>;
+    var ModelClasslist = ViewBag.ModelName as List<XIDNA.ViewModels.VMDropDown>;
+    int j = 0;
+}
+<script src="~/Scripts/JQuery/jQuery-2.1.4.min.js"></script>
+<script src="~/Scripts/JQuery/jquery-ui.js"></script>
+<script src="~/Scripts/jquery.validate.min.js"></script>
+<script src="http://cdn.ckeditor.com/4.5.7/standard-all/ckeditor.js"></script>
+<script src="~/Scripts/ckfinder/ckfinder.js"></script>
+<script src="~/ckeditor/adapters/jquery.js"></script>
+@*<script src="//tinymce.cachefly.net/4.0/tinymce.min.js"></script>*@
+@*<script src="~/Scripts/tinymce/tinymce.min.js"></script>*@
+<div id="HTMLContent"></div>
+<div id="HtmlTableTd"></div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#TempName').change(function () {
+            var Name = $(this).val();
+            var Category = '@Model.Category';
+            if (Name && Category > 0) {
+                $.ajax({
+                    url: '@Url.Action("IsExistsTitle", "Content")',
+                    type: 'POST',
+                    datatype: 'json',
+                    //contentType: "application/json; charset=utf-8",
+                    data: { Name: Name, ID: '@Model.ID', Category: Category },
+                    cache: false,
+                    success: function (data) {
+                        if (data) {
+                            $('#NameError').html("");
+                        } else {
+                            $('#NameError').html("<span class='error'>This title is already used. Enter another title.</span>");
+                        }
+                    },
+                    error: function (data) {
+                    },
+                });
+            }
+        });
+        $('#BOs').val('@Model.BO');
+        $('#BOs').change(function () {
+            var Bo = $(this).val();
+            var Category = $('#Category').val();
+            if (Bo > 0) {
+                $.ajax({
+                    url: '@Url.Action("GetBoMailFields", "Content")',
+                    type: 'POST',
+                    datatype: 'json',
+                    //contentType: "application/json; charset=utf-8",
+                    data: { BOID: Bo },
+                    cache: false,
+                    success: function (data) {
+                        $('#Feild').empty();
+                        $('#Feild').append('<option>--Select--</option>');
+                        for (i = 0; i < data.result.length; i++) {
+                            $('#Feild').append('<option value=' + data.result[i].Value + '>' + data.result[i].text + '</option>');
+                        }
+                        $('#ModelList').empty();
+                        $('#ModelList').append('<option>--Select--</option>');
+                        for (i = 0; i < data.ModelList.length; i++) {
+                            $('#ModelList').append('<option value=' + data.ModelList[i].Type + '>' + data.ModelList[i].text + '</option>');
+                        }
+                    },
+                    error: function (data) {
+                    },
+                });
+            }
+        });
+        $('#ModelList').change(function () {//ListFields
+            var ModelName = $(this).val();
+            if(ModelName!="")
+            {
+                $("#DDL_ListFields").show();
+            }
+            else
+            {
+                var feild = $(':selected', this).text();
+                CKEDITOR.instances['Content'].insertText("{" + "{" + feild + "}" + "}");
+                $("#DDL_ListFields").hide();
+            }
+            $.ajax({
+                url: '@Url.Action("GetModelListFields", "Content")',
+                type: 'POST',
+                datatype: 'json',
+                //contentType: "application/json; charset=utf-8",
+                data: { ModelPropertListName: ModelName, },
+                cache: false,
+                success: function (data) {
+                    $('#ListFields').empty();
+                    $('#ListFields').append('<option>--Select--</option>');
+                    for (i = 0; i < data.length; i++) {
+                        $('#ListFields').append('<option value=' + data[i].Type + '>' + data[i].text + '</option>');
+                    }
+                },
+                error: function (data) {
+                },
+            });
+            //if ($(this).val() != 0) {
+            //    var feild = $(':selected', this).text();
+            //    // str = feild.replace(/(\r\n|\n|\r)/gm, "");
+            //    CKEDITOR.instances['Content'].insertText("{" + "{" + feild + "}" + "}");
+            //}
+        });
+        $('#ListFields').change(function () {
+            var ModelClass = $('#ModelList option:selected').text();
+            var feild = $(':selected', this).text();
+            // str = feild.replace(/(\r\n|\n|\r)/gm, "");
+            CKEDITOR.instances['Content'].insertText("{" + "{" + ModelClass + "}" + "}.{" + "{" + feild + "}" + "}");
+            // }
+        });
+        if ('@Model.Category' == 2) {
+            $('#EmailImages').hide();
+            $('#SMSContent').show();
+            $('#EmailContent').hide();
+        }
+        else {
+            $('#SMSContent').hide();
+            $('#EmailContent').show();
+        }
+        if ('@Model.Category' == 3) {
+            $('#SMSContent').hide();
+        }
+
+        $('#Feild').change(function () {
+            if ($(this).val() != 0) {
+                var feild = $(':selected', this).text();
+                // str = feild.replace(/(\r\n|\n|\r)/gm, "");
+                CKEDITOR.instances['Content'].insertText("{" + "{" + feild + "}" + "}");
+            }
+        });
+        //$('#datefield').change(function () {
+        //    var datefield = $(':selected', this).text();
+        //    // str = feild.replace(/(\r\n|\n|\r)/gm, "");
+        //    CKEDITOR.instances['Content'].insertText("(" + "(" + datefield + ")" + ")");
+        //});
+        $('.imagecheckbox').change(function () {
+            if ($(this).is(':checked')) {
+                var path = $(this).attr('data-path');
+                if ($(this).prop('checked') == true) {
+                    CKEDITOR.instances['Content'].insertHtml('<img src="../Content/images/' + path + '"/>');
+                }
+                else {
+                    $('#Content').val($('#Content').val().replace('<img src="../XIDynaware/Content/images/' + path + '"/>', ''));
+                }
+                $('.imagecheckbox').removeAttr("checked");
+                $(this).prop('checked', true);
+            }
+            else {
+                $(this).prop('checked', false);
+            }
+        });
+
+        $("#Category").val('@Model.Category').attr("disabled", "disabled");
+
+        //$("#Type").val('@Model.Type').attr("disabled", "disabled");
+
+        $('#cancel').click(function () {
+            window.close();
+        });
+        function DecodeHtml(str) {
+            return $('<div/>').html(str);
+        }
+        var ISCollectionList=false;
+
+        $("#GenerateDocument").click(function () {
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            var iTemplateID = @Model.ID;
+            var sBOName = $('#BOs option:selected').text();
+            $.ajax({
+                url: '@Url.Action("SendEmailTemplateMail", "Content")',
+                type: 'GET',
+                datatype: 'json',
+                //contentType: "application/json; charset=utf-8",
+                data: { iPolicyID: 127, iTemplateID: iTemplateID,sBOName:sBOName,iQSInstanceID:556 },
+                cache: false,
+                success: function (data) {
+                    var Text = "";
+                    ///$("#Quotes_grid").html(data);
+                },
+                error: function (data) {
+                },
+            });
+        });
+        $("#GenerateTemplate").click(function () {
+            var iTemplateID = @Model.ID;
+            var sBOName = $('#BOs option:selected').text();
+            $.ajax({
+                url: '@Url.Action("GenerateTemplateValues", "Content")',
+                type: 'GET',
+                datatype: 'json',
+                //contentType: "application/json; charset=utf-8",
+                data: { ID: 127, iTemplateID: iTemplateID,sBOName:sBOName },
+                cache: false,
+                success: function (data) {
+                },
+                error: function (data) {
+                },
+            });
+        });
+
+        $("#ShowContent").click(function () {
+            DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+            DialogURL = '@Url.Action("GetDialog", "XiLink")';
+            PopupORDialogURL = '@Url.Action("GetPopupORDialog", "XiLink")';
+            PopupURL = '@Url.Action("GetPopupDetails", "XiLink")';
+            ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+            var iTemplateID = @Model.ID;
+            var category =@Model.Category;
+            var sBOName = $('#BOs option:selected').text();
+            if(category==60){
+                $("#TextEditor").dialog({
+                    width: 1005, height: 610, modal: true, //autoOpen: false,
+                    buttons : {
+                        "Submit" : function ()
+                        {
+                            $('#MyContents').val($('#TextEditor').val());
+                            $("#TextEditor").dialog("close");
+                        },
+                        "Cancel" : function ()
+                        {
+                            $("#TextEditor").dialog("close");
+                        }
+                    }
+                });
+                $("#TextEditor").dialog("open");}
+            else
+            {
+                $("#TextEditordialog").dialog({
+                    width: 1005, height: 610, modal: true, autoOpen: false,
+                    open: function(event, ui) {
+                        tinymce.remove('textarea#TextEditordialog');
+                        tinymce.init({
+                            selector: 'textarea#TextEditordialog',
+                            menubar:false,
+                            statusbar: false,
+                            branding: false,
+                            toolbar: 'formatselect | bold italic strikethrough forecolor backcolor permanentpen formatpainter | link image media pageembed | alignleft aligncenter alignright alignjustify  | numlist bullist outdent indent | removeformat | addcomment | mybutton mybutton1 mybutton2',
+                            setup: function (editor) {
+                                editor.ui.registry.addButton('mybutton', {
+                                    text: 'Source Code',
+                                    onAction: function () {
+                                        $("#TextEditorNewDialog").dialog({
+                                            width: 1005, height: 610, modal: true, //autoOpen: false,
+                                            buttons : {
+                                                "Submit" : function ()
+                                                {
+                                                    //debugger;
+                                                    var ExistContent = tinymce.get("TextEditordialog");
+                                                    var ModifyContent = $("#TextEditorNewDialog").val();
+                                                    ExistContent.setContent(ModifyContent);
+                                                    $('#MyContent').val(ExistContent.setContent(ModifyContent));
+                                                    $("#TextEditorNewDialog").dialog("close");
+                                                },
+                                                "Cancel" : function ()
+                                                {
+                                                    $("#TextEditorNewDialog").dialog("close");
+                                                }
+                                            }
+                                        });
+                                        //$("#TextEditorNewDialog").dialog("open");
+                                    }
+                                });
+                                editor.ui.registry.addButton('mybutton1', {
+                                    text:'Generate',
+                                    //disabled: true,
+                                    onAction: function (){
+                                        var iTemplateID = @Model.ID;
+                                        var sBOName = $('#BOs option:selected').text();
+                                        var about=escape(content);
+                                        $.ajax({
+                                            url: '@Url.Action("SendEmailTemplateMail", "Content")',
+                                            type: 'POST',
+                                            contentType: "application/json; charset=utf-8",
+                                            datatype: 'json',
+                                            //data: JSON.stringify({ i1ClickID: parseInt(i1ClickID), sAutoText: SearchText, sField: FieldPlace, }),
+                                            data: JSON.stringify({ iPolicyID: 127, iTemplateID: iTemplateID,sBOName:sBOName,sHtmlContent:content,iQSInstanceID:556 }),
+                                            cache: false,
+                                            success: function (data) {
+                                                $("#TextEditordialog").dialog("close");
+                                                return true;
+                                            },
+                                            error: function (data) {
+                                                return false;
+                                            },
+                                        });
+
+                                    }
+                                    //onSetup: function (buttonApi) {
+                                    //    var editorEventCallback = function (eventApi) {
+                                    //        buttonApi.setDisabled(eventApi.element.nodeName.toLowerCase() === 'time');
+                                    //    };
+                                    //    editor.on('NodeChange', editorEventCallback);
+                                    //    /* onSetup should always return the unbind handlers */
+                                    //    return function (buttonApi) {
+                                    //        editor.off('NodeChange', editorEventCallback);
+                                    //    };
+                                    //}
+                                });
+                                editor.ui.registry.addButton('mybutton2', {
+                                    text: 'Library',
+                                    onAction: function () {
+                                        XIRun(null,9119, 0, null, null, true, 0, 0)
+                                    }
+                                });
+
+                            }
+                        });
+                    },
+                    buttons: {
+                        Close: function () {
+                            $(this).dialog('close');
+                        }
+                    }
+                });
+                $("#TextEditordialog").dialog("open");
+            }
+        });
+    });
+
+</script>
+<style>
+    .gn {
+        font-weight: bold;
+    }
+
+    .errorval {
+        padding-top: 30px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Edit Template </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i>Template Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    @using (Ajax.BeginForm("PostContent", "Content", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Result", OnSuccess = "OnComplete" }, new { @class = "form-horizontal", @target = "_blank", @id = "frm" }))
+                    {
+                        if (Model.str == "edit")
+                        {
+                            @Html.HiddenFor(m => m.str, new { @Value = "edit" })
+                        }
+                        else
+                        {
+                            @Html.HiddenFor(m => m.str, new { @Value = "copy" })
+                        }
+                        @Html.ValidationSummary(true)
+                        if (Model.FKiApplicationID == 0)
+                        {
+                            <div class="form-group" id="XIFKiApplicationDDL">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Application <span class="danger">*</span></label>
+                                    <select class="form-control" id="ApplicationID" name="FKiApplicationID">
+                                        <option value="0">--Select--</option>
+                                        @foreach (var items in Model.ddlApplications)
+                                        {
+                                            if (Model.FKiApplicationID == items.Value)
+                                            {
+                                                <option selected value="@items.Value">@items.text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@items.Value">@items.text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <input type="hidden" id="ApplicationID" name="FKiApplicationID" value="@Model.FKiApplicationID" />
+                        }
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">Title<span class="danger">*</span></label>
+                                @Html.TextBoxFor(model => model.Name, new { @Name = "Name", @id = "TempName", @placeholder = "Template Title", @class = "form-control", @maxlength = "" })
+                            </div>
+                            <div class="col-md-5 errorval">
+                                <span class="error_label" id="NameError"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">Category<span class="danger">*</span></label>
+                                <select class="form-control" name="Category" id="Category">
+                                    <option value="">--Select--</option>
+                                    <option value="10">Email</option>
+                                    <option value="20">EDI</option>
+                                    <option value="30">PDF</option>
+                                    <option value="40">NonMerging Documents</option>
+                                    <option value="50">Notifications</option>
+                                    <option value="60">XML</option>
+                                    <option value="80">Signature</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 errorval">
+                                <span class="error_label"></span>
+                            </div>
+                        </div>
+                        if (Model.Category == 20)
+                        {
+                            <div class="form-group ShowHideTemplateHeader">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">TemplateHeader<span class="danger"></span></label>
+                                    @Html.TextAreaFor(model => model.sTemplateHeader, new { @class = "form-control", @placeholder = "Enter TemplateHeader", @id = "tempheaderid", @rows = 4, @cols = 10 })
+                                    @*<input type="text" name="sTemplateHeader" placeholder="Enter TemplateHeader" class="form-control headerField" />*@
+                                </div>
+                                <div class="col-md-2 errorval">
+                                    <span class="error_label"></span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group ShowHideTemplateHeader" style="display:none;">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">TemplateHeader<span class="danger"></span></label>
+                                    @Html.TextAreaFor(model => model.sTemplateHeader, new { @class = "form-control", @placeholder = "Enter TemplateHeader", @rows = 4, @cols = 10 })
+                                    @*<input type="text" name="sTemplateHeader" placeholder="Enter TemplateHeader" class="form-control headerField" />*@
+                                </div>
+                                <div class="col-md-2 errorval">
+                                    <span class="error_label"></span>
+                                </div>
+                            </div>
+                        }
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">Type</label>
+                                @Html.DropDownListFor(m => m.Type, new SelectList(Model.TypeList, "Value", "text"), "--Select--", new { @class = "form-control" })
+                                @*<select class="form-control" name="Type" id="Type">
+                                        <option value="">--Select--</option>
+                                        @foreach (var items in Model.TypeList)
+                                        {
+                                            <option value=@items.Value>@items.text</option>
+                                        }
+                                    </select>*@
+                            </div>
+                            <div class="col-md-5 errorval">
+                                <span class="error_label"></span>
+                            </div>
+                        </div>
+                        <div class="form-group" id="ParentDiv">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">Parent</label>
+                                @Html.DropDownListFor(m => m.iParentID, new SelectList(Model.ddlParentList, "Key", "Value"), "--Select--", new { @class = "form-control", @id = "ParentID" })
+                                @*<select class="form-control" name="iParentID" id="ParentID">
+                                        <option value="">--Select--</option>
+                                        @foreach (var items in Model.ddlParentList)
+                                        {
+                                            <option value=@items.Key>@items.Value</option>
+                                        }
+                                    </select>*@
+                            </div>
+                            <div class="col-md-2 errorval">
+                                <span class="error_label"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">BO<span class="danger"></span></label>
+                                @Html.DropDownListFor(m => m.BO, new SelectList(Model.BOList, "Value", "text"), "--Select--", new { @class = "form-control", @id = "BOs" })
+                                @*<select class="form-control" name="BO" id="BOs">
+                                        <option value="0">--Select--</option>
+                                        @foreach (var items in Model.BOList)
+                                        {
+                                            <option value=@items.Value>@items.text</option>
+                                        }
+                                    </select>*@
+                            </div>
+                            <div class="col-md-2 errorval">
+                                <span class="error_label"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">Model<span class="danger"></span></label>
+                                <select class="form-control" id="ModelClass">
+                                    @*<option value="0">--Select--</option>*@
+                                    @foreach (var items in ModelClasslist)
+                                    {
+                                        <option value=@items.Type>@items.text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-2 errorval">
+                                <span class="error_label"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">Model List<span class="danger"></span></label>
+                                <select class="form-control" id="ModelList">
+                                    <option value="0">--Select--</option>
+                                    @foreach (var items in ModelPropertiesList)
+                                    {
+                                        <option value=@items.Type>@items.text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-2 errorval">
+                                <span class="error_label"></span>
+                            </div>
+                        </div>
+                        <div class="form-group" style="display:none" id="DDL_ListFields">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">List fields<span class="danger"></span></label>
+                                <select class="form-control" id="ListFields"></select>
+                            </div>
+                            <div class="col-md-2 errorval">
+                                <span class="error_label"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">Data</label>
+                                <select class="form-control" name="SContent" id="Feild">
+                                    <option value="0">--Select--</option>
+                                    @foreach (var items in Model.ContentList)
+                                    {
+                                        <option value=@items.Expression>@items.text</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                @Html.CheckBoxFor(m => m.bIsHavingAttachments)
+                                <label for="inputEmail" class="gn">IsHavingAttachment</label>
+                            </div>
+                            <div class="col-md-5 errorval">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                @Html.CheckBoxFor(m => m.bIsPaswordProtected, new { @id = "chkPwdProtected" })
+                                <label for="inputEmail" class="gn">IsPaswordProtected</label>
+                            </div>
+                            <div class="col-md-2 errorval">
+                            </div>
+                        </div>
+                        if (Model.bIsPaswordProtected == true)
+                        {
+                            <div class="form-group ShowHideSurNamepwd">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">SurNamePasswordRange<span class="danger"></span></label>
+                                    @Html.TextBoxFor(m => m.iSurNamePasswordRange, new { @placeholder = "Enter SurNamePasswordRange", @class = "form-control surnamepwdrng" })
+
+                                </div>
+                                <div class="col-md-2 errorval">
+                                    <span class="error_label"></span>
+                                </div>
+                            </div>
+                            <div class="form-group ShowHideDOBPwd">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">DOBPasswordRange<span class="danger"></span></label>
+                                    @Html.TextBoxFor(m => m.iDOBPasswordRange, new { @placeholder = "Enter DOBPasswordRange", @class = "form-control dobpwdrng" })
+
+                                </div>
+                                <div class="col-md-2 errorval">
+                                    <span class="error_label"></span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group ShowHideSurNamepwd" style="display:none;">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">SurNamePasswordRange<span class="danger"></span></label>
+                                    @Html.TextBoxFor(m => m.iSurNamePasswordRange, new { @placeholder = "Enter SurNamePasswordRange", @class = "form-control surnamepwdrng" })
+
+                                </div>
+                                <div class="col-md-2 errorval">
+                                    <span class="error_label"></span>
+                                </div>
+                            </div>
+                            <div class="form-group ShowHideDOBPwd" style="display:none;">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">DOBPasswordRange<span class="danger"></span></label>
+                                    @Html.TextBoxFor(m => m.iDOBPasswordRange, new { @placeholder = "Enter DOBPasswordRange", @class = "form-control dobpwdrng" })
+                                </div>
+                                <div class="col-md-2 errorval">
+                                    <span class="error_label"></span>
+                                </div>
+                            </div>
+                        }
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">TypeofPDF<span class="danger">*</span></label>
+                                @Html.DropDownListFor(m => m.iTypeofPDF, new SelectList(new List<Object>
+{
+new { key= "" , value = "--Select--" },
+new { key= 10 , value = "iTextSharp" },
+new { key= 20 , value = "ironpdf" }
+}, "key", "Value"), new { @class = "form-control TypeofPDFddl", @id = "Categorys" })
+
+                            </div>
+                            <div class="col-md-2 errorval">
+                                <span class="error_label"></span>
+                            </div>
+                        </div>
+                        if (Model.iTypeofPDF == 20)
+                        {
+                            <div class="form-group ShowHideFields">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">CSSFileName<span class="danger"></span></label>
+                                    @Html.TextBoxFor(model => model.sCSSFileName, new { @class = "form-control pdfField", @placeholder = "Enter CSSFileName", })
+                                </div>
+                                <div class="col-md-2 errorval">
+                                    <span class="error_label"></span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group ShowHideFields" style="display:none;">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">CSSFileName<span class="danger"></span></label>
+                                    @Html.TextBoxFor(model => model.sCSSFileName, new { @class = "form-control pdfField", @placeholder = "Enter CSSFileName", })
+                                </div>
+                                <div class="col-md-2 errorval">
+                                    <span class="error_label"></span>
+                                </div>
+                            </div>
+                        }
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-theme" id="ShowContent">Content</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">From<span class="danger"></span></label>
+                                @Html.TextBoxFor(model => model.sFrom, new { @class = "form-control", @placeholder = "Enter From", })
+                            </div>
+                            <div class="col-md-5 errorval">
+                                <span class="error_label"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">CC<span class="danger"></span></label>
+                                @Html.TextBoxFor(model => model.sCC, new { @class = "form-control", @placeholder = "Enter CC", })
+                            </div>
+                            <div class="col-md-5 errorval">
+                                <span class="error_label"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">BCC<span class="danger"></span></label>
+                                @Html.TextBoxFor(model => model.sBCC, new { @class = "form-control", @placeholder = "Enter BCC", })
+                            </div>
+                            <div class="col-md-5 errorval">
+                                <span class="error_label"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">Server<span class="danger"></span></label>
+                                @Html.DropDownListFor(m => m.FkiServerID, new SelectList(Model.IOServerList, "Value", "text"), "--Select--", new { @class = "form-control", @id = "IOServerList" })
+                            </div>
+                            <div class="col-md-2 errorval">
+                                <span class="error_label"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                @Html.CheckBoxFor(m => m.bIsBCCOnly, new { @id = "BCCOnly" })
+                                <label for="inputEmail" class="gn">BCC only</label>
+                            </div>
+                            <div class="col-md-2 errorval">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">Active From<span class="danger"></span></label>
+                                @Html.TextBoxFor(model => model.dActiveFrom, "{0:dd-MMM-yyyy}", new { @class = "form-control DatePic DatePicker_Txt_" + Model.ID, @placeholder = "Select Active From", })
+                            </div>
+                            <div class="col-md-2 errorval">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <label for="inputEmail" class="gn">Active To<span class="danger"></span></label>
+                                @Html.TextBoxFor(model => model.dActiveTo, "{0:dd-MMM-yyyy}", new { @class = "form-control DatePic DatePicker_Txt_" + Model.ID, @placeholder = "Select Active To", })
+                            </div>
+                            <div class="col-md-2 errorval">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-theme" id="GenerateDocument">Send</button>
+                                <button type="button" class="btn btn-theme" id="GenerateTemplate">Generate</button>
+                                <button type="button" class="btn btn-theme" id="AddandGenerateTemplate">Add and Generate</button>
+                            </div>
+                        </div>
+                        <div id="Quotes_grid"></div>
+                        @*<div class="form-group">
+                            <div class="col-md-2">
+                            <label for="inputEmail" class="gn">Dates<span class="danger"></span></label>
+                            <select class="form-control" name="DateField" id="datefield">
+                            <option value="">--Select--</option>
+                            <option value="1">Today</option>
+                            <option value="2">Tomorrow</option>
+                            <option value="3">Yesterday</option>
+                            </select>
+                            </div>
+                            </div>*@
+
+                    if (Model.Images.Count() > 0 && Model.Category != 2)
+                    {
+                        <div class="form-group" id="EmailImages">
+                            <div class="col-md-12">
+                                <label for="inputEmail" class="gn">Images<span class="danger"></span></label>
+                                <div class="form-group">
+                                    @foreach (var items in Model.Images)
+                                    {
+                                        <div class="OrgImage col-md-1">
+                                            <input type="checkbox" id="@items.Value" data-path="@items.text" class="col-md-2 imagecheckbox" />
+                                            <img src="~/Content/images/@items.text" width="100" height="70" />
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @*<div class="form-group" id="EmailContent">
+                            <div class="col-md-12">
+                                <label for="inputEmail" class="gn">Content<span class="danger">*</span></label>
+                                @Html.TextAreaFor(m => m.Content, new { id = "Content", name = "Content", value = Model.Content })
+                            </div>
+                        </div>
+                        <div class="form-group" id="SMSContent">
+                            <div class="col-md-12">
+                                <label for="inputEmail" class="gn">Content<span class="danger">*</span></label>
+                                @Html.TextAreaFor(m => m.Content, new { @id = "SMSContent", @Name = "SMSContent", @class = "form-control", @rows = 4, value = Model.Content })
+                            </div>
+                        </div>*@
+                    if (@ViewBag.str == "edit")
+                    {
+                        @Html.HiddenFor(m => m.ID, new { name = "ID", value = Model.ID })
+                    }
+                    else
+                    {
+                        @Html.HiddenFor(m => m.Category, new { name = "Category", value = Model.Category })
+                    }
+                    <br />
+                    <script>
+                        CKEDITOR.plugins.addExternal('simplebox', 'http://sdk.ckeditor.com/samples/assets/plugins/simplebox/', 'plugin.js');
+                        CKEDITOR.config.colorButton_colors;
+                        var editor = CKEDITOR.replace('Content', {
+                            extraPlugins: 'simplebox,colorbutton,colordialog,indentblock',
+                            contentsCss: [
+                                'http://sdk.ckeditor.com/samples/assets/plugins/simplebox/styles/contents.css',
+                                'http://cdn.ckeditor.com/4.5.7/standard-all/contents.css'
+                            ],
+                            height: 300
+                        });
+                        config.allowedContent = true;
+                        //config.allowedContent = 'img[src,alt,width,height]';
+                        CKFinder.setupCKEditor(editor, '../../ckfinder');
+
+                        //var editor = CKEDITOR.replace('Content', {
+                        //    extraPlugins: 'colorbutton,colordialog',
+                        //});
+                        //CKFinder.setupCKEditor(editor, '../../ckfinder');
+                    </script>
+                    <div class="bottom">
+                        <input type="submit" id="Save" value="Save" class="btn btn-large btn-theme visible-desktop">
+                        <input type="button" id="cancel" value="Cancel" class="btn btn-large btn-theme decline visible-desktop">
+                    </div>
+                    <div>
+                        @if (Model.Category == 60)
+                        {
+                            <textarea id="TextEditor" name="Content" title="Content" style="width:100%; display:none;">@Model.Content</textarea>
+                            @Html.HiddenFor(m => m.Content, new { id = "MyContents", name = "Content" })
+                        }
+                        else
+                        {
+                            <textarea id="TextEditordialog" name="Content" title="Content" style="display:none;">@Model.Content</textarea>
+                            @Html.HiddenFor(m => m.Content, new { id = "MyContent", name = "Content" })
+
+                            <textarea id="TextEditorNewDialog" name="Content" class="dialog-box" style="display:none;">@Model.Content</textarea>
+                            @Html.HiddenFor(m => m.Content, new { id = "MyContent1", name = "Content" })
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="Preview"></div>
+<div id="SaveTempDlg"></div>
+<script>
+    $(document).ready(function () {
+        $('.DatePicker_Txt_'+@Model.ID).datepicker({
+            changeMonth: true,
+            changeYear: true,
+            inline: true,
+            yearRange: '1920:2030',
+            dateFormat: 'dd-M-yy',
+            //minDate: new Date(''),
+            // maxDate: new Date(''),
+            //maxDate:'+1m +10d',
+            //minDate: -10
+
+            showButtonPanel: true,
+            closeText: 'Clear',
+            onClose: function (dateText, inst) {
+                if ($(window.event.srcElement).hasClass('ui-datepicker-close')) {
+                    $('.DatePicker_Txt_'+@Model.ID).datepicker("hide");
+                    $('.DatePicker_Txt_'+@Model.ID).val('');
+                }
+
+            }
+        });
+        //$('.ShowHideFields').hide();
+        //$('.ShowHideTemplateHeader').hide();
+        $('.TypeofPDFddl').change(function(){
+            if($(this).val()==20){
+                $('.ShowHideFields').show();
+                $('.pdfField').val("@Model.sCSSFileName");
+            }
+            else{
+                $('.pdfField').val('');
+                $('.ShowHideFields').hide();
+            }
+        })
+
+        $('#Category').change(function(){
+            if($(this).val()==20){
+                $('.ShowHideTemplateHeader').show();
+            }
+            else{
+                //$('.headerField').val('');
+                $('.ShowHideTemplateHeader').hide();
+            }
+        })
+
+        $('#chkPwdProtected').change(function(){
+            if($(this).is(":checked")){
+                $('.ShowHideSurNamepwd').show();
+                $('.ShowHideDOBPwd').show();
+                $('.surnamepwdrng').val("@Model.iSurNamePasswordRange");
+                $('.dobpwdrng').val("@Model.iDOBPasswordRange");
+            }
+            else
+            {
+                $('.surnamepwdrng').val('');
+                $('.dobpwdrng').val('');
+                $('.ShowHideSurNamepwd').hide();
+                $('.ShowHideDOBPwd').hide();
+            }
+        })
+
+        jQuery(function ($) {
+            $('#frm').validate({
+                debug: true,
+                rules: {
+                    Name: {
+                        required: true,
+                        minlength: 3,
+                        maxlength: 50,
+                        regx: /^[a-zA-Z ]+$/,
+                    },
+                    Category: {
+                        required: true,
+                    },
+                    Type: {
+                        required: true,
+                    },
+                },
+                messages: {
+                    Name: {
+                        required: " Please enter title",
+                        minlength: "Enter atleast 3 characters",
+                        maxlength: "Only 128 characters allowed",
+                        regx: "Only alphabet allowed",
+                    },
+                    Category: {
+                        required: " Please select category",
+                    },
+                    Type: {
+                        required: " Please select type",
+                    },
+                },
+                errorPlacement: function (error, element) {
+                    $(element).closest('div').next('div').find('.error_label').html(error);
+                },
+            });
+        });
+    });
+    function OnComplete(e) {
+        if ('@Model.str' == 'edit') {
+            opener.location.reload();
+            CustomMessage(e.ResponseMessage, e.Status);
+        }
+        else {
+            opener.location.reload();
+            CustomMessage(e.ResponseMessage, e.Status);
+        }
+    }
+    function functionnew(g)
+    {
+    }
+</script>
+
+

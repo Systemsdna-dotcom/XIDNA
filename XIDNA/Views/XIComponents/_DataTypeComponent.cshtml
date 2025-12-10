@@ -1,0 +1,163 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIDDataType oXID = new XIDDataType();
+    if (Model.oContent.ContainsKey(XIConstant.DataTypeComponent))
+    {
+        oXID = (XIDDataType)Model.oContent[XIConstant.DataTypeComponent];
+        if (oXID == null)
+        {
+            oXID = new XIDDataType();
+        }
+    }
+}
+
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="innerborder">
+                    @* SaveBO *@
+                    @using (Ajax.BeginForm("Save_DataType", "XISemantics", FormMethod.Post, new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "XIDataTypeForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        <input type="hidden" id="ID" name="ID" value="@oXID.ID" />
+                        if (oXID.ID > 0)
+                        {
+                            <div class="form-group">
+                                <div class="col-md-1">
+                                    <label for="inputEmail" class="gn">ID:<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-8">
+                                    <label for="inputEmail" class="gn">@oXID.ID<span class="danger"></span></label>
+                                </div>
+                            </div>
+                        }
+                        if (oXID.FKiApplicationID == 0)
+                        {
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Application<span class="danger"></span></label>
+                                    @Html.DropDownList("FKiApplicationID", new SelectList(oXID.ddlApplications, "Value", "text"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <input type="hidden" id="FKiApplicationID" name="FKiApplicationID" value="@oXID.FKiApplicationID" />
+                        }
+                        <div id="clear-text">
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    @Html.TextBox("sName", oXID.sName, new { @placeholder = "Enter Name Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("sName", null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6 taberrormsg">
+                                    <label for="inputEmail" class="gn">Base Data Type</label>
+                                    @Html.DropDownList("sBaseDataType", new SelectList(new List<Object>{
+                                               new { key= "int" , value = "int" },
+                       new { key= "varchar" , value = "varchar" },
+                       new { key= "datetime" , value = "datetime" },
+                       new { key= "decimal" , value = "decimal" },
+                       new { key= "boolean" , value = "boolean" },
+                    }, "key", "Value", oXID.sBaseDataType), "--Select--", new { @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("sBaseDataType", null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Start Range</label>
+                                    @Html.TextBox("sStartRange", oXID.sStartRange, new { @placeholder = "Enter Start Range", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("sStartRange", null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">End Range</label>
+                                    @Html.TextBox("sEndRange", oXID.sEndRange, new { @placeholder = "Enter End Range", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("sEndRange", null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Regex</label>
+                                    @Html.TextArea("sRegex", oXID.sRegex, new { @placeholder = "Enter Regex Here", @class = "form-control", @rows = "5", @cols = "10" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("sRegex", null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Script</label>
+                                    @Html.TextArea("sScript", oXID.sScript, new { @placeholder = "Enter Script Here", @class = "form-control", @rows = "5", @cols = "10" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("sScript", null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Validation Message</label>
+                                    @Html.TextBox("sValidationMessage", oXID.sValidationMessage, new { @placeholder = "Enter Validation Message", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("sValidationMessage", null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownList("StatusTypeID", new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value", oXID.StatusTypeID), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="submit" class="btn btn-theme" value="Save" />
+                                    @if (oXID.ID == 0)
+                                    {
+                                        <button type="button" class="btn btn-theme reverse" id="ResetXIData">Reset</button>
+                                    }
+                                    <button type="button" class="btn btn-theme decline" id="CancelXIData">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+
+    function OnComplete(e) {
+        CustomMessage(e.ResponseMessage, e.Status);
+        window.opener.location.reload();
+    }
+
+    $('#ResetXIData').click(function () {
+        $('#XIDataTypeForm')[0].reset();
+        $('#XIDataTypeForm .taberrormsg').find('span').html('');
+    });
+
+    $('#CancelXIData').click(function () {
+        window.close();
+    });
+
+</script>

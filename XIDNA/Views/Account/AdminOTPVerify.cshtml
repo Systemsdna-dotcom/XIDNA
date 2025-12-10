@@ -1,0 +1,91 @@
+﻿@model XIDNA.Models.ResetPasswordViewModel
+@using XIDNA
+@{
+    ViewBag.Title = "Forgot Password";
+    Layout = "";
+    var LogoPath = System.Configuration.ConfigurationManager.AppSettings["XIAppLogosPath"];
+    var Title = "XIDNA";
+    if (SessionManager.AppName != null)
+    {
+        Title = SessionManager.AppName;
+    }
+}
+
+@{
+    string sForgotEmail = TempData.Values.FirstOrDefault().ToString();
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>XIDNA</title>
+    <link rel="stylesheet" href="~/Content/css/bootstrap.min.css">
+    <link href="~/Content/css/main.css" rel="stylesheet">
+    <link href="~/Content/css/custom.css" rel="stylesheet" />
+    <script src="~/Scripts/JQuery/jQuery-2.1.4.min.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+</head>
+<body class="hold-transition login-page">
+    <div class="login-box">
+        <div class="login-box-logo">
+            <img src="~/Content/images/XIDNA.png">
+        </div>
+        @if (Model.Value == 2)
+        {
+            <div class="login-box-body">
+                <p class="fc-prime2 no-margin m-b-20 font-nirm font-red">@Model.Error</p>
+                <br />
+                <div class="row">
+                    <div class="col-md-12">
+                        <a href="@Url.Action("ForgotPassword","Account")" class="btn btn-success fullwidth">Resend Link</a>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="login-box-body">
+                <h4 class="login-box-msg-head styl-p font-white uppercase m-t-none">Verification Code<span class="style-p small font-white pull-right login-box-msg"></span></h4>
+                <p class="fc-prime2 no-margin m-b-20 font-nirm font-red" id="ShowError">Please type your verification code sent to your mail account</p>
+                <div id="resetlink">
+                    @using (Ajax.BeginForm("AdminOTPVerify", "Account", null, new AjaxOptions { HttpMethod = "POST", InsertionMode = InsertionMode.Replace, OnSuccess = "OnComplete" }, new { @class = "", role = "form", @id = "ForgotPasswordForm" }))
+                {
+                        <div id="Invalid"></div>
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true)
+                        <input name="Email" type="hidden" value="@sForgotEmail" />
+                        <div class="form-group has-feedback">
+                            @Html.ValidationMessageFor(m => m.Code, "", new { @class = "text-danger" })
+                            @Html.TextBoxFor(m => m.Code, new { @class = "form-control", @placeholder = "Enter Verification Code" })
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-md-12">
+                                <input type="submit" value="Verify" class="btn btn-success fullwidth" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</body>
+</html>
+
+<script>
+    function OnComplete(e) {
+        if (e.Value == 3) {
+            $('#ShowError').html(e.Error);
+        }
+        if (e.Email != null) {
+            window.location.href = '@Url.Action("AdminForgotPassword", "Account")';
+        }
+    }
+</script>

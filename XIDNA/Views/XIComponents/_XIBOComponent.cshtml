@@ -1,0 +1,570 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIDBO oBODef = new XIDBO();
+    if (Model.oContent.ContainsKey(XIConstant.XIBOComponent))
+    {
+        oBODef = (XIDBO)Model.oContent[XIConstant.XIBOComponent];
+        if (oBODef == null)
+        {
+            oBODef = new XIDBO();
+        }
+    }
+}
+
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="innerborder">
+                        @* SaveBO *@
+                        @using (Ajax.BeginForm("IDECreateTableFromBO", "BusinessObjects", FormMethod.Post, new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "BOForm", @class = "form-horizontal" }))
+                            {
+                            @Html.ValidationSummary(true);
+                            <input type="hidden" id="BOID" name="BOID" value="@oBODef.BOID" />
+                            <div id="clear-text">
+                                @if (oBODef.BOID > 0)
+                                    {
+                                    <div class="form-group">
+                                        <div class="col-md-1">
+                                            <label for="inputEmail" class="gn">BOID:<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">@oBODef.BOID<span class="danger"></span></label>
+                                        </div>
+                                    </div>
+                                    }
+                                @if (oBODef.FKiApplicationID == 0)
+                                    {
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Application<span class="danger"></span></label>
+                                            @Html.DropDownList("FKiApplicationID", new SelectList(oBODef.ddlApplications, "Value", "text"), new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    }
+                                    else
+                                    {
+                                    <input type="hidden" id="FKiApplicationID" name="FKiApplicationID" value="@oBODef.FKiApplicationID" />
+                                    }
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">BO Name<span class="danger">*</span></label>
+                                        @if (oBODef.BOID == 0)
+                                            {
+                                            @Html.TextBox("Name", oBODef.Name, new { @placeholder = "Enter Name Here", @class = "form-control" })
+                                            }
+                                            else
+                                            {
+                                            @Html.TextBox("Name", oBODef.Name, new { @readonly = "readonly", @placeholder = "Enter Name Here", @class = "form-control" })
+                                            }
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("Name", null, new { @class = "red" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Table Name<span class="danger">*</span></label>
+                                        @if (oBODef.BOID == 0)
+                                            {
+                                            @Html.TextBox("TableName", oBODef.TableName, new { @placeholder = "Enter Table Name Here", @class = "form-control" })
+                                            }
+                                            else
+                                            {
+                                            @Html.TextBox("TableName", oBODef.TableName, new { @readonly = "readonly", @placeholder = "Enter Table Name Here", @class = "form-control" })
+                                            }
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("TableName", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                @if (oBODef.BOID > 0 && oBODef.ddlBOFieldAttributes != null)
+                                    {
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn"> Name Attribute <span class="danger"></span></label>
+                                            <select class="form-control" id="sNameAttribute" name="sNameAttribute">
+                                                <option value="0">--Select--</option>
+                                                @foreach (var items in oBODef.ddlBOFieldAttributes)
+                                                    {
+                                                        if (oBODef.sNameAttribute == items.text)
+                                                        {
+                                                    <option selected value="@items.text">@items.text</option>
+                                                        }
+                                                        else
+                                                        {
+                                                    <option value="@items.text">@items.text</option>
+                                                        }
+                                                    }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    }
+                                    @*Should be from master table based on this we can filter when BO name is unknown*@
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Type<span class="danger"></span></label>
+                                            @Html.DropDownList("sType", new SelectList(new List<Object>
+                                    {
+                                    new { key= "MasterEntity" , value = "MasterEntity" },
+                                    new { key= "Technical" , value = "Technical" },
+                                    new { key= "Reference" , value = "Reference" },
+                                    new { key= "XISystem" , value = "XISystem" },
+                                    new { key= "Enum" , value = "Enum" },
+                                    new { key= "CacheReference" , value = "CacheReference" },
+                                    new { key= "Audit" , value = "Audit" }
+                                    }, "key", "Value", oBODef.sType), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Section<span class="danger"></span></label>
+                                            @Html.DropDownList("sSection", new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "Accounts" },
+                                    new { key= 20 , value = "CRM" },
+                                    new { key= 30 , value = "Policy" }
+                                    }, "key", "Value", oBODef.sSection), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                    </div>
+
+                                    @*Should be from master table based on this we vcan filter when BO name is unknown*@
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Version<span class="danger">*</span></label>
+                                            @if (oBODef.BOID == 0)
+                                            {
+                                            @Html.TextBox("sVersion", oBODef.sVersion, new { @placeholder = "Enter Version", @class = "form-control" })
+                                            }
+                                            else
+                                            {
+                                            @Html.TextBox("sVersion", oBODef.sVersion, new { @readonly = "readonly", @class = "form-control" })
+                                            }
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessage("sVersion", null, new { @class = "red" })
+                                        </div>
+                                    </div>
+                                    @*<div class="form-group">
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn">Label<span class="danger">*</span></label>
+                                                @Html.TextBoxFor(model => model.sLabel, new { @placeholder = "Enter the Label", @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-4 taberrormsg">
+                                                @Html.ValidationMessageFor(m => m.sLabel, null, new { @class = "red" })
+                                            </div>
+                                        </div>*@
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Description<span class="danger">*</span></label>
+                                            @Html.TextArea("Description", oBODef.Description, new { @placeholder = "Enter Description", @class = "form-control", @rows = 4 })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessage("Description", null, new { @class = "red" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Notes<span class="danger">*</span></label>
+                                            @Html.TextArea("sNotes", oBODef.sNotes, new { @placeholder = "Enter Notes", @class = "form-control", @rows = 3 })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessage("sNotes", null, new { @class = "red" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Size<span class="danger"></span></label>
+                                            @Html.DropDownList("sSize", new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "Small" },
+                                    new { key= 20 , value = "Medium" },
+                                    new { key= 30 , value = "Large" },
+                                    }, "key", "Value", oBODef.sSize), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                    </div>
+
+                                    @*<div class="form-group">
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn">XIDataSource<span class="danger"></span></label>
+                                                @Html.DropDownListFor(m => m.sDataSource, new SelectList(new List<Object>
+                                                    {
+                                                    new { key= 10 , value = "default" },
+                                                    new { key= 20 , value = "XIApplication" },
+                                                    new { key= 30 , value = "XIUniversal" },
+                                                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                            </div>
+                                        </div>*@
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">XIDataSource<span class="danger"></span></label>
+                                            @Html.DropDownList("iDataSource", new SelectList(oBODef.DataSources, "Value", "text", oBODef.iDataSource), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">XISearchType<span class="danger"></span></label>
+                                            @Html.DropDownList("sSearchType", new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "Private" },
+                                    new { key= 20 , value = "Organisation" },
+                                    new { key= 30 , value = "Application" },
+                                    new { key= 40 , value = "Global" },
+                                    }, "key", "Value", oBODef.sSearchType), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            @Html.CheckBox("bUID")
+                                            <label for="inputEmail" class="gn">XIUID<span class="danger"></span></label>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">XIUpdateCount<span class="danger"></span></label>
+                                            @Html.DropDownList("iUpdateCount", new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "Yes" },
+                                    new { key= 20 , value = "No" }
+                                    }, "key", "Value", oBODef.iUpdateCount), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                    </div>
+
+                                    @*<div class="form-group">
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn">XISequence<span class="danger">*</span></label>
+                                                @Html.TextBoxFor(model => model.sSequence, new { @readonly = "readonly", @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-4 taberrormsg">
+                                                @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                            </div>
+                                        </div>*@
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">XIUpdateVersion<span class="danger">*</span></label>
+                                            @Html.TextBox("sUpdateVersion", oBODef.sUpdateVersion, new { @readonly = "readonly", @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessage("sUpdateVersion", null, new { @class = "red" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">XITimeStamped<span class="danger"></span></label>
+                                            @Html.DropDownList("sTimeStamped", new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "Yes" },
+                                    new { key= 20 , value = "No" }
+                                    }, "key", "Value", oBODef.sTimeStamped), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" id="sAudit">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">XIAudit<span class="danger"></span></label>
+                                            @if (oBODef.sAudit != "30")
+                                            {
+                                            @Html.DropDownList("sAudit", new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "No" },
+                                    new { key= 20 , value = "BO Level Combined" },
+                                    new {Key=30, value="BO Level Split"},
+                                    new {Key=40, value="Structure Level"}
+                                    }, "key", "Value", oBODef.sAudit), "--Select--", new { @class = "form-control", @id = "AuditStatus" })
+                                            }
+                                            else
+                                            {
+                                            @Html.DropDownList("sAudit", new SelectList(new List<Object>
+                                        {
+                                        new { key= 10 , value = "No" },
+                                        new { key= 20 , value = "BO Level Combined" },
+                                        new {Key=30, value="BO Level Split"},
+                                        new {Key=40, value="Structure Level"}
+                                        }, "key", "Value", oBODef.sAudit), "--Select--", new { @class = "form-control", @id = "AuditStatus", @disabled = "disabled" })
+                                            }
+                                        </div>
+                                    </div>
+                                    @if (oBODef.sAudit != "30")
+                                    {
+                                    <br />
+                                    <div class="form-group" id="ShowCreateAudit">
+                                        <div class="col-sm-6">
+                                            <input type="button" class="btn btn-theme CreateAudit" value="Create Audit Table" />
+                                        </div>
+                                    </div>
+                                    }
+                                    else
+                                    {
+                                    <br />
+                                    <div class="form-group" id="ShowCreateAudit">
+                                        <div class="col-sm-6">
+                                            <input type="button" class="btn btn-theme CreateAudit" value="Update Audit Table" />
+                                        </div>
+                                    </div>
+                                    }
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">XIDeleteRule<span class="danger"></span></label>
+                                            @Html.DropDownList("sDeleteRule", new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "Yes" },
+                                    new { key= 20 , value = "No" }
+                                    }, "key", "Value", oBODef.sDeleteRule), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    @*<div class="form-group">
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn">Field Count<span class="danger">*</span></label>
+                                                @Html.TextBoxFor(model => model.FieldCount, new { @placeholder = "Enter BO field count", @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-4 taberrormsg">
+                                                @Html.ValidationMessageFor(m => m.FieldCount, null, new { @class = "red" })
+                                            </div>
+                                        </div>*@
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Primary Key<span class="danger">*</span></label>
+                                            @Html.TextBox("sPrimaryKey", oBODef.sPrimaryKey, new { @placeholder = "Enter the Primary Key", @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessage("sPrimaryKey", null, new { @class = "red" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Attribute Name<span class="danger">*</span></label>
+                                            @Html.TextArea("sColumns", oBODef.sColumns, new { @class = "form-control", @placeholder = "Enter Attribute Name", @id = "ColumnName", @rows = 4 })
+
+                                        </div>
+                                        <div class="col-sm-4 fielderror">
+                                            @Html.ValidationMessage("sColumns", "", new { @class = "red" })
+                                            <div class="container">
+                                                @*<a href="#" data-toggle="tooltip" id="ColumnNamesHelp" title='The string has Column name, datatype with length, Column is NULL Ex:"sName,varchar(50),Null". ID will be by default primary key with no null. To create a foriegn key enter "Primary Key Table Name","Primary key Column name" with the column name details Ex: "FKiClassID,int,NOT NULL,OrganizationClasses,ID".'><i class="fa fa-question-circle-o" aria-hidden="true"></i></a>*@
+                                                <a href="#" data-toggle="tooltip" id="ColumnNamesHelp" title='To create a column type "Column name" with prefix("i" is int,"s" is varchar(64),"d" is datetime,"n" is nvarchar(MAX),"r" is float and null by default.) indicating the datatype in lower case with default NULL, Column is NULL Ex:"sName". ID will be by default primary key with no null values allowed. To create a foriegn key enter "Foriegn Key name starts with FK","Primary Key Table Name","Primary key Column name" Ex: "FKiSourceID,OrganizationSources,ID" where third character indicates the datatype. To create "Computed Column" you need to type "CM" followed by computed column name and the column name in the table used to calculate the value and formula, synatx: ComputedColumnName,{Column1.Column2} AS Definition" example: CMAge,{DOB} AS DATEDIFF(YY,DOB,GETDATE())".'><i class="fa fa-question-circle-o" aria-hidden="true"></i></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            @Html.CheckBox("IsClassEnabled")
+                                            <label for="inputEmail" class="gn">Class Enabled<span class="danger"></span></label>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            @Html.CheckBox("bIsAutoIncrement", oBODef.bIsAutoIncrement)
+                                            <label for="inputEmail" class="gn">Is Auto Increment<span class="danger"></span></label>
+                                        </div>
+                                    </div>
+
+                                    @*<div class="form-group">
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn">Class Attribute<span class="danger"></span></label>
+                                                @Html.DropDownListFor(m => m.ClassAttribute, new SelectList(new List<Object>
+                                                    {
+                                                    new { key= 10 , value = "Order" },
+                                                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                            </div>
+                                        </div>*@
+
+                                    @*  *@
+                                    @*<div class="form-group">
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn">XIHelpItem<span class="danger"></span></label>
+                                                @Html.DropDownListFor(m => oBODef.sHelpItem, new SelectList(oBODef.HelpTypes, "Value", "text"), new { @class = "form-control" })
+                                            </div>
+                                        </div>*@
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Transaction Enable<span class="danger"></span></label>
+                                            @Html.DropDownList("iTransactionEnable", new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "Yes" },
+                                    new { key= 20 , value = "No" }
+                                    }, "key", "Value", oBODef.iTransactionEnable), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessage("iTransactionEnable", null, new { @class = "red" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            @Html.CheckBox("bIsHierarchy", oBODef.bIsHierarchy)
+                                            <label for="inputEmail" class="gn">Is Hierarchy<span class="danger"></span></label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="ColumnDiv">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                            @Html.DropDownList("StatusTypeID", new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "Active" },
+                                    new { key= 20 , value = "Inactive" }
+                                    }, "key", "Value", oBODef.StatusTypeID), "--Select--", new { @class = "form-control" })
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-10">
+                                        <input type="submit" class="btn btn-theme" value="Save" />
+                                        @if (oBODef.BOID == 0)
+                                        {
+                                        <button type="button" class="btn btn-theme reverse" id="ResetBoBtn">Reset</button>
+                                        }
+                                        @if (oBODef.BOID > 0)
+                                        {
+                                            // CopyBO", "BusinessObjects"
+                                        <input type="button" class="btn btn-theme reverse" id="CopyBoBtn" value="Copy">
+                                        }
+                                        <button type="button" class="btn btn-theme decline" id="CancelBO">Cancel</button>
+                                    </div>
+                                </div>
+                            }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#CancelBO').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#BOForm')[0].reset();
+            $('#BOForm .taberrormsg').find('span').html('');
+        });
+    })
+    function OnFormBegin() {
+        $('#BOForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+
+    function OnComplete(e) {
+        $('#BOForm').unblock();
+        $('#BOForm')[0].reset();
+        //CustomMessage(e.ResponseMessage, e.Status);
+        if (e.Status == false) {
+            $("#BootstrpError").show();
+            $("#BootstrpError").append("<strong>Failure!</strong> OOPS looks like there is some error");
+            $(function () {
+                setTimeout(function () {
+                    $("#BootstrpError").hide('blind', {}, 500)
+                }, 5000);
+            });
+        }
+        else {
+            $("#BootstrpAlertSuccess").show();
+            $("#BootstrpAlertSuccess").append("<strong>Success!</strong> The Business Object and table have been created successfully.");
+            $(function () {
+                setTimeout(function () {
+                    $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                }, 5000);
+            });
+        }
+    }
+
+    $('#sAudit').change(function(){
+        var Audit = $('#AuditStatus :selected').text();
+        if(Audit == "BO Level Split")
+        {
+            $('#ShowCreateAudit').show();
+        }
+        else
+        {
+            $('#ShowCreateAudit').hide();
+        }
+    });
+
+    $('.CreateAudit').click(function () {
+        var BOID=@oBODef.BOID;
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("CreateAuditTable", "BusinessObjects")',
+            data: { BOID: BOID },
+            cache: false,
+            async: false,
+            dataType: 'html',
+            success: function (data) {
+            }
+        });
+    });
+
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#ShowCreateAudit').hide();
+        if('@oBODef.sAudit' == 30)
+        {
+            $('#ShowCreateAudit').show();
+        }
+        var Copypopups = new Array();
+        $('#CancelBO').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#BOForm')[0].reset();
+            $('#BOForm .taberrormsg').find('span').html('');
+        });
+        $('#CopyBoBtn').click(function () {
+            var ID=@oBODef.BOID;
+            if (Copypopups.length > 0) {
+                for (i = 0; i < Copypopups.length; i++) {
+                    Copypopups[i].close();
+                }
+            }
+            var Copybo = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CopyBO", "BusinessObjects")',
+                data: { ID: ID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    with (Copybo.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    Copypopups.push(Copybo);
+                    Copybo.moveTo(0, 0);
+                }
+            });
+        });
+    })
+    function OnFormBegin() {
+        $('#BOForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+
+    function OnComplete(e) {
+        $('#BOForm').unblock();
+        $('#BOForm')[0].reset();
+        CustomMessage(e.ResponseMessage, e.Status);
+    }
+
+</script>

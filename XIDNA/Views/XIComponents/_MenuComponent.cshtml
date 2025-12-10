@@ -1,0 +1,602 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using Newtonsoft.Json
+@using XIDNA
+@{
+    var AppName = SessionManager.AppName;
+    var MenuType = SessionManager.MenuType;
+    if (string.IsNullOrEmpty(MenuType))
+    {
+        MenuType = "normal";
+    }
+    var sMenuname = "Menu";
+    ViewBag.Title = "_MenuComponent";
+    var sHostingPath = System.Configuration.ConfigurationManager.AppSettings["HostingPath"].ToString();
+    var ApplicationPath = System.Configuration.ConfigurationManager.AppSettings["ApplicationPath"].ToString();
+    List<XICore.XIMenu> oMenu = new List<XICore.XIMenu>();
+    if (Model.oContent.ContainsKey(XIConstant.MenuComponent))
+    {
+        oMenu = (List<XICore.XIMenu>)Model.oContent[XIConstant.MenuComponent];
+        if (oMenu == null)
+        {
+            oMenu = new List<XICore.XIMenu>();
+        }
+        if (oMenu.Count() > 0)
+        {
+            sMenuname = oMenu.FirstOrDefault().RootName.Replace(" ", "");
+        }
+    }
+    var IsActivity = "no";
+    var ODef = (XIDComponent)Model.oDefintion;
+    var oVisualisations = Model.oVisualisation;
+    if (oVisualisations != null)
+    {
+        var oVisual = oVisualisations.FirstOrDefault();
+        if (oVisual != null && oVisual.XiVisualisationNVs != null && oVisual.XiVisualisationNVs.Count() > 0)
+        {
+            var oVNVs = oVisual.XiVisualisationNVs;
+            var sActivity = oVNVs.Where(m => m.sName.ToLower() == "IsActivity".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(sActivity))
+            {
+                IsActivity = sActivity;
+            }
+        }
+    }
+    var sRenderType = "Menu";
+    sRenderType = ODef.Params.Where(x => x.sName.ToLower() == "RenderType".ToLower()).Select(x => x.sValue).FirstOrDefault();
+    if (string.IsNullOrEmpty(sRenderType))
+    {
+        sRenderType = "Menu";
+    }
+    string sActiveMenu = ODef.Params.Where(x => x.sName.ToLower() == "-ActiveMenu".ToLower()).Select(x => x.sValue).FirstOrDefault();
+    var Role = string.Empty;
+    Role = SessionManager.sRoleName;
+}
+@if (sRenderType == "Menu")
+{
+    <div id="MenuContent" class="xicomponent">
+        @*<span class="DialogPopout"><i class="fa fa-external-link"></i></span>*@
+        <div class="control-sidebar control-sidebar-dark sidebar control-sidebar-open right-nav-btns">
+            <ul class="sidebar-menu menulist" id="UserMenu-@sMenuname">
+                @TreeView(oMenu.OrderBy(m => m.Priority), sActiveMenu, sHostingPath)
+                @helper TreeView(IEnumerable<XICore.XIMenu> nodes, string sActiveMenu, string sHostingPath)
+                {
+int i = 0;
+foreach (var node in nodes)
+{
+    int ID = node.ID;
+    if (!node.isHide)
+    {
+        if (node.SubGroups.Count == 0)
+        {
+            if (!string.IsNullOrEmpty(sActiveMenu))
+            {
+                if (node.Name.ToLower() == sActiveMenu.ToLower())
+                {
+                        <li class="treeview active @node.sCssClass">
+                            <span class="background"></span>
+                            @if (node.XiLinkID > 0)
+                        {
+                                <a data-xilinkid="@node.XiLinkID" id="menu_@i" data-action="@node.ActionType" onclick="fncLoadMenu(this)"><span>@node.Name</span></a>
+                            }
+                            else
+                            {
+                                <a onclick="fncLoadConfig('@node.MenuAction', '@node.MenuController', '@sHostingPath', '@node.Name')"><span>@node.Name</span></a>
+                            }
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="treeview @node.sCssClass">
+                            <span class="background"></span>
+                            @if (node.XiLinkID > 0)
+                        {
+                            if (node.XiLinkID == 4386 || node.XiLinkID == 4396 || node.XiLinkID == 4440 || node.XiLinkID == 4220 || node.XiLinkID == 4644 || node.XiLinkID == 4616)
+                            {
+                                    <a onclick="XIRun(this,'@node.XiLinkID', 0, null, null, true, 0, 0,'@node.Name')" data-xilinkid="@node.XiLinkID"><span>@node.Name</span></a>
+                                }
+                                else
+                                {
+                                    <a data-xilinkid="@node.XiLinkID" id="menu_@i" data-action="@node.ActionType" onclick="fncLoadMenu(this)"><span>@node.Name</span></a>
+                                }
+                            }
+                            else
+                            {
+                                <a onclick="fncLoadConfig('@node.MenuAction', '@node.MenuController', '@sHostingPath', '@node.Name')"><span>@node.Name</span></a>
+                            }
+                        </li>
+                    }
+                }
+                else if (i == 0)
+                {
+                    <li class="treeview active @node.sCssClass">
+                        <span class="background"></span>
+                        @if (node.XiLinkID > 0 || (node.XiLinkIDXIGUID != null && node.XiLinkIDXIGUID != Guid.Empty))
+                    {
+                        if (node.XiLinkID == 4386 || node.XiLinkID == 4396 || node.XiLinkID == 4440 || node.XiLinkID == 4220 || node.XiLinkID == 4644 || node.XiLinkID == 4616)
+                        {
+                                <a onclick="XIRun(this,'@node.XiLinkID', 0, null, null, true, 0, 0,'@node.Name')" data-xilinkid="@node.XiLinkID"><span>@node.Name</span></a>
+                            }
+                            else
+                            {
+                                <a data-xilinkid="@node.XiLinkIDXIGUID" id="menu_@i" data-action="@node.ActionType" onclick="fncLoadMenu(this)"><span>@node.Name</span></a>
+                            }
+                        }
+                        else
+                        {
+                            <a onclick="fncLoadConfig('@node.MenuAction', '@node.MenuController', '@sHostingPath', '@node.Name')"><span>@node.Name</span></a>
+                        }
+                    </li>
+                }
+                else
+                {
+                    <li class="treeview @node.sCssClass">
+                        <span class="background"></span>
+                        @if (node.XiLinkID > 0 || (node.XiLinkIDXIGUID != null && node.XiLinkIDXIGUID != Guid.Empty))
+                        {
+                            if (node.XiLinkID == 4386 || node.XiLinkID == 4396 || node.XiLinkID == 4440 || node.XiLinkID == 4220 || node.XiLinkID == 4644 || node.XiLinkID == 4616)
+                            {
+                                <a onclick="XIRun(this,'@node.XiLinkID', 0, null, null, true, 0, 0,'@node.Name')" data-xilinkid="@node.XiLinkID"><span>@node.Name</span></a>
+                            }
+                            else
+                            {
+                                <a data-xilinkid="@node.XiLinkIDXIGUID" id="menu_@i" data-action="@node.ActionType" onclick="fncLoadMenu(this)"><span>@node.Name</span></a>
+                            }
+                        }
+                        else
+                        {
+                            <a onclick="fncLoadConfig('@node.MenuAction', '@node.MenuController', '@sHostingPath', '@node.Name')"><span>@node.Name</span></a>
+                        }
+                    </li>
+                }
+            }
+            else
+            {
+                <li class="treeview @node.sCssClass">
+                    <span class="background"></span>
+                    @if (node.XiLinkID > 0)
+                {
+                       <a data-xilinkid="@node.XiLinkIDXIGUID" id="menu_@i" data-action="@node.ActionType" onclick="fncLoadMenu(this)"><span>@node.Name</span> <i class="fa fa-angle-left pull-right"></i></a>
+                    }
+                    else
+                    {
+                        <a href="#"><span>@node.Name</span> <i class="fa fa-angle-left pull-right"></i></a>
+                    }
+                    <ul class="treeview-menu">@TreeView(node.SubGroups.OrderBy(m => m.Priority), sActiveMenu, sHostingPath)</ul>
+                </li>
+        }
+        i++;
+    }
+}
+}
+            </ul>
+        </div>
+    </div>
+}
+else if (sRenderType.ToLower() == "button")
+{
+    foreach (var menu in oMenu)
+    {
+        <button type="button" class="btn btn-theme" onclick="XIRun(this,'@menu.XiLinkID', 0, '@Model.sGUID', null, false, 0, 0)">@menu.Name</button>
+    }
+}
+else if (sRenderType == "InlineReplace")
+{
+    <div class="content-header">
+        <a class="UserPanelBtn" data-toggle="modal" data-target="#UserControlPane">User Control Panel</a>
+        <div class="select-project">
+            @*<button class="btn btn-info btn-sm active BuildBtn" data-bid="1">Building 1 DEMO</button>
+                <button class="btn btn-info btn-sm BuildBtn" data-bid="2">UNITE Birmingham</button>*@
+        </div>
+        <div class="modal" id="UserControlPane" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <!-- <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Resume</h4>
+                    </div> -->
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">X</span></button>
+                        <h1 class="modal-title">Projects</h1>
+                    </div>
+                    <div class="modal-body">
+                        <!-- <div class="">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">X</span></button>
+                            <h1 class="modal-title">Projects</h1>
+                        </div> -->
+                        @*<div class="row">
+                                <div class="col-sm-6">
+                                    <table class="table table-condensed autowidth">
+                                        <tr>
+                                            <td>Born</td>
+                                            <td>:</td>
+                                            <td>1985</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Height</td>
+                                            <td>:</td>
+                                            <td>5”11</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Eye Color</td>
+                                            <td>:</td>
+                                            <td>Brown</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Hair Color</td>
+                                            <td>:</td>
+                                            <td>Brown</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Languages</td>
+                                            <td>:</td>
+                                            <td>English, German</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-sm-6">
+                                    <a href="#">Download Resume</a>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="normal fc-yellow">Special Skills</h3>
+                                    <p>Swimming</p>
+                                    <p>Football</p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <h3 class="normal fc-yellow">Theater</h3>
+                                    <!-- <p>2023, Play / Director / Theater / Role</p>
+                                <p>2023, Play / Director / Theater / Role</p> -->
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="normal fc-yellow">Film</h3>
+                                    <!-- <p>2023, Title / Director / Role</p>
+                                <p>2023, Title / Director / Role</p>
+                                <p>2023, Title / Director / Role</p> -->
+                                </div>
+                                <div class="col-sm-6">
+                                    <h3 class="normal fc-yellow">Education & Training</h3>
+                                    <!-- <p>2023, Play / Director / Theater / Role</p>
+                                <p>2023, Play / Director / Theater / Role</p> -->
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h3 class="normal fc-yellow">TV</h3>
+                                    <!-- <p>2023, Title / Director / Production House / Role</p>
+                                <p>2023, Title / Director / Production House / Role</p> -->
+                                </div>
+                                <div class="col-sm-6">
+                                    <h3 class="normal fc-yellow">Awards</h3>
+                                    <!-- <p>2023 / Description</p>
+                                <p>2023 / Description</p>
+                                <p>2023 / Description</p> -->
+                                </div>
+                            </div>*@
+                        @*
+                            <hr />*@
+                        <div class="BuildBtns">
+                            @*<button class="btn active BuildBtn" data-bid="1">Building1</button>
+                                <button class="btn BuildBtn" data-bid="2">Building2</button>
+                                <button class="btn btn-info btn-sm active BuildBtn" data-bid="1">Building 1 DEMO</button>
+                                <button class="btn btn-info btn-sm BuildBtn" data-bid="2">UNITE Birmingham</button>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="MenuIR">
+        @InlineTreeView(oMenu, sActiveMenu, ApplicationPath)
+        @helper InlineTreeView(IEnumerable<XICore.XIMenu> nodes, string sActiveMenu, string ApplicationPath)
+        { <div class="tabList">
+            <ul class="list-group">
+                @foreach (var node in nodes)
+                {
+                    if (node.SubGroups.Count() > 0)
+                    {
+                <li class="parent-@node.ParentID" onclick="fncMenuInlineReplace('@node.ID', this, '@node.ParentID')">
+                    <a>
+                        <div class="asideTabsIcn img-container"><img src="@ApplicationPath/Content/images/createifMenuIcons/@node.sIcon" alt=""></div>@node.Name
+                    </a>
+                </li>
+                <div class="subnodes-@node.ID" style="display:none">
+                    <div class="content-header chead-@node.ID">
+                        <a class="pull-right font-md" onclick="fncReturnToParent('@node.ID','@node.ParentID')"><i class="fa ion-ios-arrow-back pull-left"></i> Back</a>
+                        <h1 class="">@node.Name</h1>
+                    </div>
+                    @InlineTreeView(node.SubGroups, sActiveMenu, ApplicationPath)
+                </div>
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(node.sIFrameURL))
+                        {
+                <li class="parent-@node.ParentID menuitem" data-nodeid="@node.ID" onclick="fncLoadIFrame(this, '@node.sIFrameURL')">
+                    <a>
+                        <div class="asideTabsIcn img-container"><img src="@ApplicationPath/Content/images/createifMenuIcons/@node.sIcon" alt=""></div>@node.Name
+                    </a>
+                </li>
+                        }
+                        else
+                        {
+                            if (node.XiLinkID > 0)
+                            {
+                <li class="parent-@node.ParentID menuitem side-nav-level1" data-level="1" data-nodeid="@node.ID" data-name="@node.Name">
+                    @*onmouseenter="fncLoadMenuContent(this)"*@
+                    <a data-xilinkid="@node.XiLinkID" data-action="@node.ActionType" onclick="fncLoadMenu(this)">
+                        <div class="asideTabsIcn img-container"><img src="@ApplicationPath/Content/images/createifMenuIcons/@node.sIcon" alt=""></div>@node.Name
+                    </a>
+                </li>
+                            }
+                            else
+                            {
+                <li class="parent-@node.ParentID menuitem side-nav-level1" data-level="1" data-nodeid="@node.ID" data-name="@node.Name" onclick="fncLoadMenuContent1(this)">
+                    @*onmouseenter="fncLoadMenuContent(this)"*@
+                    @*<a data-xilinkid="@node.XiLinkID" id="menu_@i" data-action="@node.ActionType" onclick="fncLoadMenu(this)"><span>@node.Name</span></a>*@
+                    <a>
+                        <div class="asideTabsIcn img-container"><img src="@ApplicationPath/Content/images/createifMenuIcons/@node.sIcon" alt=""></div>@node.Name
+                    </a>
+                </li>
+                            }
+
+                        }
+                    }
+                }
+            </ul>
+        </div>
+}
+    </div>
+}
+
+<script src="~/Scripts/CommonFunctions.js"></script>
+<script type="text/javascript">
+    var jMenuCompDef = '@Html.Raw(Json.Encode(Model.oDefintion))';
+    $(document).ready(function () {
+        $('.menulist1').on('click', 'a', function () {
+            $('.menulist li').removeClass('active');
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            $(this).closest('li').addClass('active');
+            var XiLinkID = $(this).attr('data-xilinkid');
+            var ActionType = $(this).attr('data-action');
+            var MenuName = $(this).text();
+            if (XiLinkID) {
+                if (ActionType == 30) {
+                    var InputParams = [];
+                    var param = {};
+                    param["sName"] = 'sType';
+                    param["sValue"] = 'Menu';
+                    InputParams.push(param);
+                    XILinkLoadJson(XiLinkID, sGUID, InputParams, MenuName);
+                } else {
+                    if (XiLinkID != 4386 && XiLinkID != 4396 && XiLinkID != 4440 && XiLinkID != 4220 && XiLinkID != 4644 && XiLinkID != 4616) {
+                        XIRun(null, XiLinkID, 0, sGUID, null, false, 0, 0, MenuName);
+                    }
+                }
+            }
+        });
+        if ('@Role' == 'WMBeneficier') {
+            var iID = $('#WMBeneficierMenu');
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', iID[0]);
+            XIRun(null, 5434, 0, sGUID, null, false);
+        }
+
+        //$('.BuildBtn').click(function () {
+        //    debugger
+        //    $('.BuildBtns').find('.BuildBtn').removeClass('active');
+        //    $(this).addClass('active');
+        //    var Name = $(this).attr('data-name');
+        //    $('.select-project').html('<button class="btn btn-info btn-sm active">' + Name + '</button>');
+        //});
+
+    });
+
+    function fncLoadMenu(_this) {
+        debugger;
+        $('.menulist li').removeClass('active');
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+        $(_this).closest('li').addClass('active');
+        var XiLinkID = $(_this).attr('data-xilinkid');
+        var ActionType = $(_this).attr('data-action');
+        var MenuName = $(_this).text();
+        if (XiLinkID) {
+            if (ActionType == 30) {
+                var InputParams = [];
+                var param = {};
+                param["sName"] = 'sType';
+                param["sValue"] = 'Menu';
+                InputParams.push(param);
+                XILinkLoadJson(XiLinkID, sGUID, InputParams, MenuName);
+            } else {
+                if (XiLinkID != 4386 && XiLinkID != 4396 && XiLinkID != 4440 && XiLinkID != 4220 && XiLinkID != 4644 && XiLinkID != 4616) {
+                    XIRun(null, XiLinkID, 0, sGUID, null, false, 0, 0, MenuName, null, '@IsActivity');
+                }
+            }
+        }
+    }
+
+    function fncMenuInlineReplace(nodeName, _this, ParentNode) {
+        $('li.parent-' + ParentNode).hide();
+        $('.subnodes-' + nodeName).show();
+        $('.subnodes-' + ParentNode).find('.chead-' + ParentNode).hide();
+    }
+
+    function fncReturnToParent(node, Parent) {
+        $('.subnodes-' + node).hide();
+        $('li.parent-' + Parent).show();
+        $('.chead-' + Parent).show();
+    }
+
+    function fncLoadIFrame(_this, URL) {
+        $('#RightContent').html('<div class="loader"></div>');
+        $('.menuitem').removeClass('active');
+        $(_this).addClass('active');
+        $('#RightContent').html('<iframe src="' + URL + '" height="100%" width="100%" style="border:none;"></iframe>');
+    }
+
+    function fncLoadMenuContent1(_this) {
+        Backnav = "";
+        BackName = "";
+        var MenuType = $('.slctpro').attr('data-menu');
+        //if (MenuType == "dynamic") {
+        //    return;
+        //}
+        $('#RightContent').html('<div class="loader"></div>');
+        $('.menuitem').removeClass('active');
+        $(_this).addClass('active');
+        var sLayoutType = "Dialog";
+        var MenuID = $(_this).attr('data-nodeid');
+        var Folders = $('.slctpro').attr('data-proname');
+        var FolderName = $(_this).attr('data-name');
+        $('.slctpro').attr('data-foldername', Folders + "//" + FolderName);
+        var BuildingID = $('.BuildBtns').find('button.active');
+        var bid = $('.slctpro').attr('data-bid');
+        var _uidialog = fncgetDialogFromHTMLTree('dialog', _this);
+        if (_uidialog == null || (_uidialog && _uidialog.length == 0)) {
+            sLayoutType = "inline-layout";
+            _uidialog = fncgetInlineLayoutFromHTMLTree('inline-layout', _this);
+        }
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+        var ParentID = $(_this).attr('data-nodeid');
+        var JParams = JSON.parse(jMenuCompDef).Params;
+        for (var i = 0; i < JParams.length; i++) {
+            //debugger
+            var InputParams = [];
+            if (JParams[i].sName.toLowerCase() == "MenuClickParam".toLowerCase()) {
+                var WrapperParms = {};
+                WrapperParms["sName"] = JParams[i].sValue;
+                WrapperParms["sValue"] = "XIC|null";
+                var param2 = {};
+                param2["sName"] = 'ParentID';
+                param2["sValue"] = MenuID;
+                InputParams.push(param2);
+                var param3 = {};
+                param3["sName"] = 'BuildingID';
+                param3["sValue"] = bid;
+                InputParams.push(param3);
+                var param4 = {};
+                param4["sName"] = 'FolderName';
+                param4["sValue"] = FolderName;
+                InputParams.push(param4);
+                if (FolderName == 'Red Documents' || FolderName == 'Amber Documents') {
+                    var param5 = {};
+                    param5["sName"] = 'sFilterType';
+                    param5["sValue"] = FolderName;
+                    InputParams.push(param5);
+                }
+                WrapperParms["nSubParams"] = InputParams;
+            }
+        }
+        //debugger
+        var NewParams = [];
+        NewParams.push(WrapperParms);
+        fncUpdateXIParams("", sGUID, sGUID, NewParams).then(function (data) {
+            var iStepID = "Step with Level2 Layout";
+            //if (FolderName == 'Red Documents' || FolderName == 'Amber Documents') {
+            //    iStepID = "Step with Document List";
+            //}
+            var iQSDID = 1581;
+            $.ajax({
+                contentType: 'application/json; charset=utf-8',
+                url: '@Url.Action("LoadStep", "XiLink")',
+                datatype: 'json',
+                cache: false,
+                async: true,
+                //data: { sStep: DefaultStep, iQSID: iQSDID, i1ClickID: i1ClickID, sDefaultStep: DefaultStep, iInstanceID: iInstanceID, sGUID: sGUID },
+                data: { sStep: iStepID, iQSID: iQSDID, i1ClickID: "0", sDefaultStep: iStepID, iInstanceID: "0", sGUID: sGUID },
+                success: function (oStepI) {
+                    debugger
+                    var Output = "RightContent";
+                    var iBODID = 0;
+                    $(_this).attr('data-load', 'true');
+                    fncRenderStepContent(oStepI, '#' + Output, "", null, _uidialog).then(function (ConfigParams) {
+                        $(_uidialog).find('#' + Output).find('.loader').remove();
+                        fncLoadScroll(_uidialog, sLayoutType);
+                    });
+                    //if (Output != 'undefined') {
+                    //    $('#' + Output).html(StepData);
+                    //}
+
+                },
+                error: function (data) {
+
+                }
+            })
+        })
+    }
+    if ('@AppName.ToLower()' == "createif") {
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            url: '@Url.Action("GetProjects", "File")',
+            datatype: 'json',
+            cache: false,
+            async: true,
+            success: function (data) {
+                var Btns = "";
+                if (data && data.length > 0) {
+                    for (m = 0; m < data.length; m++) {
+                        Btns = Btns + '<button class="btn btn-info btn-sm active BuildBtn" data-dismiss="modal" data-bid="' + data[m].sValue + '" data-name="' + data[m].sName + '" onclick="fncSelectProject(this)">' + data[m].sName + '</button>';
+                    }
+                    $('.BuildBtns').html(Btns);
+                    $('.select-project').html('<button class="btn btn-info btn-sm active slctpro" data-menu="@MenuType.ToLower()" data-bid="' + data[0].sValue + '" data-proname="' + data[0].sName + '" data-foldername="' + data[0].sName + '">' + data[0].sName + '</button>');
+                }
+                @*var selpor = $('.slctpro');
+                var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', selpor[0]);
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SetParams", "xilink")',
+                    data: JSON.stringify({ sID: data[0].sValue, sGUID: sGUID, sName: ' {xip|iBuildingID}', sBO: '' }),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    success: function () {
+                        //resolve(true);
+                    }
+                });*@
+            },
+            error: function (data) {
+
+            }
+        })
+    }
+
+    function fncSelectProject(_this) {
+        $('.BuildBtns').find('.BuildBtn').removeClass('active');
+        $(_this).addClass('active');
+        var Name = $(_this).attr('data-name');
+        var id = $(_this).attr('data-bid');
+        $('.select-project').html('<button class="btn btn-info btn-sm active slctpro" data-bid=' + id + ' data-proname="' + Name + '" data-foldername="' + Name + '">' + Name + '</button>');
+        $('#RightContent').html('');
+        @*var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetParams", "xilink")',
+            data: JSON.stringify({ sID: id, sGUID: sGUID, sName: ' {xip|iBuildingID}', sBO: '' }),
+            contentType: 'application/json;',
+            dataType: 'json',
+            traditional: true,
+            success: function () {
+                //resolve(true);
+            }
+        });*@
+    }
+
+    function fncLoadMenuContent(_this) {
+        var MenuType = $('.slctpro').attr('data-menu');
+        if (MenuType == "dynamic") {
+            var Folders = "Project1" + "//" + $('.slctpro').attr('data-proname');
+            var FolderName = $(_this).attr('data-name');
+            //$('.slctpro').attr('data-foldername', Folders + "//" + FolderName);
+            $(_this).attr('data-ibodid', 1232);
+            fncGetInstanceTree(_this, "menu");
+        }
+    }
+</script>

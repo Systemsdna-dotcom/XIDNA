@@ -1,0 +1,1396 @@
+﻿@*@model IEnumerable<XICore.XIIBO>*@
+@model XICore.XIIComponent
+@using XICore
+@using XISystem
+@{
+    XIDBO oBOD = new XIDBO();
+    int iBODID = 0;
+    Guid BOIDGUID = Guid.Empty;
+    XID1Click o1ClickD = new XID1Click();
+    if (Model.oContent.ContainsKey(XIConstant.GridComponent))
+    {
+        o1ClickD = (XID1Click)Model.oContent[XIConstant.GridComponent];
+        if (o1ClickD == null)
+        {
+            o1ClickD = new XID1Click();
+        }
+        XIInfraCache oCache = new XIInfraCache();
+        oBOD = (XIDBO)oCache.GetObjectFromCache(XIConstant.CacheBO_All, null, o1ClickD.BOIDXIGUID.ToString());
+    }
+    var bIsStepLock = false;
+    if (ViewBag.bIsStepLock != null)
+    {
+        bIsStepLock = ViewBag.bIsStepLock;
+    }
+    var CurrentDate = DateTime.Now.ToString();
+    if (o1ClickD != null)
+    {
+        // sBOName = o1ClickD.sBOName;
+        iBODID = o1ClickD.BOID;
+        BOIDGUID = o1ClickD.BOIDXIGUID;
+    }
+    if (oBOD == null)
+    {
+        XIInfraCache oCache = new XIInfraCache();
+        oBOD = (XIDBO)oCache.GetObjectFromCache(XIConstant.CacheBO_All, null, BOIDGUID.ToString());
+        BOIDGUID = oBOD.XIGUID;
+    }
+    var sPrimaryKey = oBOD.sPrimaryKey;
+    var sBOName = oBOD.Name;
+    int j = 0;
+    var iRecordCount = ViewBag.iRecordCount;
+    if (iRecordCount > 0)
+    {
+        j = iRecordCount;
+    }
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["SharedPath"];
+    // var ShowID = Model.FirstOrDefault().sShowID;
+    var bIsUploadRefresh = "no";
+    string sShowID = "no";
+    string sDisplayDocName = "no";
+    string sUploadFile = "yes";
+    string sRowDelete = "no";
+    var oVisualisations = Model.oVisualisation;
+    var o1ClickVisual = o1ClickD.oVisualisation;
+    List<XIVisualisationNV> oVNVs = new List<XIVisualisationNV>();
+    if (oVisualisations != null)
+    {
+        var oVisual = oVisualisations.FirstOrDefault();
+        if (oVisual != null && oVisual.XiVisualisationNVs != null && oVisual.XiVisualisationNVs.Count() > 0)
+        {
+            oVNVs = oVisual.XiVisualisationNVs;
+            var IsUploadRefresh = oVNVs.Where(m => m.sName.ToLower() == "bIsUploadRefresh".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(IsUploadRefresh))
+            {
+                bIsUploadRefresh = IsUploadRefresh;
+            }
+            var ISDisplayID = oVNVs.Where(m => m.sName.ToLower() == "DisplayID".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(ISDisplayID))
+            {
+                sShowID = ISDisplayID;
+            }
+            var ISDisplayDocName = oVNVs.Where(m => m.sName.ToLower() == "IsDisplayDocName".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(ISDisplayDocName))
+            {
+                sDisplayDocName = ISDisplayDocName;
+            }
+            var IsUploadFile = oVNVs.Where(m => m.sName.ToLower() == "IsUploadFile".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(IsUploadFile))
+            {
+                sUploadFile = IsUploadFile;
+            }
+            var RowDelete = oVNVs.Where(m => m.sName.ToLower() == "RowDelete".ToLower()).Select(m => m.sValue).FirstOrDefault();
+            if (!string.IsNullOrEmpty(RowDelete))
+            {
+                sRowDelete = RowDelete;
+            }
+        }
+    }
+    if (o1ClickVisual != null && o1ClickVisual.Count > 0)
+    {
+        oVNVs = o1ClickVisual.FirstOrDefault().XiVisualisationNVs;
+        var RowDelete = oVNVs.Where(m => m.sName.ToLower() == "RowDelete".ToLower()).Select(m => m.sValue).FirstOrDefault();
+        if (!string.IsNullOrEmpty(RowDelete))
+        {
+            sRowDelete = RowDelete;
+        }
+    }
+}
+
+
+@foreach (var oBOI in o1ClickD.oDataSet.Values)
+{
+    var NewsGUID = Guid.NewGuid().ToString();
+    var sInstanceID = string.Empty;
+    string sInstanceXIGUID = string.Empty;
+    string sRowColour = string.Empty;
+    string sUploadStatus = string.Empty;
+    sInstanceID = oBOI.Attributes.Values.Where(m => m.sName.ToLower() == oBOD.sPrimaryKey.ToLower()).Select(m => m.sValue).FirstOrDefault();
+    sInstanceXIGUID = oBOI.Attributes.Values.Where(m => m.sName.ToLower() == "xiguid").Select(m => m.sValue).FirstOrDefault();
+    if (oBOI.ScriptResults != null && oBOI.ScriptResults.Count() > 0)
+    {
+        foreach (var oScriptResult in oBOI.ScriptResults)
+        {
+            switch (oScriptResult.sType)
+            {
+                case "RowColour":
+                    sRowColour = oScriptResult.sScriptResult;
+                    break;
+                case "UploadStatus":
+                    sUploadStatus = oScriptResult.sScriptResult;
+                    break;
+            }
+        }
+    }
+    //string sRowColour = oBOI.Attributes.Values.Where(m => m.sName.ToLower() == "iDueInDays".ToLower()).Select(m => m.sRowColour).FirstOrDefault();
+    //if(!string.IsNullOrEmpty(sRowColour))
+    //{
+    //    sRowColour = sRowColour.ToLower();
+    //}
+    if (string.IsNullOrEmpty(sInstanceID))
+    {
+        sInstanceID = "0";
+    }
+    var sBOUID = iBODID + "_" + sInstanceID;
+    int iDueInDays = 0;
+    //sRowColour = oBOI.sScriptResult;
+    // var sScriptResult= oBOI.Attributes
+    string sFileAliasType = string.Empty;
+    string sFileAliasName = string.Empty;
+    string sRowNo = "tr" + j + "_RowNo";
+    <tr class="@sRowColour Gridrow" id="Instance_@sInstanceID" data-row="@sRowNo">
+        @foreach (var oAttr in oBOI.Attributes.Values.ToList())
+        {
+            var isHidden = string.Empty;
+            string sLableName = oBOD.Attributes.Where(x => x.Value.Name.ToLower() == oAttr.sName.ToLower()).Select(x => x.Value.LabelName).FirstOrDefault();
+            if (oVNVs != null && oVNVs.Count() > 0 && !string.IsNullOrEmpty(sLableName))
+            {
+                isHidden = oVNVs.Where(x => x.sName.ToLower() == sLableName.ToLower()).Select(x => x.sValue).FirstOrDefault();
+            }
+            if (string.IsNullOrEmpty(isHidden))
+            {
+                if (oVNVs != null && oVNVs.Count() > 0 && !string.IsNullOrEmpty(oAttr.sName))
+                {
+                    isHidden = oVNVs.Where(x => x.sName.ToLower() == oAttr.sName.ToLower()).Select(x => x.sValue).FirstOrDefault();
+                }
+            }
+            {
+                var oAttrD = oBOD.Attributes.Values.Where(m => m.Name.ToLower() == oAttr.sName.ToLower() || m.LabelName.ToLower() == oAttr.sName.ToLower()).FirstOrDefault();
+                if (oAttrD != null)
+                {
+                    if (oAttrD.bIsFileAliasName)
+                    {
+                        sFileAliasType = oAttrD.Name;
+                        if (!string.IsNullOrEmpty(sFileAliasType))
+                        {
+                            var oAttrDef = oBOD.Attributes.Values.Where(m => m.Name.ToLower() == sFileAliasType.ToLower() || m.LabelName.ToLower() == sFileAliasType.ToLower()).FirstOrDefault();
+                            if (oAttrDef.FKiType > 0)
+                            {
+                                var OptValue = oBOI.Attributes.Values.Where(m => m.sName == oAttr.sName).Select(s => s.sValue).FirstOrDefault();
+                                if (oAttrDef.FieldDDL != null && oAttrDef.FieldDDL.Count() > 0)
+                                {
+                                    var sSelectedValue = string.Empty;
+                                    if (string.IsNullOrEmpty(OptValue))
+                                    {
+                                        var sDefaultValue = oAttrDef.DefaultValue;
+                                        if (!string.IsNullOrEmpty(sDefaultValue))
+                                        {
+                                            sSelectedValue = oAttrDef.FieldDDL.Where(x => x.text == sDefaultValue).Select(x => x.Expression).FirstOrDefault();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        sSelectedValue = oAttrDef.FieldDDL.Where(x => x.text == OptValue).Select(x => x.Expression).FirstOrDefault();
+                                    }
+                                    sFileAliasName = sSelectedValue;
+                                }
+                            }
+                            else if (oAttrDef.IsOptionList)
+                            {
+                                var OptValue = oBOI.Attributes.Values.Where(m => m.sName == oAttr.sName).Select(s => s.sValue).FirstOrDefault();
+
+                                if (oAttrDef.OptionList != null)
+                                {
+                                    var sSelectedValue = string.Empty;
+                                    if (string.IsNullOrEmpty(OptValue))
+                                    {
+                                        var sDefaultValue = oAttrDef.DefaultValue;
+                                        if (!string.IsNullOrEmpty(sDefaultValue))
+                                        {
+                                            int iDefaultValue = Convert.ToInt32(sDefaultValue);
+                                            sSelectedValue = oAttrDef.OptionList.Where(x => x.ID == iDefaultValue).Select(x => x.sOptionName).FirstOrDefault();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        sSelectedValue = oAttrDef.OptionList.Where(x => x.sValues == OptValue).Select(x => x.sOptionName).FirstOrDefault();
+                                    }
+                                    sFileAliasName = sSelectedValue;
+                                }
+                            }
+                            else
+                            {
+                                sFileAliasName = oBOI.Attributes.Values.Where(x => x.sName.ToLower() == sFileAliasType.ToLower()).Select(x => x.sValue).FirstOrDefault();
+                            }
+                        }
+                    }
+                    var sName = "tr" + j + "_" + oAttrD.Name.ToLower();
+                    var Label = oAttrD.LabelName;
+                    bool isLockField = oAttr.bLock;
+                    if (bIsStepLock)
+                    {
+                        isLockField = true;
+                    }
+                    var style = "";
+                    if (isHidden != null && isHidden.ToLower() == "yes")
+                    {
+                        style = "display:none;";
+                    }
+                    if (oAttr.sName.ToLower() != "id" && isLockField == false)
+                    {
+                        <td style="text-align: center; @style" class="">
+                            <!-- width:1%; -->
+                            @if (oAttr.sName.ToLower() == sPrimaryKey.ToLower() && sInstanceID == "0")
+                            {
+                                if (isHidden != null && isHidden.ToLower() == "yes")
+                                {
+                                    @Html.TextBoxFor(m => oAttr.sValue, new { @Name = sName, @class = "form-control", @readonly = "readonly", @style = "padding:1px 5px; display: none;", data_nonformdata = oAttr.sPreviousValue })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(m => oAttr.sValue, new { @Name = sName, @class = "form-control", @readonly = "readonly", @style = "padding:1px 5px; display: none;", data_nonformdata = oAttr.sPreviousValue })
+                                }
+                            }
+                            else if (oAttr.sName.ToLower() == sPrimaryKey.ToLower() && sInstanceID != "0")
+                            {
+                                if (isHidden != null && isHidden.ToLower() == "yes")
+                                {
+                                    @Html.TextBoxFor(m => oAttr.sValue, new { @Name = sName, @class = "form-control", @readonly = "readonly", @style = "padding:1px 5px; display: none;", data_nonformdata = oAttr.sPreviousValue })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(m => oAttr.sValue, new { @Name = sName, @class = "form-control", @readonly = "readonly", @style = "padding:1px 5px;", data_nonformdata = oAttr.sPreviousValue })
+                                }
+                            }
+                            else if (oAttrD.IsOptionList)
+                            {
+                                <select name="@sName" class="form-control" id="DDL-@sName" data-attrname="@oAttr.sName" data-nonformdata="@oAttr.sPreviousValue" style="min-width: 75px;">
+                                    @if (oAttrD.OptionList != null)
+                                    {
+                                        var OptValue = oAttr.sValue;
+                                        foreach (var opt in oAttrD.OptionList)
+                                        {
+                                            if (OptValue == null)
+                                            {
+                                                if (!string.IsNullOrEmpty(oAttrD.DefaultValue))
+                                                {
+                                                    if (opt.ID == Convert.ToInt32(oAttrD.DefaultValue))
+                                                    {
+                                                        <option value="@opt.sValues" selected>@opt.sOptionName</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@opt.sValues">@opt.sOptionName</option>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <option value="@opt.sValues">@opt.sOptionName</option>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (opt.sOptionName == OptValue)
+                                                {
+                                                    <option value="@opt.sValues" selected>@opt.sOptionName</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@opt.sValues">@opt.sOptionName</option>
+                                                }
+                                            }
+                                        }
+                                    }
+                                </select>
+
+                            }
+                            else if (oAttrD.FKiType > 0)
+                            {
+                                if (oAttrD.sFKBOSize == "10")
+                                {
+                                    if (isHidden != null && isHidden.ToLower() == "yes")
+                                    {
+                                        <input type="hidden" name="@sName" value="@oAttr.sValue" />
+                                    }
+                                    else
+                                    {
+                                        <select name="@sName" class="form-control" id="DDL-@oAttr.sName" data-attrname="@oAttr.sName" data-nonformdata="@oAttr.sPreviousValue" style="min-width: 75px;">
+                                            @{var OptValue = oAttr.sValue;
+                                                if (oAttrD.FieldDDL != null && oAttrD.FieldDDL.Count() > 0)
+                                                {
+                                                    foreach (var opt in oAttrD.FieldDDL)
+                                                    {
+                                                        if (string.IsNullOrEmpty(OptValue))
+                                                        {
+                                                            if (!string.IsNullOrEmpty(oAttrD.DefaultValue))
+                                                            {
+                                                                if (opt.text == oAttrD.DefaultValue)
+                                                                {
+                                                                    <option value="@opt.text" selected>@opt.Expression</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@opt.text">@opt.Expression</option>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@opt.text">@opt.Expression</option>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            if (opt.text == OptValue)
+                                                            {
+                                                                <option value="@opt.text" selected>@opt.Expression</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@opt.text">@opt.Expression</option>
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <option value="0"></option>
+                                                }
+                                            }
+                                        </select>
+
+                                    }
+                                }
+                                else if (oAttrD.sFKBOSize == "20")
+                                {
+                                    oAttr.BOD = oBOD;
+                                    if (!string.IsNullOrEmpty(oAttr.sValue) && oAttr.sValue != "0")
+                                    {
+                                        <input id="DDLShow-@oAttr.sName@NewsGUID" type="text" data-name="@oAttr.sName" value="@oAttr.sResolvedValue" class="form-control XIField @oAttr.sName" />
+                                    }
+                                    else
+                                    {
+                                        <input id="DDLShow-@oAttr.sName@NewsGUID" type="text" data-name="@oAttr.sName" value="" class="form-control XIField @oAttr.sName" />
+                                    }
+                                    <input id="DDL-@oAttr.sName@NewsGUID" type="hidden" name="@sName" value="@oAttr.sValue" data-IsValid="" class="form-control XIField @oAttr.sName" />
+                                    <script>
+                                                        var iBODID = 0;
+                                                        var sBOName = '@oAttrD.sFKBOName';
+                                                        var fieldVal = '@oAttr.sValue';
+                                                        var AutoCompleteList = 0;
+                                                        var sRefType = "bo";
+                                                        if ('@oAttrD.iOneClickID' > 0) {
+                                                            sRefType = "1click";
+                                                            iBODID = '@oAttrD.iOneClickID';
+                                                        }
+                                                        $.ajax({
+                                                            url: '@Url.Action("GetAutoCompleteList", "BusinessObjects")',
+                                                            type: 'POST',
+                                                            contentType: "application/json; charset=utf-8",
+                                                            datatype: "json",
+                                                            async: true,
+                                                            cache: false,
+                                                            data: JSON.stringify({ sType: sRefType, iBODID: iBODID, sBOName: sBOName }),
+                                                            success: function (data) {
+                                                                AutoCompleteList = data;
+                                                                if ('@oAttrD.iOneClickID' > 0) {
+                                                                    AutoCompleteDict.push({
+                                                                        key: '@oAttrD.iOneClickID',
+                                                                        value: AutoCompleteList
+                                                                    });
+                                                                }
+                                                                else if ('@oAttrD.sFKBOName' != "") {
+                                                                    AutoCompleteDict.push({
+                                                                        key: '@oAttrD.sFKBOName',
+                                                                        value: AutoCompleteList
+                                                                    });
+                                                                }
+                                                                if ('@oAttr.sValue' && '@oAttr.sValue'.length > 0) {
+                                                                    var autoDict = 0;
+                                                                    if ('@oAttrD.iOneClickID' > 0) {
+                                                                        for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                            if (AutoCompleteDict[k].key == '@oAttrD.iOneClickID') {
+                                                                                autoDict = AutoCompleteDict[k].value;
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    else if ('@oAttrD.sFKBOName' != "") {
+                                                                        for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                            if (AutoCompleteDict[k].key == '@oAttrD.sFKBOName') {
+                                                                                autoDict = AutoCompleteDict[k].value;
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    var sResValue = Object.keys(autoDict).filter(function (key) { return autoDict[key] === '@oAttr.sValue' })[0];
+                                                                    $("#DDLShow-@oAttr.sName@NewsGUID").val(sResValue);
+                                                                }
+                                                            }
+                                                        });
+                                                        $(document.body).on('change', '#DDLShow-@oAttr.sName@NewsGUID', function () {
+                                                            var sResult = 0;
+                                                            if ('@oAttrD.iOneClickID' > 0) {
+                                                                for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                    if (AutoCompleteDict[k].key == '@oAttrD.iOneClickID') {
+                                                                        sResult = AutoCompleteDict[k].value;
+                                                                    }
+                                                                }
+                                                            }
+                                                            else if ('@oAttrD.sFKBOName' != "") {
+                                                                for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                    if (AutoCompleteDict[k].key == '@oAttrD.sFKBOName') {
+                                                                        sResult = AutoCompleteDict[k].value;
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            @*@Html.Raw(Json.Encode(FieldOrigin.FieldDDL.Where(m=>!string.IsNullOrEmpty(m.Expression)).GroupBy(m=>m.Expression).Select(m=>m.FirstOrDefault()).ToDictionary(m=>m.Expression, m=>m.text)));*@
+                                                            var txtValue = $(this).val();
+                                                            $("#DDL-@oAttr.sName@NewsGUID").val("");
+                                                            if (typeof txtValue !== 'undefined' && txtValue != '') {
+                                                                var sValue = sResult[$(this).val()];
+                                                                if (typeof sValue !== 'undefined' && sValue != '') {
+                                                                    $("#DDL-@oAttr.sName@NewsGUID").val(sValue);
+                                                                    $("#DDL-@oAttr.sName@NewsGUID").attr("data-IsValid", true);
+                                                                    $("span.@NewsGUID-@sBOName-@oAttr.sName").closest('.highlight--help').removeClass('msg-error');
+                                                                    $("span.@NewsGUID-@sBOName-@oAttr.sName").html("");
+                                                                }
+                                                                else {
+                                                                    // $(this).val('');
+                                                                    $("#DDL-@oAttr.sName@NewsGUID").attr("data-IsValid", false);
+                                                                    $("span.@NewsGUID-@sBOName-@oAttr.sName").closest('.highlight--help').addClass('msg-error');
+                                                                    $("span.@NewsGUID-@sBOName-@oAttr.sName").html("Please select " + '@oAttrD.LabelName');
+                                                                }
+                                                            }
+                                                        });
+                                                        $("#DDLShow-@oAttr.sName@NewsGUID").autocomplete({
+                                                            source: function (request, response) {
+                                                                var DOptionsList = 0;
+                                                                if ('@oAttrD.iOneClickID' > 0) {
+                                                                    for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                        if (AutoCompleteDict[k].key == '@oAttrD.iOneClickID') {
+                                                                            DOptionsList = AutoCompleteDict[k].value;
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else if ('@oAttrD.sFKBOName' != "") {
+                                                                    for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                        if (AutoCompleteDict[k].key == '@oAttrD.sFKBOName') {
+                                                                            DOptionsList = AutoCompleteDict[k].value;
+                                                                        }
+                                                                    }
+                                                                }
+
+                                                                @*@Html.Raw(Json.Encode(FieldOrigin.FieldDDL.Where(m=>!string.IsNullOrEmpty(m.Expression)).GroupBy(m=>m.Expression).Select(m=>m.FirstOrDefault()).ToDictionary(m=>m.Expression, m=>m.text)));*@
+                                                                $("#DDL-@oAttr.sName@NewsGUID").val("");
+                                                                var List = [];
+                                                                //for(var i = 0;i < DOptionsList.length; i++){
+                                                                //    List.push({label:DOptionsList[i].Expression, value:DOptionsList[i].text});
+                                                                //}
+                                                                $.each(DOptionsList, function (key, value) {
+                                                                    List.push({ label: key, value: value });
+                                                                });
+                                                                response($.ui.autocomplete.filter(List, request.term));
+                                                            },
+                                                            select: function (event, ui) {
+                                                                $("#DDLShow-@oAttr.sName@NewsGUID").val(ui.item.label);
+                                                                $("#DDL-@oAttr.sName@NewsGUID").val(ui.item.value);
+                                                                return false;
+                                                            },
+                                                            focus: function (event, ui) {
+                                                                $("#DDLShow-@oAttr.sName@NewsGUID").val(ui.item.label);
+                                                                $("#DDL-@oAttr.sName@NewsGUID").val(ui.item.value);
+                                                                return false;
+                                                            }
+                                                        });
+                                    </script>
+                                }
+                                else if (oAttrD.sFKBOSize == "30")
+                                {
+                                    oAttr.BOD = oBOD;
+                                    @*<input type="text" class="form-control autocomplete" name="@sName" value="@oAttr.sValue" placeholder="Type Here" id="DDL-@sName" data-value="0" onkeyup="fncgetautocomplete('@oAttrD.iOneClickID', this, event)" />*@
+
+                                    <input type="text" class="form-control autocomplete" value="@oAttr.sResolvedValue" placeholder="Type Here" id="DDL-@sName" data-value="0" onkeyup="fncgetautocomplete('@oAttrD.iOneClickID', this, event)" data-nonformdata="@oAttr.sPreviousValue" />
+                                    <input id="DDL-@sName" type="hidden" name="@sName" value="@oAttr.sValue" data-nonformdata="@oAttr.sPreviousValue" />
+                                }
+
+                            }
+                            else if (oAttrD.FKiFileTypeID > 0 && oAttrD.FKiType == 0)
+                            {
+                                var sStatusScriptName = "tr" + j + "_" + "StatusScript";
+                                if (oAttr.ImagePathDetails.Count() == 0 && sUploadFile == "yes")
+                                {
+                                    <input type="file" class="UploadImage" name="UploadImage" id="UploadImage-@sInstanceID" multiple onchange="UploadFile('@sName', '@oAttrD.ID', '@sFileAliasName', this)" data-nonformdata="@oAttr.sPreviousValue" />
+                                    <input type="hidden" name="@sStatusScriptName" id="StatusScript-@sInstanceID" value="" />
+                                    <input class="IconDisplay" type="hidden" name="@sName" id="ImageID-@sInstanceID" value="" data-nonformdata="@oAttr.sPreviousValue" />
+                                }
+                                else
+                                {
+                                    <input type="hidden" name="@sStatusScriptName" id="StatusScript-@sInstanceID" value="" />
+                                    <input type="hidden" name="@sName" id="ImageID-@sInstanceID" value="@oAttr.sValue" data-nonformdata="@oAttr.sPreviousValue" />
+                                }
+                                <div class=form-group id="dvPreview-@sInstanceID" style="display:none;">
+
+                                </div>
+                                @*<div class="input-group">*@
+                                if (oAttrD.FKiFileTypeID == 3)
+                                {
+                                    var Files = oAttr.ImagePathDetails;
+                                    foreach (var File in Files)
+                                    {
+                                        <div class="" style="width:100%;display:block;margin-bottom:5px;">
+                                            @if (sDisplayDocName == "yes")
+                                            {
+                                                <label class="label-wrapper" style="width:80%;">@File.text</label>
+                                            }
+                                            @*<a href="@PhysicalPath\@File.Type\@File.text" target="_blank" type='application/pdf'>@File.text</a>*@
+                                            <a href="@PhysicalPath\@File.Expression" class="btn btn-sm btn-theme lbluebtn" target="_blank" type='application/pdf'>View</a>
+                                            @*<span>@File.text</span>*@
+                                        </div>
+                                    }
+                                    if (oAttr.ImagePathDetails.Count() > 0)
+                                    {
+                                        if (!string.IsNullOrEmpty(sUploadStatus))
+                                        {
+                                            if (sUploadStatus == "true")
+                                            {
+                                                <input type="file" class="UploadImage" name="UploadImage" id="UploadImage-@sInstanceID" multiple onchange="UploadFile('@sName', '@oAttrD.ID', '@sFileAliasName', this)" data-nonformdata="@oAttr.sPreviousValue" />
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (oAttr.ImagePathDetails.Count() > 0)
+                                    {
+                                        var Images = oAttr.ImagePathDetails.ToList();
+                                        foreach (var img in Images)
+                                        {
+                                            <img src="@img.Expression" width="50" height="50" />
+                                        }
+                                        if (!string.IsNullOrEmpty(sUploadStatus))
+                                        {
+                                            if (sUploadStatus == "true")
+                                            {
+                                                <input type="file" class="UploadImage" name="UploadImage" id="UploadImage-@sInstanceID" multiple onchange="UploadFile('@sName', '@oAttrD.ID', '@sFileAliasName', this)" data-nonformdata="@oAttr.sPreviousValue" />
+                                            }
+                                        }
+                                    }
+                                }
+                                @*</div>*@
+
+                                <div class="taberrormsg fc-red">
+                                    <span class="@oBOD.Name-@sName"></span>
+                                </div>
+                            }
+                            else if (oAttrD.TypeID == 150)
+                            {
+                                oAttr.BOD = oBOD;
+                                oAttrD.sMaxDate = oAttrD.sMaxResolvedValue;
+                                oAttrD.sMinDate = oAttrD.sMinResolvedValue;
+                                @*@Html.TextBoxFor(m => oAttr.sValue, new { @Name = sName, @class = "form-control DatePicker_Txt_" + j + "" + oAttrD.ID + "", @style = "padding:1px 5px;", @id = @oAttr.sName + @sBOUID + "_" + @NewsGUID, data_nonformdata = @oAttr.sPreviousValue })*@
+                                if ((oAttr.sValue == "1/1/1900 12:00:00 AM") || (oAttr.sValue == "1/1/0001 12:00:00 AM") || (oAttr.sValue == "01-Jan-1900") || (oAttr.sValue == "01-01-1900 00:00:00") || (oAttr.sValue == "01/01/1900 00:00:00"))
+                                {
+                                    @Html.TextBoxFor(m => oAttr.sResolvedValue, new { @Name = sName, @Value = "", @class = "form-control DatePicker_Txt_" + j + "" + oAttrD.ID + "", @style = "padding:1px 5px;", @id = @oAttr.sName + @sBOUID + "_" + @NewsGUID, @Placeholder = oAttrD.sPlaceHolder, data_nonformdata = @oAttr.sPreviousValue })
+                                }
+                                else if (!string.IsNullOrEmpty(oAttr.sDefaultDate))
+                                {
+                                    @Html.TextBoxFor(m => oAttr.sResolvedValue, new { @Name = sName, @value = oAttr.sValue, @class = "form-control DatePicker_Txt_" + j + "" + oAttrD.ID + "", @style = "padding:1px 5px;", @id = @oAttr.sName + @sBOUID + "_" + @NewsGUID, @Placeholder = oAttrD.sPlaceHolder, data_nonformdata = @oAttr.sPreviousValue })
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(m => oAttr.sResolvedValue, new { @Name = sName, @class = "form-control DatePicker_Txt_" + j + "" + oAttrD.ID + "", @style = "padding:1px 5px;", @id = @oAttr.sName + @sBOUID + "_" + @NewsGUID, @Placeholder = oAttrD.sPlaceHolder, data_nonformdata = @oAttr.sPreviousValue })
+                                }
+                                <div class="taberrormsg fc-red">
+                                    <span class="@oBOD.Name-@sName"></span>
+                                </div>
+
+                                <script type="text/javascript">
+                                $(document).ready(function () {
+                                    $('.DatePicker_Txt_@j@oAttrD.ID').datepicker({
+                                        changeMonth: true,
+                                        changeYear: true,
+                                        inline: true,
+                                        yearRange: '1920:2030',
+                                        dateFormat: 'dd-M-yy',
+                                        minDate: new Date('@oAttrD.sMinDate'),
+                                        maxDate: new Date('@oAttrD.sMaxDate'),
+                                    });
+                                });
+                                </script>
+                            }
+
+                            else if (oAttrD.TypeID == 20)
+                            {
+                                if (oAttr.sValue == "False" || oAttr.sValue == null)
+                                {
+                                    <label class="label-wrapper">
+                                        <input type="checkbox" class="CheckboxClass" data-attrname="@sName" data-nonformdata="@oAttr.sPreviousValue" />
+                                        <i class="check"></i>
+                                    </label>
+                                }
+                                else
+                                {
+                                    <label class="label-wrapper">
+                                        <input type="checkbox" class="CheckboxClass" data-attrname="@sName" checked data-nonformdata="@oAttr.sPreviousValue" />
+                                        <i class="check"></i>
+                                    </label>
+                                }
+                                <input type="hidden" name="@sName" value="@oAttr.sValue" id="Checkbox-@oAttr.sName" data-nonformdata="@oAttr.sPreviousValue" />
+                                <div class="taberrormsg fc-red">
+                                    <span class="@oBOD.Name-@sName"></span>
+                                </div>
+                            }
+                            else if (oAttrD.IsTextArea == true)
+                            {
+                                @Html.TextAreaFor(m => oAttr.sValue, new { @Name = sName, @rows = 5, @cols = 40, @class = "form-control", data_nonformdata = @oAttr.sPreviousValue })
+                                <div class="taberrormsg fc-red">
+                                    <span class="@oBOD.Name-@sName"></span>
+                                </div>
+                            }
+                            else
+                            {
+                                if (isHidden != null && isHidden.ToLower() == "yes")
+                                {
+                                    @Html.TextBoxFor(m => oAttr.sValue, new { @Name = sName, @class = "form-control", @style = "padding:1px 5px; display: none;", data_nonformdata = @oAttr.sPreviousValue })
+                                }
+                                else
+                                {
+                                    var sEvent = oAttrD.sEventHandler;
+                                    <input type="text" value="@oAttr.sValue" id="@sName" name="@sName" class="form-control" style="padding:1px 5px;" data_nonformdata="@oAttr.sPreviousValue" @sEvent />
+                                    @*@Html.TextBoxFor(m => oAttr.sValue, new { @Name = sName, @class = "form-control", @style = "padding:1px 5px;", data_nonformdata = @oAttr.sPreviousValue })*@
+                                }
+                                <div class="taberrormsg fc-red">
+                                    <span class="@oBOD.Name-@sName"></span>
+                                </div>
+                            }
+                        </td>
+                    }
+                    else if (oAttr.sName.ToLower() == "id")
+                    {
+                        if (!string.IsNullOrEmpty(oAttr.sValue))
+                        {
+                            if (isHidden != null && isHidden.ToLower() == "yes")
+                            {
+                                <td style="display:none;">
+                                    <input type="hidden" value="@oAttr.sValue" name="@sName" data-nonformdata="@oAttr.sPreviousValue" />
+                                </td>
+                            }
+                            else
+                            {
+                                <td style="width:100px; ">
+                                    @Html.TextBoxFor(m => oAttr.sValue, new { @Name = sName, @class = "form-control no-border bc-disable", @readonly = "readonly", data_nonformdata = @oAttr.sPreviousValue })
+                                    <div class="taberrormsg fc-red">
+                                        <span class="@oAttrD.Name-@oAttr.sName"></span>
+                                    </div>
+                                </td>
+                            }
+
+                            @*<div class="helptext-btn-group">
+                                    @if (oAttrD.FKiType > 0)
+                                    {
+                                        <button class="btn btn-theme btn-xs">
+                                            <i class="GetQuickView fa fa-eye font-16" aria-hidden="true" data-instanceid="@oAttr.sValue" data-columnname="@Label"></i>
+                                        </button>
+                                        <button class="btn btn-theme btn-xs">
+                                            <i class="GetDrillDown fa fa-window-restore" aria-hidden="true"></i>
+                                        </button>
+                                    }
+                                    <button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme btn-xs" data-toggle="tooltip" title="Info">
+                                            <i class="fa fa-info" tabindex="0" role="button"></i>
+                                        </button>
+                                </div>*@
+
+                            @*</div>
+                                </div>*@
+                        }
+                        else if (sShowID == "yes")
+                        {
+                            <td style="width:1%;">
+                                <input type="hidden" name="@sName" />
+                                <div class="taberrormsg fc-red">
+                                    <span class="@oAttrD.Name-@oAttr.sName"></span>
+                                </div>
+                            </td>
+                        }
+                        else
+                        {
+                            <td style="display:none">
+                                <input type="hidden" name="@sName" />
+                                @*@Html.TextBoxFor(m => oAttr.sValue, new { @Name = sName, @class = "form-control", @readonly = "readonly", @style = "padding:1px 5px;", data_nonformdata = @oAttr.sPreviousValue })
+                                    <div class="helptext-btn-group">
+                                            @if (oAttrD.FKiType > 0)
+                                            {
+                                                <button class="btn btn-theme btn-xs">
+                                                    <i class="GetQuickView fa fa-eye font-16" aria-hidden="true" data-instanceid="@oAttr.sValue" data-columnname="@Label"></i>
+                                                </button>
+                                                <button class="btn btn-theme btn-xs">
+                                                    <i class="GetDrillDown fa fa-window-restore" aria-hidden="true"></i>
+                                                </button>
+                                            }
+                                            <button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme btn-xs" data-toggle="tooltip" title="Info">
+                                                    <i class="fa fa-info" tabindex="0" role="button"></i>
+                                                </button>
+                                        </div>*@
+                                <div class="taberrormsg fc-red">
+                                    <span class="@oAttrD.Name-@oAttr.sName"></span>
+                                </div>
+                            </td>
+                        }
+                    }
+                    else
+                    {
+                        <td style="@style">
+                            @if (oAttrD.FKiType > 0)
+                            {
+                                var OptValue = oBOI.Attributes.Values.Where(m => m.sName == oAttr.sName).Select(s => s.sValue).FirstOrDefault();
+                                if (oAttrD.sFKBOSize == "20")
+                                {
+                                    oAttr.BOD = oBOD;
+                                    var LockField = "";
+                                    if (isLockField && (sInstanceID != "0" && sInstanceID != ""))
+                                    {
+                                        LockField = "Disabled=Disabled";
+                                    }
+                                    if (!string.IsNullOrEmpty(oAttr.sValue))
+                                    {
+                                        <input id="DDLShow-@sName" type="text" value="@oAttr.sResolvedValue" class="form-control XIField" data-nonformdata="@oAttr.sPreviousValue" @LockField />
+                                    }
+                                    else
+                                    {
+                                        <input id="DDLShow-@sName" type="text" value="" class="form-control XIField" placeholder="@oAttrD.sPlaceHolder" data-nonformdata="@oAttr.sPreviousValue" @LockField />
+                                    }
+                                    <input id="DDL-@sName" type="hidden" name="@sName" value="@oAttr.sValue" class="form-control XIField" data-nonformdata="@oAttr.sPreviousValue" />
+
+                                    <script>
+                                                                    var iBODID = 0;
+                                                                    var sBOName = '@oAttrD.sFKBOName';
+                                                                    var fieldVal = '@oAttr.sValue';
+                                                                    var AutoCompleteList = 0;
+                                                                    var sRefType = "bo";
+                                                                    if ('@oAttrD.iOneClickID' > 0) {
+                                                                        sRefType = "1click";
+                                                                        iBODID = '@oAttrD.iOneClickID';
+                                                                    }
+                                                                    $.ajax({
+                                                                        url: '@Url.Action("GetAutoCompleteList", "BusinessObjects")',
+                                                                        type: 'POST',
+                                                                        contentType: "application/json; charset=utf-8",
+                                                                        datatype: "json",
+                                                                        async: false,
+                                                                        cache: false,
+                                                                        data: JSON.stringify({ sType: sRefType, iBODID: iBODID, sBOName: sBOName }),
+                                                                        success: function (data) {
+                                                                            AutoCompleteList = data;
+                                                                            if ('@oAttrD.iOneClickID' > 0) {
+                                                                                AutoCompleteDict.push({
+                                                                                    key: '@oAttrD.iOneClickID',
+                                                                                    value: AutoCompleteList
+                                                                                });
+                                                                            }
+                                                                            else if ('@oAttrD.sFKBOName' != "") {
+                                                                                AutoCompleteDict.push({
+                                                                                    key: '@oAttrD.sFKBOName',
+                                                                                    value: AutoCompleteList
+                                                                                });
+                                                                            }
+                                                                            if (fieldVal && fieldVal.length > 0) {
+                                                                                var autoDict = 0;
+                                                                                if ('@oAttrD.iOneClickID' > 0) {
+                                                                                    for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                        if (AutoCompleteDict[k].key == '@oAttrD.iOneClickID') {
+                                                                                            autoDict = AutoCompleteDict[k].value;
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                                else if ('@oAttrD.sFKBOName' != "") {
+                                                                                    for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                        if (AutoCompleteDict[k].key == '@oAttrD.sFKBOName') {
+                                                                                            autoDict = AutoCompleteDict[k].value;
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                                var sResValue = Object.keys(autoDict).filter(function (key) { return autoDict[key] === fieldVal })[0];
+                                                                                $("#DDLShow-@sName").val(sResValue);
+                                                                            }
+                                                                        }
+                                                                    });
+                                                                    $(document.body).on('change', '#DDLShow-@sName', function () {
+                                                                        //debugger
+                                                                        var sResult = 0;
+                                                                        if ('@oAttrD.iOneClickID' > 0) {
+                                                                            for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                if (AutoCompleteDict[k].key == '@oAttrD.iOneClickID') {
+                                                                                    sResult = AutoCompleteDict[k].value;
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        else if ('@oAttrD.sFKBOName' != "") {
+                                                                            for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                if (AutoCompleteDict[k].key == '@oAttrD.sFKBOName') {
+                                                                                    sResult = AutoCompleteDict[k].value;
+                                                                                }
+                                                                            }
+                                                                        }
+
+                                                                        @*@Html.Raw(Json.Encode(FieldOrigin.FieldDDL.Where(m=>!string.IsNullOrEmpty(m.Expression)).GroupBy(m=>m.Expression).Select(m=>m.FirstOrDefault()).ToDictionary(m=>m.Expression, m=>m.text)));*@
+                                                                        var txtValue = $(this).val();
+                                                                        $("#DDL-@sName").val("");
+                                                                        if (typeof txtValue !== 'undefined' && txtValue != '') {
+                                                                            var sValue = sResult[$(this).val()];
+                                                                            if (typeof sValue !== 'undefined' && sValue != '') {
+                                                                                $("#DDL-@sName").val(sValue);
+                                                                            }
+                                                                            else {
+                                                                                $(this).val('');
+                                                                            }
+                                                                        }
+                                                                    });
+                                                                    $("#DDLShow-@sName").autocomplete({
+                                                                        source: function (request, response) {
+                                                                            //debugger
+                                                                            var DOptionsList = 0;
+
+                                                                            if ('@oAttrD.iOneClickID' > 0) {
+                                                                                for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                    if (AutoCompleteDict[k].key == '@oAttrD.iOneClickID') {
+                                                                                        DOptionsList = AutoCompleteDict[k].value;
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            else if ('@oAttrD.sFKBOName' != "") {
+                                                                                for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                    if (AutoCompleteDict[k].key == '@oAttrD.sFKBOName') {
+                                                                                        DOptionsList = AutoCompleteDict[k].value;
+                                                                                    }
+                                                                                }
+                                                                            }
+
+                                                                            @*@Html.Raw(Json.Encode(FieldOrigin.FieldDDL.Where(m=>!string.IsNullOrEmpty(m.Expression)).GroupBy(m=>m.Expression).Select(m=>m.FirstOrDefault()).ToDictionary(m=>m.Expression, m=>m.text)));*@
+                                                                            //$("#DDL-@sName").val("");
+                                                                            var List = [];
+                                                                            //for(var i = 0;i < DOptionsList.length; i++){
+                                                                            //    List.push({label:DOptionsList[i].Expression, value:DOptionsList[i].text});
+                                                                            //}
+                                                                            $.each(DOptionsList, function (key, value) {
+                                                                                List.push({ label: key, value: value });
+                                                                            });
+                                                                            response($.ui.autocomplete.filter(List, request.term));
+                                                                        },
+                                                                        select: function (event, ui) {
+                                                                            $("#DDLShow-@sName").val(ui.item.label);
+                                                                            $("#DDL-@sName").val(ui.item.value);
+                                                                            return false;
+                                                                        },
+                                                                        focus: function (event, ui) {
+                                                                            $("#DDLShow-@sName").val(ui.item.label);
+                                                                            $("#DDL-@sName").val(ui.item.value);
+                                                                            return false;
+                                                                        }
+                                                                    });
+                                    </script>
+                                }
+                                if (oAttrD.FieldDDL != null && oAttrD.FieldDDL.Count() > 0)
+                                {
+                                    var sAttrName = "tr" + j + "_" + oAttr.sName;
+                                    var sSelectedValue = string.Empty;
+                                    if (string.IsNullOrEmpty(OptValue))
+                                    {
+                                        var sDefaultValue = oAttrD.DefaultValue;
+                                        if (!string.IsNullOrEmpty(sDefaultValue))
+                                        {
+                                            sSelectedValue = oAttrD.FieldDDL.Where(x => x.text == sDefaultValue).Select(x => x.Expression).FirstOrDefault();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        sSelectedValue = oAttrD.FieldDDL.Where(x => x.text == OptValue).Select(x => x.Expression).FirstOrDefault();
+                                    }
+                                    if (sInstanceID == "0" || sInstanceID == "")
+                                    {
+                                        <select name="@sName" class="form-control" id="DDL-@oAttr.sName" data-attrname="@oAttr.sName" data-nonformdata="@oAttr.sPreviousValue">
+                                            @{//var OptValue = oAttr.sValue;
+                                                if (oAttrD.FieldDDL != null && oAttrD.FieldDDL.Count() > 0)
+                                                {
+                                                    foreach (var opt in oAttrD.FieldDDL)
+                                                    {
+                                                        if (string.IsNullOrEmpty(OptValue))
+                                                        {
+                                                            if (!string.IsNullOrEmpty(oAttrD.DefaultValue))
+                                                            {
+                                                                if (opt.text == oAttrD.DefaultValue)
+                                                                {
+                                                                    <option value="@opt.text" selected>@opt.Expression</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@opt.text">@opt.Expression</option>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@opt.text">@opt.Expression</option>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            if (opt.text == OptValue)
+                                                            {
+                                                                <option value="@opt.text" selected>@opt.Expression</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@opt.text">@opt.Expression</option>
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <option value="0"></option>
+                                                }
+                                            }
+                                        </select>
+                                    }
+                                    else
+                                    {
+                                        <input type="hidden" name="@sAttrName" value="@oAttr.sValue" id="@sAttrName" />
+                                        if (isHidden != null && isHidden.ToLower() == "yes")
+                                        {
+                                            <span class="" style="" hidden="hidden">@sSelectedValue</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="" style="" data-name="@sAttrName">@sSelectedValue</span>
+                                        }
+                                    }
+                                }
+                            }
+                            else if (oAttrD.IsOptionList)
+                            {
+                                @*var OptValue = oBOI.Attributes.Values.Where(m => m.sName == oAttr.sName).Select(s => s.sValue).FirstOrDefault();
+
+                                    if (oAttrD.OptionList != null)
+                                    {
+                                        var sSelectedValue = string.Empty;
+                                        if (string.IsNullOrEmpty(OptValue))
+                                        {
+                                            var sDefaultValue = oAttrD.DefaultValue;
+                                            if (!string.IsNullOrEmpty(sDefaultValue))
+                                            {
+                                                int iDefaultValue = Convert.ToInt32(sDefaultValue);
+                                                sSelectedValue = oAttrD.OptionList.Where(x => x.ID == iDefaultValue).Select(x => x.sOptionName).FirstOrDefault();
+                                            }
+                                        }
+                                        else
+                                        {
+                                            sSelectedValue = oAttrD.OptionList.Where(x => x.sValues == OptValue).Select(x => x.sOptionName).FirstOrDefault();
+                                        }
+                                        <span style="margin-right:10px;">@sSelectedValue</span>
+                                    }*@
+                                if (isHidden != null && isHidden.ToLower() == "yes")
+                                {
+                                    <span style="" hidden="hidden">@oAttr.sValue</span>
+                                }
+                                else
+                                {
+                                    <span style="">@oAttr.sValue</span>
+                                }
+                            }
+                            else if (oAttrD.FKiFileTypeID > 0 && oAttrD.FKiType == 0)
+                            {
+                                if (oAttr.ImagePathDetails.Count() == 0)
+                                {
+                                    <input class="IconDisplay" type="hidden" name="@sName" id="ImageID-@sInstanceID" value="0" data-nonformdata="@oAttr.sPreviousValue" />
+                                }
+                                else
+                                {
+                                    <input type="hidden" name="@sName" id="ImageID-@sInstanceID" value="@oAttr.sValue" data-nonformdata="@oAttr.sPreviousValue" />
+                                }
+                                if (oAttrD.FKiFileTypeID == 2)
+                                {
+                                    var Files = oBOI.Attributes.Values.Where(m => m.sName.ToLower() == oAttr.sName.ToLower()).Select(m => m.ImagePathDetails);
+                                    foreach (var File in Files)
+                                    {
+                                        foreach (var item in File)
+                                        {
+                                            <a href="@PhysicalPath\@item.Type\@item.text" target="_blank" type='application/pdf' style="color:#fff;">@item.text</a>
+                                            @*<span id="FileName-@items.sValue" class="FileName">@item.text</span>*@
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    if (oAttr.ImagePathDetails.Count() > 0)
+                                    {
+                                        var Images = oAttr.ImagePathDetails.ToList();
+                                        foreach (var img in Images)
+                                        {
+                                            //foreach (var item in img)
+                                            //{
+                                            <img src="@img.Expression" width="50" height="50" />
+                                            //}
+                                        }
+                                    }
+                                }
+                            }
+                            else if (oAttrD.TypeID == 150)
+                            {
+                                oAttr.BOD = oBOD;
+                                <span style="">@oAttr.sResolvedValue</span>
+                                <div class="taberrormsg fc-red">
+                                    <span class="@oBOD.Name-@sName"></span>
+                                </div>
+                            }
+                            else
+                            {
+                                var sAttrName = "tr" + j + "_" + oAttr.sName;
+                                <input type="text" class="form-control no-border bc-disable" name="@sAttrName" value="@oAttr.sValue" id="@sAttrName" readonly="readonly" />
+                                @*if (isHidden != "yes")
+                                    {
+                                        <span style="" data-name="@sAttrName">@oAttr.sValue</span>
+                                    }*@
+
+                            }
+
+                            <div class="taberrormsg fc-red">
+                                <span class="@oAttrD.Name-@oAttr.sName"></span>
+                            </div>
+                        </td>
+                    }
+                }
+                else
+                {
+                    var style = "";
+                    if (isHidden != null && isHidden.ToLower() == "yes")
+                    {
+                        style = "display:none;";
+                    }
+                    var sName = string.Empty;
+                    if (oAttrD != null && !string.IsNullOrEmpty(oAttrD.Name))
+                    {
+                        sName = "tr" + j + "_" + oAttrD.Name.ToLower();
+                    }
+                    else
+                    {
+                        sName = "tr" + j + "_" + oAttr.sName.ToLower();
+                    }
+
+                    <td style="@style">
+                        @if (oAttr.sName.ToLower() == "Actions".ToLower())
+                        {
+                            @Html.Raw(oAttr.sValue)
+                        }
+                        else if (oAttr.sName.ToLower() == "Links".ToLower())
+                        {
+                            @Html.Raw(oAttr.sValue)
+                        }
+                        else
+                        {
+                            if (isHidden != null && isHidden.ToLower() == "yes")
+                            {
+                                @Html.TextBoxFor(m => oAttr.sValue, new { @id = sName, @Name = sName, @class = "form-control", @readonly = "readonly", @style = "padding:1px 5px; display: none;", data_nonformdata = @oAttr.sPreviousValue })
+                            }
+                            else
+                            {
+                                if (oAttr.sName.ToLower() == "select")
+                                {
+                                    @Html.Raw(oAttr.sValue)
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(m => oAttr.sValue, new { @id = sName, @Name = sName, @class = "form-control", @readonly = "readonly", @style = "padding:1px 5px;", data_nonformdata = @oAttr.sPreviousValue })
+                                }
+                            }
+                        }
+                    </td>
+                }
+            }
+
+        }
+        @if (!string.IsNullOrEmpty(sRowDelete) && sRowDelete.ToLower() == "yes")
+        {
+            <td><button type="button" class="btn btn-theme btnQuote" onclick="fncDeleteGridRow(this)" data-bid="@BOIDGUID" data-iid="@sInstanceXIGUID">Delete</button></td>
+        }
+    </tr>
+
+    j++;
+}
+<div id="GrdRow" style="display:none;"></div>
+<script src="~/Scripts/ajaxfileupload.js"></script>
+@*<script>
+        SaveEditBOURL = '@Url.Action("SaveGrid", "XiLink")';
+    </script>*@
+<script>
+    SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+    $(document).ready(function(){
+        iTotalRecords = parseInt(@o1ClickD.iTotalRecords);
+        DisplayedRecords = (parseInt(@o1ClickD.iTotaldisplayRecords) + 1) * parseInt(@o1ClickD.iPaginationCount);
+        TotalDispaly = parseInt(@o1ClickD.iTotaldisplayRecords);
+    })
+    function fncDeleteGridRow(_this){
+        var bid=$(_this).attr('data-bid');
+        var iid=$(_this).attr('data-iid');
+        debugger
+        $("#GrdRow").dialog({
+            title: "Are you sure you want to delete ? ",
+            buttons: {
+                "Yes": function () {
+                    if(bid && bid.length>0 && iid && iid == 0){
+                        var _tr = $(_this).parent('td').parent('tr');
+                        if(_tr && _tr.length > 0){
+                            $(_tr).remove();
+                        }
+                    }
+                    else if(bid && bid.length>0 && iid && iid.length>0){
+                        $.ajax({
+                            async: false,
+                            type: 'POST',
+                            url: '@Url.Action("DeleteGridRow", "QueryGeneration")',
+                            data: JSON.stringify({ iBODID: bid, iBOIID: iid }),
+                            contentType: 'application/json;',
+                            dataType: 'json',
+                            traditional: true,
+                            success: function (data) {
+                                if(data=="Success"){
+                                    debugger
+                                    var _tr = $(_this).parent('td').parent('tr');
+                                    if(_tr && _tr.length > 0){
+                                        $(_tr).remove();
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    $(this).dialog("close");
+                },
+                "No": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+    }
+    function UploadFile(AttrName, BOFieldID, sFileAliasName, This) {
+        //var NewsGUID = Guid.NewGuid().ToString();
+        var sDDLAttr = AttrName.split('_')[0];
+        var sDDLAttrName = sDDLAttr + "_" + "iStatus";
+        var sBOName = '@sBOName';
+        var id = $(This).attr('id');
+        var iInstanceID = id.split('-')[1];
+        var ID = 0;
+        sRowId = $(This).closest('tr').attr('id');
+        sRowNo = $(This).closest('tr').attr('data-row');
+        //imagesPreview(This, iInstanceID);
+        if ($("#" + id).val() != "") {
+            $.ajaxFileUpload({
+                url: '@Url.Action("SaveFiles", "XiLink")',
+                data: { ID: ID, BOFieldID: BOFieldID, sInstanceID: iInstanceID, sFileAliasName: sFileAliasName, sParentID: "", iBuildingID: 0, sFolderName: "" },
+                secureuri: false,
+                type: 'POST',
+                fileElementId: id,
+                dataType: 'json',
+                success: function (response, ID) {
+                    if (ID && ID.length > 0 && ID != "-1") {
+                        $("." + sBOName + "-" + AttrName).html("");
+                        var sScript = "xi.s|{xi.a|" + sBOName + "," + iInstanceID + ",'iStatus','80','','False'}";
+                        //var sDocs = $('#ImageID-' + iInstanceID).val();
+                        //if (sDocs != undefined && sDocs != "") {
+                        //    $('#ImageID-' + iInstanceID).val(sDocs + "," + ID);
+                        //}
+                        //else {
+                            $('#ImageID-' + iInstanceID).val(ID);
+                        //}
+                        $('#StatusScript-' + iInstanceID).val(sScript);
+                        $("#DDL-" + sDDLAttrName).val('20').change();
+                        SaveGridData(This, null, sBOName);
+                        if ('@bIsUploadRefresh'.toLowerCase() == "yes") {
+                            XILinkLoadJson('@o1ClickD.RowXiLinkID', '@Model.sGUID', null);
+                        }
+                        var sScript = "xi.s|{xi.a|" + sBOName + "," + iInstanceID + ",'dReceived'," + '@CurrentDate' + ",'','False'}";
+                        ExecuteXiScript(sScript, '@Model.sGUID');
+                    }
+                    else {
+                        //var sScript = "xi.s|{xi.a|" + sBOName + "," + iInstanceID + ",'iStatus','10',''}";
+                        //$('#StatusScript-' + iInstanceID).val(sScript);
+                        if (ID && ID == "-1") {
+                            $("." + sBOName + "-" + AttrName).html("Error while saving the file");
+                        }
+                        else {
+                            $("." + sBOName + "-" + AttrName).html("Please upload valid file");
+                        }
+                        $("#DDL-" + sDDLAttrName).val('0').change();
+                    }
+                },
+                error: function (respose, ID) {
+                }
+            })
+        }
+    }
+    function ExecuteXiScript(sScript, sGUID) {
+        $.ajax({
+            async: false,
+            type: 'POST',
+            url: ExecuteXIScriptURL,
+            data: JSON.stringify({ sScript: sScript, sGUID: sGUID }),
+            contentType: 'application/json;',
+            dataType: 'json',
+            traditional: true,
+            success: function (data) {
+                if (data != null && Value != data) {
+                    IsValid = false;
+                }
+            }
+        });
+    }
+    var imagesPreview = function (input, iInstanceID) {
+        if (input.files) {
+            var filesAmount = input.files.length;
+            $('div#dvPreview-' + iInstanceID).show();
+            $('div#dvPreview-' + iInstanceID).html('');
+            for (i = 0; i < filesAmount; i++) {
+                var reader = new FileReader();
+                reader.onload = function (event) {
+                    $($.parseHTML('<img>')).attr('src', event.target.result).attr('width', '50').attr('height', '50').appendTo("div#dvPreview-" + iInstanceID);
+                }
+                reader.readAsDataURL(input.files[i]);
+            }
+        }
+    };
+    $(document).ready(function () {
+        @*$('.DatePicker_Txt').datepicker({
+            changeMonth: true,
+            changeYear: true,
+            inline: true,
+            yearRange: '1920:2030',
+            dateFormat: 'dd-M-yy',
+            //maxDate: '+1m +10d',
+            //minDate: -10
+
+        });*@
+    });
+    function Execute1ClickLick(XiLinkID, _this,sGUID) {
+        var InputParams = [];
+        var o1ClickDJ ={
+            oOneClickParameters :@Html.Raw(Json.Encode(o1ClickD.oOneClickParameters.Where(x => x.iType == 10 || x.iType == 30).ToList())),
+            ResultListDisplayType :'@o1ClickD.ResultListDisplayType',
+            ResultListDisplayType : '@o1ClickD.ResultListDisplayType',
+            DisplayAs : '@o1ClickD.DisplayAs',
+            Headings : @Html.Raw(Json.Encode(o1ClickD.Headings)),
+            TableColumns : @Html.Raw(Json.Encode(o1ClickD.TableColumns)),
+            IsRowClick : '@o1ClickD.IsRowClick',
+            RowXiLinkID : '@o1ClickD.RowXiLinkID',
+            sBOName : '@o1ClickD.sBOName',
+            BOID : '@o1ClickD.BOID',
+            bIsRecordLock : '@o1ClickD.bIsRecordLock',
+            sRowXiLinkType : '@o1ClickD.sRowXiLinkType'}
+
+        var oOneClickParameters = o1ClickDJ.oOneClickParameters;
+        var RowData = [];
+        if (o1ClickDJ.ResultListDisplayType == 1) {
+            var tr = $(_this).closest('tr');
+            var tddata = [];
+            if (o1ClickDJ.DisplayAs == 50) {
+                tddata = $('#OneClickResult-' + sGUID).dataTable().fnGetData($(_this).closest('tr'));
+            }
+            else {
+                $(tr).children('td').each(function (ii, vv) {
+                    tddata[ii] = vv.children[0].value;
+                    //tddata=fnGetData($(_this).closest('tr'))
+                });
+            }
+            RowData = tddata;
+        }
+        else {
+            RowData = $(_this).children("td").map(function () {
+                return $(_this).text();
+            }).get();
+        }
+
+        var RowClickAttributeParams = [];
+        var sHiddenString = "";
+        for (var i = 0; i < o1ClickDJ.Headings.length; i++) {
+            if (o1ClickDJ.Headings[i].toLowerCase() == "HiddenData".toLowerCase()) {
+                sHiddenString = RowData[i];
+            }
+        }
+        if (sHiddenString != "") {
+            var sHiddenAttrArray = sHiddenString.split(':');
+            for (var Attr = 0; Attr < sHiddenAttrArray.length; Attr++) {
+                if (sHiddenAttrArray[Attr] != "") {
+                    var sAttrName = sHiddenAttrArray[Attr].split('__')[0];
+                    var sAttrValue = sHiddenAttrArray[Attr].split('__')[1];
+                    if (oOneClickParameters != null && oOneClickParameters.length > 0) {
+                        for (var rAttr = 0; rAttr < oOneClickParameters.length; rAttr++) {
+                            if (oOneClickParameters[rAttr].sName.toLowerCase() == sAttrName.toLowerCase()) {
+                                var RCAparam1 = {};
+                                RCAparam1["sName"] = oOneClickParameters[rAttr].sValue;
+                                RCAparam1["sValue"] = sAttrValue;
+                                RowClickAttributeParams.push(RCAparam1);
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            if (oOneClickParameters != null && oOneClickParameters.length > 0) {
+                for (var rAttr = 0; rAttr < oOneClickParameters.length; rAttr++) {
+                    for (var i = 0; i < o1ClickDJ.TableColumns.length; i++) {
+                        if (o1ClickDJ.TableColumns[i].toLowerCase() == oOneClickParameters[rAttr].sName.toLowerCase()) {
+                            var RCAparam1 = {};
+                            RCAparam1["sName"] = oOneClickParameters[rAttr].sValue;
+                            RCAparam1["sValue"] = RowData[i];
+                            RowClickAttributeParams.push(RCAparam1);
+                        }
+                    }
+                }
+            }
+
+        }
+        var StaticParamsParams = o1ClickDJ.oOneClickParameters.filter(function (x) { return x.iType === 30 });
+        for (var c = 0; c < StaticParamsParams.length; c++) {
+            var RCAparam1 = {};
+            RCAparam1["sName"] = StaticParamsParams[c].sName;
+            RCAparam1["sValue"] = StaticParamsParams[c].sValue;
+            RowClickAttributeParams.push(RCAparam1);
+        }
+        if (RowClickAttributeParams != null && RowClickAttributeParams.length > 0) {
+            for (var b = 0; b < RowClickAttributeParams.length; b++) {
+
+                var bExist = InputParams.filter(function (x) { return RowClickAttributeParams[b].sName == x.sName }); //.Data = serialized[i].value;
+                if (bExist && bExist.length > 0) {
+                    for (var c = 0; c < InputParams.length; c++) {
+                        if (InputParams[c].sName == RowClickAttributeParams[b].sName) {
+                            InputParams[c].sValue = RowClickAttributeParams[b].sValue;
+                        }
+                    }
+                    //InputParams.filter(function (x) { return x.sName === RowClickAttributeParams[b].sName; }).sValue = RowClickAttributeParams[b].sValue;
+                }
+                else {
+                    InputParams.push(RowClickAttributeParams[b]);
+                }
+            }
+            //var newArray = $.merge(InputParams, RowClickAttributeParams);
+        }
+        if (o1ClickDJ.sRowXiLinkType == "run") {
+            XIRun(null,XiLinkID, parseInt(iInstanceID), sGUID, o1ClickDJ.sBOName, false, parseInt(o1ClickDJ.BOID), 0, null, InputParams);
+        }
+        else {
+            XILinkLoadJson(XiLinkID, sGUID, InputParams);
+        }
+
+        //XIRun(XiLinkID, ID, sGUID, BO, IsMerge, BODID, iQSDID, MenuName, oParams);
+
+    }
+
+    function fncUpdateStock(_this){
+        var Count = parseInt($(_this).val());
+        var Name = $(_this).attr('name');
+        var Row = Name.split('_')[0];
+        var iActualQuantity = parseInt($('input[name='+Row+'_iActualQuantity]').val());
+        var Total = Count - iActualQuantity;
+
+        if(Count > iActualQuantity){
+            $('#'+Row+'_iShortage').val('+' +Total);
+            $('span[data-name="'+Row+'_iShortage"]').html(Total);
+            $('input[name="'+Row+'_ssuppliedtype"]').val('excess');
+            $('span[data-name='+Row+'_iShortage]').css("color", "green");
+        }
+        else{
+            $('#'+Row+'_iShortage').val(Total);
+            $('span[data-name='+Row+'_iShortage]').html(Total);
+            $('input[name="'+Row+'_ssuppliedtype"]').val('shortage');
+            $('span[data-name='+Row+'_iShortage]').css("color", "red");
+        }
+    }
+</script>

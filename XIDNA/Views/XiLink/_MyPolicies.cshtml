@@ -1,0 +1,177 @@
+﻿@model XIDNA.ViewModels.VMResultList
+
+@{
+    Layout = "~/Views/Shared/_ClientLayout.cshtml";
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+    int ReportID = Model.ReportID;
+}
+<script>
+    var dtable;
+    var Fields = "";
+    var Optrs = "";
+    var Values = "";
+    var Type="";
+    var SearchText="";
+    var SubmitClick = 0;
+    function GetDataTable(Fields,Optrs,Values,Type){
+        if('@Model.ResultListDisplayType'==1){
+            var SortColumns = @Html.Raw(Json.Encode(Model.TableColumns));
+            var Scripts = @Html.Raw(Json.Encode(Model.Scripts));
+            var expColumns = new Array();
+            for (var i = 0; i < SortColumns.length; i++) {
+                var obj = new Object();
+                obj.sName = SortColumns[i];
+                obj.bSortable = true
+                expColumns.push(obj);
+            }
+            dtable = $('#OneClickResult-@ReportID').dataTable({
+                //"destroy": true,
+                //"paging": true,
+                "bProcessing": true,
+                "bServerSide": true,
+                //"pageLength": 100,
+                //"lengthMenu": [5, 10, 20, 50, 75, 100],
+                @*"pageLength": parseInt('@Value'),*@
+                "aoColumns": expColumns,
+                "sAjaxSource": "@Html.Raw(Url.Action("GetReportResult", "XiLink", new { ReportID = Model.ReportID, SearchText = Model.SearchText, SearchType = Model.SearchType, sGUID = ViewBag.sGUID }))",
+                //"aaSorting": [[0, 'desc']],
+                "sDom": '<"dtable-header"><"datatable-scroll"><"dtable-footer">', 'bJQueryUI': false,
+
+                "autoWidth": false,
+                "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                },
+                "columnDefs": [{
+                    "targets": [5, 6],
+                    //"targets": [2, 3, 4, 5],
+                    "createdCell": function (td, cellData, rowData, row, col) {
+                        if (cellData == "1")
+                            $(td).replaceWith('<td><img src="@PhysicalPath/yes.png" width="20" height="20" /></td>')
+                        else
+                            $(td).replaceWith('<td><img src="@PhysicalPath/yes.png" width="20" height="20" /></td>')
+                    },
+                    "createdCell": function (td, cellData, rowData, row, col) {
+                        if (cellData == "1")
+                            $(td).replaceWith('<td><img src="@PhysicalPath/yes.png" width="20" height="20" /></td>')
+                        else
+                            $(td).replaceWith('<td><img src="@PhysicalPath/no.png" width="20" height="20" /></td>')
+                    }
+                }]
+            });
+        }
+        else{
+            $("#OneClickResult-@ReportID").tablesorter();
+        }
+    }
+    $(document).ready(function () {
+        GetDataTable(Fields,Optrs,Values,null);
+
+        $('#OneClickResult-@ReportID tbody').on('click', 'tr', function () {
+            var Headings =@Html.Raw(Json.Encode(Model.Headings));
+            var RowData;
+            if('@Model.ResultListDisplayType'==1)
+            {
+                var tr = $(this).closest('tr');
+                var tddata = [];
+                $(tr).children('td').each(function(ii, vv){
+                    tddata[ii] = $(this).text();
+                });
+                RowData = tddata;
+            }
+            else{
+                RowData = $(this).children("td").map(function() {
+                    return $(this).text();
+                }).get();
+            }
+            var id;
+            if(RowData){
+                for (var i = 0; i < Headings.length; i++) {
+                    if (Headings[i].toLowerCase() == "ID".toLowerCase()) {
+                        id = RowData[i];
+                    }
+                }
+                var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+                var iInstanceID = parseInt(id);
+                if(iInstanceID>0){
+                    if('@Model.IsRowClick'=="True"){
+                        XIRun(null,'@Model.XiLinkID', parseInt(iInstanceID), sGUID, parseInt('@Model.BOID'), false);
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+<section class="clientTableContainer">
+    <div class="container">
+        <table class="table table-bordered table-condensed no-sort-icn without-border clientTable" id="OneClickResult-@ReportID">
+            <thead>
+                <tr>
+                    @if (Model.Headings != null)
+                    {
+                        for (int k = 0; k < Model.Headings.Count(); k++)
+                        {
+                            <th>@Model.Headings[k]</th>
+                        }
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @*<tr>
+                    <td class="sbold">Description of Vehicles</td>
+                    <td>Q04201001</td>
+                    <td>25/07/2018</td>
+                    <td>25/07/2019</td>
+                    <td><img src="~/Content/images/yes.png" /></td>
+                    <td><img src="~/Content/images/no.png" /></td>
+                    <td><button class="btn btn-info">Upload</button></td>
+                </tr>
+                <tr>
+                    <td class="sbold">Description of Vehicles</td>
+                    <td>Q04201001</td>
+                    <td>25/07/2018</td>
+                    <td>25/07/2019</td>
+                    <td><img src="~/Content/images/no.png" /></td>
+                    <td><img src="~/Content/images/yes.png" /></td>
+                    <td><button class="btn btn-info">Upload</button></td>
+                </tr>
+                <tr>
+                    <td class="sbold">Description of Vehicles</td>
+                    <td>Q04201001</td>
+                    <td>25/07/2018</td>
+                    <td>25/07/2019</td>
+                    <td><img src="~/Content/images/yes.png" /></td>
+                    <td><img src="~/Content/images/no.png" /></td>
+                    <td><button class="btn btn-info">Upload</button></td>
+                </tr>
+                <tr>
+                    <td class="sbold">Description of Vehicles</td>
+                    <td>Q04201001</td>
+                    <td>25/07/2018</td>
+                    <td>25/07/2019</td>
+                    <td><img src="~/Content/images/yes.png" /></td>
+                    <td><img src="~/Content/images/yes.png" /></td>
+                    <td><button class="btn btn-info">Upload</button></td>
+                </tr>
+                <tr>
+                    <td class="sbold">Description of Vehicles</td>
+                    <td>Q04201001</td>
+                    <td>25/07/2018</td>
+                    <td>25/07/2019</td>
+                    <td><img src="~/Content/images/no.png" /></td>
+                    <td><img src="~/Content/images/yes.png" /></td>
+                    <td><button class="btn btn-info">Upload</button></td>
+                </tr>
+                <tr>
+                    <td class="sbold">Description of Vehicles</td>
+                    <td>Q04201001</td>
+                    <td>25/07/2018</td>
+                    <td>25/07/2019</td>
+                    <td><img src="~/Content/images/yes.png" /></td>
+                    <td><img src="~/Content/images/yes.png" /></td>
+                    <td><button class="btn btn-info">Upload</button></td>
+                </tr>*@
+            </tbody>
+        </table>
+    </div>
+</section>
+

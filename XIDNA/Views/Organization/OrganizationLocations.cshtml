@@ -1,0 +1,188 @@
+﻿@model int
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        var editlocpopups = new Array();
+        var locpopups = new Array();
+        var table = $('#Loctbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("DisplayOrgLocDetails", "Organization", new { LocOrgID=@Model})",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"l<"new-query">f><"datatable-scroll"t><"dtable-footer"ip>',
+            "initComplete": function () {
+                $("div.new-query").html('<button type="button" class="savebtn btn btn-theme" id="NewLocBtn" data-url="@Url.Action("SaveOrgWithLocation", "Organization")" >Add</button>');
+            },
+            'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+    { "bSortable": false },
+                             {
+                                 "sName": "ID",
+                                 "visible": false
+                             },
+                             {
+                                 "sName": "OrganizationID",
+                                 "visible": false
+                             },
+                            {
+                                "sName": "Location",
+                            },
+                            {
+                                "sName": "LocationCode",
+                            },
+                            {
+                                "sName": "OrganizationID",
+                            },
+                            {
+                                "sName": "StatusTypeID",
+                            },
+                             { "bSortable": false },
+
+            ],
+            "columnDefs": [{
+                "targets": [6],
+                "createdCell": function (td, cellData, rowData, row, col) {
+                    if (cellData == 10)
+                        $(td).replaceWith('<td>Active</td>')
+                    else
+                        $(td).replaceWith('<td>Inactive</td>')
+                }
+            }],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                if ('@Model' > 0) {
+                    $('td:eq(4)', nRow).attr('class', 'text-nowrap').html('<input type="button" class="EditLoc btn-theme btn-xs" id="' + aData[1] + '" data-orgid="' + aData[2] + '" value="Edit"/>' +
+                    '<input type="button" class="DeleteLoc btn-theme btn-xs" id="' + aData[1] + '" data-OrgID="' + aData[2] + '" value="Delete"/>');
+                }
+                else {
+                    $('td:eq(5)', nRow).attr('class', 'text-nowrap').html('<input type="button" class="EditLoc btn-theme btn-xs" id="' + aData[1] + '" data-orgid="' + aData[2] + '" value="Edit"/>' +
+                   '<input type="button" class="DeleteLoc btn-theme btn-xs" id="' + aData[1] + '" data-OrgID="' + aData[2] + '" value="Delete"/> ');
+                }
+                return nRow;
+            }
+        });
+        if ('@Model' > 0) {
+            table.api().column(5).visible(false);
+        }
+        $('.new-query').on('click', 'button#NewLocBtn', function () {
+            var url = $(this).attr('data-url');
+            if (locpopups.length > 0) {
+                for (i = 0; i < locpopups.length; i++) {
+                    locpopups[i].close();
+                }
+            }
+            var newloc = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            newloc.moveTo(0, 0);
+            locpopups.push(newloc);
+        });
+
+        $('#Loctbl').on('click', 'input.EditLoc', function () {
+            var ID = $(this).attr('id');
+            var Orgid = $(this).attr('data-orgid');
+            if (editlocpopups.length > 0) {
+                for (i = 0; i < editlocpopups.length; i++) {
+                    editlocpopups[i].close();
+                }
+            }
+            var editlocwindow = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("EditOrgLocDetails", "Organization")',
+                data: { ID: ID, OrgID:Orgid },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    with (editlocwindow.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    editlocpopups.push(editlocwindow);
+                    editlocwindow.moveTo(0, 0);
+                }
+            });
+        })
+        $('#Loctbl').on('click', 'input.DeleteLoc', function () {
+            var id = $(this).attr('id');
+            var OrgID = $(this).attr('data-OrgID');
+            $("#DeleteLocDlg").html('Do You Want To Delete This Location?');
+            $("#DeleteLocDlg").dialog({
+                title: "Organization Location",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Yes",
+                       click: function () {
+                           $.ajax({
+                               type: 'POST',
+                               url: '@Url.Action("DeleteOrgLocation","Organization")',
+                               data: { ColumnID: id, OrgID: OrgID },
+                               cache: false,
+                               dataType: 'json',
+                               success: function (data) {
+                                   $('#dialog').dialog('close');
+                                   location.reload();
+                               }
+                           });
+                       }
+                   },
+                {
+                    text: "No",
+                    click: function () {
+                        $("#DeleteLocDlg").dialog("close");
+                    }
+                }
+                ]
+            });
+        })
+    });
+</script>
+<section class="content-header hedr">
+    <h1> Organization Locations </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Locations</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="table-clean">
+                        <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="Loctbl">
+                            <thead>
+                                <tr role="row">
+                                    <th>S.No</th>
+                                    <th>ID</th>
+                                    <th>OrganizationID</th>
+                                    <th>Location</th>
+                                    <th>Location Code</th>
+                                    @if (Model > 0)
+                                    {
+                                        <th style="display:none;">Organization</th>
+                                    }
+                                    else
+                                    {
+                                        <th>Organization</th>
+                                    }
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody></tbody>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="DeleteLocDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>

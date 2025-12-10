@@ -1,0 +1,449 @@
+﻿
+@model XIDNA.ViewModels.VMOrganization
+
+        <div id="Loading">
+            <img src="~/Scripts/ckfinder/plugins/gallery/colorbox/images/loading.gif" />
+        </div>
+            <div class="active no-border no-padding no-margin bg-transparent" id="ViewGeneral">
+                <div>
+                    <input type="button" value="Edit General Details" id="GenEditBtn" class="savebtn btn btn-theme pull-right" />
+                </div>
+                <div class="form-horizontal">
+                    <div class="ViewGenForm">
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Name</label>
+                            <div class="col-sm-4 Textvalue">
+                                @Html.DisplayFor(model => model.Name)
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Type</label>
+                            <div class="col-sm-4 Textvalue">
+                                @Html.DisplayFor(model => model.TypeID)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Description</label>
+                            <div class="col-sm-4 Textvalue">
+                                @if (Model.Description != null)
+                                {
+                                    @Html.DisplayFor(model => model.Description)
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Logo</label>
+
+                            <div class="col-sm-4 Textvalue" id="previmage">
+                                <span>
+                                    @if (Model.Logo != null)
+                                    {
+                                        @Html.HiddenFor(model => model.Logo)
+
+                                        <img src="~/Content/images/@Html.DisplayFor(model =>model.Logo)" style="height:200px;width:200px;" />
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                </span>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">No. Of Users</label>
+                            <div class="col-sm-4 Textvalue">
+                                @Html.DisplayFor(model => model.NoOfUsers)
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Address</label>
+                            <div class="col-sm-4 Textvalue">
+                                @if (Model.Address != null)
+                                {
+                                    @Html.DisplayFor(model => model.Address)
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Phone Number</label>
+                            <div class="col-sm-4 Textvalue">
+                                @Html.DisplayFor(model => model.PhoneNumber)
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Email</label>
+                            <div class="col-sm-4 Textvalue">
+                                @Html.DisplayFor(model => model.Email)
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Post Code</label>
+                            <div class="col-sm-4 Textvalue">
+                                @if (Model.PostCode != null)
+                                {
+                                    @Html.DisplayFor(model => model.PostCode)
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">WebSite</label>
+                            <div class="col-sm-4 Textvalue">
+                                @if (Model.Website != null)
+                                {
+                                    @Html.DisplayFor(model => model.Website)
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Status</label>
+                            <div class="col-sm-4 Textvalue">
+                                @Html.DisplayFor(m => m.StatusTypeID)
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="no-border no-padding no-margin bg-transparent" id="EditGeneral">
+
+    @using (Ajax.BeginForm("CreateOrganization", "Organization", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnComplete", LoadingElementId = "Loading" }, new { @id = "frm", @class = "form-horizontal" }))
+    {
+        @Html.ValidationSummary(true)
+        @Html.HiddenFor(m => m.Type, new { @Value = "Edit" })
+        @Html.HiddenFor(model => model.ID)
+        @Html.HiddenFor(model => model.OldEmail, new { @Value = @Model.Email })
+
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.Name, new { @id = "Name", @Name = "Name", @placeholder = "Enter Name", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Type<span class="danger">*</span></label>
+                @Html.DropDownListFor(model => model.TypeID, new SelectList(new List<Object>{
+                                                                                new { key= 0 , value = "--Select--" },
+                                                                                new { key= 1 , value = "1" },
+                                                                                new { key= 2, value = "2" },
+                                                                                new { key= 3 , value = "3" },
+                                                                                new { key= 4 , value = "4" },
+                                                                                new { key= 5 , value = "5" }
+                                                                            }, "key", "Value"), new { @class = "form-control", @id = "Type" })
+
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.TypeID, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Description</label>
+                @Html.TextBoxFor(model => model.Description, new { @id = "Description", @Name = "Description", @placeholder = "Enter Description", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.Description, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Logo</label>
+                @if (Model.Logo != null)
+                {
+                    @Html.TextBoxFor(model => model.Logo, new { @class = "form-control", @disabled = "disabled" })
+                }
+                else
+                {
+                    <input type="file" id="UploadImage" name="UploadImage" />
+                }
+                <div id="NewImage">
+                    <input type="file" id="UploadImage" name="UploadImage" />
+                </div>
+                <div id="dvPreview">
+                    @if (Model.Logo != null)
+                    {
+                        <div id="ImagePreview">
+                            <img src="~/Content/images/@Html.DisplayFor(model =>model.Logo)" style="height:200px;width:200px;" />
+                            <span>
+                                <input type="button" class="btn btn-info" value="ReUpload Image" id="ReUpload">
+                            </span>
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">No. Of Users</label>
+                @Html.TextBoxFor(model => model.NoOfUsers, new { @id = "NoOfUsers", @Name = "NoOfUsers", @placeholder = "Enter No. Of Users", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.NoOfUsers, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Address</label>
+                @Html.TextBoxFor(model => model.Address, new { @id = "Address", @Name = "Address", @placeholder = "Enter Address", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.Address, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Phone Number<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.PhoneNumber, new { @id = "PhoneNumber", @Name = "PhoneNumber", @placeholder = "Enter PhoneNumber", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.PhoneNumber, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Email<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.Email, new { @id = "Email", @Name = "Email", @placeholder = "Enter Email", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.Email, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Post Code</label>
+                @Html.TextBoxFor(model => model.PostCode, new { @id = "PostCode", @Name = "PostCode", @placeholder = "Enter PostCode", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.PostCode, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">WebSite</label>
+                @Html.TextBoxFor(model => model.Website, new { @id = "Website", @Name = "Website", @placeholder = "Enter Website", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.Website, null, new { @class = "red" })
+            </div>
+        </div>
+        @Html.HiddenFor(model => model.Password)
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Status</label>
+                @Html.DropDownListFor(model => model.StatusTypeID, new SelectList(new List<Object>{
+                                                                                                                        new { key= 10 , value = "Active" },
+                                                                                                                        new { key= 20, value = "InActive" },
+
+                                                                                                                    }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-10">
+                <button type="button" class="btn btn-theme" id="GenBackBtn">Back</button>
+                <button type="submit" class="btn btn-theme" name="Todo" value="Save&Continue" id="saveorg">Save & Continue</button>
+                <button type="button" class="btn btn-theme decline orgCancel">Cancel</button>
+            </div>
+        </div>
+    }
+
+</div>
+
+            <div id="ViewContact" class="no-border no-padding no-margin bg-transparent">
+    @if (Model.ConID != 0)
+    {
+        <div>
+            <input type="button" value="Edit Contact Details" id="ConEditBtn" class="savebtn btn btn-theme pull-right" />
+        </div>
+    }
+    <div class="form-horizontal">
+        <div class="ViewConForm">
+            <div class="form-group">
+                <label for="inputName" class="col-sm-2 control-label">Name</label>
+                <div class="col-sm-4 Textvalue">
+                    @Html.DisplayFor(model => model.ConName)
+                </div>
+
+            </div>
+            <div class="form-group">
+                <label for="inputName" class="col-sm-2 control-label">Phone</label>
+                <div class="col-sm-4 Textvalue">
+                    @Html.DisplayFor(model => model.ConPhone)
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputName" class="col-sm-2 control-label">Email</label>
+                <div class="col-sm-4 Textvalue">
+                    @Html.DisplayFor(model => model.ConEmail)
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputName" class="col-sm-2 control-label">Address</label>
+                <div class="col-sm-4 Textvalue">
+                    @Html.DisplayFor(model => model.ConAddress)
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+            <div class="no-border no-padding no-margin bg-transparent" id="EditContact">
+    @using (Ajax.BeginForm("AddOrganizationContact", "Organization", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnConSuccess" }, new { @class = "form-horizontal", @id = "frm" }))
+    {
+        @Html.ValidationSummary(true);
+        @Html.HiddenFor(m => m.ConID, new { @value = Model.ConID })
+        @Html.HiddenFor(m => m.ConOrganizationID, new { @id = "ConOrganizationID" })
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.ConName, new { @Name = "ConName", @placeholder = "Enter Name", @class = "form-control", @maxlength = "30" })
+            </div>
+            <div class="col-sm-7 errormsg">
+                @Html.ValidationMessageFor(m => m.ConName, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Phone Number<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.ConPhone, new { @Name = "ConPhone", @placeholder = "Enter Phone", @class = "form-control", @maxlength = "30" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.ConPhone, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Email<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.ConEmail, new { @Name = "ConEmail", @placeholder = "Enter Email", @class = "form-control", @maxlength = "30" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.ConEmail, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Address<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.ConAddress, new { @Name = "ConAddress", @placeholder = "Enter Address", @class = "form-control", @maxlength = "30" })
+            </div>
+            <div class="col-sm-7 orgerrormsg">
+                @Html.ValidationMessageFor(m => m.ConAddress, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-10">
+                <button type="button" class="btn btn-theme" id="ConBackBtn">Back</button>
+                <button type="submit" class="btn btn-theme" value="Save" id="saveorgcontact">Save</button>
+                <button type="button" class="btn btn-theme orgCancel">Cancel</button>
+            </div>
+        </div>
+    }
+
+</div>
+
+            <div id="ViewClasses" class="no-border no-padding no-margin bg-transparent">
+    <div>
+        <input type="button" value="Edit Class Details" id="ClassEditBtn" class="savebtn btn btn-theme pull-right" />
+    </div>
+    <div id="OrgClassesList">
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label for="inputName" class="col-sm-2 control-label">Organization Classes</label>
+                <div class="col-sm-4 Textvalue">
+                    @if (Model.ClassIDs.Count() > 0 && Model.ClassIDs != null)
+                    {
+                        foreach (var items in Model.ClassIDs)
+                        {
+                            var ClassName = items.Split('-')[1];
+                            <p class="Orgclassname">@ClassName</p>
+                        }
+                    }
+
+                </div>
+
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+            <div class="no-border no-padding no-margin bg-transparent" id="EditClasses">
+    @using (Ajax.BeginForm("AddOrganizationClasses", "Organization", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnBegin", OnSuccess = "OnClassSuccess" }, new { @class = "form-horizontal", @id = "Classfrm" }))
+    {
+        @Html.HiddenFor(m => m.OrganizationID)
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Class<span class="danger">*</span></label>
+                @Html.ListBoxFor(model => model.ClassIDs, new MultiSelectList(Model.Classes, "Expression", "Text", Model.Classes), new { size = 10, @class = "form-control", required = "required" })
+            </div>
+            <div class="col-sm-7 orgerror">
+                @Html.ValidationMessageFor(m => m.ClassIDs, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-10">
+                <button type="button" class="btn btn-theme" id="ClassBackBtn">Back</button>
+                <button type="submit" class="btn btn-theme">Save</button>
+                <button type="button" class="btn btn-theme decline orgCancel">Cancel</button>
+            </div>
+        </div>
+    }
+</div>
+
+            <div class="no-border no-padding no-margin bg-transparent" id="EditLocations">
+    <form class="form-horizontal">
+        <div class="form-group">
+            <label for="inputName" class="col-sm-2 control-label">Organization Locations</label>
+            <div class="col-sm-4 Textvalue">
+                @if (Model.OrgLocations.Count() > 0 && Model.OrgLocations != null)
+                {
+                    foreach (var items in Model.OrgLocations)
+                    {
+                        <p class="orgclassname">@Html.DisplayFor(m => items)</p>
+                    }
+                }
+
+            </div>
+
+        </div>
+        <div class="form-group">
+            <div class="col-sm-10">
+                <button type="button" class="btn btn-theme decline orgCancel">Cancel</button>
+            </div>
+        </div>
+    </form>
+
+</div>

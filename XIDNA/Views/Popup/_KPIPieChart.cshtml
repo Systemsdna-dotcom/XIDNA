@@ -1,0 +1,118 @@
+﻿@model XIDNA.ViewModels.User
+
+
+<script>
+    $(document).ready(function () {
+        var polarOptions = {
+            scaleShowLabelBackdrop: true,
+            scaleBackdropColor: "rgba(255,255,255,0.75)",
+            scaleBeginAtZero: true,
+            scaleBackdropPaddingY: 1,
+            scaleBackdropPaddingX: 1,
+            scaleShowLine: true,
+            segmentShowStroke: true,
+            segmentStrokeColor: "#fff",
+            segmentStrokeWidth: 2,
+            animationSteps: 100,
+            animationEasing: "easeOutBounce",
+            animateRotate: true,
+            animateScale: false,
+        };
+        var ctx = document.getElementById("1-@Model.SectionName").getContext("2d");
+        if ('@Model.Type' == "@EnumLocations.Dashboard.ToString()") {
+            $.ajax({
+                url: '@Url.Action("GetLeadsBySource", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: 'JSON',
+                data: {ReportID:'@Model.ReportID'},
+                cache: false,
+                success: function (data) {
+                    var Polarchart = new Chart(ctx).Pie(data);
+                },
+                error: function (data) {
+                }
+            });
+        } else {
+            $.ajax({
+                url: '@Url.Action("GetLeadsBySourceForTab", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: 'JSON',
+                cache: false,
+                data:{TabID:'@Model.TabID', ClassID:'@Model.ClassID'},
+                success: function (data) {
+                    var Polarchart = new Chart(ctx).Pie(data);
+                },
+                error: function (data) {
+                }
+            });
+        }
+        
+        var doughnutOptions = {
+            segmentShowStroke: true,
+            segmentStrokeColor: "#fff",
+            segmentStrokeWidth: 2,
+            percentageInnerCutout: 45, // This is 0 for Pie charts
+            animationSteps: 100,
+            animationEasing: "easeOutBounce",
+            animateRotate: true,
+            animateScale: false,
+        };
+
+        var ctxdoughnut = document.getElementById("2-@Model.SectionName").getContext("2d");
+        if ('@Model.Type' == "@EnumLocations.Dashboard.ToString()") {
+            $.ajax({
+                url: '@Url.Action("GetLeadsByClass", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: 'JSON',
+                data: { ReportID: '@Model.ReportID' },
+                cache: false,
+                success: function (data) {
+                    var DoughnutChart = new Chart(ctxdoughnut).Doughnut(data, doughnutOptions);
+
+                },
+                error: function (data) {
+                }
+            });
+        }
+        else {
+            $.ajax({
+                url: '@Url.Action("GetLeadsByClassForTab", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: 'JSON',
+                cache: false,
+                data: { TabID: '@Model.TabID', ClassID: '@Model.ClassID' },
+                success: function (data) {
+                    var DoughnutChart = new Chart(ctxdoughnut).Doughnut(data, doughnutOptions);
+
+                },
+                error: function (data) {
+                }
+            });
+        }
+    });
+</script>
+<section class="content-header hedr">
+    <h1 class="TabPreview"> Tab Preview </h1>
+</section>
+<div class="ibox float-e-margins">
+    @*<div class="ibox-title">
+        <h5>Leads By Source And Class</h5>
+    </div>*@
+        <div class="statistic-box">
+            <div class="row text-center">
+                <div class="col-lg-6">
+                    <canvas id="1-@Model.SectionName" width="115" height="115"></canvas>
+                    @*<h5>Leads By Source</h5>*@
+                </div>
+                <div class="col-lg-6">
+                    <canvas id="2-@Model.SectionName" width="115" height="115"></canvas>
+                    <h5>@*Leads By Class*@</h5>
+                </div>
+            </div>
+
+        </div>
+</div>

@@ -1,0 +1,62 @@
+﻿@model int
+
+<script>
+    $(document).ready(function () {
+            var table = $('#Field1').dataTable({
+                "paging": true,
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Html.Raw(@Url.Action("GetSelectedOrgFields", "Fields", new { ID=@Model}))",
+                "aaSorting": [[1, 'desc']],
+                "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+                "autoWidth": false,
+                "aoColumns": [
+                {},
+                                {
+                                    "sName": "ID",
+                                    "bVisible": false
+                                },
+                                {
+                                    "sName": "FieldName"
+                                },
+                                {
+                                    "sName": "FieldType",
+                                },
+                                {
+                                    "sName": "MaxLength",
+                                },
+                ],
+            });
+        $("#Field1").css("width", "100%");
+        });
+
+</script>
+<style>
+    .subnav {
+        margin-bottom: 10px;
+    }
+
+    #Botbl {
+        width: 100% !important;
+    }
+</style>
+
+<div id="Fields">
+    <div class="table-clean">
+        <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="Field1">
+            <thead>
+                <tr role="row">
+                    <th>S.No</th>
+                    <th>ID</th>
+                    <th>Field Name</th>
+                    <th>Field Type</th>
+                    <th>Length</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+
+        </table>
+    </div>
+</div>
+

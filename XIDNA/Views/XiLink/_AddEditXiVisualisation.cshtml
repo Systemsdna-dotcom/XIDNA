@@ -1,0 +1,373 @@
+﻿@model XIDNA.ViewModels.VMXiVisualisations
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    int i = 1;
+}
+
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        if(@Model.XiVisualID != 0)
+        {
+            $('#Type').val('@Model.Type');
+            $('#StatusTypeID').val('@Model.StatusTypeID');
+        }
+        $('#AddMore').click(function () {
+            var Divs = $('.NVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $('#NameValuePairs').append(Divs);
+            $('.NVPairs').last().css("display", "block");
+        });
+        $(document.body).on('click', 'input.AddMoreList', function () {
+            var Divs = $('.LNVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $(Divs).filter('.LNVPairs').css("display", "block");
+            $(this).closest(".amlist").before(Divs);
+        });
+        $('.AddList').click(function () {
+            var Divs = $('.Lists').first().clone();
+            var TextBoxs = $(Divs).find('.LNVPairs').css("display", "block");
+            for (i = 0; i < TextBoxs.length; i++) {
+                if (i >= 1) {
+                    $(TextBoxs[i]).remove();
+                }
+            }
+            $(Divs).find('input[type=text]').val('');
+            $(this).closest(".alist").before(Divs);
+        });
+
+        $(document.body).on('click', 'button.DeleteNVPair', function () {
+            $(this).closest(".NVPairs").hide();
+        });
+
+        $(document.body).on('click', 'button.DeleteLNVPair', function () {
+            $(this).closest('.LNVPairs').hide();
+        });
+
+        $('#SaveXiVisualisation').click(function () {
+            var empty = $('#XiVisualisationForm').find("input.req").filter(function () {
+                return this.value === "";
+            });
+            if (empty.length) {
+                CustomMessage("Please fill * marked fields", false);
+            }
+            else {
+                var XiVisualisationName = $('#Name').val();
+                var Type = $('#Type').val();
+                var ApplicationID = '@Model.FKiApplicationID';
+                var Status = $('#StatusTypeID').val();
+                var NVPairs = [];
+                $('.NVPairs:visible').each(function () {
+                    var Name; var Value;
+                    $(this).find('input').each(function (i, obj) {
+                        var Nname = obj.name;
+                        if (Nname == "Names") {
+                            Name = $(this).val();
+                        }
+                        else if (Nname == "Values") {
+                            Value = $(this).val();
+                        }
+                    });
+                    if (Name.length > 0) {
+                        NVPairs.push(Name + "," + Value);
+                    }
+                });
+                var LNVPairs = [];
+                $('.Lists').each(function () {
+                    var LName = $(this).find('input.ListName').val();
+                    //LName = "ListName-" + LName;
+                    if (LName.length > 0) {
+                        LNVPairs.push(LName);
+                        $(this).find('.LNVPairs:visible').each(function (i, obj) {
+                            var Name; var Value;
+                            $(this).find('input').each(function (i, obj) {
+                                var Nname = obj.name;
+                                if (Nname == "ListNames") {
+                                    Name = $(this).val();
+                                }
+                                else if (Nname == "ListValues") {
+                                    Value = $(this).val();
+                                }
+                            });
+                            if (Name.length > 0 && Value.length > 0) {
+                                LNVPairs.push(LName + "," + Name + "," + Value);
+                            }
+                        });
+                    }
+                });
+                var model = { XiVisualID: $('#XiVisualID').val(), Name: XiVisualisationName, Type: Type,FKiApplicationID:ApplicationID , NVPairs: NVPairs, LNVPairs: LNVPairs, Status: Status };
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SaveEditXiVisualisation", "XiLink")',
+                    data: JSON.stringify(model),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    success: function (data) {
+                        CustomMessage(data.ResponseMessage, data.Status);
+                        opener.location.reload();
+                    }
+                });
+            }
+        });
+    });
+</script>
+<section class="content-header hedr">
+    @if (@Model.XiVisualID == 0)
+    {
+        <h1> Add XiVisualisation </h1>
+    }
+    else
+    {
+        <h1> Edit XiVisualisation </h1>
+    }
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> XiVisualisation</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body padding10Tab">
+                <div class="innerborder">
+                    <form id="XiVisualisationForm" class="form-horizontal">
+                        <div id="clear-text">
+                            <input type="hidden" value="@Model.XiVisualID" id="XiVisualID" />
+                            @if (Model.FKiApplicationID == 0)
+                            {
+                                <div class="form-group" id="XIFKiApplicationDDL">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn"> Application <span class="danger">*</span></label>
+                                        <select class="form-control" id="ApplicationID" name="FKiApplicationID">
+                                            <option value="0">--Select--</option>
+                                            @foreach (var items in Model.ddlApplications)
+                                            {
+                                                if (Model.FKiApplicationID == items.Value)
+                                                {
+                                                    <option selected value="@items.Value">@items.text</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@items.Value">@items.text</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" id="ApplicationID" name="FKiApplicationID" value="@Model.FKiApplicationID" />
+                            }
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn"> Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(m => m.Name, new { @class = "form-control", @placeholder = "Name Here" })
+                                    @*<input type="text" name="Name" id="Name" placeholder="XiVisualisation Name" class="form-control req" value="@Model.Name" />*@
+                                </div>
+                                <div class="col-sm-7 emperrormsg">
+                                    @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Type<span class="danger">*</span></label>
+                                    <select class="form-control" id="Type">
+                                        <option value="0">--Select--</option>
+                                        <option value="Edit Form">Edit Form</option>
+                                        <option value="Grid">Grid</option>
+                                        <option value="Matrix">Matrix</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-7 emperrormsg">
+                                    @Html.ValidationMessageFor(m => m.Type, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div id="NameValuePairs" class="col-md-12">
+                                    @if (Model.XiVisualID == 0 || Model.NVs.Count() == 0)
+                                    {
+                                        <div class="form-group NVPairs">
+                                            <div class="col-md-2">
+                                                <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                <input type="text" name="Names" placeholder="Name" class="form-control" />
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                <input type="text" name="Values" placeholder="Value" class="form-control" />
+                                            </div>
+                                            <br />
+                                            <div>
+                                                <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        foreach (var NVs in Model.NVs)
+                                        {
+                                            <div class="form-group NVPairs">
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                    <input type="text" name="Names" placeholder="Name" class="form-control" value="@NVs.Name" />
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                    <input type="text" name="Values" placeholder="Value" class="form-control" value="@NVs.Value" />
+                                                </div>
+                                                <br />
+                                                <div>
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <input type="button" id="AddMore" value="Add" class="btn btn-theme btn-xs">
+                                </div>
+                            </div>
+
+                            @if (Model.XiVisualID == 0 || Model.Lists.Count() == 0)
+                            {
+                                <div class="form-group Lists">
+                                    <div class="form-group col-md-12">
+                                        <div class="col-md-4">
+                                            <label for="inputEmail" class="gn"> List<span class="danger"></span></label>
+                                            <input type="text" name="List" placeholder="List Name" class="form-control ListName" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-12 LNVPairs">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                            <input type="text" name="ListNames" placeholder="Name" class="form-control" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                            <input type="text" name="ListValues" placeholder="Value" class="form-control" />
+                                        </div>
+                                        <br />
+                                        <div>
+                                            <button type="button" class="btn btn-theme btn-xs DeleteLNVPair">Delete</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-md-12 amlist">
+                                        <div class="col-md-2">
+                                            <input type="button" value="Add" class="AddMoreList btn btn-theme btn-xs">
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                foreach (var items in Model.Lists)
+                                {
+
+                                    if (items.NVs.Count == 0)
+                                    {
+                                        <div class="form-group Lists">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-4">
+                                                    <label for="inputEmail" class="gn"> List<span class="danger"></span></label>
+                                                    <input type="text" name="List" placeholder="List Name" class="form-control ListName" value="@items.ListName" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 LNVPairs">
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                    <input type="text" name="ListNames" placeholder="Name" class="form-control" />
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                    <input type="text" name="ListValues" placeholder="Value" class="form-control" />
+                                                </div>
+                                                <br />
+                                                <div>
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteLNVPair">Delete</button>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 amlist">
+                                                <div class="col-md-2">
+                                                    <input type="button" value="Add" class="AddMoreList btn btn-theme btn-xs">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="form-group Lists">
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-4">
+                                                    <label for="inputEmail" class="gn"> List<span class="danger"></span></label>
+                                                    <input type="text" name="List" placeholder="List Name" class="form-control ListName" value="@items.ListName" />
+                                                </div>
+                                            </div>
+                                            @foreach (var NVs in items.NVs)
+                                            {
+                                                <div class="form-group col-md-12 LNVPairs">
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                        <input type="text" name="ListNames" placeholder="Name" class="form-control" value="@NVs.Name" />
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                        <input type="text" name="ListValues" placeholder="Value" class="form-control" value="@NVs.Value" />
+                                                    </div>
+                                                    <br />
+                                                    <div>
+                                                        <button type="button" class="btn btn-theme btn-xs DeleteLNVPair">Delete</button>
+                                                    </div>
+                                                </div>
+                                            }
+                                            <div class="form-group col-md-12 amlist">
+                                                <div class="col-md-2">
+                                                    <input type="button" value="Add" class="AddMoreList btn btn-theme btn-xs">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                            <div class="form-group alist">
+                                <div class="col-md-2">
+                                    <input type="button" value="Add List" class="AddList btn btn-theme btn-xs">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    <select class="form-control" id="StatusTypeID" name="StatusTypeID">
+                                        <option value="10">Active</option>
+                                        <option value="20">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="button" class="btn btn-theme" value="Save" id="SaveXiVisualisation" />
+                                <button type="button" class="btn btn-theme decline CancelXiVisualisation">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="SavePopupDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    $('.CancelXiVisualisation').click(function () {
+        window.close();
+    });
+</script>

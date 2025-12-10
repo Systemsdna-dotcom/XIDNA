@@ -1,0 +1,216 @@
+﻿
+@model XIDNA.Models.XIDataSources
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        //$('#SuccessMsg').hide();
+        //$('#ErrorMsg').hide();
+        // $(".StatusMessages").hide();
+        @*if ('@Model.ID' == 0 || '@Model.sType' == null) {
+            $('#sType').val('');
+        }*@
+        $('#FKiApplicationID').change(function () {
+            if ($(this).val() > 0) {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetAppOrganisations", "BusinessObjects")',
+                    data: JSON.stringify({ iAppID: $(this).val() }),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    async: false,
+                    success: function (data) {
+                        if (data && data.length > 0) {
+                            $('#FKiOrgID').html('<option>--Select--</option>');
+                            for (i = 0; i < data.length; i++) {
+                                $('#FKiOrgID').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                            }
+                        }
+                        else {
+                            $('#FKiOrgID').html('<option>--Select--</option>');
+                        }
+                    }
+                });
+            }
+        });
+    });
+    function OnBegin() {
+        $('body').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+    function OnComplete(e) {
+        $('body').unblock();
+        CustomMessage(e.ResponseMessage, e.Status)
+    }
+</script>
+<section class="content-header hedr">
+    @if (Model.ID == 0)
+    {
+        <h1> Add Data Source </h1>
+    }
+    else
+    {
+        <h1> Edit Data Source </h1>
+    }
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Data Source</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="innerborder">
+                    @* SaveBO *@
+                    @using (Ajax.BeginForm("CreateDataSource", "BusinessObjects", new AjaxOptions
+                    {
+                        HttpMethod = "POST",
+                        OnBegin = "OnBegin",
+                        OnSuccess = "OnComplete"
+                    }, new { @id = "DataSourceForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.ID)
+                        <div id="clear-text">
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.sName, new { @placeholder = "Enter Name Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sName, null, new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Type<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.sType, new SelectList(new List<Object>{
+                                               new { key= "Organisation" , value = "Organisation" },
+                       new { key= "Application" , value = "Application" },
+                       new {key="Defined",value="Defined" }
+                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                </div>
+                            </div>
+                            @if (Model.FKiApplicationID == 0)
+                            {
+                                <div class="form-group" id="XIFKiApplicationDDL">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn"> Application <span class="danger">*</span></label>
+                                        <select class="form-control" id="FKiApplicationID" name="FKiApplicationID">
+                                            <option value="0">--Select--</option>
+                                            @foreach (var items in Model.ddlApplications)
+                                            {
+                                                if (Model.FKiApplicationID == items.Value)
+                                                {
+                                                    <option selected value="@items.Value">@items.text</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@items.Value">@items.text</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" id="ApplicationID" name="FKiApplicationID" value="@Model.FKiApplicationID" />
+                            }
+                            @*<div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Organisation<span class="danger"></span></label>
+                                        @Html.DropDownListFor(m => m.FKiOrgID, new SelectList(Model.ddlOrgs, "Value", "text"), "--Select--", new { @class = "form-control" })
+                                    </div>
+                                </div>*@
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Description<span class="danger">*</span></label>
+                                    @Html.TextAreaFor(model => model.sDescription, new { @placeholder = "Enter Description", @class = "form-control", @rows = 4 })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sDescription, null, new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-8">
+                                    <label for="inputEmail" class="gn">Connection String<span class="danger">*</span></label>
+                                    @Html.TextAreaFor(model => model.sConnectionString, new { @placeholder = "Enter Connection string", @class = "form-control", @ID = "ConnectionString", @rows = 3 })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="button" class="btn btn-theme reverse" id="TestConn" value="Test Connection" onclick="TestConnectionString()">
+                                </div>
+                            </div>
+
+                            <div class="form-group" id="ColumnDiv">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="submit" class="btn btn-theme" value="Save" />
+                                @if (Model.ID == 0)
+                                {
+                                    <button type="button" class="btn btn-theme reverse" id="ResetBoBtn">Reset</button>
+                                }
+                                @*@if (Model.ID > 0)
+                                    {
+                                        <input type="button" class="btn btn-theme reverse" id="CopyBoBtn" value="Copy">
+                                    }*@
+                                <button type="button" class="btn btn-theme decline" id="CancelBO">Cancel</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<script type="text/javascript">
+
+    function TestConnectionString() {
+        var sConnectionString = $("#ConnectionString").val()
+        if (sConnectionString && sConnectionString.length > 0) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CheckConnectionString", "BusinessObjects")',
+                data: { sConnectionString: sConnectionString },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    if (data == "Success") {
+                        CustomMessage("<strong>Success!!</strong> Connection string is valid, Database Exists.", true);
+                    }
+                    else {
+                        CustomMessage("<strong>Failure!!</strong> Connection error, Please check the connection string", false);
+                    }
+                }
+            });
+        }
+    }
+
+    $('#ResetBoBtn').click(function () {
+        $('#DataSourceForm')[0].reset();
+    });
+
+    $('#CancelBO').click(function () {
+        window.close();
+    });
+</script>

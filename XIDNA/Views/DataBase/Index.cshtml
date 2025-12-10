@@ -1,0 +1,1302 @@
+﻿@model XICore.XIDatabaseInfo
+@using XISystem;
+@using XICore;
+@using System.Web.Script.Serialization;
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    var model1 = Model;
+}
+<script>
+    $(document).ready(function () {
+        $('#TableSelection').css('display', 'none');
+        $('#BOStructre').css('display', 'none');
+        $('#div_BostructureData').css('display', 'none');
+        $('#id_BOStructureDetails').css('display', 'none');
+        //$('#BosStructredData').css('display', 'none');
+        $("#StructureBOID").blur(function () {
+            //debugger;
+            var ParentIDs = "";
+            var idList = [];
+            var jsonNodes = $('#DatabaseTreeStructure').jstree(true).get_json('#', { flat: true });
+            $.each(jsonNodes, function (i, val) {
+                idList.push($(val).attr('id'));
+            })
+            if (idList.length > 0) {
+                $.each(idList, function (i, val) {
+
+                    ParentIDs += idList[i] + ",";
+                })
+                ParentIDs = ParentIDs.slice(0, -1);
+            }
+            var model = {
+                ParentIDs: ParentIDs,
+                sSource: $('#hiddenSource').val(), //'Data Source=appserver;initial catalog=YiraQa;User Id=yirauser; Password=yirauser; MultipleActiveResultSets=True',
+                sTarget: $('#hiddenTarget').val(), //'Data Source=appserver;initial catalog=Yiralive;User Id=yirauser; Password=yirauser; MultipleActiveResultSets=True'
+                CompareWith: $('.radio_CompareWith:checked').val(),
+                iBOID: $('#id_BOs').val(),
+                StructureID: $('#id_BOStructureDetails').val(),
+                sStructureName: $('#id_BOStructureDetails option:selected').text(),
+                iInstanceID: $('#StructureBOID').val()
+            }
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("DataCompare", "DataBase")',
+                data: model,
+                cache: false,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    debugger;
+                    if (data.length > 0) {
+                        $.each(data, function (i, val) {
+                            //alert(data[i][3]);
+                            if (parseInt(val[2]) > 0 || parseInt(val[5]) > 0 || parseInt(val[6]) > 0)
+                                fncUpdateDataXITree(val[3], 1);
+                            else
+                                fncUpdateDataXITree(val[3], 0);
+                        })
+                    }
+                    //else
+                    //alert("Record not found");
+                    if (data.aaData.length > 0) {
+                        $.each(data.aaData, function (i, val) {
+                            //alert(data[i][3]);
+                            if (parseInt(val[2]) > 0 || parseInt(val[3]) > 0 || parseInt(val[4]) > 0)
+                                fncUpdateDataXITree(val[7], 1);
+                            else
+                                fncUpdateDataXITree(val[7], 0);
+                        })
+                    }
+                }
+            });
+
+            //var boname=$('#DatabaseTreeStructure').jstree(true).get_node(data.node.id).data[0].sBO;
+        });
+    });
+</script>
+<section class="content-header hedr">
+    <input type="button" id="btn_Manual" value="Manual" style="color: black;" />
+    <input type="button" id="btn_Auto" value="Auto" style="color: black;" />
+
+    <!--************************** Enter Source and Target Connection Manually  **********************-->
+    <div class="row" id="div_Manual" style="display:none">
+        <div class="col-md-1">
+            <label>Source</label>
+        </div>
+        <div class="col-md-4">
+            <input type="text" id="txt_Source" class="form-control" placeholder="Enter Source Database" readonly />
+            <input type="Hidden" name="Source" id="hiddenSource" />
+        </div>
+        <div class="col-md-2">
+            <span type="button" id="span_Swap"><i class="fa fa-exchange"></i></span>
+        </div>
+        <div class="col-md-1">
+            <label>Target</label>
+        </div>
+        <div class="col-md-4">
+            <input type="text" id="txt_Target" class="form-control" placeholder="Enter Target Database" readonly />
+            <input type="Hidden" name="Target" id="hiddenTarget" />
+        </div>
+        <div class="row">
+            @*<div class="col-md-3"></div>*@
+            <div class="col-md-4"><input type="button" class="btn btn-default" value="Schema Compare" onclick="Compare('Schema')" /></div>
+            @*<div class="col-md-2"><input type="button" class="btn btn-danger" value="Data Compare" onclick="Compare('Data')" /></div>*@
+            <div class="col-md-4"><input type="button" class="btn btn-danger" value="Tables Compare" onclick="Compare('Tables')" /></div>
+            <div class="col-md-4"><input type="button" class="btn btn-danger" value="Structure Compare" onclick="BOStructure()" /></div>
+        </div>
+    </div>
+    <div id="TableSelection" style="height:calc(49vh - 50px);overflow:auto;"></div>
+    <div id="BOStructre"></div>
+    <div id="div_BostructureData">
+        <div class="col-md-2">
+            <select name="BOs" id="id_BOs" class="form-control">
+                <option value="">select</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="StructureName" id="id_BOStructureDetails" class="form-control">
+                <option value="">select</option>
+            </select>
+        </div>
+
+        <div class="col-md-6" id="BosStructredData">
+            <span><input type="text" id="StructureBOID" style="color:black" /></span>
+            <div id="BOTreeStructure">
+            </div>
+            <button id="GetAll" onclick="GetallData()" style="color: black;">GetAll</button>
+        </div>
+    </div>
+    <div id="DataCompared">
+        <div class="table-responsive" id="Dialog_DataCompare">
+            <input type="button" value="Update All To Target" class="btn btn-primary" onclick="fnSourceToTargetUpdate()" />
+            <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="DBCompareDataTable">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Table Name</th>
+                        <th>Different Records</th>
+                        <th>Only in Source</th>
+                        <th>Only in Target</th>
+                        <th>Identical Records</th>
+                        <th>Comparing With</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="content" id="div_Table" style="display:none;">
+            <div id="div_AppendButton">
+
+            </div>
+            <span> <h2 id="id_heading"></h2> </span>
+            <div class="table-responsive" @*style="height:calc(49vh - 50px);*@ overflow-y:auto>
+                <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="DataGrid">
+                    <thead id="tHead"></thead>
+                    <tbody id="tBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="Dialog_Script" title="Inset Update Schema"></div>
+    <!--************************** Get Source and Target Connection in  XIDatabaseConnections_T Table from database **********************-->
+    <div class="row" id="div_Auto">
+        <form id="AutoReset" style="width:50%">
+            <div id="clear-text">
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <label class="gn col-md-6">Name</label>
+                        <input type="text" name="sName" class="form-control col-md-6" id="sName" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <label class="gn col-md-6">Application name</label>
+                        <select name="FKiApplicationID" id="FKiApplicationID" class="form-control col-md-6">
+
+                            <option value="-1">--Select--</option>
+                            @foreach (var item in model1.Application)
+                            {
+                                <option value="@item.ID">@item.sApplicationName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <label class="gn col-md-6">Environment Type</label>
+                        <select name="sEnvironmentType" id="sEnvironmentType" class="form-control col-md-6">
+                            <option value="">select</option>
+                            @foreach (var item in model1.Environment)
+                            {
+                                <option value="@item.ID">@item.EnvironmentType</option>
+                            }
+                            @*<option value="10">183</option>
+                                <option value="20">185</option>
+                                <option value="30">Live</option>*@
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <label class="gn col-md-6">DataBase</label>
+                        <select name="FKiEnvironmentID" id="FKiEnvironmentID" class="form-control col-md-6">
+                            <option value="ps">select</option>
+                            <option value="1">Zeeinsurance</option>
+                            <option value="2">xidnaqa_old1</option>
+                            <option value="3">xicoreqa</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <label class="gn col-md-6">Source</label>
+                        @*<select name="Source" id="dd_Source" class="form-control">
+                                <option value="">select</option>
+                            </select>*@
+                        <input type="text" name="sSourceLocation" class="form-control col-md-6" id="sSourceLocation" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <label class="gn col-md-6">Target</label>
+                        @*<select name="Target" id="dd_Target" class="form-control">
+                                <option value="">select</option>
+                            </select>*@
+                        <input type="text" name="sDestinationLocation" class="form-control col-md-6" id="sDestinationLocation" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-4 col-md-12">
+                        <button type="button" id="btnReset" style="color:black;">Reset</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-4 col-md-12">
+                        <button type="button" id="btnSchema"  onclick="Compare('Schema')" style="color:black;">Schema</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <!--************************** Based on Database type Structures are Displayed. This div displays if Database type is Configuration type (Means Database must Contains XIBOStructure_T)**********************-->
+        <div id="DD_BOStructures" style="display:none">
+            <div class="col-md-1">
+                <label class="gn">Structures</label>
+            </div>
+            <div class="col-md-2">
+                <select name="StructureName" id="id_BOStructure" class="form-control">
+                    <option value="">select</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="radio" name="type" class="radio_Compare" value="Schema" checked />Shema
+                <input type="radio" name="type" class="radio_Compare" value="Data" />Data
+            </div>
+        </div>
+        <!--************************** Based on Database type CompareTypes are Displayed. This div displays if Database type is not Configuration type **********************-->
+        <div id="DD_CompareType" style="display:none">
+            <div class="col-md-1">
+                <label class="gn">Compare Type</label>
+            </div>
+            <div class="col-md-2">
+                <select name="StructureName" id="id_CompareType" class="form-control">
+                    <option value="">select</option>
+                    <option value="Schema">Schema</option>
+                    <option value="Data">Data</option>
+
+                </select>
+            </div>
+        </div>
+        <div id="div_CompareWith">
+            <input type="radio" name="CompareType" class="radio_CompareWith" value="@XISystem.XIConstant.GUID" checked />GUID
+            <input type="radio" name="CompareType" class="radio_CompareWith" value="primary key" />Primary Key
+        </div>
+    </div>
+</section>
+<!--************************** Display Tree Structure or Comparing result here **********************-->
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div id="TreeStructure"></div>
+                    <div id="Div_Compare"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!--************************** This is form for Manually enter Source and Target Connection Strings **********************-->
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body" id="Dialog">
+                <div class="innerborder" id="form" style="display:none">
+                    <form id="ServerInfo" action="">
+                        <div id="clear-text">
+                            <div>
+                                <label></label>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Server Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.ServerName, new { @class = "form-control change", @id = "sName" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">User Name</label>
+                                    @Html.TextBoxFor(model => model.UserName, new { @class = "form-control change", @id = "uName", @autocomplete = "off" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Password</label>
+                                    @Html.TextBoxFor(model => model.Password, new { @class = "form-control change", @style = "-webkit-text-security: disc;", @id = "Password", @autocomplete = "off" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Databases<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.Database, new SelectList(new List<Object> { }, "key", "Value"), "--Database--", new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-offset-4">
+                                    <input type="button" class="btn btn-theme" value="Connect" id="btn_Connect" />
+                                    <button type="button" class="btn btn-theme decline" id="btn_Close">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    var ConnectionString = '';
+    var ConnectionStrongHide = '';
+    var BONames = [];
+    var JsonDatabases = '@Html.Raw(Json.Encode(ViewBag.DataBases))';
+    $(function () {
+        var Databases = JSON.parse(JsonDatabases);
+        if (Databases && Databases.length > 0) {
+            var html = "";
+            $.each(Databases, function (i, item) {
+                html += '<option value="' + item.Value + '">' + item.Name + '</option>';
+            });
+            $('#dd_Source').append(html);
+            $('#dd_Target').append(html);
+        }
+        $('#Dialog').dialog({
+            autoOpen: false,
+            width: "62%"
+        });
+    });
+
+    $('#btn_Manual').click(function () {
+        BONames = [];
+        $('#hiddenSource').val('');
+        $('#hiddenTarget').val('');
+        $('.radio_CompareWith[value="@XISystem.XIConstant.GUID"]').prop('checked', true)
+        //$('.radio_CompareWith[value="primary key"]').prop('checked', true)
+        $('#TreeStructure').empty();
+        $('#Div_Compare').empty();
+        $('#DD_BOStructures').css('display', 'none');
+        $('#div_Manual').css('display', '');
+        $('#div_Auto').css('display', 'none');
+
+    });
+    $('#btn_Auto').click(function () {
+        $('.radio_CompareWith[value="@XISystem.XIConstant.GUID"]').prop('checked', true)
+        $('#dd_Source').val('');
+        $('#dd_Target').val('');
+        $('#TreeStructure').empty();
+        $('#Div_Compare').empty();
+        $('#DD_BOStructures').css('display', 'none');
+        $('#DD_CompareType').css('display', 'none');
+        $('#div_Auto').css('display', '');
+        $('#div_Manual').css('display', 'none');
+
+    });
+    $('#btnReset').click(function () {
+        debugger
+        var formData = JSON.parse(JSON.stringify(jQuery("#AutoReset").serializeArray()));
+        formData = processFormData(formData, "AutoReset");
+        var oParams = [];
+        for (var i = 0; i < formData.length; i++) {
+            Param = {};
+            Param["sName"] = formData[i].name;
+            Param["sValue"] = formData[i].value;
+            Param["sContext"] = formData[i].sMapField;
+            oParams.push(Param);
+        }
+        Param = {};
+        Param["sName"] = "sBOName";
+        Param["sValue"] = "EnvironmentDetails_T";
+        oParams.push(Param);
+        Param = {};
+        Param["sName"] = "sGroupName";
+        Param["sValue"] = "Create Group";
+        oParams.push(Param);
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("DBReset", "DataBase")',
+            data: { oParams: oParams },
+            cache: false,
+            async: false,
+            dataType: 'html',
+            success: function (data) {
+                debugger
+            }
+        });
+    })
+    $('.change').change(function () {
+        var ServerName = $('#sName').val();
+        var UserName = $('#uName').val();
+        var Password = $('#Password').val();
+        var Database = $('#Database').val();
+        if (ServerName && UserName && Password && !Database) {
+            var model = {
+                ServerName: ServerName,
+                UserName: UserName,
+                Password: Password
+            }
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetDatabases", "DataBase")',
+                data: model,
+                cache: false,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    $('#Database').empty();
+                    $('#Database').append('<option value="">--Database--</option>');
+                    for (i = 0; i < data.length; i++) {
+                        $('#Database').append('<option value=' + data[i].Name + '>' + data[i].Name + '</option>');
+                    }
+                }
+            });
+        }
+    });
+
+    $('#txt_Source').click(function () {
+        ResetForm();
+        $('.ui-dialog-title').html(' Source Database');
+        ConnectionString = 'txt_Source';
+        ConnectionStrongHide = 'hiddenSource';
+        $('#form').css('display', '');
+        $('#Dialog').dialog('open');
+    });
+
+    $('#txt_Target').click(function () {
+        ResetForm();
+        $('#lbl_Database').empty();
+        $('.ui-dialog-title').html('Target Database');
+        ConnectionString = 'txt_Target';
+        ConnectionStrongHide = 'hiddenTarget';
+        $('#form').css('display', '');
+        $('#Dialog').dialog('open');
+    });
+
+    $('#btn_Connect').click(function () {
+        $('#DD_BOStructures').empty();
+        $('#DD_BOStructures').css('display', 'none');
+        var ServerName = $('#sName').val();
+        var UserName = $('#uName').val();
+        var Password = $('#Password').val();
+        var Database = $('#Database').val();
+        if (ServerName && UserName && Password && Database) {
+            var model = {
+                ServerName: ServerName,
+                UserName: UserName,
+                Password: Password,
+                Database: Database
+            }
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CheckConnection", "DataBase")',
+                data: model,
+                cache: false,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    debugger
+                    $('#Dialog').dialog('close');
+                    $('#form').css('display', 'none');
+                    $('#' + ConnectionString).val();
+                    $('#' + ConnectionStrongHide).val();
+                    if (data && data.bIsConnected) {
+                        $('#' + ConnectionString).val(ServerName + '.' + Database);
+                        $('#' + ConnectionStrongHide).val(data.ConnectionString);
+                    }
+
+                }
+            });
+        }
+
+    });
+
+    var ResetForm = function () {
+        $('#ServerInfo')[0].reset();
+        $("input[type='text']").each(function () {
+            $(this).attr("autocomplete", "off");
+        });
+        $('#Database').val('');
+    };
+
+    $('#btn_Close').click(function () {
+        $('#Dialog').dialog('close');
+        $('#form').css('display', 'none');
+    });
+    var GetallData = function () {
+        //var Test = data;
+        var ParentIDs = "";
+        var idList = [];
+        var jsonNodes = $('#DatabaseTreeStructure').jstree(true).get_json('#', { flat: true });
+        $.each(jsonNodes, function (i, val) {
+            idList.push($(val).attr('id'));
+        })
+        if (idList.length > 0) {
+            $.each(idList, function (i, val) {
+
+                ParentIDs += idList[i] + ",";
+            })
+            ParentIDs = ParentIDs.slice(0, -1);
+        }
+        Compare('Data', null, ParentIDs);
+    }
+    var BOStructure = function (StructreType) {
+        $('#TableSelection').prop('checked', false); // Unchecks it
+        $('#Div_Compare').css('display', 'none');
+        $('#GetAll').css('display', 'none');
+        $('#DatabaseTreeStructure').css('display', 'none');
+        $('#id_BOStructureDetails').css('display', 'none');
+        $('#StructureBOID').css('display', 'none');
+        $('#BOTreeStructure').css('display', 'none');
+
+        $('#TableSelection').css('display', 'none');
+        $('#BOStructre').css('display', 'none');
+        $('#div_BostructureData').css('display', '');
+        $('#DD_BOStructures').css('display', '');
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("TableSelection", "DataBase")',
+            data: { sSource: $('#hiddenSource').val(), AllBos: true },
+            dataType: 'json',
+            cache: false,
+            async: false,
+            success: function (data) {
+
+                $('#BOTreeStructure').css('display', '');
+                var html = '<option value="">select</option>';
+                if (data && data.length > 0)
+                    $.each(data, function (i, item) {
+                        html += '<option value="' + item.Attributes.boid.sValue + '">' + item.Attributes.name.sValue + '</option>'
+                    });
+                $('#id_BOs').empty();
+                $('#id_BOs').html(html);
+                debugger;
+                var BOID = $('#id_BOs').val();
+            }
+        });
+
+    };
+    $(function () {
+        $('#id_BOStructureDetails').change(function () {
+            $('#GetAll').css('display', '');
+            $('#StructureBOID').val("");
+            var array = [];
+            var value = $('#id_BOStructureDetails').val();
+            if (value && $('#hiddenSource').val()) {
+                $('#BOTreeStructure').empty();
+
+                $('#BOTreeStructure').attr('class', '');
+                $('#BOTreeStructure').append();
+                //$('#Div_Compare').empty();
+                var model = {
+                    sSource: $('#hiddenSource').val(),
+                    ID: value
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetBOTreeStructure", "DataBase")',
+                    data: model,
+                    dataType: 'html',
+                    cache: false,
+                    async: false,
+                    success: function (html) {
+                        ////debugger;
+                        $('#BOTreeStructure').empty();
+                        $('#StructureBOID').show();
+                        $('#BOTreeStructure').html(html);
+                        //$('#BOTreeStructure').append('<input type="text" id="srtuctureID" />');
+                    }
+                });
+            }
+        });
+        $("#id_BOs").on('change', function () {
+            //// debugger;
+            var BOname = $('#id_BOs').val();
+            $('#DD_BOStructures').css('display', '');
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetBOStructureDetails", "DataBase")',
+                data: { sSource: $('#hiddenSource').val(), ID: BOname },
+                dataType: 'json',
+                cache: false,
+                async: false,
+                success: function (data) {
+                    var html = '<option value="">select</option>';
+                    if (data && data.length > 0)
+                        $.each(data, function (i, item) {
+                            html += '<option value="' + item.Attributes.id.sValue + '">' + item.Attributes.sstructurename.sValue + '</option>'
+                        });
+                    $('#id_BOStructureDetails').empty();
+                    $('#id_BOStructureDetails').show();
+                    $('#id_BOStructureDetails').html(html);
+                }
+            });
+        })
+
+    });
+
+    //var Compare = function (CompareType, iInstanceID,Bonames,StructureName) {
+    var Compare = function (CompareType, BOname, ParentIDs) {
+        debugger;
+        var BONames = [];
+        if (BOname != null) {
+            BONames = BOname.split(',');
+        }
+        else {
+            if (ParentIDs == null) {
+                $('#id_BOStructureDetails').val('');
+                $('#StructureBOID').val('');
+                $('#id_BOs').val('');
+            }
+        }
+
+        $('#TableSelection input[type=checkbox]').each(function (i) {
+            if ($(this).is(":checked")) {
+                BONames.push($(this).val());
+            }
+        });
+        $('#Div_Compare').empty();
+        if ($('#hiddenSource').val() && $('#hiddenTarget').val()) {
+            if (CompareType == 'Data') {
+                //var model = {
+                //    sSource: $('#hiddenSource').val(), //'Data Source=appserver;initial catalog=YiraQa;User Id=yirauser; Password=yirauser; MultipleActiveResultSets=True',
+                //    sTarget: $('#hiddenTarget').val(), //'Data Source=appserver;initial catalog=Yiralive;User Id=yirauser; Password=yirauser; MultipleActiveResultSets=True'
+                //    CompareWith: $('.radio_CompareWith:checked').val(),
+                //    BONames: BONames,
+                //    StructureID: StructureID
+                //}
+                URL = '@Url.Action("DataCompare", "DataBase")';
+                $('#Div_Compare').css('display', 'none');
+                $('#DataCompared').val('');
+                $('#DataCompared').show();
+                $('#Dialog_DataCompare').dialog('open');
+                $('.ui-dialog-title').html('Data Compare');
+                $('#DBCompareDataTable').dataTable({
+                    "destroy": true,
+                    "searching": false,
+                    //"bJQueryUI": true,
+                    "bProcessing": true,
+                    "bServerSide": true,
+                    //"dom": '<"top"i>rt<"bottom"flp><"clear">',
+                    "pageLength": 50,
+                    "lengthMenu": [10, 20, 50, 75, 100, 150, 200],
+                    "language": {
+                        searchPlaceholder: "Search....."
+                    },
+                    "sAjaxSource": URL,
+                    "sServerMethod": "POST",
+                    "fnServerParams": function (aoData) {
+                        aoData.push({ "name": "sSource", "value": $('#hiddenSource').val() }, { "name": "sTarget", "value": $('#hiddenTarget').val() }, { "name": "CompareWith", "value": $('.radio_CompareWith:checked').val() }, { "name": "BONames", "value": BONames }, { "name": "StructureID", "value": $('#id_BOStructureDetails').val() }, { "name": "iInstanceID", "value": $('#StructureBOID').val() }, { "name": "sStructureName", "value": $("#id_BOStructureDetails option:selected").text() }, { "name": "iBOID", "value": $('#id_BOs').val() }, { "name": "ParentIDs", "value": ParentIDs });
+                    },
+                    "aoColumns": [
+                                  {
+                                      "sName": "Sno", "Sno": false
+                                  },
+
+                                   {
+                                       "sName": "sTableName", "bSortable": true
+                                   },
+                                     {
+                                         "sName": "iDiffCount"
+                                     },
+                                     {
+                                         "sName": "iSourceCount"
+                                     },
+                                     {
+                                         "sName": "iTargetCount"
+                                     },
+                                   {
+                                       "sName": "iEqualCount"
+                                   },
+                                   {
+                                       "sName": "sPrimaryKey", "bSortable": false
+                                   },
+
+                    ],
+                    "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                        $('td:eq(2)', nRow).html("<div class=''><a class='btn btn-sm bg-green-seagreen' onclick=fnDifferentRecords('" + aData[1] + "','" + aData[2] + "','" + aData[6] + "');>" + aData[2] + "</a></div>");
+                        $('td:eq(3)', nRow).html("<div class=''><a class='btn btn-sm bg-green-seagreen' onclick=fnSourceTargetRecords('" + aData[1] + "','" + '@XIConstant.Source' + "','" + aData[3] + "','" + aData[6] + "');>" + aData[3] + "</a></div>");
+                        $('td:eq(4)', nRow).html("<div class=''><a class='btn btn-sm bg-green-seagreen' onclick=fnSourceTargetRecords('" + aData[1] + "','" + '@XIConstant.Target' + "','" + aData[4] + "','" + aData[6] + "');>" + aData[4] + "</a></div>");
+
+                    }
+
+                });
+            }
+            else if (CompareType == 'Schema') {
+                var BOName = [];
+                var Schemamodel = {
+                    sSource: $('#hiddenSource').val(), //'Data Source=appserver;initial catalog=YiraQa;User Id=yirauser; Password=yirauser; MultipleActiveResultSets=True',
+                    sTarget: $('#hiddenTarget').val(), //'Data Source=appserver;initial catalog=Yiralive;User Id=yirauser; Password=yirauser; MultipleActiveResultSets=True'
+                    CompareWith: $('.radio_CompareWith:checked').val(),
+                    BONames: BOName
+                }
+                $('#TableSelection').css('display', 'none');
+                $('#div_BostructureData').css('display', 'none');
+                $('#Dialog_DataCompare').dialog('close');
+                var URL = '@Url.Action("SchemaCompare", "DataBase")';
+                $.ajax({
+                    type: 'POST',
+                    url: URL,
+                    data: Schemamodel,
+                    cache: false,
+                    async: false,
+                    dataType: 'html',
+                    success: function (html) {
+                        //  $('#Div_Compare').show(html);
+                        $('#Div_Compare').css('display', '');
+                        $('#Div_Compare').empty();
+                        $('#Div_Compare').html(html);
+                    }
+                });
+
+            }
+            else if (CompareType == "Tables") {
+                var model = {
+                    sSource: $('#hiddenSource').val(), //'Data Source=appserver;initial catalog=YiraQa;User Id=yirauser; Password=yirauser; MultipleActiveResultSets=True',
+                }
+                ////$('#DataCompared').css('display', 'none');
+                // $('#DBCompareDataTable').css('display', 'none');
+                $('#UpdateAll').css('display', 'none');
+                $('#div_Table').css('display', 'none');
+                $('#div_BostructureData').css('display', 'none');
+                // $('#DBCompareDataTable_wrapper').css('display', 'none');
+                var TableRecords = "";
+                var URL = '@Url.Action("TableSelection", "DataBase")';
+                $.ajax({
+                    type: 'POST',
+                    url: URL,
+                    data: model,
+                    cache: false,
+                    async: false,
+                    dataType: 'json',
+                    success: function (Data) {
+                        $.each(Data, function (j) {
+                            //TableRecords = Data[j];
+                            TableRecords += '<span><input Type="CheckBox" class="CkeckedItem" value="' + Data[j].Attributes.name.sValue + '">' + Data[j].Attributes.name.sValue + '</span><br>';
+                        });
+                        TableRecords = TableRecords + '<input type="button" class="btn btn-danger" value="Data Compare" onclick="Compare(' + "'Data'" + ')" /></div> ';
+                        $('#TableSelection').show();
+                        $('#TableSelection').empty();
+                        $('#TableSelection').html(TableRecords);
+                    }
+                });
+
+            }
+        }
+        else  {
+            alert('Please Enter Source and Destination');
+        }
+    };
+
+    $('#span_Swap').click(function () {
+        if ($("#hiddenTarget").val() || $("#hiddenSource").val()) {
+            var sSource_txt = $("#txt_Source").val();
+            var sSource_hidden = $("#hiddenSource").val();
+
+            $("#txt_Source").val($("#txt_Target").val());
+            $("#hiddenSource").val($("#hiddenTarget").val());
+
+            $("#txt_Target").val(sSource_txt);
+            $("#hiddenTarget").val(sSource_hidden);
+        }
+    });
+
+    $('#id_BOStructure').change(function () {
+        var array = [];
+        var value = $('#id_BOStructure').val();
+        if (value && $('#hiddenSource').val()) {
+            $('#TreeStructure').empty();
+            $('#TreeStructure').attr('class', '');
+            $('#Div_Compare').empty();
+            var model = {
+                sSource: $('#hiddenSource').val(),
+                ID: value
+            }
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetBOTreeStructure", "DataBase")',
+                data: model,
+                dataType: 'html',
+                cache: false,
+                async: false,
+                success: function (html) {
+                    $('#TreeStructure').empty();
+                    $('#TreeStructure').html(html);
+                }
+            });
+        }
+    });
+
+    @*var GetStructures = function() {
+        $('#TreeStructure').empty();
+        $('#DD_BOStructures').css('display', '');
+        $('#Div_Compare').empty();
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetBOStructures", "DataBase")',
+                data: { sSource: $('#hiddenSource').val()},
+                dataType: 'json',
+                cache: false,
+                async: false,
+                success: function(data) {
+                    var html = '<option value="">select</option>';
+                    if (data && data.length > 0) {
+                        $.each(data, function(i, item) {
+                            html += '<option value="'+item.Value+'">'+item.text+'</option>'
+                        });
+                    }
+                    $('#id_BOStructure').empty();
+                    $('#id_BOStructure').html(html);
+                }
+            });
+    };*@
+
+
+    $('#dd_Source').change(function () {
+        $('#id_CompareType').val('');
+        $('#id_BOStructure').val('');
+        var Name = $('#dd_Source option:selected').text();
+        var Databases = JSON.parse(JsonDatabases);
+        if (Databases && Databases.length > 0) {
+            $('#dd_Target').empty();
+            var html = "<option value=''>select</option>";
+            $.each(Databases, function (i, item) {
+                if (item.Name != Name)
+                    html += '<option value="' + item.Value + '">' + item.Name + '</option>';
+            });
+            $('#dd_Target').append(html);
+        }
+    })
+
+    $('#dd_Target').change(function () {
+        $('#id_CompareType').val('');
+        $('#id_BOStructure').val('');
+        $('#DD_BOStructures').css('display', 'none');
+        $('#DD_CompareType').css('display', 'none');
+        $('#TreeStructure').empty();
+        var Databases = JSON.parse(JsonDatabases);
+        var SourceConnection = $('#dd_Source option:selected').text();
+        var IsSourceConfig = Databases.filter(function (item) {
+            return item.Name == SourceConnection
+        }).map(function (obj) {
+            return obj.bIsConfigDatabase;
+        });
+        var TargetConnection = $('#dd_Target option:selected').text();
+        var IsTargetConfig = Databases.filter(function (item) {
+            return item.Name == TargetConnection;
+        }).map(function (obj) {
+            return obj.bIsConfigDatabase;
+        });
+
+        if ($('#dd_Source').val())
+            $('#hiddenSource').val($('#dd_Source').val());
+
+        if ($('#dd_Target').val()) {
+
+            $('#hiddenTarget').val($('#dd_Target').val());
+        }
+        if ($('#hiddenSource').val() && $('#hiddenTarget').val()) {
+            $('#Div_Compare').empty();
+            if (IsSourceConfig[0] == 'True' && IsTargetConfig[0] == 'True') {
+                $('#DD_BOStructures').css('display', '');
+                $.ajax({
+                    type: 'GET',
+                    url: '@Url.Action("GetBOStructures", "DataBase")',
+                    data: { sSource: $('#hiddenSource').val() },
+                    dataType: 'json',
+                    cache: false,
+                    async: false,
+                    success: function (data) {
+                        var html = '<option value="">select</option>';
+                        if (data && data.length > 0)
+                            $.each(data, function (i, item) {
+                                html += '<option value="' + item.Value + '">' + item.text + '</option>'
+                            });
+                        $('#id_BOStructure').empty();
+                        $('#id_BOStructure').html(html);
+                    }
+                });
+            }
+            else if (IsSourceConfig[0] != 'True' && IsTargetConfig[0] != 'True')
+                $('#DD_CompareType').css('display', '');
+            else
+                alert('Please Select Equality Database');
+        }
+
+    });
+    $('#id_CompareType').change(function () {
+        if ($('#id_CompareType').val())
+            Compare($('#id_CompareType').val());
+
+    });
+</script>
+<script>
+
+    @*var Json = '@Html.Raw(XIRecords)'*@;
+    $(function () {
+        $('#Dialog_Script').dialog({
+            autoOpen: false,
+            width: 1266,
+            height: 600,
+            buttons: [
+                @*{
+                    text: "Execute",
+                    click: function () {
+                        $("#Dialog_Confirm").html("Are you sure want to execute?");
+                        $("#Dialog_Confirm").dialog('open');
+
+                    }
+                },
+                {
+                    text: "Validate",
+                    click: function () {
+                        if (window.editor.getValue()) {
+                            var model = {};
+
+                            if ('@ViewBag.IsFromBo' == 'True') {
+                                model = {
+                                    sScript: window.editor.getValue(),
+                                    iDataSource: parseInt($('#DD_Database').val())
+                                }
+                            }
+                            else {
+                                model = {
+                                    sScript: window.editor.getValue(),
+                                    sTarget: $('#hiddenTarget').val()
+                                }
+                            }
+
+                        }
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("ValidateScript","DataBase")',
+                            data: model,
+                            cache: false,
+                            async: false,
+                            dataType: 'JSON',
+                            success: function (data) {
+                                if (data)
+                                    alert(data);
+                                else
+                                    alert("Script is Valid");
+                            }
+                        });
+
+                    }
+                },*@
+                {
+                    text: "Close",
+                    click: function () {
+                        $('#Dialog_Script').dialog("close");
+                    }
+                }
+            ]
+        });
+    })
+    $(function () {
+        $('#Dialog_DataCompare').dialog({
+            autoOpen: false,
+            width: 1266,
+            height: 600,
+            buttons: [
+
+                {
+                    text: "Close",
+                    click: function () {
+                        $('#Dialog_DataCompare').dialog("close");
+                    }
+                }
+            ]
+        });
+    })
+    $(function () {
+        $('#div_Table').dialog({
+            autoOpen: false,
+            width: 1266,
+            height: 600,
+            buttons: [
+
+                {
+                    text: "Close",
+                    click: function () {
+                        $('#div_Table').dialog("close");
+                    }
+                }
+            ]
+        });
+    })
+    /******************************  Display  Different Records as Table *************************************/
+    var fnDifferentRecords = function (sTableName, Count, sPrimaryKey) {
+        $('#div_AppendButton').empty();
+        $('#id_heading').empty();
+        $('#div_Table').css('display', 'none');
+        if (Count > 0) {
+            $('#div_Table').css('display', '');
+            $('#id_heading').text('Different Records (' + Count + ')');
+            //$('#div_Table').css('display', '');
+            $('#div_Table').dialog('open');
+            $('.ui-dialog-title').html('Compare Different Records');
+            var finalArray = [];
+            //calling Server method for getting Table Different records
+            var model = {
+                sTableName: sTableName,
+                sActionType: '@XIConstant.Difference',
+            };
+            finalArray.push(model);
+            var rec = JSON.stringify(finalArray);
+            @*$.ajax({
+                type: 'POST',
+                url: "@Url.Action("GetTableRecords", "DataBase")",
+                data: model,
+            dataType: 'json',
+            success: function (data) {
+               // resolve(data);
+            }
+        });*@
+
+            GetTableRecords(model).then(function (TableRecords) {
+                if (TableRecords && TableRecords.Source && TableRecords.Target) {
+                    var Source = TableRecords.Source;
+                    var Target = TableRecords.Target;
+                    fnAppendHeadings(Source[0]);
+                    var HtmlBody = '';// var style = ''; var sGUID = ''; var tGUID = '';
+                    $.each(Source, function (n, sRecord) {
+                        //for (var n = 0; n <= Source.length-1; n++) {
+                        var XIGUID = Source[n];
+                        $.each(Target, function (r, tRecord) {
+
+                            //for (var r = 0; r <= Target.length-1; r++) {
+                            var TXIGUID = Target[r];
+                            if (XIGUID.find(o=>o["sName"] == 'XIGUID').sValue == TXIGUID.find(o=>o["sName"] == 'XIGUID').sValue) {
+                                HtmlBody += "<tr><td><input type='checkbox' checked id='" + n + "' class='cls_SourceRecords' onchange=fnDiffChange('Source'," + n + ") /><span><i class='fa fa-exchange'></i></span><input type='checkbox' id='id_Target_" + n + "' onchange=fnDiffChange('Target'," + n + ") class='cls_TargetRecords' /></td>";
+
+                                $.each(XIGUID, function (j) {
+                                    var style = '';
+                                    var sGUID = '';
+                                    var tGUID = '';
+                                    if (XIGUID[j].sValue != TXIGUID[j].sValue) {
+                                        style = 'style="color:red"';
+                                    }
+                                    if (XIGUID[j].sName.toLowerCase() == sPrimaryKey.toLowerCase()) {
+                                        sGUID = 'id=Source_' + n + '';
+                                        tGUID = 'id=Target_' + n + '';
+                                    }
+                                    HtmlBody += '<td ' + sGUID + ' ' + style + '>' + XIGUID[j].sValue + '</td><td ' + tGUID + '' + style + '>' + TXIGUID[j].sValue + '</td>';
+                                });
+                                HtmlBody += '</tr>';
+                            }
+
+
+                            // }
+                        });
+                        // HtmlBody += '</tr>';
+                        // }
+                    });
+                    //$.each(Source, function (i, sRecord) {
+                    //    HtmlBody += "<tr><td><input type='checkbox' checked id='" + i + "' class='cls_SourceRecords' onchange=fnDiffChange('Source'," + i + ") /><span><i class='fa fa-exchange'></i></span><input type='checkbox' id='id_Target_" + i + "' onchange=fnDiffChange('Target'," + i + ") class='cls_TargetRecords' /></td>";
+                    //    var tRecord = Target[i];
+                    //    $.each(sRecord, function (j) {
+                    //        var style = '';
+                    //        var sGUID = '';
+                    //        var tGUID = '';
+                    //        if (Source[i].sName.toLowerCase() == tRecord[j].sName.toLowerCase() == "xiguid") {
+                    //            //if (sRecord[i].sValue != tRecord[j].sValue) {
+                    //                style = 'style="color:red"';
+                    //            //}
+                    //        }
+                    //        if (sRecord[j].sValue != tRecord[j].sValue) {
+                    //            style = 'style="color:red"';
+                    //        }
+                    //        if (sRecord[j].sName.toLowerCase() == sPrimaryKey.toLowerCase()) {
+                    //            sGUID = 'id=Source_' + i + '';
+                    //            tGUID = 'id=Target_' + i + '';
+                    //        }
+                    //        HtmlBody += '<td ' + sGUID + ' ' + style + '>' + sRecord[j].sValue + '</td><td ' + tGUID + '' + style + '>' + tRecord[j].sValue + '</td>';
+                    //    });
+                    //    HtmlBody += '</tr>';
+                    //});
+                    $('#tBody').html(HtmlBody);
+                    $('#div_AppendButton').html('<input type="button" value="Update Target" onclick=fnUpdateRecords("@XIConstant.Difference","' + sTableName + '") class="btn btn-danger" />')
+                }
+
+            });
+        }
+    };
+
+    /*********************************************************** Display Only Source, Only Target Records as Table ***************************************************/
+    var fnSourceTargetRecords = function (sTableName, from, Count, sPrimaryKey) {
+        $('#div_AppendButton').empty();
+        $('#id_heading').empty();
+        $('#div_Table').css('display', 'none');
+        if (Count > 0) {
+            $('#id_heading').text('Only in ' + from + ' (' + Count + ')');
+            //$('#div_Table').css('display', '');
+            $('#div_Table').dialog('open');
+            var model = {
+                sTableName: sTableName,
+                sActionType: from
+            }
+            GetTableRecords(model).then(function (TableRecords) {
+                if (TableRecords && (TableRecords.Source || TableRecords.Target)) {
+                    var ValueName = "";
+                    var fncName = "fnUpdateRecords('" + from + "','" + sTableName + "')";
+                    var ClassName = "cls_" + from + "Records";
+                    var id = from;
+                    if (from == 'Source') {
+                        SourceTarget = TableRecords.Source;
+                        ValueName = "Update Target";
+                        $('.ui-dialog-title').html('Update to Target');
+                    }
+                    else {
+                        SourceTarget = TableRecords.Target;
+                        ValueName = "Update Source";
+                        $('.ui-dialog-title').html('Delete Records in Target');
+                    }
+
+                    fnAppendHeadings(SourceTarget[0], from);
+                    var HtmlBody = '';
+                    $.each(SourceTarget, function (i, sRecord) {
+                        HtmlBody += "<tr><td><input type='checkbox' id='" + i + "' checked class='" + ClassName + "' /></td>";
+                        $.each(sRecord, function (j) {
+                            var sGUID = "";
+                            if (sRecord[j].sName.toLowerCase() == sPrimaryKey.toLowerCase())
+                                sGUID = 'id=' + id + '_' + i + '';
+                            HtmlBody += '<td ' + sGUID + '>' + sRecord[j].sValue + '</td>';
+                        });
+                        HtmlBody += '</tr>';
+                    });
+                    $('#tBody').html(HtmlBody);
+                    $('#div_AppendButton').html("<input type='button' onclick=" + fncName + " value='" + ValueName + "' class='btn btn-danger' />");
+                }
+            });
+        }
+    }
+    function GetTableRecords(model) {
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                type: 'POST',
+                url: "@Url.Action("GetTableRecords", "DataBase")",
+                data: model,
+                dataType: 'json',
+                success: function (data) {
+                    resolve(data);
+                }
+            });
+        });
+    }
+
+    /****************************************************************** Generate Table Headings ******************************************************************************************/
+    var fnAppendHeadings = function (Record, from) {
+        if (Record && Record.length > 0) {
+            var Headers = [];
+            $.each(Record, function (i, item) {
+                Headers.push(item.sName);
+            })
+            var HtmlHeader = '<tr><th>Update</th>';
+            $.each(Headers, function (i, Header) {
+                var th = '<th>' + Header + '</th>';
+                if ((from == 'Source' || from == 'Target'))
+                    HtmlHeader += th;
+                else
+                    HtmlHeader += th + th;
+            });
+            HtmlHeader += '</tr>';
+            $('#tHead').html(HtmlHeader);
+        }
+    }
+
+    /******************************************************************Toggle the Different Reocrd Checkboxes******************************************************************************************/
+    var fnDiffChange = function (from, i) {
+        if (from == 'Source')
+            if ($('#id_Source_' + i).is(":checked"))
+                $('#id_Target_' + i).attr('checked', false);
+        if (from == 'Target')
+            if ($('#id_Target_' + i).is(":checked"))
+                $('#id_Source_' + i).attr('checked', false);
+    }
+
+    /*****************************************************************Update Target By Default ****************************************************************************************/
+    var fnSourceToTargetUpdate = function () {
+        $('#div_Table').css('display', 'none');
+        $('#Dialog_Script').empty();
+        //if (Json && Json.length > 0) {
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("InsertUpdateTarget", "DataBase")',
+            cache: false,
+            //data: { sCompareWith: $('.radio_CompareWith:checked').val()},
+            async: false,
+            dataType: 'HTML',
+            success: function (html) {
+                $('#Dialog_Script').html(html);
+                $('#Dialog_Script').dialog('open');
+            }
+
+        })
+        // }
+    }
+
+    /*****************************************************************Update Source To Target and Target To Source based on sActionType ****************************************************************************************/
+    var fnUpdateRecords = function (sActionType, sTableName) {
+        var SourceChecked = $('.cls_SourceRecords:checked');
+        var TargetChecked = $('.cls_TargetRecords:checked');
+        var GUIDs = [];
+        if (SourceChecked && SourceChecked.length > 0)
+            $.each(SourceChecked, function (i, item) {
+                var id = $(item).attr('id');
+                if (id && parseInt(id) >= 0) {
+                    var sGUID = $('#Source_' + parseInt(i)).text();
+                    if (sGUID)
+                        GUIDs.push(sGUID);
+                }
+            });
+        if (TargetChecked && TargetChecked.length > 0)
+            $.each(TargetChecked, function (i, item) {
+                var id = $(item).attr('id');
+                if (id && parseInt(id) >= 0) {
+                    var sGUID = $('#Target_' + parseInt(i)).text();
+                    if (sGUID)
+                        GUIDs.push(sGUID);
+                }
+            });
+        if (!GUIDs || GUIDs.length == 0)
+            GUIDs = null;
+        if (GUIDs) {
+            $('#Dialog_Script').empty();
+            var model = {
+                sTableName: sTableName,
+                GUIDs: GUIDs,
+                sActionType: sActionType
+            }
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("UpdateSourceTarget", "DataBase")',
+                cache: false,
+                async: false,
+                data: model,
+                dataType: 'html',
+                success: function (html) {
+                    $('#Dialog_Script').html(html);
+                    $('#Dialog_Script').dialog('open');
+                }
+            })
+        }
+        else
+            alert("Please Select Record");
+    };
+
+    //$(".ChangeID").change(function () {
+    //debugger;
+    //    var end = this.value;
+    //    var firstDropVal = $('#pick').val();
+    //});
+    @*$("#FKiApplicationID").on('click', function () {
+       debugger;
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetApplications", "DataBase")',
+            dataType: 'json',
+            cache: false,
+            async: false,
+            success: function (data) {
+                debugger
+                if (data && data.length > 0)
+                    $('#FKiApplicationID').empty();
+                $('#FKiApplicationID').append('<option value="-1">Select</option>');
+                    $.each(data, function (i, item) {
+
+                        $('#FKiApplicationID').append('<option value=' + item.ID + '>' + item.sApplicationName + '</option>');
+                    });
+                //$('#FKiApplicationID').empty();
+                //$('#FKiApplicationID').append(html);
+            }
+        });
+    });*@
+</script>

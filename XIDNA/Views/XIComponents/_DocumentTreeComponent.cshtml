@@ -1,0 +1,210 @@
+﻿@model XICore.XIIComponent
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    //string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["SharedPath"];
+    <div class="row">
+        <div class="col-md-6">
+            <input type="text" class="form-control input-large input-sm" id="SearchTextBox" placeholder="Search Here" onkeyup="GetSearchResults(null)">
+            <div class="col-md-6" id="mapResult" style="color:red"></div>
+            <div id="docTree">
+                <div id="DocumentsTree" style="width: 100%; height: calc(100vh - 60px);overflow-y: auto;"></div>
+            </div>
+        </div>
+
+        <div class="col-md-6" id="pdfDocument"></div>
+    </div>
+}
+
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            type: 'Get',
+            url: '@Url.Action("GetDirectory", "XiLink")',
+            cache: false,
+            dataType: 'json',
+            success: function (datas) {
+                // var obj = JSON.parse(datas);
+                $("#DocumentsTree").empty();
+                $("#pdfDocument").empty();
+                fncGetRecursiveFolders(datas);
+                //.then(function (data) {
+                if (Folderdata.length > 0) {
+                    var jsonString = JSON.stringify(Folderdata);
+                    createFolderJSTree(JSON.parse(jsonString));
+                }
+                //});
+            }
+        });
+    })
+    var Folderdata = [];
+    var j = 0;
+    function GetSearchResults(input) {
+        debugger
+        var SearchText = $('#SearchTextBox').val();
+        if (SearchText && SearchText.length == 0) {
+            SearchText = input;
+        }
+        if (SearchText.length > 0) {
+            $.ajax({
+                type: 'Get',
+                url: '@Url.Action("GetDirectory", "XiLink")',
+                data: { SearchText: SearchText },
+                cache: false,
+                async: false,
+                dataType: 'json',
+                success: function (sdata) {
+                    debugger
+                    ///var obj = JSON.parse(sdata);
+                    $("#DocumentsTree").remove();
+                    $("#docTree").html('<div id="DocumentsTree" style="width: 100%; height: calc(100vh - 60px);overflow-y: auto;"></div>');
+                    $("#pdfDocument").empty();
+                    Folderdata = [];
+                    j = 0;
+                    fncGetRecursiveFolders(sdata)
+                    //.then(function (data) {
+                    if (Folderdata.length > 0) {
+                        var jsonString = JSON.stringify(Folderdata);
+                        createFolderJSTree(JSON.parse(jsonString));
+                    }
+                    //});
+                }
+            });
+        }
+    }
+    function fncGetRecursiveFolders(Nodes) {
+        //return new Promise(function (resolve, reject) {
+        debugger
+        item = {}
+        var length = Nodes[0].length;
+        var nodedata = [];
+        for (var i = 0; i < Nodes.length; i++) {
+            if (Nodes[i].lastIndexOf(".") < length) {
+                item["id"] = "T1";
+                item["parent"] = "#";
+                item["text"] = Nodes[i].substring(Nodes[i].lastIndexOf("\\") + 1, Nodes[i].length);
+                nodedata.push({ bHasChilds: true });
+                item["data"] = nodedata;
+                Folderdata.push(item);
+            } else {
+                item = {};
+                item["id"] = i.toString();
+                item["parent"] = "T1";
+                item["text"] = Nodes[i].substring(Nodes[i].lastIndexOf("\\") + 1, Nodes[i].length);
+                nodedata.push({ bHasChilds: false, sPath: Nodes[i] });
+                item["data"] = nodedata;
+                Folderdata.push(item);
+            }
+        }
+    }
+
+
+    function createFolderJSTree(UIjsondata) {
+        $('#DocumentsTree').jstree({
+            "core": {
+                "themes": {
+                    "variant": "large"
+                },
+                "check_callback": true,
+                'data': UIjsondata,
+            },
+            "state": { "key": "DocumentsTree" },
+            "types": {
+                "#": {
+                    "valid_children": ["default"]
+                },
+                //les dossiers
+                "default": {
+                    "valid_children": ["default", "presentation"],
+                    //"icon": "img/icons/etablissement.png"
+                    "icon": "fa fa-folder fc-theme"
+                },
+                "demo": {
+                    "icon": "fa fa-folder-open"
+                }
+            },
+            "plugins": ["types", "state"],
+            "dnd": {},
+            "contextmenu": {
+                "items": function ($node) {
+                    var tree = $("#DocumentsTree").jstree(true);
+                    return {
+                        "Create": {
+                            "separator_before": false,
+                            "separator_after": true,
+                            "label": "Create",
+                        },
+                        "Rename": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Rename",
+                        },
+                        "Remove": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Remove",
+                        },
+                        "AddDetails": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Add Details",
+                        }
+                    };
+                }
+            },
+        }).bind("loaded.jstree", function (event, data) {
+            $(this).jstree("close_all");
+            ChangeDocIcon();
+        });
+        $('#DocumentsTree').on('select_node.jstree', function (e, data) {
+            LoadDocumet(data.node);
+        });
+        $('#DocumentsTree').on('open_node.jstree', function (e, data) {
+            var icon = $('#' + data.node.id).find('i.jstree-icon').first();
+            icon.removeClass('fa-folder').addClass('fa-folder-open');
+            ChangeDocIcon();
+        });
+        // bind customize icon change function in jsTree close_node event.
+        $('#DocumentsTree').on('close_node.jstree', function (e, data) {
+            var icon = $('#' + data.node.id).find('i.jstree-icon').first();
+            icon.removeClass('fa-folder-open').addClass('fa-folder');
+            ChangeDocIcon();
+        });
+    }
+    function ChangeDocIcon() {
+        $("#DocumentsTree").find('.jstree-leaf').each(function () {
+            debugger
+            //var value = $(this).find('a.jstree-anchor').text();
+            //if (value != "" && value.indexOf('.') != -1) {
+            $(this).find('i.jstree-themeicon').removeClass('fa-folder').addClass('fa-file-pdf-o');
+            //}
+        });
+    }
+    function LoadDocumet(node) {
+        debugger
+        //var Value = $(this)[0].localStorage.DocumentsTree;
+        var ID = node.id;
+        var path = node.data[ID].sPath;
+
+        $.ajax({
+            type: 'Get',
+            url: '@Url.Action("MapDocument", "XiLink")',
+            data: { sPath: path },
+            cache: false,
+            async: false,
+            dataType: 'json',
+            success: function (data) {
+                $("#mapResult").html(data);
+                setTimeout(function () { $("#mapResult").fadeOut().empty(); }, 5000);
+            }
+        });
+        var link = "https://183.82.123.14/MotorHome/UploadedFiles\//";
+        var index = path.indexOf("Files");
+        var doc = path.substring(index, path.length).replace('"', '/');
+        if (path.endsWith(".xlsx")) {
+            $("#pdfDocument").html("<iframe src=" + link + doc + " style=\"width: 100%; height: 600px;\"  frameborder='0'> </iframe>")
+        }
+        else {
+            $("#pdfDocument").html("<embed src=" + link + doc + " style=\"width: 100%; height: 600px;\" type=\"image/jpg\">");
+        }
+    }
+</script>

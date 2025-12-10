@@ -1,0 +1,27 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Globalization;
+@{
+
+    XIGraphData oXIGraph = new XIGraphData();
+    Dictionary<string, string> values = new Dictionary<string, string>();
+    oXIGraph = (XIGraphData)Model.oContent[XIConstant.DashBoardChartComponent];
+    if (Model.oContent.ContainsKey(XIConstant.DashBoardChartComponent))
+    {
+        values = oXIGraph.OneClickRes;
+    }
+}
+
+@if (Model.oContent.ContainsKey(XIConstant.DashBoardChartComponent))
+{
+    <!-- <div id="dashboardchart"> -->
+    <div class="gauge-head content-block" id="dashboard-@oXIGraph.OnClickResultID">
+        @if (values.Count() != 0)
+        {
+            <h2 id="key-@oXIGraph.OnClickResultID">@values.Select(s => s.Key).FirstOrDefault()</h2>
+            <h4 id="value-@oXIGraph.OnClickResultID">@values.Select(s => s.Value).FirstOrDefault()</h4>
+        }
+    </div>
+    <!-- </div> -->
+}

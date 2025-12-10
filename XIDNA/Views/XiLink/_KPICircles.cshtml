@@ -1,0 +1,206 @@
+﻿@model IEnumerable<XIDNA.ViewModels.VMKPIResult>
+
+@{
+    var OrgClslist = ViewBag.OrgClass as List<XIDNA.ViewModels.VMDropDown>;
+    var ddlDateList = ViewBag.ddlDateList as List<XIDNA.ViewModels.VMDropDown>;
+}
+<script>
+    @*$(document).ready(function () {
+        $('.KPICircles').click(function () {
+            var ReportID = $(this).attr('data-innerreportid');
+            ReportID = ReportID.split('-')[0];
+            if (ReportID > 0) {
+                url = "@Url.Action("GetAllNewLeads", "Lead")?ReportID=" + ReportID;
+                window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            }
+        });
+    });*@
+    $(function () {
+        $('.easypie-darksalmon').easyPieChart({
+            scaleColor: false,
+            barColor: '#e58c7a'
+        });
+    });
+    $(function () {
+        $('.easypie-palevioletred').easyPieChart({
+            scaleColor: false,
+            barColor: '#d789a3'
+        });
+    });
+    $(function () {
+        $('.easypie-goldenrod').easyPieChart({
+            scaleColor: false,
+            barColor: '#eeba6f'
+        });
+    });
+    $(function () {
+        $('.easypie-lightcora').easyPieChart({
+            scaleColor: false,
+            barColor: '#e47b78'
+        });
+    });
+    $(function () {
+        $('.easypie-darkslateblue').easyPieChart({
+            scaleColor: false,
+            barColor: '#6c7ba6'
+        });
+    });
+    $(function () {
+        $('.easypie-skyblue').easyPieChart({
+            scaleColor: false,
+            barColor: '#6bb9ef'
+        });
+    });
+    $(function () {
+        $('.easypie-yellowgreen').easyPieChart({
+            scaleColor: false,
+            barColor: '#d4e157'
+        });
+    });
+    $(function () {
+        $('.easypie-lightslategray').easyPieChart({
+            scaleColor: false,
+            barColor: '#859095'
+        });
+    });
+    $(function () {
+        $('.easypie-coral').easyPieChart({
+            scaleColor: false,
+            barColor: '#ff9e7a'
+        });
+    });
+    $(function () {
+        $('.easypie-mediumpurple').easyPieChart({
+            scaleColor: false,
+            barColor: '#a790ce'
+        });
+    });
+    $(function () {
+        $('.easypie-lightseagreen').easyPieChart({
+            scaleColor: false,
+            barColor: '#79d29b'
+        });
+    });
+    $(function () {
+        $('.easypie-steelblue').easyPieChart({
+            scaleColor: false,
+            barColor: '#6f91bc'
+        });
+    });
+    $(function () {
+        $('.easypie-turquoise').easyPieChart({
+            scaleColor: false,
+            barColor: '#58dccf'
+        });
+    });
+    $(function () {
+        $('.easypie-darkgray').easyPieChart({
+            scaleColor: false,
+            barColor: '#828282'
+        });
+    });
+    $(function () {
+        $('.easypie-gold').easyPieChart({
+            scaleColor: false,
+            barColor: '#f1cf46'
+        });
+    });
+    $(function () {
+        $('.easypie-mediumturquoise').easyPieChart({
+            scaleColor: false,
+            barColor: '#62cdd7'
+        });
+    });
+    $(function () {
+        $('.easypie-dimgray').easyPieChart({
+            scaleColor: false,
+            barColor: '#95a5a6'
+        });
+    });
+</script>
+<div class="box KPICircleData">
+    @if (Model.FirstOrDefault().SectionName != null)
+    {
+        <div class="panel panel-default">
+            @if (Model.FirstOrDefault().SectionName != null)
+            {
+                <div class="panel-heading usericon Lead1">
+                    <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#@Model.FirstOrDefault().SectionName.Replace(" ","")@Model.FirstOrDefault().TabID">
+                        <h4 class="panel-title">@Model.FirstOrDefault().SectionName</h4>
+                    </a>
+                </div>
+            }
+            <div class="panel-collapse collapse in" id=@Model.FirstOrDefault().SectionName.Replace(" ","")@Model.FirstOrDefault().TabID>
+                <div class="LeadContent">
+                    <div class="ibox-content">
+                        <div class="noborder">
+                            <div class="row">
+                                @foreach (var items in Model)
+                                {
+                                    <div class="col-md-2 easy-pie nlpd">
+                                            <div class="easypiechart col-md-offset-2 @items.KPICircleColor" data-percent=@items.KPIPercent>
+                                                <div class=@items.KPIIconColor><i class='@items.KPIIcon' aria-hidden="true"></i></div>
+                                                <span class="percent blue" id="NewLeadSpan-@Model.FirstOrDefault().TabID">@items.KPIValue</span>
+                                            </div>
+                                            <h5 class="text-center">@items.ShowAs</h5>
+                                        </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <div class="box-header with-border">
+            <div class="pull-left header-search" style="top: 5px;position: relative;">
+                <div class="input-icon right inline-block">
+                    <h3 class="box-title pull-left">Over View</h3>
+                </div>
+                @*<div class="inline-block" style="margin-left:10px;">
+                    <select class="form-control input-sm">
+                        <option>KGM</option>
+                        <option>Policy Fast</option>
+                        <option>Policy Plan</option>
+                        <option>Tansar</option>
+                        <option>Commercial Express</option>
+                        <option>Markerstudy</option>
+                    </select>
+                </div>*@
+            </div>
+		</div>
+        <div class="box-body">
+			<div class="row">
+				@foreach (var items in Model)
+				{
+					if (items.Visibility == "true")
+					{
+						<div class="col-lg-2 col-md-2 easy-pie nlpd KPICircles" id="@items.Name.Replace(" ","_")" data-id="@items.ReportID-true" data-innerreportid="@items.InnerReportID" style="display:block">
+							<div class="easypiechart @items.KPICircleColor" data-percent=@items.KPIPercent>
+								<div class=@items.KPIIconColor><i class='@items.KPIIcon' aria-hidden="true"></i></div>
+								<span class="percent blue" id="NewLeadSpan">@items.KPIValue</span>
+							</div>
+							<h5 class="text-center">@items.ShowAs</h5>
+						</div>
+					}
+					else
+					{
+						<div class="col-lg-2 col-md-2 easy-pie nlpd KPICircles" id="@items.Name.Replace(" ","_")" data-id="@items.ReportID-false" data-innerreportid="@items.InnerReportID" style="display:none">
+							<div class="easypiechart @items.KPICircleColor" data-percent=@items.KPIPercent>
+								<div class=@items.KPIIconColor><i class='@items.KPIIcon' aria-hidden="true"></i></div>
+								<span class="percent blue" id="NewLeadSpan">@items.KPIValue</span>
+							</div>
+							<h5 class="text-center">@items.ShowAs</h5>
+						</div>
+					}
+
+				}
+			</div>
+        </div>
+    }
+</div>

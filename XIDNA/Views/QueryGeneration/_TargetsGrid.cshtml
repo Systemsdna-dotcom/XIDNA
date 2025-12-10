@@ -1,0 +1,119 @@
+﻿@model List<int>
+<script>
+    $(document).ready(function () {
+        var popups = new Array();
+        var editpopups = new Array();
+        var table = $('#Targetstbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Html.Raw(Url.Action("GetTargetsList", "QueryGeneration", new{ID=Model[0], OrgID=Model[1]}))",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+        {},
+                            {
+                                "sName": "ID",
+                                "visible": false
+                            },
+                            {
+                                "sName": "Details",
+                                "visible": false
+                            },
+                            {
+                                "sName": "OrganizationID",
+                                "visible": false
+                            },
+                            {
+                                "sName": "User",
+                            },
+                             {
+                                 "sName": "Coumn",
+                             },
+                            {
+                                "sName": "Target",
+                            },
+                            {
+                                "sName": "Period",
+                            },
+                            {
+                                "sName": "Colour",
+                            },
+                            {
+                                "sName": "IsSMS",
+                            },
+                            {
+                                "sName": "IsEmail",
+                            },
+                            {
+                                "sName": "IsNotification",
+                            },
+                            {}
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(9)', nRow).html('<input type="button" class="EditTarget btn btn-theme btn-xs" id=' + aData[2] + ' data-user="' + aData[1] + '" value="Edit"/>');
+                return nRow;
+            }
+        });
+        $('#Targetstbl').on('click', 'input.EditTarget', function () {
+            var ids = $(this).attr('id');
+            var ID = $(this).attr('data-user');
+            var data = ids.split('-');
+            //$('#TargetUsers').append('<option value="' + data[0] + '">' + User + '</option>')
+            $('#TargetUsers').val(data[0]);
+            $('#TargetColumns').val(data[1]);
+            $('#Targets').val(data[2]);
+            if (data[5] == "True") {
+                $('#IsSMS').prop("checked", true);
+                $('#SMSTemplateID').val(data[8]);
+                $('#TRSMSTemplates').show();
+            }
+            else {
+                $('#IsSMS').prop("checked", false);
+                $('#TRSMSTemplates').hide();
+            }
+            if (data[6] == "True") {
+                $('#IsEmail').prop("checked", true);
+                $('#EmailTemplateID').val(data[9]);
+                $('#TREmailTemplates').show();
+            }
+            else {
+                $('#IsEmail').prop("checked", false);
+                $('#TREmailTemplates').hide();
+            }
+            if (data[7] == "True") {
+                $('#IsNotification').prop("checked", true);
+            }
+            else {
+                $('#IsNotification').prop("checked", false);
+            }
+            $('#TargetID').val(ID);
+            $('#TargetUsers').attr('disabled', 'disabled');
+            $('#TargetPeriod').val(data[3]);
+            $('#TargetColour').val(data[4]);
+        })
+    });
+</script>
+<div class="table-clean">
+    <table id="Targetstbl" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th>ID</th>
+                <th>Details</th>
+                <th>Organization</th>
+                <th>User</th>
+                <th>Column</th>
+                <th>Target</th>
+                <th>Period</th>
+                <th>Colour</th>
+                <th>SMS</th>
+                <th>Email</th>
+                <th>Notification</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>

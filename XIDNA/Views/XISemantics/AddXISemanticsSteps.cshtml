@@ -1,0 +1,1478 @@
+﻿@using XIDNA.ViewModels
+@model XIDNA.Models.cQSStepDefiniton
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<style>
+    .txtbox-width {
+        width: 9.2%;
+        float: left;
+        margin-right: 10px;
+    }
+</style>
+<section class="content-header hedr">
+    @if (Model.ID == 0)
+    {
+        <h1> Add XISematics Steps </h1>
+    }
+    else
+    {
+        <h1> Edit XISematics Steps </h1>
+    }
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> XISematics Steps Settings</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="innerborder">
+                    @using (Ajax.BeginForm("CreateXISemanticsSteps", "XISematics", new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "XIStepsForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.FKiQSDefintionID, Model.FKiQSDefintionID)
+                        @Html.HiddenFor(m => m.ID)
+                        <div id="clear-text">
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.sName, new { @placeholder = "Enter Name Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sName, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Display Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.sDisplayName, new { @placeholder = "Enter Display Name Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sDisplayName, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Order</label>
+                                    @Html.TextBoxFor(model => model.iOrder, new { @placeholder = "Enter Order Here", @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Code</label>
+                                    @Html.TextBoxFor(model => model.sCode, new { @placeholder = "Enter Code Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sCode, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Layout<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.iLayoutID, new SelectList(Model.ddlLayouts, "Value", "text"), new { @class = "form-control", @id = "XiLayoutsDDL" })
+                                </div>
+                                <div class="col-md-4">
+                                    @*<input type="button" class="btn btn-theme btn-xs" value="Refresh" onclick="XiLayoutManager('XiLayout', 'Refresh')" />*@
+                                    <input type="button" class="btn btn-theme btn-xs" value="Map" onclick="XiLayoutManager('XiLayout', 'Add')" />
+                                    @*<input type="button" class="btn btn-theme btn-xs" value="Edit" onclick="XiLayoutManager('XiLayout', 'Edit')" />
+                                        <input type="button" class="btn btn-theme btn-xs" value="View" onclick="XiLayoutManager('XiLayout', 'View')" />*@
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Display As<span class="danger">*</span></label>
+                                    @Html.DropDownListFor(m => m.iDisplayAs, new SelectList(new List<Object>
+                            {
+                            new { key= "" , value = "--Select--" },
+                            new { key= 10 , value = "Edit Form" },
+                            new { key= 20 , value = "Sections" },
+                            new {key=30,value="Fields" },
+                            new {key=40,value="XI Component"},
+                            new {key=50,value="Html"},
+                            new {key=60,value="Bespoke"},
+                            new {key=70,value="1-Click"}
+                            }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.iDisplayAs, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div id="FieldsDiv">
+                                <div class="form-group">
+                                    <div id="NameValuePairs" class="col-md-12 no-padding">
+                                        @if (Model.ID == 0 || Model.XIFieldValues.Count() == 0)
+                {
+                                            <div class="form-group NVPairs col-md-12" data-name="FieldNV">
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" />
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                                </div>
+                                            </div>
+                                            <div class="form-group NVPairs col-md-12" data-name="FieldNV">
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" />
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                                </div>
+                                            </div>
+                                            <div class="form-group NVPairs col-md-12" data-name="FieldNV">
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" />
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            foreach (var NVs in Model.XIFieldValues)
+                                            {
+                                                <div class="form-group NVPairs col-md-12" data-name="FieldNV">
+                                                    <div class="col-md-1">
+                                                        <label for="inputEmail" class="gn"> Field <span class="danger"></span></label>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" value="@NVs" />
+                                                    </div>
+                                                    <div class="col-md-1">
+                                                        <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                                    </div>
+                                                </div>
+                                                if (Model.XIFieldValues.Count() == 1)
+                                                {
+                                                    <div class="form-group NVPairs col-md-12" data-name="FieldNV">
+                                                        <div class="col-md-1">
+                                                            <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" />
+                                                        </div>
+                                                        <div class="col-md-1">
+                                                            <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group NVPairs col-md-12" data-name="FieldNV">
+                                                        <div class="col-md-1">
+                                                            <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" />
+                                                        </div>
+                                                        <div class="col-md-1">
+                                                            <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else if (Model.XIFieldValues.Count() == 2)
+                                                {
+                                                    <div class="form-group NVPairs col-md-12" data-name="FieldNV">
+                                                        <div class="col-md-1">
+                                                            <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" />
+                                                        </div>
+                                                        <div class="col-md-1">
+                                                            <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-2">
+                                        <button type="button" id="AddMore" class="btn btn-theme btn-xs">Add</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="ComponentNVIDs" id="ComponentNVIDs" />
+                            <input type="hidden" name="SecComponentNVIDs" id="SecComponentNVIDs" />
+                            <input type="hidden" name="SectionIDs" id="SectionIDs" />
+                            <div id="ContentDiv">
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn" id="ContentLabel">Content<span class="danger">*</span></label>
+                                        @Html.DropDownListFor(m => m.FKiContentID, new SelectList(Model.ddlContent, "Value", "text"), "--Select--", new { @class = "form-control" })
+                                    </div>
+                                    <div class="ComponentBtn col-md-1"></div>
+                                    <div class="col-sm-7 fielderror">
+                                        @Html.ValidationMessageFor(m => m.FKiContentID, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                            </div>
+                            @if (Model.Sections != null && Model.Sections.Count() > 0)
+                            {
+                                <div id="SectionsDiv">
+                                    <div class="form-group">
+                                        <div id="SectionPairs" class="col-md-12">
+                                            @{ int PairCount = 1;}
+                                            @foreach (var items in Model.Sections)
+                                            {
+                                                <div class="form-group SecPairs">
+                                                    <div class="col-md-1">
+                                                        <label for="inputEmail" class="gn"> Display As <span class="danger"></span></label>
+                                                    </div>
+                                                    <div class="col-md-2 SectionNames">
+                                                        <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" value="@items.sName" />
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <select class="form-control SecDisplayAsDDL">
+                                                            <option value="">--Select--</option>
+                                                            @if (items.iDisplayAs == 10)
+                                                            {
+                                                                <option value="10" selected>Edit Form</option>
+                                                                <option value="30">Fields</option>
+                                                                <option value="40">XI Component</option>
+                                                                <option value="50">HTML</option>
+                                                                <option value="60">Bespoke</option>
+                                                                <option value="70">1-Click</option>
+                                                            }
+                                                            else if (items.iDisplayAs == 20)
+                                                            {
+                                                                <option value="10">Edit Form</option>
+                                                                <option value="30">Fields</option>
+                                                                <option value="40">XI Component</option>
+                                                                <option value="50">HTML</option>
+                                                                <option value="60">Bespoke</option>
+                                                                <option value="70">1-Click</option>
+                                                            }
+                                                            else if (items.iDisplayAs == 30)
+                                                            {
+                                                                <option value="10">Edit Form</option>
+                                                                <option value="30" selected>Fields</option>
+                                                                <option value="40">XI Component</option>
+                                                                <option value="50">HTML</option>
+                                                                <option value="60">Bespoke</option>
+                                                                <option value="70">1-Click</option>
+                                                            }
+                                                            else if (items.iDisplayAs == 40)
+                                                            {
+                                                                <option value="10">Edit Form</option>
+                                                                <option value="30">Fields</option>
+                                                                <option value="40" selected>XI Component</option>
+                                                                <option value="50">HTML</option>
+                                                                <option value="60">Bespoke</option>
+                                                                <option value="70">1-Click</option>
+                                                            }
+                                                            else if (items.iDisplayAs == 50)
+                                                            {
+                                                                <option value="10">Edit Form</option>
+                                                                <option value="30">Fields</option>
+                                                                <option value="40">XI Component</option>
+                                                                <option value="50" selected>HTML</option>
+                                                                <option value="60">Bespoke</option>
+                                                                <option value="70">1-Click</option>
+                                                            }
+                                                            else if (items.iDisplayAs == 60)
+                                                            {
+                                                                <option value="10">Edit Form</option>
+                                                                <option value="30">Fields</option>
+                                                                <option value="40">XI Component</option>
+                                                                <option value="50">HTML</option>
+                                                                <option value="60" selected>Bespoke</option>
+                                                                <option value="70">1-Click</option>
+                                                            }
+                                                            else if (items.iDisplayAs == 70)
+                                                            {
+                                                                <option value="10">Edit Form</option>
+                                                                <option value="30">Fields</option>
+                                                                <option value="40">XI Component</option>
+                                                                <option value="50">HTML</option>
+                                                                <option value="60">Bespoke</option>
+                                                                <option value="70" selected>1-Click</option>
+                                                            }
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-1">
+                                                        <input type="text" class="form-control" id="SecOrder" placeholder="0.00" value="@items.iOrder" />
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        @if (Model.ID == 0)
+                                                        {
+                                                            <button type="button" class="btn btn-theme ShowSectionDlg" data-sectionid="0" data-secid="0" data-showid="0">Show</button>
+                                                            <button type="button" class="btn btn-theme btn-xs DeleteSecPair" data-sectionid="0" data-secid="0" data-deleteid="0">Delete</button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button type="button" id="NewPairid" class="btn btn-theme ShowSectionDlg" data-sectionid="@items.ID" data-secid="@items.ID" data-showid="@PairCount">Show</button>
+                                                            <button type="button" class="btn btn-theme btn-xs DeleteSecPair" data-sectionid="@items.ID" data-secid="@items.ID" data-deleteid="@PairCount">Delete</button>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                PairCount++;
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-2">
+                                            <button type="button" id="AddMoreSections" class="btn btn-theme btn-xs">Add</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                                }
+                                                else
+                                                {
+                                                    <div id="SectionsDiv">
+                                                        <div class="form-group">
+                                                            <div id="SectionPairs" class="col-md-12">
+                                                                <div class="form-group SecPairs">
+                                                                    <div class="col-md-1">
+                                                                        <label for="inputEmail" class="gn"> Display As <span class="danger"></span></label>
+                                                                    </div>
+                                                                    <div class="col-md-2 SectionNames">
+                                                                        <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <select class="form-control SecDisplayAsDDL">
+                                                                            <option value="">--Select--</option>
+                                                                            <option value="10">Edit Form</option>
+                                                                            <option value="30">Fields</option>
+                                                                            <option value="40">XI Component</option>
+                                                                            <option value="50">HTML</option>
+                                                                            <option value="60">Bespoke</option>
+                                                                            <option value="70">1-Click</option>
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="col-md-1">
+                                                                        <input type="text" class="form-control" id="SecOrder" placeholder="0.00" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <button type="button" class="btn btn-theme ShowSectionDlg" data-sectionid="0" data-secid="0" data-showid="0">Show</button>
+                                                                        <button type="button" class="btn btn-theme btn-xs DeleteSecPair" data-sectionid="0" data-secid="0" data-deleteid="0">Delete</button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <div class="col-md-2">
+                                                                <button type="button" id="AddMoreSections" class="btn btn-theme btn-xs">Add</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                            <div id="HtmlContent" class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">HTML Content<span class="danger">*</span></label>
+                                    @Html.TextAreaFor(m => m.HTMLContent, new { @rows = 7, @cols = 50, @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.CheckBoxFor(m => m.bIsHidden)
+                                    <label for="inputEmail" class="gn">Is Hidden<span class="danger"></span></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.CheckBoxFor(m => m.bInMemoryOnly)
+                                    <label for="inputEmail" class="gn">InMemory Only<span class="danger"></span></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.CheckBoxFor(m => m.bIsSaveNext)
+                                    <label for="inputEmail" class="gn">Is SaveNext<span class="danger"></span></label>
+                                </div>
+                            </div>
+                            @if (Model.bIsSaveNext == true)
+                            {
+                                <div class="form-group" id="saveNextbtn">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Name<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.sSaveBtnLabelSaveNext, new { @id = "sSaveBtnLabelSAveNext", @placeholder = "Enter Name for SaveNext Button", @class = "form-control" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group" style="display:none" id="saveNextbtn">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Name<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.sSaveBtnLabelSaveNext, new { @id = "sSaveBtnLabelSAveNext", @placeholder = "Enter Name for SaveNext Button", @class = "form-control" })
+                                    </div>
+                                </div>
+                            }
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.CheckBoxFor(m => m.bIsSave)
+                                    <label for="inputEmail" class="gn">Is Save<span class="danger"></span></label>
+                                </div>
+                            </div>
+                            @if (Model.bIsSave == true)
+                            {
+                                <div class="form-group" id="savebtn">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Name<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.sSaveBtnLabelSave, new { @id = "sSaveBtnLabelSAve", @placeholder = "Enter Name for Save Button", @class = "form-control" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group" style="display:none" id="savebtn">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Name<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.sSaveBtnLabelSave, new { @id = "sSaveBtnLabelSAve", @placeholder = "Enter Name for Save Button", @class = "form-control" })
+                                    </div>
+                                </div>
+                            }
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.CheckBoxFor(m => m.bIsBack)
+                                    <label for="inputEmail" class="gn">Is Back<span class="danger"></span></label>
+                                </div>
+                            </div>
+                            @if (Model.bIsBack == true)
+                            {
+                                <div class="form-group" id="backbtn">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Name<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.sBackBtnLabel, new { @placeholder = "Enter Name for Back Button", @class = "form-control" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group" style="display:none" id="backbtn">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Name<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.sBackBtnLabel, new { @placeholder = "Enter Name for Back Button", @class = "form-control" })
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.CheckBoxFor(m => m.bIsContinue)
+                                    <label for="inputEmail" class="gn">Is Continue<span class="danger"></span></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.CheckBoxFor(m => m.bIsHistory)
+                                    <label for="inputEmail" class="gn">Is History<span class="danger"></span></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.CheckBoxFor(m => m.bIsCopy)
+                                    <label for="inputEmail" class="gn">Is Copy<span class="danger"></span></label>
+                                </div>
+                            </div>
+
+                            @*<div class="form-group">
+                                <div class="col-md-3">
+                                    @Html.CheckBoxFor(m => m.bIsStepTraceStage)
+                                    <label for="inputEmail" class="gn">Is StepTrace Stage<span class="danger"></span></label>
+                                </div>
+                            </div>*@
+
+                            <div id="QuoteStageDiv">
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn" id="ContentLabel">Quote Stages<span class="danger"></span></label>
+                                        @Html.DropDownListFor(m => m.FkiQuoteStageID, new SelectList(Model.ddlQuoteStage, "Value", "text", Model.FkiQuoteStageID), "--Select--", new { @class = "form-control" })
+                                    </div>
+                                    <div class="ComponentBtn col-md-1"></div>
+                                    <div class="col-sm-7 fielderror">
+                                        @Html.ValidationMessageFor(m => m.FkiQuoteStageID, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>
+                            {
+                            new { key= 10 , value = "Active" },
+                            new { key= 20 , value = "Inactive" }
+                            }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="submit" class="btn btn-theme" value="Save" />
+                                    <button type="button" class="btn btn-theme decline" id="CancelBO">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                                                }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+                </div>
+                <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+                </div>
+                @using (Ajax.BeginForm("CreateXISemanticsNavigation", "XISematics", new AjaxOptions { OnBegin = "NavOnFormBegin()", HttpMethod = "POST", OnSuccess = "NavOnComplete" }, new { @id = "XINavsForm", @class = "form-horizontal" }))
+                {
+                    @Html.ValidationSummary(true);
+                    @Html.HiddenFor(m => m.ID)
+                    if (Model.QSNavigations.Count > 0)
+                    {
+                        <div id="NavNameValuePairs">
+                            @for (int i = 0; i < Model.QSNavigations.Count; i++)
+                            {
+                                <div id="NavNameValuePairs">
+                                    <div class="form-group col-md-12 NavPairs visible">
+                                        @Html.HiddenFor(m => m.QSNavigations[i].IsSave, new { @Value = true, @class = "IsSaveValue" })
+                                        @Html.HiddenFor(m => m.QSNavigations[i].ID)
+                                        <div class="txtbox-width">
+                                            <label for="inputEmail" class="gn">Name</label>
+                                            @Html.TextBoxFor(m => m.QSNavigations[i].sName, new { @placeholder = "Name Here", @class = "form-control" })
+                                        </div>
+                                        <div class="txtbox-width" id="NaviType">
+                                            <label for="inputEmail" class="gn">Type</label>
+                                            @Html.DropDownListFor(m => m.QSNavigations[i].iType, new SelectList(new List<Object>
+                                        {
+                                        new { key= 0 , value = "--Select--" },
+                                        new { key= 10 , value = "Navigate To" },
+                                        new { key= 20 , value = "End" }
+                                        }, "key", "Value", Model.QSNavigations[i].iType), new { @class = "form-control" })
+                                        </div>
+                                        <div class="txtbox-width">
+                                            <label for="inputEmail" class="gn">Next Step<span class="danger"></span></label>
+                                            @Html.DropDownListFor(m => m.QSNavigations[i].iNextStepID, new SelectList(Model.QSNavigations[0].SematicSteps, "Value", "text", Model.QSNavigations[i].iNextStepID), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                        <div class="txtbox-width">
+                                            <label for="inputEmail" class="gn">Order</label>
+                                            @Html.TextBoxFor(m => m.QSNavigations[i].iOrder, new { @placeholder = "Order Here", @class = "form-control" })
+                                        </div>
+                                        <div class="txtbox-width">
+                                            <label for="inputEmail" class="gn">Function<span class="danger"></span></label>
+                                            @Html.TextBoxFor(m => m.QSNavigations[i].sFunction, new { @placeholder = "Function Here", @class = "form-control" })
+                                        </div>
+                                        <div class="txtbox-width">
+                                            <label for="inputEmail" class="gn">Field<span class="danger"></span></label>
+                                            @Html.TextBoxFor(m => m.QSNavigations[i].sField, new { @placeholder = "Field Here", @class = "form-control" })
+                                        </div>
+                                        <div class="txtbox-width">
+                                            <label for="inputEmail" class="gn">Operator<span class="danger"></span></label>
+                                            @Html.TextBoxFor(m => m.QSNavigations[i].sOperator, new { @placeholder = "Operator Here", @class = "form-control" })
+                                        </div>
+                                        <div class="txtbox-width">
+                                            <label for="inputEmail" class="gn">Value<span class="danger"></span></label>
+                                            @Html.TextBoxFor(m => m.QSNavigations[i].sValue, new { @placeholder = "Value Here", @class = "form-control" })
+                                        </div>
+                                        <div class="txtbox-width">
+                                            <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                            @Html.DropDownListFor(m => m.QSNavigations[i].StatusTypeID, new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "Active" },
+                                    new { key= 20 , value = "Inactive" }
+                                    }, "key", "Value"), new { @class = "form-control" })
+                                        </div>
+                                        <div class="txtbox-width">
+                                            <button type="button" class="btn btn-theme btn-xs DeleteResultPair">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                @{ var PairNo = Model.QSNavigations.Count() - 1;}
+                                <input type="button" value="Add" class="btn btn-theme btn-xs AddMoreNav" data-pairno="@PairNo">
+                                <input type="submit" class="btn btn-theme btn-xs SaveNav" value="Save" />
+
+                            </div>
+                        </div>
+                                        }
+                                    }
+            </div>
+        </div>
+    </div>
+</section>
+<div id="SectionsShowDialog" class="dialog-box" title="Confirm Message" style="background-color:white;">
+    @*@{
+            Html.RenderPartial("_StepSections", Model);
+        }*@
+</div>
+<div id="XICParams"></div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#QuoteStageDiv").hide();
+        @*if('@Model.bIsStepTraceStage' == "True")
+        {
+            $("#QuoteStageDiv").show();
+            $("#bIsStepTraceStage").prop('checked', true);
+            $("#QuoteStageDiv").val('@Model.FkiQuoteStageID');
+        }*@
+        if('@Model.ID' == 0)
+        {
+            $("#bIsHistory").prop('checked', true);
+            $("#bIsCopy").prop('checked', true);
+        }
+        else
+            if('@Model.ID' > 0)
+            {
+                if('@Model.bIsHistory' == "False")
+                {
+                    $("#bIsHistory").prop('checked', false);
+                }
+                else
+                {
+                    $("#bIsHistory").prop('checked', true);
+                }
+
+                if('@Model.bIsCopy' == "False")
+                {
+                    $("#bIsCopy").prop('checked', false);
+                }
+                else
+                {
+                    $("#bIsCopy").prop('checked', true);
+                }
+            }
+
+        var ComponentType;
+        var SecDisplayAs = 0;
+        var SecOrder = 0;
+        var SectionID =0;
+        var sSectionName = "";
+        var SectionCode;
+        var ShowID = 0;
+        var PairCount = parseInt('@Model.Sections.Count()');
+        $('#SectionsShowDialog').hide();
+        Hidedivs();
+        $('#CancelBO').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#XIStepsForm')[0].reset();
+            $('#XIStepsForm .taberrormsg').find('span').html('');
+        });
+
+        $('#bIsSaveNext').change(function(){
+            if($("#bIsSaveNext").is(':checked')){
+                $("#saveNextbtn").show();
+                $("#savebtn").hide();
+                $("#bIsSave").prop("checked", false);
+            }
+            else{
+                $("#saveNextbtn").hide();
+            }
+        });
+
+        $('#bIsSave').change(function(){
+            if($("#bIsSave").is(':checked')){
+                $("#savebtn").show();
+                $("#saveNextbtn").hide();
+                $("#bIsSaveNext").prop("checked", false);
+            }
+            else{
+                $("#savebtn").hide();
+            }
+        });
+
+        $('#bIsBack').change(function(){
+            if($("#bIsBack").is(':checked')){
+                $("#backbtn").show();
+            }
+            else{
+                $("#backbtn").hide();
+            }
+        });
+
+        $('#bIsStepTraceStage').change(function(){
+            if($("#bIsStepTraceStage").is(':checked')){
+                $("#QuoteStageDiv").show();
+            }
+            else{
+                $("#QuoteStageDiv").hide();
+            }
+        });
+
+        $(document.body).on('click', 'button#AddMoreQSLink', function () {
+            var Divs = $('.QSLPairs').first().clone();
+            $(Divs).find('input').val('');
+            $('#QSLinkPairs').append(Divs);
+            $('#QSLinkPairs').last().css("display", "block");
+            $( ".qslinkvalue" ).autocomplete({
+                source: availableXiLinkCodes
+            });
+        });
+
+        $(document.body).on('click', 'button.DeleteQSLinkPair', function () {
+            $(this).closest(".QSLPairs").hide();
+        });
+
+        $(document.body).on('change', 'select.SecDisplayAsDDL ', function(){
+            $(this).closest('div').next('div').find('.ShowSectionDlg').attr('data-sectionid', '0')
+            $(this).closest('div').next('div').find('.ShowSectionDlg').attr('data-secid', '0')
+        })
+
+        $(document.body).on('click', 'button.ShowSectionDlg', function(){
+            ShowID = $(this).attr('data-showid');
+            var StepData = @Html.Raw(Json.Encode(Model.Sections));
+            SectionID = $(this).attr('data-sectionid');
+            SecDisplayAs = $(this).closest('div').prev('div').prev('div').find('.SecDisplayAsDDL').val();
+            SecOrder = $(this).closest('div').prev('div').find('#SecOrder').val();
+            sSectionName = $(this).closest('div').prev('div').prev('div').find('.SectionName').val();
+            var SecID = $(this).attr('data-secid');
+            var iQSStepDefID = @Model.ID;
+            var Data = {StepDefID:iQSStepDefID, SectionID:SectionID, DisplayAs:SecDisplayAs, SecID:SecID, SectionName:sSectionName};
+            if(SecDisplayAs != "")
+            {
+                $.ajax({
+                    url: '@Url.Action("GetSectionContentDialog", "XISemantics")',
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    async: false,
+                    data: JSON.stringify(Data),
+                    success: function (data) {
+                        $('#SectionsShowDialog').html(data);
+                        $("#SectionsShowDialog").dialog({
+                            modal:true,
+                            width: 700,
+                            height: 500,
+                            title:'Section',
+                            close: function (event, ui) {
+                                $(this).dialog('close');
+                            }
+                        });
+                    }
+                });
+            }
+            //$( ".XIField" ).autocomplete({
+            //    source: availableTags
+            //});
+            $( ".XIField" ).autocomplete({
+                source: function(request, response){
+                    var List = [];
+                    for(var k=0;k<XIFields.length;k++){
+                        List.push({label:XIFields[k].text, value:XIFields[k].Value});
+                    }
+                    response($.ui.autocomplete.filter(List, request.term));
+                },
+                select: function( event, ui ) {
+                    $(this).val(ui.item.label);
+                    $(this).attr('data-value', ui.item.value);
+                    return false;
+                },
+                focus: function(event, ui) {
+                    $(this).val(ui.item.label);
+                    $(this).attr('data-value', ui.item.value);
+                    return false;
+                }
+            });
+            $( ".qslinkvalue" ).autocomplete({
+                source: availableXiLinkCodes
+            });
+        });
+
+        $('#iDisplayAs').change(function () {
+            $('.ComponentBtn').html('');
+            if ($(this).val() > 0) {
+                Hidedivs();
+                //Component
+                //Sections
+                if ($(this).val() == 20) {
+                    $('#SectionsDiv').show();
+                }
+                    //Fileds
+                else if ($(this).val() == 30) {
+                    $('#FieldsDiv').show();
+                }
+                    //Component
+                else if ($(this).val() == 40) {
+                    fncPopulateDDL("XI Component");
+                    $('#ContentDiv').show();
+                    $('.ComponentBtn').html('<button type="button" class="btn btn-theme" id="XIComponentBtn" data-type="QSStep"><i class="fa fa-bars"></i></button>');
+                }
+                    //HTML
+                else if ($(this).val() == 50) {
+                    $('#HtmlContent').show();
+                }
+                    //1-Click
+                else if ($(this).val() == 70) {
+                    fncPopulateDDL("1-Click");
+                    $('#ContentDiv').show();
+                }
+                else {
+                    Hidedivs();
+                }
+            }
+        });
+
+
+
+        $(document.body).on('click','button#XIComponentBtn', function () {
+            var ComponentID = 0;
+            var ID = 0;
+            ComponentType = $(this).attr('data-type');
+            if(ComponentType == "QSStep"){
+                ComponentID = $('#FKiContentID').val();
+                ID = '@Model.ID';
+            }
+            else if(ComponentType == "QSStepSection"){
+                ComponentID = $('#ContentDDL').val();
+                ID = SectionID;
+            }
+
+            if (ComponentID > 0) {
+                $.ajax({
+                    type: 'get',
+                    url: '@Url.Action("GetXIComponentByID", "XIComponents")',
+                    contentType: "application/json; charset=utf-8",
+                    data: { iXIComponentID: ComponentID, sType : ComponentType, ID: ID },
+                    cache: false,
+                    async: false,
+                    dataType: 'html',
+                    success: function (data) {
+                        $('#XICParams').html(data);
+                        $("#XICParams").dialog({
+                            modal: true,
+                            width: 600
+                        });
+                    }
+                });
+            }
+        });
+
+        $(document.body).on('click', 'input#XIComponentParamsBtn', function () {
+            var Component;
+            var ID = 0;
+            if(ComponentType == "QSStep"){
+                ComponentID = $('#FKiContentID').val();
+                ID = '@Model.ID';
+            }
+            else if(ComponentType == "QSStepSection"){
+                ComponentID = $('#ContentDDL').val();
+                ID = SectionID;
+            }
+            if(ComponentID>0){
+                $.ajax({
+                    type: 'get',
+                    url: '@Url.Action("GetXIComponentDetailsByID", "XIComponents")',
+                    contentType: "application/json; charset=utf-8",
+                    data: {iXIComponentID: ComponentID, sType : ComponentType, ID: ID},
+                    cache: false,
+                    async: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        Component = data;
+                    }
+                });
+            }
+            var MappingID = '@Model.ID';
+            var NVPairs = [];
+            $('.NVPairs').each(function () {
+                var Name; var Value;
+                $(this).find('label').each(function (i, obj) {
+                    Name = $(this).attr('data-sName');
+                });
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "Names") {
+                        Value = $(this).val();
+                    }
+                });
+                if ((Name && Name.length > 0) && (Value && Value.length > 0)) {
+                    //NVPairs.push(Name + "-" + Value);
+                    for(i=0;i<Component.XIComponentNVs.length;i++){
+                        if(Component.XIComponentNVs[i].sName == Name){
+                            Component.XIComponentNVs[i].sValue = Value;
+                        }
+                    }
+                }
+            });
+            $('.TNVPairs').each(function () {
+                var Name; var Value;
+                $(this).find('label').each(function (i, obj) {
+                    Name = $(this).attr('data-sName');
+                });
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "Names") {
+                        Value = $(this).val();
+                    }
+                });
+                if ((Name && Name.length > 0) && (Value && Value.length > 0)) {
+                    //NVPairs.push(Name + "-" + Value);
+                    for(i=0;i<Component.XIComponentTriggers.length;i++){
+                        if(Component.XIComponentTriggers[i].sName == Name){
+                            Component.XIComponentTriggers[i].sValue = Value;
+                        }
+                    }
+                }
+            });
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SaveComponentParams", "XIComponents")',
+                data: JSON.stringify({ oComponent: Component, sType:ComponentType, iLoadID: ID }),//JSON.stringify(Component),
+                contentType: 'application/json;',
+                dataType: 'json',
+                traditional: true,
+                success: function (data) {
+                    if(ComponentType == "QSStep"){
+                        $('#ComponentNVIDs').val(data);
+                    }
+                    else if(ComponentType == "QSStepSection"){
+                        $('#SecComponentNVIDs').val(data);
+                    }
+                    $("#XICParams").dialog('close');
+                    ComponentType = null;
+                }
+            });
+        });
+
+        //Add More Fields
+        $('#AddMore').click(function () {
+            var Divs = $('.NVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $('#NameValuePairs').append(Divs);
+            $('.NVPairs').last().css("display", "block");
+            if(Divs.length > 0)
+            {
+                $( ".XIField" ).autocomplete({
+                    source: function(request, response){
+                        var List = [];
+                        for(var k=0;k<XIFields.length;k++){
+                            List.push({label:XIFields[k].text, value:XIFields[k].Value});
+                        }
+                        response($.ui.autocomplete.filter(List, request.term));
+                    },
+                    select: function( event, ui ) {
+                        $(this).val(ui.item.label);
+                        $(this).attr('data-value', ui.item.value);
+                        return false;
+                    },
+                    focus: function(event, ui) {
+                        $(this).val(ui.item.label);
+                        $(this).attr('data-value', ui.item.value);
+                        return false;
+                    }
+                });
+            }
+        });
+
+        //Add More Sections
+        $('#AddMoreSections').click(function () {
+            var Divs = $('.SecPairs').first().clone();
+            $(Divs).find('select').val('');
+            $(Divs).find('input').val('');
+            $(Divs).find('button.ShowSectionDlg').attr('data-sectionid','0')
+            $(Divs).find('button.ShowSectionDlg').attr('data-secid','0')
+            $(Divs).find('button.ShowSectionDlg').attr('data-showid',PairCount +1);
+            $(Divs).find('button.DeleteSecPair').attr('data-sectionid','0')
+            $(Divs).find('button.DeleteSecPair').attr('data-secid','0')
+            $(Divs).find('button.DeleteSecPair').attr('data-deleteid',PairCount +1);
+            PairCount++;
+            $('#SectionPairs').append(Divs);
+            $('.SecPairs').last().css("display", "block");
+
+        });
+
+        //Add More Fields in Sections
+        $(document.body).on('click', 'button#SecAddMore', function(){
+            var Divs = $('.SecNVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $('#SecNameValuePairs').append(Divs);
+            $('.SecNVPairs').last().css("display", "block");
+            if(Divs.length > 0)
+            {
+                $( ".XIField" ).autocomplete({
+                    source: function(request, response){
+                        var List = [];
+                        for(var k=0;k<XIFields.length;k++){
+                            List.push({label:XIFields[k].text, value:XIFields[k].Value});
+                        }
+                        response($.ui.autocomplete.filter(List, request.term));
+                    },
+                    select: function( event, ui ) {
+                        $(this).val(ui.item.label);
+                        $(this).attr('data-value', ui.item.value);
+                        return false;
+                    },
+                    focus: function(event, ui) {
+                        $(this).val(ui.item.label);
+                        $(this).attr('data-value', ui.item.value);
+                        return false;
+                    }
+                });
+            }
+        });
+
+        $(document.body).on('click', 'button.DeleteNVPair', function () {
+            $(this).closest(".NVPairs").hide();
+        });
+
+        $(document.body).on('click', 'button.DeleteSecNVPair', function () {
+            var Div = $(this).closest('.SecNVPairs');
+            $(this).closest('.SecNVPairs').removeClass('visible').hide();
+            var available = $(this).closest('.SecNVPairs').removeClass('visible').hide();
+        });
+
+        $(document.body).on('click', 'button.DeleteSecPair', function () {
+            var SectionID = $(this).attr('data-secid');
+            var SecPairsHide =  $(this).closest(".SecPairs");
+            $("#Remove").dialog({
+                title: "Are you sure you want to delete ? ",
+                buttons : {
+                    "Yes" : function() {
+                        if(SectionID > 0)
+                        {
+                            SecPairsHide.hide();
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("DeleteSectionFieldsBySectionID", "XISemantics")',
+                                data: { ID: SectionID },
+                                cache: false,
+                                async: false,
+                                dataType: 'json',
+                                success: function (data) {
+                                }
+                            });
+                        }
+                        $(this).dialog("close");
+                    },
+                    "No" : function() {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+
+        //XIFields Autocomplete
+        var XIFields = @Html.Raw(Json.Encode(Model.XIFields));
+        var availableTags = Object.keys(XIFields);
+        var XILinks = @Html.Raw(Json.Encode(Model.XILinks));
+        var availableXiLinks = Object.keys(XILinks);
+        var XiLinkCodes = @Html.Raw(Json.Encode(Model.XICodes));
+        var availableXiLinkCodes = Object.keys(XiLinkCodes);
+        $( ".XIField" ).autocomplete({
+            source: function(request, response){
+                var List = [];
+                for(var k=0;k<XIFields.length;k++){
+                    List.push({label:XIFields[k].text, value:XIFields[k].Value});
+                }
+                response($.ui.autocomplete.filter(List, request.term));
+            },
+            select: function( event, ui ) {
+                $(this).val(ui.item.label);
+                $(this).attr('data-value', ui.item.value);
+                return false;
+            },
+            focus: function(event, ui) {
+                $(this).val(ui.item.label);
+                $(this).attr('data-value', ui.item.value);
+                return false;
+            }
+        });
+        if('@Model.iDisplayAs'== 20){
+            $('#SectionsDiv').show();
+        }
+        else if('@Model.iDisplayAs'== 30){
+            $('#FieldsDiv').show();
+        }
+        else if('@Model.iDisplayAs'== 40){
+            $('#ContentDiv').show();
+            fncPopulateDDL("XI Component");
+            $('#FKiContentID').val('@Model.FKiContentID');
+            $('.ComponentBtn').html('<button type="button" class="btn btn-theme" id="XIComponentBtn" data-type="QSStep"><i class="fa fa-bars"></i></button>');
+        }
+        else if('@Model.iDisplayAs'== 50){
+            $('#HtmlContent').show();
+        }
+        else if('@Model.iDisplayAs'== 70){
+            $('#ContentDiv').show();
+            fncPopulateDDL("1-Click");
+            $('#FKiContentID').val('@Model.FKiContentID');
+        }
+
+        //AddMoreNavigations
+        $('.AddMoreNav').click(function () {
+            var pairno = parseInt($(this).attr('data-pairno')) + 1;
+            var NavDivs = $('.NavPairs').first().clone();
+            NavDivs.find('label.gn').remove();
+            NavDivs.find('input.form-control').val('');
+            $(NavDivs).find('input[type="hidden"]').each(function (i) {
+                if (i == 0) {
+                    $(this).attr('name', 'QSNavigations[' + pairno + '].IsSave');
+                    $(this).attr('id', 'QSNavigations_' + pairno + '__IsSave');
+                }
+                else if (i == 1) {
+                    $(this).attr('value', '');
+                    $(this).val('');
+                    $(this).attr('name', 'QSNavigations[' + pairno + '].ID');
+                    $(this).attr('id', 'QSNavigations_' + pairno + '__ID');
+                }
+            });
+            $(NavDivs).find('input.form-control').each(function (i) {
+                $(this).attr('value', '');
+                $(this).val('');
+                if (i == 0) {
+                    $(this).attr('name', 'QSNavigations[' + pairno + '].sName');
+                    $(this).attr('id', 'QSNavigations_' + pairno + '__sName');
+                }
+                else if (i == 1) {
+                    $(this).attr('value', '');
+                    $(this).val(0);
+                    $(this).attr('name', 'QSNavigations[' + pairno + '].iOrder');
+                    $(this).attr('id', 'QSNavigations_' + pairno + '__iOrder');
+                }
+                else if (i == 2) {
+                    $(this).attr('name', 'QSNavigations[' + pairno + '].sFunction');
+                    $(this).attr('id', 'QSNavigations_' + pairno + '__sFunction');
+                }
+                else if (i == 3) {
+                    $(this).attr('name', 'QSNavigations[' + pairno + '].sField');
+                    $(this).attr('id', 'QSNavigations_' + pairno + '__sField');
+                }
+                else if (i == 4) {
+                    $(this).attr('name', 'QSNavigations[' + pairno + '].sOperator');
+                    $(this).attr('id', 'QSNavigations_' + pairno + '__sOperator');
+                }
+                else if (i == 5) {
+                    $(this).attr('name', 'QSNavigations[' + pairno + '].sValue');
+                    $(this).attr('id', 'QSNavigations_' + pairno + '__sValue');
+                }
+            });
+
+            $(NavDivs).find('select').each(function (i) {
+                if(i==0){
+                    $(this).val("0");
+                    $(this).attr('name', 'QSNavigations[' + pairno + '].iType');
+                    $(this).attr('id', 'QSNavigations_' + pairno + '__iType');
+                }
+                else if(i==1){
+                    $(this).val('');
+                    $(this).attr('name', 'QSNavigations[' + pairno + '].iNextStepID');
+                    $(this).attr('id', 'QSNavigations_' + pairno + '__iNextStepID');
+                }
+                else if(i==2){
+                    $(this).val("10");
+                    $(this).attr('name', 'QSNavigations[' + pairno + '].StatusTypeID');
+                    $(this).attr('id', 'QSNavigations_' + pairno + '__StatusTypeID');
+                }
+            })
+            $('#NavNameValuePairs').append(NavDivs);
+            $('.NavPairs').last().css("display", "block");
+            $(this).attr('data-pairno', pairno);
+        });
+
+        $(document.body).on('click', 'button.DeleteResultPair', function () {
+            var Div = $(this).closest('.NavPairs');
+            $(Div).find('input.IsSaveValue').each(function (l)
+            {
+                $(this).val(false);
+            });
+            $(this).closest('.NavPairs').removeClass('visible').hide();
+            $('.AddMoreNav').attr('data-pairno', pairno-1);
+        });
+
+        $(document.body).on('click', 'button#SaveSecFieldsBtn', function () {
+            var SecID = $('#SecID').val();
+            var StepID = '@Model.ID';
+            var NVPairs = [];
+            var QSLNVPairs = [];
+            var IsGroup = false;
+            var GroupDescription;
+            var GroupLabel;
+            var IsHidden = false;
+            sSectionName = $('#SectionNametxtbox').val();
+            SectionCode = $('#SectionCodetxtbox').val();
+            $('.SecNVPairs:visible').each(function () {
+                var Name; var Value;
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "StepXIFiled") {
+                        Value = $(this).attr('data-value');
+                    }
+                });
+                if (Value && Value.length > 0) {
+                    NVPairs.push(Value);
+                }
+            });
+            $('.QSLPairs:visible').each(function () {
+                var Name; var Value;
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "QSLinktbox") {
+                        Value = $(this).val();
+                    }
+                });
+                if (Value && Value.length > 0) {
+                    QSLNVPairs.push(Value);
+                }
+            });
+            if($('#IsFieldsGroup').is(":checked")){
+                IsGroup = true;
+                GroupDescription = $('#FieldsGroupDescription').val();
+                GroupLabel = $('#FieldsGroupLabel').val();
+            }
+            if($('#IsSectionHidden').is(":checked")){
+                IsHidden = true;
+            }
+
+            var Data = {StepID: StepID, SecNVPairs: NVPairs, DisplayAs:SecDisplayAs, SecID: SecID,SectionName:sSectionName, bIsGroup:IsGroup, sGroupDescription:GroupDescription, sGroupLabel:GroupLabel, bIsHidden:IsHidden, iOrder:SecOrder, sSectionCode:SectionCode, QSCodes:QSLNVPairs};
+            $.ajax({
+                url: '@Url.Action("SaveSectionFields", "XISemantics")',
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                cache: false,
+                async: false,
+                data: JSON.stringify(Data),
+                success: function (data) {
+                    var SectionID = data.ID;
+                    $('button[data-showid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                    $('button[data-showid="'+ShowID+'"]').attr('data-secid',SectionID);
+                    $('button[data-deleteid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                    $('button[data-deleteid="'+ShowID+'"]').attr('data-secid',SectionID);
+                    var ExistingIDs = $('#SectionIDs').val();
+                    if(ExistingIDs && ExistingIDs.length>0){
+                        ExistingIDs = ExistingIDs + ","+data.ID + ',';
+                    }
+                    else{
+                        ExistingIDs = ExistingIDs + data.ID + ',';
+                    }
+                    $("#SectionsShowDialog").dialog('close');
+                    ExistingIDs = ExistingIDs.substr(0, ExistingIDs.length -1);
+                    $('#SectionIDs').val(ExistingIDs);
+                }
+            });
+        });
+
+        $(document.body).on('click', 'button#SaveSecContentBtn', function () {
+            var DisplayAs = $('#SecContentDisplayAs').val();
+            var SecID = $('#SecID').val();
+            var IsHidden = false;
+            if($('#IsSectionHidden').is(":checked")){
+                IsHidden = true;
+            }
+            var QSLNVPairs = [];
+            $('.QSLPairs:visible').each(function () {
+                var Name; var Value;
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "QSLinktbox") {
+                        Value = $(this).val();
+                    }
+                });
+                if (Value && Value.length > 0) {
+                    QSLNVPairs.push(Value);
+                }
+            });
+            var ContentID = $(this).closest('div').prev('div').prev('div').find('#ContentDDL').val();
+            sSectionName = $(this).closest('div').prev('div').prev('div').prev('div').prev('div').prev('div').find('.SectionName').val();
+            SectionCode = $(this).closest('div').prev('div').prev('div').prev('div').prev('div').find('.SectionCode').val();
+            if(ContentID > 0){
+                var Data = {StepID: '@Model.ID', DisplayAs:DisplayAs, ContentID:ContentID, SecID: SecID, SectionName:sSectionName,sParams: $('#SecComponentNVIDs').val(), bIsHidden: IsHidden, iOrder:SecOrder, sSectionCode:SectionCode, QSCodes:QSLNVPairs };
+                $.ajax({
+                    url: '@Url.Action("SaveSectionContent", "XISemantics")',
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    cache: false,
+                    async: false,
+                    data: JSON.stringify(Data),
+                    success: function (data) {
+                        var SectionID = data.ID;
+                        $('button[data-showid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                        $('button[data-showid="'+ShowID+'"]').attr('data-secid',SectionID);
+                        $('button[data-deleteid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                        $('button[data-deleteid="'+ShowID+'"]').attr('data-secid',SectionID);
+                        var ExistingIDs = $('#SectionIDs').val();
+                        if(ExistingIDs && ExistingIDs.length>0){
+                            ExistingIDs = ExistingIDs +","+ data.ID + ',';
+                        }
+                        else{
+                            ExistingIDs = ExistingIDs + data.ID + ',';
+                        }
+                        $("#SectionsShowDialog").dialog('close');
+                        ExistingIDs = ExistingIDs.substr(0, ExistingIDs.length -1);
+                        $('#SectionIDs').val(ExistingIDs);
+                    }
+                });
+            }
+            else{
+                $('#ContentDDL').focus();
+            }
+        });
+
+        $(document.body).on('click', 'button#SaveSecHTMLContentBtn', function () {
+            var DisplayAs = $('#SecContentDisplayAs').val();
+            var SecID = $('#SecID').val();
+            var IsHidden = false;
+            if($('#IsSectionHidden').is(":checked")){
+                IsHidden = true;
+            }
+            var HTMLContent = $(this).closest('div').prev('div').find('#SecHTMLContent').val();
+            sSectionName = $(this).closest('div').prev('div').prev('div').prev('div').prev('div').find('.SectionName').val();
+            SectionCode = $(this).closest('div').prev('div').prev('div').prev('div').find('.SectionCode').val();
+            if(HTMLContent.length > 0){
+                var Data = {StepID: '@Model.ID', DisplayAs:DisplayAs, sHTMLContent:HTMLContent, SecID: SecID,SectionName:sSectionName, bIsHidden : IsHidden, iOrder:SecOrder, sSectionCode:SectionCode};
+                $.ajax({
+                    url: '@Url.Action("SaveSectionHTMLContent", "XISemantics")',
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    cache: false,
+                    async: false,
+                    data: JSON.stringify(Data),
+                    success: function (data) {
+                        var SectionID = data.ID;
+                        $('button[data-showid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                        $('button[data-showid="'+ShowID+'"]').attr('data-secid',SectionID);
+                        $('button[data-deleteid="'+ShowID+'"]').attr('data-sectionid',SectionID);
+                        $('button[data-deleteid="'+ShowID+'"]').attr('data-secid',SectionID);
+                        var ExistingIDs = $('#SectionIDs').val();
+                        if(ExistingIDs && ExistingIDs.length>0){
+                            ExistingIDs = ExistingIDs +","+ data.ID + ',';
+                        }
+                        else{
+                            ExistingIDs = ExistingIDs + data.ID + ',';
+                        }
+                        $("#SectionsShowDialog").dialog('close');
+                        ExistingIDs = ExistingIDs.substr(0, ExistingIDs.length -1);
+                        $('#SectionIDs').val(ExistingIDs);
+                    }
+                });
+            }
+            else{
+                $('#ContentDDL').focus();
+            }
+        });
+
+    })
+
+    function fncPopulateDDL(Type) {
+        $.ajax({
+            url: '../XISemantics/PopulateDDL',
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            datatype: "HTML",
+            cache: false,
+            async: false,
+            data: { sDDLType: Type },
+            success: function (data) {
+                $('#ContentLabel').html(Type);
+                $('#FKiContentID').empty();
+                $('#FKiContentID').append('<option val="">--Select--</option>');
+                for (i = 0; i < data.length; i++) {
+                    $('#FKiContentID').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                }
+            }
+        });
+    }
+
+    function OnFormBegin() {
+        $('#XIStepsForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+
+    function Hidedivs() {
+        $('#FieldsDiv').hide();
+        $('#SectionsDiv').hide();
+        $('#ContentDiv').hide();
+        $('#HtmlContent').hide();
+        $('.SectionNames').hide();
+    }
+
+    function OnComplete(response) {
+        var StepID = response.ID;
+        if($('#iDisplayAs').val()==30){
+            var NVPairs = [];
+            $('.NVPairs:visible').each(function () {
+                var Name; var XIField;
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "StepXIFiled") {
+                        XIField = $(this).val();
+                    }
+                });
+                if (XIField.length > 0) {
+                    NVPairs.push(XIField);
+                }
+            });
+            var model = { iStepID: StepID, XIFields: NVPairs };
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SaveStepXIFields", "XISemantics")',
+                data: JSON.stringify(model),
+                contentType: 'application/json;',
+                dataType: 'json',
+                traditional: true,
+                success: function (data) {
+                    CustomMessage(data.ResponseMessage, data.Status);
+                    $('#XIStepsForm').unblock();
+                    $('#XIStepsForm')[0].reset();
+                    //opener.window.location.reload();
+                }
+            });
+        }
+        else{
+            $('#XIStepsForm').unblock();
+            CustomMessage(response.ResponseMessage, response.Status);
+        }
+    }
+
+    function NavOnFormBegin() {
+        $('#XINavsForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+
+    function NavOnComplete(e) {
+        $('#XINavsForm').unblock();
+        if (e.Status == false) {
+            $("#BootstrpError").show();
+            $("#BootstrpError").append("<strong>Failure!</strong> OOPS looks like there is some error");
+            $(function () {
+                setTimeout(function () {
+                    $("#BootstrpError").hide('blind', {}, 2000)
+                }, 5000);
+            });
+        }
+        else {
+            $("#BootstrpAlertSuccess").show();
+            $("#BootstrpAlertSuccess").append("<strong>Success!</strong> Navigation have been created successfully.");
+            $(function () {
+                setTimeout(function () {
+                    $("#BootstrpAlertSuccess").hide('blind', {}, 2000)
+                }, 5000);
+            });
+        }
+    }
+
+</script>
+<div id="Remove"></div>

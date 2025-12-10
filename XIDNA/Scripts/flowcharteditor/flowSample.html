@@ -1,0 +1,1343 @@
+﻿
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Editable Flowchart</title>
+    <meta name="description" content="Interactive flowchart diagram implemented by GoJS in JavaScript for HTML." />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Copyright 1998-2020 by Northwoods Software Corporation. -->
+    <script src="jquery.min.js"></script>
+    <script src="jquery-ui.min.js"></script>
+    <script src="go.js"></script>
+
+    <script src="icons.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
+    <!--<script src="../assets/js/goSamples.js"></script>-->
+    <!-- this is only for the GoJS Samples framework -->
+    <link rel='stylesheet' href='DataInspector.css' />
+    <script src="DataInspector.js"></script>
+    <script src="Figures.js"></script>
+    <script src="https://gojs.net/latest/extensions/LinkLabelDraggingTool.js"></script>
+
+    <script id="code">
+        function init() {
+            //if (window.goSamples) goSamples();  // init for these samples -- you don't need to call this
+
+            var colors = {
+                blue: "#2a6dc0",
+                orange: "#ea2857",
+                green: "#1cc1bc",
+                gray: "#5b5b5b",
+                white: "#F5F5F5",
+                black: "#050100"
+            }
+
+            //var fontStyle = "", fontVariant = "", fontWeight = "bold", fontSize = "11pt", fontFamily = "Lato, Helvetica, Arial, sans-serif";
+
+            var $ = go.GraphObject.make; // for conciseness in defining templates
+
+            myDiagram =
+                $(go.Diagram, "myDiagramDiv", // must name or refer to the DIV HTML element
+                    {
+                        "LinkDrawn": showLinkLabel, // this DiagramEvent listener is defined below
+                        "LinkRelinked": showLinkLabel,
+                        "BackgroundSingleClicked": HideInspectorProperties,
+                        "SelectionDeleted": HideInspectorProperties,
+                        "undoManager.isEnabled": true // enable undo & redo
+                    });
+
+            // when the document is modified, add a "*" to the title and enable the "Save" button
+            myDiagram.addDiagramListener("Modified", function (e) {
+                var button = document.getElementById("SaveButton");
+                if (button) button.disabled = !myDiagram.isModified;
+                var idx = document.title.indexOf("*");
+                if (myDiagram.isModified) {
+                    if (idx < 0) document.title += "*";
+                } else {
+                    if (idx >= 0) document.title = document.title.substr(0, idx);
+                }
+            });
+
+            myDiagram.addDiagramListener("ChangedSelection", function (diagramEvent) {
+                var idrag = document.getElementById("infoDraggable");
+                idrag.style.width = "";
+                idrag.style.height = "";
+            });
+            myDiagram.addDiagramListener("ExternalObjectsDropped", function (e) {
+                e.subject.each(function (node) {
+                    node.data.isTooltip = false;
+                    node.data.opacity = 0;
+                    myDiagram.model.updateTargetBindings(node.data);
+                });
+            });
+
+            //myDiagram.addDiagramListener("LinkDrawn", function (e) {
+            //    debugger
+            //    var link = e.subject;
+            //    link.data.color = "#00A9C9";
+            //    link.data.fontColor = "black";
+            //    link.data.fill = "white";
+            //    // link.data.IsHasText = link.data.IsHasText ? link.data.IsHasText : false;
+            //    link.data.IsHasText = false;
+            //    // link.data.font=
+
+            //});
+            //myDiagram.addDiagramListener("PartResized", function (event) {
+            //    debugger
+            //    myDiagram.select(myDiagram.findNodeForKey());
+            //    var adorn = node.findAdornment("Resizing");
+            //    var tool = myDiagram.toolManager.resizingTool;
+            //    // specify which resize handle of the "Resizing" Adornment of the selected node
+            //    // tool.handle = adorn.elt(...);
+            //    myDiagram.currentTool = tool;  // starts the ResizingTool
+            //    tool.doActivate();
+
+            //})
+
+            function HideInspectorProperties(e) {
+                document.getElementById('myInfo').innerHTML = "";
+                document.getElementById('infoDraggableHandle').innerHTML = "Information";
+            }
+
+
+            // helper definitions for node templates
+
+            function nodeStyle() {
+                return [
+                    // The Node.location comes from the "loc" property of the node data,
+                    // converted by the Point.parse static method.
+                    // If the Node.location is changed, it updates the "loc" property of the node data,
+                    // converting back using the Point.stringify static method.
+                    new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+                    {
+                        // the Node.location is at the center of each node
+                        locationSpot: go.Spot.Center
+                    }
+                ];
+            }
+
+            function ToolTip() {
+                return $("ToolTip", { "Border.stroke": colors["gray"], "Border.strokeWidth": 0 }, new go.Binding("opacity", "opacity"),
+                    $(go.TextBlock, { margin: 0, stroke: colors["black"], font: "normal 10pt sans-serif" },
+                        new go.Binding("text", "category"),
+                        new go.Binding("visible", "isTooltip")
+                    ))
+            }
+
+            // Define a function for creating a "port" that is normally transparent.
+            // The "name" is used as the GraphObject.portId,
+            // the "align" is used to determine where to position the port relative to the body of the node,
+            // the "spot" is used to control how links connect with the port and whether the port
+            // stretches along the side of the node,
+            // and the boolean "output" and "input" arguments control whether the user can draw links from or to the port.
+            function makePort(name, align, spot, output, input) {
+                var horizontal = align.equals(go.Spot.Top) || align.equals(go.Spot.Bottom);
+                // the port is basically just a transparent rectangle that stretches along the side of the node,
+                // and becomes colored when the mouse passes over it
+                return $(go.Shape, {
+                    fill: "transparent", // changed to a color in the mouseEnter event handler
+                    strokeWidth: 0, // no stroke
+                    width: horizontal ? NaN : 8, // if not stretching horizontally, just 8 wide
+                    height: !horizontal ? NaN : 8, // if not stretching vertically, just 8 tall
+                    alignment: align, // align the port on the main Shape
+                    stretch: (horizontal ? go.GraphObject.Horizontal : go.GraphObject.Vertical),
+                    portId: name, // declare this object to be a "port"
+                    fromSpot: spot, // declare where links may connect at this port
+                    fromLinkable: output, // declare whether the user may draw links from here
+                    toSpot: spot, // declare where links may connect at this port
+                    toLinkable: input, // declare whether the user may draw links to here
+                    cursor: "pointer", // show a different cursor to indicate potential link point
+                    fromLinkableDuplicates: true,
+                    toLinkableDuplicates: true,
+                    mouseEnter: function (e, port) { // the PORT argument will be this Shape
+                        if (!e.diagram.isReadOnly && port.toLinkable) port.fill = "rgba(255,0,255,0.5)";
+                        else
+                            port.fill = "transparent";
+                    },
+                    mouseLeave: function (e, port) {
+                        port.fill = "transparent";
+                    }
+                },
+                    new go.Binding("toLinkable", "IsLinkable"),
+                    new go.Binding("fromLinkable", "IsLinkable"),
+                    new go.Binding("fromSpot", "fromSpot", function (e, port) {
+                        debugger
+                        if (port.toLinkable)
+                            return;
+                        return spot;
+                    }),
+                    new go.Binding("toSpot", "toSpot", function (e, port) {
+                        if (port.toLinkable)
+                            return;
+                        return spot;
+                    })
+                );
+
+            }
+
+            function textStyle() {
+                return {
+                    font: "normal normal 10pt Lato, Helvetica, Arial, sans-serif",
+                    stroke: "#F8F8F8"
+                }
+            }
+
+            function geoFunc(geoname) {
+                var geo = icons[geoname];
+                if (geo === undefined) geo = icons["heart"]; // use this for an unknown icon name
+                if (typeof geo === "string") {
+                    geo = icons[geoname] = go.Geometry.parse(geo, true); // fill each geometry
+                }
+                return geo;
+            }
+
+            // define the Node templates for regular nodes
+
+            /*myDiagram.nodeTemplateMap.add("Circle",
+                $(go.Node, "Table", { resizable: true, resizeObjectName: "CircleSHAPE", selectionAdorned: false, }, nodeStyle(),
+                    $(go.Shape, "Circle", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "CircleSHAPE" },
+                        new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        new go.Binding("fill", "fill"),
+                        new go.Binding("stroke", "stroke"),
+                        new go.Binding("strokeWidth", "strokeWidth")
+                    ), {
+                        toolTip: ToolTip()
+                    },
+                    $(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true
+                        },
+                        new go.Binding("text"),
+                        new go.Binding("stroke", "fontColor"),
+                        new go.Binding("font", "font"),
+                        new go.Binding("background", "background")
+                    )
+                ),
+                makePort("T", go.Spot.Top, go.Spot.Top, true, true),
+                makePort("L", go.Spot.Left, go.Spot.Left, true, true),
+                makePort("R", go.Spot.Right, go.Spot.Right, true, true),
+                makePort("B", go.Spot.Bottom, go.Spot.Bottom, true, true)
+            );*/
+            myDiagram.nodeTemplateMap.add("LineH",
+                $(go.Node, "Table", {
+                    // click: NodeClick,
+                    resizable: true,
+                    resizeObjectName: "LineHSHAPE",
+                    selectionAdorned: false,
+                }, nodeStyle(),
+                    // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
+                    $(go.Panel, "Table",
+                        $(go.Shape, "LineH", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "LineHSHAPE" },
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth"),
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                        /*$(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true,
+                            name: "",
+                            font: "10pt Lato, Helvetica, Arial, sans-serif",
+                        },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("background", "background")
+                        )*/
+                    ),
+                    // four named ports, one on each side:
+                    /*makePort("T", go.Spot.Top, go.Spot.TopSide, false, true),
+                    makePort("L", go.Spot.Left, go.Spot.LeftSide, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.RightSide, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.BottomSide, true, false)*/
+                ));
+            myDiagram.nodeTemplateMap.add("LineV",
+                $(go.Node, "Table", {
+                    // click: NodeClick,
+                    resizable: true,
+                    resizeObjectName: "LineVSHAPE",
+                    selectionAdorned: false,
+                }, nodeStyle(),
+                    // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
+                    $(go.Panel, "Table",
+                        $(go.Shape, "LineV", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "LineVSHAPE" },
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth"),
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                        /*$(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true,
+                            name: "",
+                            font: "10pt Lato, Helvetica, Arial, sans-serif",
+                        },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("background", "background")
+                        )*/
+                    ),
+                    // four named ports, one on each side:
+                    /*makePort("T", go.Spot.Top, go.Spot.TopSide, false, true),
+                    makePort("L", go.Spot.Left, go.Spot.LeftSide, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.RightSide, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.BottomSide, true, false)*/
+                ));
+
+            myDiagram.nodeTemplateMap.add("LogicUnion",
+                $(go.Node, "Table", {
+                    // click: NodeClick,
+                    resizable: true,
+                    resizeObjectName: "LogicUnionSHAPE",
+                    selectionAdorned: false,
+                }, nodeStyle(),
+                    // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
+                    $(go.Panel, "Table",
+                        $(go.Shape, "LogicUnion", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "LogicUnionSHAPE" },
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth"),
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                    ),
+                ));
+            myDiagram.nodeTemplateMap.add("LogicIntersect",
+                $(go.Node, "Table", {
+                    resizable: true,
+                    resizeObjectName: "LogicIntersectSHAPE",
+                    selectionAdorned: false,
+                }, nodeStyle(),
+                    $(go.Panel, "Table",
+                        $(go.Shape, "LogicIntersect", { desiredSize: new go.Size(40, 40), fill: "#09d3ac", stroke: "#09d3ac", strokeWidth: 1, name: "LogicIntersectSHAPE" },
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth"),
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                    ),
+                ));
+            myDiagram.nodeTemplateMap.add("AndGate",
+                $(go.Node, "Table", {
+                    resizable: true,
+                    resizeObjectName: "AndGate",
+                    selectionAdorned: false,
+                }, nodeStyle(),
+                    $(go.Panel, "Table",
+                        $(go.Shape, "AndGate", { desiredSize: new go.Size(40, 40), fill: "#09d3ac", stroke: "#09d3ac", strokeWidth: 1, name: "AndGate", angle: -90 },
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth"),
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                    ),
+                ));
+
+
+            myDiagram.nodeTemplateMap.add("Rectangle",
+                $(go.Node, "Table", {
+                    // click: NodeClick,
+                    resizable: true,
+                    resizeObjectName: "RectangleSHAPE",
+                    selectionAdorned: false,
+                }, nodeStyle(),
+                    // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
+                    $(go.Panel, "Table",
+                        $(go.Shape, "Rectangle", {
+                            desiredSize: new go.Size(40, 40),
+                            fill: "transparent",
+                            stroke: "#09d3ac",
+                            strokeWidth: 1,
+                            name: "RectangleSHAPE",
+                            //fromLinkableDuplicates: true,
+                            //toLinkableDuplicates:true
+
+                        },
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth"),
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                        $(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true,
+                            name: "",
+                            font: "10pt Lato, Helvetica, Arial, sans-serif",
+                        },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("visible", "IsHasText"),
+                            new go.Binding("background", "background")
+
+                        )
+                    ),
+                    // four named ports, one on each side:
+                    makePort("T", go.Spot.Top, go.Spot.TopSide, true, true),
+                    makePort("L", go.Spot.Left, go.Spot.LeftSide, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.RightSide, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.BottomSide, true, true)
+                ));
+            myDiagram.nodeTemplateMap.add("CircularRectangle",
+                $(go.Node, "Table", {
+                    // click: NodeClick,
+                    resizable: true,
+                    resizeObjectName: "RectangleSHAPE",
+                    selectionAdorned: false,
+                }, nodeStyle(),
+                    // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
+                    $(go.Panel, "Table",
+                        $(go.Shape, "Terminator", {
+                            desiredSize: new go.Size(40, 40),
+                            fill: "transparent",
+                            stroke: "#09d3ac",
+                            strokeWidth: 1,
+                            name: "RectangleSHAPE",
+                            //fromLinkableDuplicates: true,
+                            //toLinkableDuplicates:true
+
+                        },
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth"),
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                        $(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true,
+                            name: "",
+                            font: "10pt Lato, Helvetica, Arial, sans-serif",
+                        },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("visible", "IsHasText"),
+                            new go.Binding("background", "background")
+
+                        )
+                    ),
+                    // four named ports, one on each side:
+                    makePort("T", go.Spot.Top, go.Spot.TopSide, true, true),
+                    makePort("L", go.Spot.Left, go.Spot.LeftSide, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.RightSide, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.BottomSide, true, true)
+                ));
+            myDiagram.nodeTemplateMap.add("Circle",
+                $(go.Node, "Table", {
+                    // click: NodeClick,
+                    resizable: true,
+                    resizeObjectName: "CircleSHAPE",
+                    selectionAdorned: false,
+                }, nodeStyle(),
+                    // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
+                    $(go.Panel, "Table",
+                        $(go.Shape, "Circle", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "CircleSHAPE" },
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth"),
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                        $(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true,
+                            name: "",
+                            font: "normal normal 10pt Lato, Helvetica, Arial, sans-serif"
+                        },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("visible", "IsHasText"),
+                            new go.Binding("background", "background")
+                        )
+                    ),
+                    // four named ports, one on each side:
+                    makePort("T", go.Spot.Top, go.Spot.TopSide, false, true),
+                    makePort("L", go.Spot.Left, go.Spot.LeftSide, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.RightSide, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.BottomSide, true, false)
+                ));
+            myDiagram.nodeTemplateMap.add("RoundedRectangle",
+                $(go.Node, "Table", {
+                    // click: NodeClick,
+                    resizable: true,
+                    resizeObjectName: "RoundedRectangleSHAPE",
+                    selectionAdorned: false,
+                }, nodeStyle(),
+                    // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
+                    $(go.Panel, "Table",
+                        $(go.Shape, "RoundedRectangle", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "RoundedRectangleSHAPE" },
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth"),
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                        $(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true,
+                            name: "",
+                            font: "normal normal 10pt Lato, Helvetica, Arial, sans-serif"
+                        },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("visible", "IsHasText"),
+                            new go.Binding("background", "background")
+                        )
+                    ),
+                    // four named ports, one on each side:
+                    makePort("T", go.Spot.Top, go.Spot.TopSide, true, true),
+                    makePort("L", go.Spot.Left, go.Spot.LeftSide, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.RightSide, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.BottomSide, true, true)
+                ));
+
+
+
+            myDiagram.nodeTemplateMap.add("Rhombus",
+                $(go.Node, "Table", { resizable: true, resizeObjectName: "RhombusSHAPE", selectionAdorned: false, }, nodeStyle(),
+                    $(go.Panel, "Table",
+                        $(go.Shape, "Diamond", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "RhombusSHAPE" },
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth")
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                        $(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true,
+                            font: "normal normal 10pt Lato, Helvetica, Arial, sans-serif"
+                        },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("visible", "IsHasText"),
+                            new go.Binding("background", "background")
+                        )
+                    ),
+                    makePort("T", go.Spot.Top, go.Spot.Top, false, true),
+                    makePort("L", go.Spot.Left, go.Spot.Left, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.Right, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.Bottom, true, false)
+                ));
+            myDiagram.nodeTemplateMap.add("TriangleRight",
+                $(go.Node, "Table", { resizable: true, resizeObjectName: "TriangleRightSHAPE", selectionAdorned: false, }, nodeStyle(),
+                    $(go.Panel, "Table",
+                        $(go.Shape, "TriangleRight", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "TriangleRightSHAPE" },
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth")
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                        $(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true,
+                            font: "normal normal 10pt Lato, Helvetica, Arial, sans-serif"
+                        },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("visible", "IsHasText"),
+                            new go.Binding("background", "background")
+                        )
+                    ),
+                    makePort("T", go.Spot.Top, go.Spot.Top, false, true),
+                    makePort("L", go.Spot.Left, go.Spot.Left, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.Right, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.Bottom, true, false)
+                ));
+            myDiagram.nodeTemplateMap.add("Pentagon",
+                $(go.Node, "Table", { resizable: true, resizeObjectName: "RhombusSHAPE", selectionAdorned: false, }, nodeStyle(),
+                    $(go.Panel, "Table",
+                        $(go.Shape, "Pentagon", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "RhombusSHAPE" },
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth")
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                        $(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true,
+                            font: "normal normal 10pt Lato, Helvetica, Arial, sans-serif"
+                        },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("visible", "IsHasText"),
+                            new go.Binding("background", "background")
+                        )
+                    ),
+                    makePort("T", go.Spot.Top, go.Spot.Top, false, true),
+                    makePort("L", go.Spot.Left, go.Spot.Left, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.Right, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.Bottom, true, false)
+                ));
+            myDiagram.nodeTemplateMap.add("Hexagon",
+                $(go.Node, "Table", { resizable: true, resizeObjectName: "RhombusSHAPE", selectionAdorned: false, }, nodeStyle(),
+                    $(go.Panel, "Table",
+                        $(go.Shape, "Hexagon", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "RhombusSHAPE" },
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth")
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                        $(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true,
+                            font: "normal normal 10pt Lato, Helvetica, Arial, sans-serif"
+                        },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("visible", "IsHasText"),
+                            new go.Binding("background", "background")
+                        )
+                    ),
+                    makePort("T", go.Spot.Top, go.Spot.Top, false, true),
+                    makePort("L", go.Spot.Left, go.Spot.Left, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.Right, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.Bottom, true, false)
+                ));
+
+            myDiagram.nodeTemplateMap.add("Cylinder",
+                $(go.Node, "Table", {
+                    // click: NodeClick,
+                    resizable: true,
+                    resizeObjectName: "Cylinder1SHAPE",
+                    selectionAdorned: false,
+                }, nodeStyle(),
+                    // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
+                    $(go.Panel, "Table",
+                        $(go.Shape, "Cylinder1", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "Cylinder1SHAPE" },
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth"),
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                        $(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true,
+                            name: "",
+                            font: "normal normal 10pt Lato, Helvetica, Arial, sans-serif"
+                        },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("visible", "IsHasText"),
+                            new go.Binding("background", "background")
+                        )
+                    ),
+                    // four named ports, one on each side:
+                    makePort("T", go.Spot.Top, go.Spot.TopSide, false, true),
+                    makePort("L", go.Spot.Left, go.Spot.LeftSide, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.RightSide, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.BottomSide, true, false)
+                ));
+            myDiagram.nodeTemplateMap.add("User",
+                $(go.Node, "Table", {
+                    // click: NodeClick,
+                    resizable: true,
+                    resizeObjectName: "Cylinder1SHAPE",
+                    selectionAdorned: false,
+                }, nodeStyle(),
+                    // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
+                    $(go.Panel, "Table",
+                        $(go.Shape, "BpmnTaskUser", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "Cylinder1SHAPE" },
+                            new go.Binding("figure", "figure"),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                            new go.Binding("strokeWidth", "strokeWidth"),
+                            new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        ), {
+                        toolTip: ToolTip()
+                    },
+                        $(go.TextBlock, textStyle(), {
+                            margin: 8,
+                            maxSize: new go.Size(160, NaN),
+                            wrap: go.TextBlock.WrapFit,
+                            editable: true,
+                            name: "",
+                            font: "normal normal 10pt Lato, Helvetica, Arial, sans-serif"
+                        },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("visible", "IsHasText"),
+                            new go.Binding("background", "background")
+                        )
+                    ),
+                    // four named ports, one on each side:
+                    makePort("T", go.Spot.Top, go.Spot.TopSide, false, true),
+                    makePort("L", go.Spot.Left, go.Spot.LeftSide, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.RightSide, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.BottomSide, true, false)
+                ));
+            // taken from ../extensions/Figures.js:
+            go.Shape.defineFigureGenerator("File", function (shape, w, h) {
+                var geo = new go.Geometry();
+                var fig = new go.PathFigure(0, 0, true); // starting point
+                geo.add(fig);
+                fig.add(new go.PathSegment(go.PathSegment.Line, .75 * w, 0));
+                fig.add(new go.PathSegment(go.PathSegment.Line, w, .25 * h));
+                fig.add(new go.PathSegment(go.PathSegment.Line, w, h));
+                fig.add(new go.PathSegment(go.PathSegment.Line, 0, h).close());
+                var fig2 = new go.PathFigure(.75 * w, 0, false);
+                geo.add(fig2);
+                // The Fold
+                fig2.add(new go.PathSegment(go.PathSegment.Line, .75 * w, .25 * h));
+                fig2.add(new go.PathSegment(go.PathSegment.Line, w, .25 * h));
+                geo.spot1 = new go.Spot(0, .25);
+                geo.spot2 = go.Spot.BottomRight;
+                return geo;
+            });
+
+            myDiagram.nodeTemplateMap.add("File",
+                $(go.Node, "Table", { resizable: true, resizeObjectName: "FileSHAPE", selectionAdorned: false, }, nodeStyle(),
+                    $(go.Shape, "File", { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "#09d3ac", strokeWidth: 1, name: "FileSHAPE" },
+                        new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                        new go.Binding("fill", "fill"),
+                        new go.Binding("stroke", "stroke"),
+                        new go.Binding("strokeWidth", "strokeWidth")
+                    ), {
+                    toolTip: ToolTip()
+                },
+                    $(go.TextBlock, textStyle(), {
+                        margin: 8,
+                        //maxSize: new go.Size(200, NaN),
+                        //desiredSize: new go.Size(60, 60),
+                        wrap: go.TextBlock.WrapFit,
+                        textAlign: "Center",
+                        editable: true,
+                        font: "normal normal 26px Lato, Helvetica, Arial, sans-serif"
+                    },
+                        new go.Binding("text").makeTwoWay(),
+                        new go.Binding("stroke", "fontColor"),
+                        new go.Binding("textAlign", "textAlign"),
+                        new go.Binding("font", "font"),
+                        new go.Binding("visible", "IsHasText"),
+                        new go.Binding("background", "background")
+                    )
+                    // no ports, because no links are allowed to connect with a comment
+                    ,
+                    makePort("T", go.Spot.Top, go.Spot.Top, true, true),
+                    makePort("L", go.Spot.Left, go.Spot.Left, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.Right, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.Bottom, true, true)
+                ));
+
+            /*myDiagram.nodeTemplateMap.add("icon",
+                $(go.Node, "Auto", nodeStyle(),
+                    $(go.Panel, { width: 38, height: 40 },
+                        $(go.Shape, "Circle",
+                            { fill: "", strokeWidth: 0, width: 55, height: 55, opacity: 0.0 },
+                            // new go.Binding("fill", "color"),
+                        ),
+                        $(go.Shape,
+                            { margin: 3, fill: colors["blue"], strokeWidth: 0 },
+                            new go.Binding("geometry", "geo", geoFunc),
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "stroke"),
+                        ),
+                        // Each node has a tooltip that reveals the name of its icon
+                        {
+                            toolTip: ToolTip()
+                        }
+                    ),
+                    makePort("T", go.Spot.Top, go.Spot.Top, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.Right, true, true),
+                    makePort("L", go.Spot.Left, go.Spot.Left, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.Bottom, true, true),
+                ));*/
+            myDiagram.nodeTemplateMap.add("TextBox",
+                $(go.Node, "Table", { resizable: true, resizeObjectName: "TextBoxSHAPE", selectionAdorned: false, }, nodeStyle(),
+                    $(go.Shape, "Rectangle",
+                        //{ width: 50, height: 30, name: "SHAPE", stroke:"#09d3ac", strokeWidth: 2 },
+                        { desiredSize: new go.Size(40, 40), fill: "transparent", stroke: "transparent", /*strokeWidth: 1,*/ name: "TextBoxSHAPE" },
+                        new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                    ), {
+                    toolTip: ToolTip()
+                },
+                    $(go.TextBlock, textStyle(), {
+                        textAlign: "",
+                        margin: new go.Margin(0, 4, 0, 0),
+                        editable: true,
+                        font: "normal normal 10pt Lato, Helvetica, Arial, sans-serif"
+                    },
+                        new go.Binding("text").makeTwoWay(),
+                        new go.Binding("stroke", "fontColor"),
+                        new go.Binding("font", "font"),
+                        new go.Binding("visible", "IsHasText"),
+                        new go.Binding("background", "background")
+                    ),
+                    makePort("T", go.Spot.Top, go.Spot.Top, true, true),
+                    makePort("B", go.Spot.Bottom, go.Spot.Bottom, true, true),
+                    makePort("R", go.Spot.Right, go.Spot.Right, true, true),
+                    makePort("L", go.Spot.Left, go.Spot.Left, true, true)
+                )
+
+            );
+            // replace the default Link template in the linkTemplateMap
+            myDiagram.linkTemplate =
+                $(go.Link, // the whole link panel
+                    {
+                        routing: go.Link.AvoidsNodes,
+                        curve: go.Link.JumpGap,
+                        corner: 7,
+                        toShortLength: 4,
+                        relinkableFrom: true,
+                        relinkableTo: true,
+                        reshapable: true,
+                        resegmentable: true,
+                        // mouse-overs subtly highlight links:
+                        /*mouseEnter: function (e, link) { link.findObject("HIGHLIGHT").stroke = "rgba(30,144,255,0.2)"; },
+                        mouseLeave: function (e, link) { link.findObject("HIGHLIGHT").stroke = "transparent"; },
+                        selectionAdorned: false*/
+                        mouseEnter: function (e, link) { link.findObject("HIGHLIGHT").stroke = "rgba(248,39,71,0.2)"; },
+                        mouseLeave: function (e, link) { link.findObject("HIGHLIGHT").stroke = "transparent"; },
+                        selectionAdorned: false
+                    },
+                    new go.Binding("points").makeTwoWay(),
+                    $(go.Shape, // the highlight shape, normally transparent
+                        { isPanelMain: true, strokeWidth: 8, stroke: "transparent", name: "HIGHLIGHT" }),
+                    $(go.Shape, // the link path shape
+                        /*{ isPanelMain: true, stroke: "gray", strokeWidth: 2 },
+                        // new go.Binding("stroke", "isSelected", function (sel) { return sel ? "dodgerblue" : "gray"; }).ofObject(),
+                        new go.Binding("stroke", "color")*/
+                        { isPanelMain: true, stroke: "#E60045", strokeWidth: 1, fill: "#E60045" },
+                        new go.Binding("stroke", "color"),
+                        new go.Binding("strokeWidth", "strokeWidth"),
+                        new go.Binding("strokeDashArray", "LinkType", function (data) {
+                            if (data == "Dot")
+                                return [3, 3];
+                            else if (data == "Dash")
+                                return [5, 2];
+                            else
+                                return [];
+
+                        })
+                    ),
+                    //$(go.Shape, // the arrowhead
+                    /*{ toArrow: "standard", strokeWidth: 0, fill: "gray" },
+                    new go.Binding("fill", "color")*/
+                    /*{ toArrow: "Circle", strokeWidth: 1,stroke: "#E60045", fill: "#282c34" },
+                    new go.Binding("fill", "color"),
+                    new go.Binding("stroke", "color"),
+                    new go.Binding("strokeWidth", "strokeWidth")*/
+                    //),
+                    //$(go.Shape, // the arrowhead
+                    /*{ toArrow: "standard", strokeWidth: 0, fill: "gray" },
+                    new go.Binding("fill", "color")*/
+                    /*{ fromArrow: "Circle", strokeWidth: 0,stroke: "#E60045", fill: "#E60045",scale: 2 },
+                    new go.Binding("fill", "color"),
+                    new go.Binding("stroke", "color"),
+                    new go.Binding("strokeWidth", "strokeWidth")*/
+                    //),
+                    $(go.Shape,   // the "to" end arrowhead
+                        { toArrow: "Circle", fill: '#E60045', strokeWidth: 3, stroke: "rgba(248,39,71,0.4)", scale: 2.3 },
+                        new go.Binding("fill", "color"),
+                        new go.Binding("stroke", "color"),
+                        new go.Binding("strokeWidth", "strokeWidth")
+                    ),
+                    $(go.Shape,   // the "from" end arrowhead
+                        { fromArrow: "Circle", fill: '#E60045', strokeWidth: 1, stroke: "#E60045" },
+                        new go.Binding("fill", "color"),
+                        new go.Binding("stroke", "color"),
+                        new go.Binding("strokeWidth", "strokeWidth")
+                    ),
+
+                    $(go.Panel, "Auto", // the link label, normally not visible
+                        { visible: false, name: "LABEL", segmentIndex: 2, segmentFraction: 0.5 },
+                        new go.Binding("visible", "IsHasText").makeTwoWay(),
+                        $(go.Shape, "RoundedRectangle", // the label shape
+                            //{ fill: "#F8F8F8", strokeWidth: 0 },
+                            { fill: "#282c34", strokeWidth: 1, stroke: "#E60045", minSize: new go.Size(100, 20), parameter1: 7 },
+                            new go.Binding("fill", "fill"),
+                            new go.Binding("stroke", "color")
+                        ),
+                        $(go.TextBlock, "Text", // the label
+                            {
+                                textAlign: "center",
+                                font: "normal normal 10pt Lato, Helvetica, Arial, sans-serif",
+                                //stroke: "#333333",
+                                stroke: "white",
+                                background: "transparent",
+                                editable: true,
+                            },
+                            new go.Binding("text").makeTwoWay(),
+                            new go.Binding("stroke", "fontColor"),
+                            new go.Binding("visible", "IsHasText"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("background", "background")
+                        )
+                    )
+                );
+
+            // Make link labels visible if coming out of a "conditional" node.
+            // This listener is called by the "LinkDrawn" and "LinkRelinked" DiagramEvents.
+            function showLinkLabel(e) {
+                var label = e.subject.findObject("LABEL");
+                if (label !== null) {
+                    label.visible = (e.subject.fromNode.data.category === "Rhombus");
+                    var link = e.subject;
+                    link.data.color = "#E60045";
+                    link.data.fontColor = "white";
+                    link.data.fill = "#282c34";
+                    link.data.strokeWidth = 1;
+
+                    link.data.LinkType = "Normal";
+                    link.data.IsHasText = label.visible;
+                }
+            }
+
+            // temporary links used by LinkingTool and RelinkingTool are also orthogonal:
+            myDiagram.toolManager.linkingTool.temporaryLink.routing = go.Link.Orthogonal;
+            myDiagram.toolManager.relinkingTool.temporaryLink.routing = go.Link.Orthogonal;
+
+            //load(); // load an initial diagram from some JSON text
+
+            // initialize the Palette that is on the left side of the page
+            myPalette =
+                $(go.Palette, "myPaletteDiv", // must name or refer to the DIV HTML element
+                    {
+                        // Instead of the default animation, use a custom fade-down
+                        "animationManager.initialAnimationStyle": go.AnimationManager.None,
+                        "InitialAnimationStarting": animateFadeDown, // Instead, animate with this function
+
+                        nodeTemplateMap: myDiagram.nodeTemplateMap, // share the templates used by myDiagram
+                        model: new go.GraphLinksModel([ // specify the contents of the Palette
+                            { category: "TextBox", text: "T", textAlign: "center", fontColor: "#757575", /*fill: "#282c34", stroke:"#757575", strokeWidth: 1, IsLinkable: true, */ IsLinkable: true, font: "24pt Lato, Helvetica, Arial, sans-serif", fontStyle: "normal", fontSize: 10, fontFamily: "Lato, Helvetica, Arial, sans-serif", fontWeight: "bold", Background: "#282c34", isTooltip: true, opacity: 1 },
+                            { category: "Rectangle", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "CircularRectangle", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "RoundedRectangle", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "Circle", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "Rhombus", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "TriangleRight", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "Pentagon", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "Hexagon", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "File", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, isTooltip: true, opacity: 1, IsHasText: false },
+                            // { category: "icon", geo: "file", fill: colors["blue"] },
+                            { category: "User", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "Cylinder", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "LineH", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "LineV", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "LogicUnion", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "LogicIntersect", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                            { category: "AndGate", fill: "#282c34", stroke: "#757575", strokeWidth: 1, IsLinkable: true, IsHasText: false, isTooltip: true, opacity: 1 },
+                        ])
+                    });
+
+
+            // myPalette.addDiagramListener("InitialLayoutCompleted", function (diagramEvent) {
+            //     var pdrag = document.getElementById("paletteDraggable");
+            //     var palette = diagramEvent.diagram;
+            //     pdrag.style.width = palette.documentBounds.width + 28 + "px"; // account for padding/borders
+            //     pdrag.style.height = palette.documentBounds.height + 38 + "px";
+            // });
+
+            // This is a re-implementation of the default animation, except it fades in from downwards, instead of upwards.
+            function animateFadeDown(e) {
+                var diagram = e.diagram;
+                var animation = new go.Animation();
+                animation.isViewportUnconstrained = true; // So Diagram positioning rules let the animation start off-screen
+                animation.easing = go.Animation.EaseOutExpo;
+                animation.duration = 900;
+                // Fade "down", in other words, fade in from above
+                animation.add(diagram, 'position', diagram.position.copy().offset(0, 200), diagram.position);
+                animation.add(diagram, 'opacity', 0, 1);
+                animation.start();
+            }
+
+        } // end init
+
+        $(function () {
+            $("#infoDraggable").draggable({ handle: "#infoDraggableHandle" });
+            var inspector = new Inspector('myInfo', myDiagram, {
+                showAllProperties: true,
+                includesOwnProperties: false,
+                propertyModified: function (propertyName, newValue, inspector, IsPropertyRemove) {
+                    var nodeData = myDiagram.selection.first();
+                    if (IsPropertyRemove) {
+                        delete nodeData.data[propertyName];
+                    }
+                    if (nodeData !== null && nodeData.data !== null && nodeData.data.IsHasText && nodeData.data.font) {
+                        nodeData.data.font = nodeData.data.fontStyle + " " + nodeData.data.fontWeight + " " + nodeData.data.fontSize + "pt " + nodeData.data.fontFamily;
+                    }
+                    myDiagram.model.updateTargetBindings(nodeData.data);
+
+                },
+                properties: {
+                    // key would be automatically added for nodes, but we want to declare it read-only also:
+                    key: { readOnly: true, show: Inspector.showIfPresent },
+                    category: { readOnly: true, show: Inspector.showIfPresent },
+                    // fill and stroke would be automatically added for nodes, but we want to declare it a color also:
+                    fill: { show: Inspector.showIfPresent, type: 'color' },
+                    stroke: { show: Inspector.showIfPresent, type: 'color' },
+                    strokeWidth: { show: Inspector.showIfPresent },
+                    color: { show: Inspector.showIfPresent, type: 'color' },
+                    IsLinkable: { show: Inspector.showIfPresent, type: "select", choices: [true, false] },
+                    LinkType: {
+                        show: Inspector.showIfPresent,
+                        type: "select",
+                        choices: ["Normal", "Dash", "Dot"]
+                    },
+                    IsHasText: { show: Inspector.showIfPresent, type: "select", choices: [true, false] },
+                    fontColor: {
+                        show: function (nodeData) {
+                            if (nodeData.data.hasOwnProperty("IsHasText"))
+                                return nodeData.data.IsHasText;
+                            return Inspector.showIfPresent;
+                        },
+                        type: 'color'
+                    },
+                    text: {
+                        show: function (nodeData) {
+                            if (nodeData.data.hasOwnProperty("IsHasText"))
+                                return nodeData.data.IsHasText;
+                            return Inspector.showIfPresent;
+                        }
+                    },
+                    background: {
+                        show: function (nodeData) {
+                            if (nodeData.data.hasOwnProperty("IsHasText"))
+                                return nodeData.data.IsHasText;
+                            return Inspector.showIfPresent;
+                        },
+                        type: "color"
+                    },
+                    textAlign: {
+                        show: function (nodeData) {
+                            if (nodeData.data.hasOwnProperty("IsHasText"))
+                                return nodeData.data.IsHasText;
+                            return Inspector.showIfPresent;
+                        },
+                        type: "select",
+                        choices: function (node, propName) {
+                            return ["center", "left", "right", "justify"];
+                        }
+                    },
+                    font: {
+                        readOnly: true, show: function (nodeData) {
+                            if (nodeData.data.hasOwnProperty("IsHasText"))
+                                return nodeData.data.IsHasText;
+                            return Inspector.showIfPresent;
+                        }
+                    },
+                    fontStyle: {
+                        show: function (nodeData) {
+                            if (nodeData.data.hasOwnProperty("IsHasText"))
+                                return nodeData.data.IsHasText;
+                            else
+                                return nodeData.data.hasOwnProperty("fontStyle");
+                        },
+                        type: "select",
+                        choices: function (node, propName) {
+                            return ["normal", "italic"];
+                        }
+                    },
+                    fontWeight: {
+                        show: function (nodeData) {
+                            if (nodeData.data.hasOwnProperty("IsHasText"))
+                                return nodeData.data.IsHasText;
+                            else
+                                return nodeData.data.hasOwnProperty("fontStyle");
+                        },
+                        type: "select",
+                        default: "normal",
+                        choices: function (node, propName) {
+                            return ["normal", "bold", "bolder", "lighter", "initial", "inherit"];
+                        }
+                    },
+                    fontSize: {
+                        show: function (nodeData) {
+                            if (nodeData.data.hasOwnProperty("IsHasText"))
+                                return nodeData.data.IsHasText;
+                            else
+                                return nodeData.data.hasOwnProperty("fontStyle");
+                        },
+                        defaultValue: "10",
+                        type: "number"
+                    },
+                    fontFamily: {
+                        // show: Inspector.showIfPresent,
+                        show: function (nodeData) {
+                            if (nodeData.data.hasOwnProperty("IsHasText"))
+                                return nodeData.data.IsHasText;
+                            else
+                                return nodeData.data.hasOwnProperty("fontStyle");
+                        },
+                        defaultValue: "Lato, Helvetica, Arial, sans-serifrmal",
+                        type: "select",
+                        choices: function (node, propName) {
+                            return [
+                                "noLato, Helvetica, Arial, sans-serifrmal",
+                                "Verdana, Arial, Helvetica, sans-serif",
+                                "Lucida Console, Courier, Lato, Helvetica, Arial, sans-serif",
+                                "Lato, Helvetica, Arial, sans-serif",
+                                "cursive",
+                                "fantasy",
+                                "system-ui",
+                                "ui-serif",
+                                "emoji",
+                                "Gill Sans Extrabold, sans-serif",
+                                "Times, Times New Roman, Georgia, serif"
+                            ];
+                        }
+                    },
+                    fontTransform: {
+                        show: function (nodeData) {
+                            if (nodeData.data.hasOwnProperty("IsHasText")) {
+                                //nodeData.data.text = fontTransform(nodeData.data.text, nodeData.data.fontTransform);
+                                myDiagram.model.updateTargetBindings(nodeData.data);
+                                return nodeData.data.IsHasText;
+                            }
+                        },
+                        type: 'select',
+                        defaultValue: 'Initial',
+                        choices: ["Initial", "LowerCase", "UpperCase", "Capitalize"]
+                    }
+                }
+            });
+        });
+
+        /******************************Capitalize Text-transform *******************************/
+        const Capitalize = function (str) {
+            return (str.toLowerCase()).replace(/(?:^|\s|["'([{])+\S/g, match => match.toUpperCase());
+        }
+
+        function fontTransform(text, type) {
+            switch (type) {
+                case "LowerCase":
+                    return text.toLowerCase();
+                case "UpperCase":
+                    return text.toUpperCase();
+                case "Capitalize":
+                    return Capitalize(text);
+            }
+            return text;
+        }
+
+        // Show the diagram's model in JSON format that the user may edit
+        function save() {
+            debugger;
+            document.getElementById("mySavedModel").value = myDiagram.model.toJson();
+            myDiagram.isModified = false;
+            var jsonData = document.getElementById("mySavedModel").value;
+            var jsonString = JSON.stringify(jsonData);
+            $.ajax({
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                url: '/XiLink/SaveFlowcharteditor',
+                data: JSON.stringify({ jsonData: jsonData }), //JSON.stringify(jsonData),
+                dataType: "json", // Corrected property name to dataTyspe
+                cache: false,
+                async: true,
+                success: function (data) {
+                    // Handle the successful response here
+                },
+                error: function (xhr, status, error) {
+                    // Handle errors here
+                }
+            });
+        }
+        function load() {
+            debugger;
+            $.ajax({
+                url: '/XiLink/GetFlowcharteditor',
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                datatype: "HTML",
+                cache: false,
+                async: false,
+                data: { ID: 0 },
+        success: function (data) {
+            //debugger;
+            //if (data.ID == 1) {
+            //    myDiagram.isModified = false;
+            //    document.getElementById("mySavedModel").value = data.Text;
+            //    myDiagram.model = go.Model.fromJson(data.Text);
+
+            //}
+            myDiagram.model = go.Model.fromJson(document.getElementById("mySavedModel").value);
+
+            
+        }
+                });
+        
+            }
+
+        // print the diagram by opening a new window holding SVG images of the diagram contents for each page
+        function printDiagram() {
+            var svgWindow = window.open();
+            if (!svgWindow) return; // failure to open a new Window
+            var printSize = new go.Size(700, 960);
+            var bnds = myDiagram.documentBounds;
+            var x = bnds.x;
+            var y = bnds.y;
+            while (y < bnds.bottom) {
+                while (x < bnds.right) {
+                    var svg = myDiagram.makeSVG({ scale: 1.0, position: new go.Point(x, y), size: printSize });
+                    svgWindow.document.body.appendChild(svg);
+                    x += printSize.width;
+                }
+                x = bnds.x;
+                y += printSize.height;
+            }
+            setTimeout(function () { svgWindow.print(); }, 1);
+
+        }
+    </script>
+</head>
+
+<body onload="init()">
+    <div id="sample">
+        <div style="width: 100%; display: flex; justify-content: space-between">
+            <div id="myPaletteDiv" style="width: 100px; margin-right: 2px; background-color: #282c34;"></div>
+            <div id="myDiagramDiv" style="flex-grow: 1; height: 750px; background-color: #282c34;"></div>
+        </div>
+        <div id="infoDraggable" class="draggable">
+            <div id="infoDraggableHandle" class="handle">Information</div>
+            <div id="myInfo"></div>
+        </div>
+        <button id="SaveButton" onclick="save()">Save</button>
+        <button onclick="load()">Load</button>
+        Diagram Model saved in JSON format:
+        <textarea id="mySavedModel" style="width:100%;height:300px">
+	{ "class": "GraphLinksModel",	
+  "linkFromPortIdProperty": "fromPort",
+  "linkToPortIdProperty": "toPort",	
+  "nodeDataArray": [ 	
+ ],	
+  "linkDataArray": [ 	
+ ]}
+  </textarea>
+    </div>
+</body>
+
+</html>
+<style>
+    table {
+        border-collapse: collapse;
+    }
+
+    .draggable {
+        position: absolute;
+        display: inline-block;
+        vertical-align: top;
+        border: none;
+        border-radius: 4px;
+        background-color: #000;
+        padding: 0px;
+        top: 20px;
+        left: 50%;
+        z-index: 500;
+    }
+
+    .handle {
+        padding: 10px;
+        background-color: #101010;
+        color: #fff;
+        cursor: move;
+        text-align: center;
+        font: normal 12px arial, sans-serif;
+    }
+
+    #infoDraggable {
+        font: bold 12px arial, sans-serif;
+        min-width: 250px;
+        max-width: 250px;
+    }
+
+        #infoDraggable input,
+        #infoDraggable select {
+            padding: 1px 2px;
+            max-width: 150px;
+            color: #fff;
+            font-weight: normal;
+            background: transparent;
+        }
+
+        #infoDraggable select {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+            #infoDraggable select option {
+                color: #757575;
+            }
+
+    #myInfo {
+        padding: 8px 8px;
+        font: normal 12px arial, sans-serif;
+        overflow: hidden;
+    }
+
+        #myInfo.inspector tr > td:first-child {
+            color: #cbcccd;
+        }
+</style>

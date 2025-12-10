@@ -1,0 +1,1943 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using XIDNA.ViewModels
+@{
+    //XIBODisplay oBOIns = new XIBODisplay();
+    List<XIIBO> oBOIList = new List<XIIBO>();
+    XIDropDown xiDDL = new XIDropDown();
+    List<XIDropDown> oListDDL = new List<XIDropDown>();
+    //XIIBO oBOI = new XIIBO();
+    //XIIBO oBOI = new XIIBO();
+    XIDBO oBOD = new XIDBO();
+    XIInfraCache oCache = new XIInfraCache();
+    string sGUID = ViewBag.sGUID;
+    var sBOName = string.Empty;
+    int k = 0;
+    var boid = "";
+    var sSessionID = Context.Session.SessionID;
+    if (Model.oContent.ContainsKey(XIConstant.MultiRowComponent))
+    {
+        oBOIList = (List<XIIBO>)Model.oContent[XIConstant.MultiRowComponent];
+        //if (oBOIns.BOInstance != null)
+        //{
+        //    oBOI = oBOIns.BOInstance;
+        //}
+        if (oBOIList.Count > 0)
+        {
+            boid = "828";//oBOIList.FirstOrDefault().Attributes["boid"].sValue;
+
+            //oCache.Set_ParamVal(sSessionID, ViewBag.sGUID, null, "boid", boid, "autoset", null);
+            oBOD = (XIDBO)oCache.GetObjectFromCache(XIConstant.CacheBO_All, null, oBOIList.FirstOrDefault().iBODID.ToString());
+            if (oBOD != null)
+            {
+                oBOIList.ForEach(x => x.BOD = oBOD);
+                //oBOI.BOD = oBOD;
+                sBOName = oBOD.Name;
+            }
+        }
+    }
+    var WatchParams = ((XIDComponent)Model.oDefintion).Params.Where(s => s.sName == "watchparam1").Select(s => s.sValue).FirstOrDefault();
+    var Headings = oBOD.Attributes.Where(x1 => oBOIList.FirstOrDefault().Attributes.Any(y => y.Key.ToLower() == x1.Key.ToLower() && y.Value.bDirty && !y.Value.bIsHidden)).Select(s => s.Value).Select(s => s.LabelName).ToList();
+
+    XID1Click o1Click = new XID1Click();
+    XID1Click BOIDOneClick = new XID1Click();
+    var BOIDByOneClick = oCache.Get_ParamVal(sSessionID, ViewBag.sGUID, null, "{XIP|1ClickID}");
+    var oneclickid = oCache.Get_ParamVal(sSessionID, ViewBag.sGUID, null, "{-iInstanceID}");
+    var ParentBOID = oCache.Get_ParamVal(sSessionID, ViewBag.sGUID, null, "{XIP|iParentBOID}");
+    if (oneclickid != null && sBOName != "XI Rule Groups")
+    {
+        o1Click = (XID1Click)oCache.GetObjectFromCache(XIConstant.Cache1Click, null, oneclickid.ToString());
+    }
+    if (BOIDByOneClick != null)
+    {
+        BOIDOneClick = (XID1Click)oCache.GetObjectFromCache(XIConstant.Cache1Click, null, BOIDByOneClick.ToString());
+    }
+    var NewsGUID = Guid.NewGuid().ToString();
+}
+
+<script>
+    var x = 0;
+    $(document).ready(function () {
+        $(document.body).on('click', 'button.DeleteNVPair1', function () {
+            debugger;
+            $(this).closest(".NVPairs1").hide();
+            var trrow = $(this).closest(".NVPairs1").attr('data-row');
+            var DeletecolName = ""
+            if (trrow != undefined && trrow.split("tr") != undefined && trrow.split("tr").length > 0) {
+                DeletecolName = "tr".concat(trrow.split("tr")[1].split('_')[0], "_", "izXDeleted");
+
+            }
+            $(this).closest(".NVPairs1").find(".DeleteDIv").html('<input class="Delete form-control" name="' + DeletecolName + '" value="1"></select>');
+            $(this).closest(".NVPairs1").attr("class", "");
+
+            //DeleteBO()
+        });
+        $(document.body).on('click', 'button.ExposedButton', function () {
+            debugger;
+            var sGuid = '@sGUID';
+            var trList = $(this).closest('tr');
+            var ele = trList[0];
+            var attrID = $(ele).find('#DDLAttribute').val();
+            var optr = $(ele).find('.Operatordrp').val();
+            var Attrvalue = $(ele).find('#DDLwherevalue').val();
+            //<select class="AttributeDetaild form-control" id="AttrDDLwherevalue" name="5132fe6c-627e-4f78-a523-954cd4d54ccb"> + 
+            var OperatorFields = '<option value="" class="ps">Please Select</option> + ';            
+            $(ele).find(".Operatordrp option").each(function () {
+                //debugger;
+                if (optr == $(this).val()) {
+                    OperatorFields = OperatorFields + '<option value="' + $(this).val() + '" selected>' + $(this).text() + '</option> + '
+                }
+                else {
+                    OperatorFields = OperatorFields + '<option value="' + $(this).val() + '">' + $(this).text() + '</option> + '
+                }
+            });
+            var WhereValue = null;
+            if (Attrvalue != "" && Attrvalue != null && $(ele).find('#DDLwherevalue').text() != "") {
+                WhereValue = '<option value="" class="ps">Please Select</option> + ';
+                $(ele).find("#DDLwherevalue option").each(function () {
+                    //debugger;
+                    if (Attrvalue == $(this).val()) {
+                        WhereValue = WhereValue + '<option value="' + $(this).val() + '" selected>' + $(this).text() + '</option> + '
+                    }
+                    else {
+                        WhereValue = WhereValue + '<option value="' + $(this).val() + '">' + $(this).text() + '</option> + '
+                    }
+                });
+            }
+            //OperatorFields = OperatorFields.slice(0, -3);
+            @*////'@oCache.Set_ParamVal(sSessionID, sGuid, null, "{XIP|AttributeIDXIGUID}", attrID, null, null)';*@
+           // OperatorFields = OperatorFields +'</select>'
+            var InputParams = [];
+            var param = {};
+            param["sName"] = '{XIP|AttributeIDXIGUID}';
+            param["sValue"] = attrID;
+            InputParams.push(param);
+            var param2 = {};
+            param2["sName"] = '{XIP|Operator}';
+            param2["sValue"] = optr;
+            InputParams.push(param2);
+            var param3 = {};
+            if (WhereValue != null)
+            {
+                param3["sName"] = '{XIP|AttrValue}';
+                param3["sValue"] = WhereValue;
+            }
+            else
+            {
+                    param3["sName"] = '{XIP|AttrValue}';
+                    param3["sValue"] = Attrvalue;                
+            }
+            InputParams.push(param3);
+            var param4 = {};
+            param4["sName"] = '{XIP|FKiAttrOperator}';
+            param4["sValue"] = OperatorFields;
+            //param4["sValue"] = DDLValues;
+            InputParams.push(param4);
+            XILinkLoadJson('CADEF03E-75C5-4767-986B-9135CCE3F7A7', '@sGUID', InputParams);
+        });
+    });
+
+    $('#AddMore1').click(function () {
+        //x++;
+        debugger;
+        var Divs = $('.NVPairs1').last().clone();
+        $(Divs).find('input').val('');
+        $(Divs).find('select').val('-1');
+        $(Divs).each(function (i, obj) {
+            //test
+            if ($(obj).attr('data-row') != undefined && $(obj).attr('data-row').split("tr") != undefined && $(obj).attr('data-row').split("tr").length > 0) {
+                $(obj).attr("data-row", "tr".concat(parseInt($(obj).attr('data-row').split("tr")[1].split('_')[0]) + 1, "_", $(obj).attr('data-row').split('_')[1]));
+            }
+        });
+        $(Divs).find('div').each(function (i, obj) {
+            //test
+            if ($(obj).attr('data-sfield') != undefined && $(obj).attr('data-sfield').split("tr") != undefined && $(obj).attr('data-sfield').split("tr").length > 0) {
+                $(obj).attr("data-sfield", "tr".concat(parseInt($(obj).attr('data-sfield').split("tr")[1].split('_')[0]) + 1, "_", $(obj).attr('data-sfield').split('_')[1]));
+            }
+        });
+        $(Divs).find('input').each(function (i, obj) {
+            //test
+            if ($(obj).attr('name') != undefined && $(obj).attr('name').split("tr") != undefined && $(obj).attr('name').split("tr").length > 0) {
+                $(obj).attr("name", "tr".concat(parseInt($(obj).attr('name').split("tr")[1].split('_')[0]) + 1, "_", $(obj).attr('name').split('_')[1]));
+                $(obj).attr("value",'');
+            }
+        });
+        $(Divs).find('select').each(function (i, obj) {
+            //test
+            if ($(obj).attr('name') != undefined && $(obj).attr('name').split("tr") != undefined && $(obj).attr('name').split("tr").length > 0) {
+                $(obj).attr("name", "tr".concat(parseInt($(obj).attr('name').split("tr")[1].split('_')[0]) + 1, "_", $(obj).attr('name').split('_')[1]));
+            }
+            //$(obj).attr("name", "tr".concat(parseInt($(obj).attr('name').split("tr")[1].split('_')[0]) + 1, "_", $(obj).attr('name').split("tr")[1].split('_')[1]));
+        });
+        //$(Divs).find('td').attr("name", "td".concat( parseInt($(Divs).find('td').attr('name').split("td")[1].split('_')[0]) + 1, $(Divs).find('td').attr('name').split("td")[1].split('_')[1]));
+        //$(Divs).find('tr').attr("data-sField", "td".concat(parseInt($(Divs).find('td').attr('name').split("td")[1].split('_')[0]) + 1, $(Divs).find('td').attr('name').split("td")[1].split('_')[1]));
+        $('.NameValuePairs1').append(Divs);
+        $('.NVPairs1').last().css("display", "table-row");
+        //$('.NVPairs1').last().attr("id", $("#addrow").attr("id") + (x));
+        $(Divs).find(".DataTypesDiv").hide();
+
+    });
+    //  });
+    function AttributeChange($this) {
+        debugger;
+        var idd = $($this).closest('tr');
+        var Attribute = $(idd).find(".AttributeDiv").find($('select#DDLAttribute option:selected').val());
+        var AttributeID = $($this).val(); //Attribute["context"].value;
+        var AttrField = $(idd).find(".AttributeDiv").attr('data-sField');
+        var Values = $(idd).find(".AttributeDiv").attr("id");
+        //var AttrVal = $(idd).find(".AttributeDiv").val();
+
+        var AttrType = $($this).find($('select#DDLAttribute option:selected')).attr("data-sType");
+        var AttrVal = $("[name='" + AttrField+"']").val();
+        var selected = "";
+        if (Values != undefined) {
+            selected = Values;
+        }
+        else if (AttrVal != undefined)
+        {
+            selected = AttrVal;
+        }
+        else {
+            selected = "";
+        }
+        var Operatorselected = "";
+        var Values = $(idd).find(".OperatorDiv").attr("id");
+        var OperatorValue = "";
+        var OperatorField = $(idd).find(".OperatorDiv").attr('data-sField');
+        var OperatorVal = $("[name='" + OperatorField + "']").attr('data-nonformdata');
+        if (Values != undefined) {
+            Operatorselected = Values;
+        }
+        else if (OperatorVal != undefined)
+        {
+            Operatorselected = OperatorVal;
+        }
+        else {
+            Operatorselected = "";
+        }
+        var BOID = '';
+        if ('@o1Click.BOID' != '0') {
+            BOID = '@o1Click.BOID';
+        }
+        else if ('@BOIDOneClick.BOID' != '0') {
+            BOID = '@BOIDOneClick.BOID';
+        }
+        else if ('@ParentBOID' != "")
+        {
+            BOID = '@ParentBOID';
+        }
+        else {
+            BOID = '@boid';
+        }
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("AttributeChange", "XiLink")',
+            data: { BOID: BOID, AttributeID: AttributeID, sType: AttrType },
+            cache: false,
+            dataType: 'html',
+            success: function (data) {
+                debugger;
+                if (data != "") {
+                    debugger;
+                    var attributedata = $.parseJSON(data);
+                    $(idd).closest(".AttributeDiv").html('');
+                    if (AttrType == "QS") {
+                        if (attributedata.bIsOptionList) {
+                            var attributes = attributedata.FieldOptionList;
+                            if (attributes.length != "0") {
+                                $(idd).find(".OperatorDiv").html('');
+
+                                $(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control" name="' + OperatorField + '"></select>');
+                                //$(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control"></select>');
+
+                                $(idd).find(".AttributeDiv").html('<select class="AttributeValue form-control" id="DDLwherevalue" name="' + AttrField + '"></select>');
+                                //$(idd).find(".AttributeDiv").html('<select class="AttributeValue form-control" id="DDLwherevalue"></select>');
+                                var value = $(".AttributeValue").attr('data-nonformdata');
+                                for (var k = 0; k < attributedata.FieldOptionList.length; k++) {
+                                    $(idd).find(".AttributeValue").append('<option value="' + attributes[k].sOptionValue + '"' + selected + '>' + attributes[k].sOptionName + '</option>');
+                                }
+                                if (selected != "") {
+                                    $(idd).find(".AttributeValue").val(selected);
+                                }
+                                else {
+                                    $(idd).find(".AttributeValue").val("-1");
+                                }
+                            }
+                            else {
+                                $(idd).find(".AttributeDiv").html('<select class="AttributeValue form-control" id="DDLwherevalue"></select>')
+                            }
+                            $(idd).find(".Operatordrp").append('<option value="=">equals</option><option value=">">greater than</option><option value="<">less than</option><option value=">=">greater than or equal to</option><option value="<=">less than or equal to</option><option value="!=">not equal to</option>');
+                            $(idd).find(".Operatordrp").val(Operatorselected);
+                        }
+                        else if (attributedata.FKiDataType == 8 || attributedata.FKiDataType == 26) {
+                            $(idd).find(".AttributeDiv").html('');
+                            $(idd).find(".DataTypesDiv").remove();
+                            $($this).closest('div').append('<div class="DataTypesDiv form-input"></div>');
+                            var sDataTypeName = "";
+                            if ($(idd).find(".AttributeDiv").attr('data-sfield') != undefined && $(idd).find(".AttributeDiv").attr('data-sfield').split("tr") != undefined && $(idd).find(".AttributeDiv").attr('data-sfield').split("tr").length > 0) {
+                                sDataTypeName="tr".concat($(idd).find(".AttributeDiv").attr('data-sfield').split("tr")[1].split('_')[0], "_", "dataType");
+                            }
+                            $(idd).find(".DataTypesDiv").append('<select class="dateTypes form-control" id="DateTypeID" name="' + sDataTypeName+'">--Select--</select>')
+                            $(idd).find(".dateTypes").append('<option value="Absolute">Absolute</option><option value="Relative" selected>Relative</option>')
+                            $(idd).find(".OperatorDiv").html('');
+                            $(idd).find(".OperatorDiv").append('<select class="Operatordrp form-control" id="OperatorID1" name="' + OperatorField + '">--Select--</select>')
+                            $(idd).find(".Operatordrp").append('<option value="=">equals</option><option value=">">greater than</option><option value="<">less than</option><option value=">=">greater than or equal to</option><option value="<=">less than or equal to</option><option value="!=">not equal to</option><option value="between">between</option>');
+                            if (Operatorselected != undefined) {
+                                var selectedvalue = selected.split("#");
+                                if (Operatorselected.split("#")[1] == "between" && Operatorselected.split("#")[0] == "Absolute") {
+                                    $(idd).find(".AttributeDiv").html('<input class="datefield1 form-control"  type="text"  value=' + selectedvalue[0] + '><input class="datefield2 form-control"  type="text" name="' + AttrField + '" id="DatePickerWhere" value=' + selectedvalue[1] + '>');
+                                }
+                                else if (Operatorselected.split("#")[1] == "between" && Operatorselected.split("#")[0] == "Relative") {
+                                    $(idd).find(".AttributeDiv").html('<input class="form-control" value=' + selectedvalue[0] + ' type="text"><input class="form-control"  type="text" name="' + AttrField + '" id="DatePickerWhere" value=' + selectedvalue[1] + '>');
+                                }
+                                else if (Operatorselected.split("#")[0] == "Relative") {
+                                    $(idd).find(".AttributeDiv").html('<input class="form-control" value=' + selectedvalue[0] + ' type="text" name="' + AttrField + '">');
+                                }
+                                else {
+                                    $(idd).find(".AttributeDiv").html('<input class="datefield1 form-control"  type="text" name="' + AttrField + '" value=' + selectedvalue[0] + '>');
+                                }
+                                $(idd).find(".Operatordrp").val(Operatorselected.split("#")[1]);
+                                $(idd).find(".dateTypes").val(Operatorselected.split("#")[0])
+                            }
+                            else {
+                                $(idd).find(".AttributeDiv").html('<input class="form-control"  type="text">');
+                            }
+                            $(idd).find(".Operatordrp").change(function () {
+                                var DateType = $(idd).find("select#DateTypeID option:selected").val(); //$('select#DateTypeID option:selected').val();
+                                var operator = $(idd).find('select#OperatorID1 option:selected').val();
+                                if (DateType == "Absolute" && operator == "between") {
+                                    $(idd).find(".AttributeDiv").html('<input class="datefield1 form-control"  type="text"><input class="datefield2 form-control"  type="text" id="DatePickerWhere">');
+
+                                }
+                                else if (DateType == "Relative" && operator == "between") {
+                                    $(idd).find(".AttributeDiv").html('<input class="form-control"  type="text"><input class="form-control"  type="text" id="DatePickerWhere">');
+                                }
+                                else if (DateType == "Relative") {
+                                    $(idd).find(".AttributeDiv").html('<input class="form-control"  type="text" id="DDLwherevalue" name="' + AttrField + '">');
+                                }
+                                else {
+                                    $(idd).find(".AttributeDiv").html('<input class="datefield1 form-control"  type="text" id="DDLwherevalue" name="' + AttrField + '">');
+                                }
+                                $(".datefield1").datepicker({
+                                    dateFormat: 'yy-mm-dd',
+                                    changeMonth: true,
+                                    changeYear: true,
+                                    yearRange: "-70:+0",
+                                    maxDate: new Date(),
+                                    onSelect: function (date) {
+                                        $('.datefield1').datepicker('getDate');
+                                    }
+                                });
+                                $(idd).find(".datefield2").datepicker({
+                                    dateFormat: 'yy-mm-dd',
+                                    changeMonth: true,
+                                    changeYear: true,
+                                    yearRange: "-70:+0",
+                                    maxDate: new Date(),
+                                    onSelect: function (date) {
+                                        $('.datefield1').datepicker('getDate');
+
+                                    }
+                                });
+                            });
+                            $(idd).find(".dateTypes").change(function () {
+                                var DateType = $(idd).find("select#DateTypeID option:selected").val(); //$('select#DateTypeID option:selected').val();
+                                var operator = $(idd).find('select#OperatorID1 option:selected').val();
+                                if (DateType == "Absolute" && operator == "between") {
+                                    $(idd).find(".AttributeDiv").html('<input class="datefield1 form-control"  type="text"><input class="datefield2 form-control"  type="text" id="DatePickerWhere">');
+                                }
+                                else if (DateType == "Relative" && operator == "between") {
+                                    $(idd).find(".AttributeDiv").html('<input class="form-control"  type="text"><input class="form-control"  type="text" id="DatePickerWhere">');
+                                }
+                                else if (DateType == "Relative") {
+                                    $(idd).find(".AttributeDiv").html('<input class="form-control"  type="text" name="' + AttrField + '">');
+                                }
+                                else {
+                                    $(idd).find(".AttributeDiv").html('<input class="datefield1 form-control"  type="text" name="' + AttrField + '">');
+                                }
+                                $(".datefield1").datepicker({
+                                    dateFormat: 'yy-mm-dd',
+                                    changeMonth: true,
+                                    changeYear: true,
+                                    yearRange: "-70:+0",
+                                    maxDate: new Date(),
+                                    onSelect: function (date) {
+                                        $('.datefield1').datepicker('getDate');
+
+                                    }
+                                });
+                                $(idd).find(".datefield2").datepicker({
+                                    dateFormat: 'yy-mm-dd',
+                                    changeMonth: true,
+                                    changeYear: true,
+                                    yearRange: "-70:+0",
+                                    maxDate: new Date(),
+                                    onSelect: function (date) {
+                                        $('.datefield1').datepicker('getDate');
+
+                                    }
+                                });
+                            });
+                            $(idd).find(".datefield1").datepicker({
+                                dateFormat: 'yy-mm-dd',
+                                changeMonth: true,
+                                changeYear: true,
+                                yearRange: "-70:+0",
+                                maxDate: new Date(),
+                                onSelect: function (date) {
+                                    $('.datefield1').datepicker('getDate');
+
+                                }
+                            });
+                            $(idd).find(".datefield2").datepicker({
+                                dateFormat: 'yy-mm-dd',
+                                changeMonth: true,
+                                changeYear: true,
+                                yearRange: "-70:+0",
+                                maxDate: new Date(),
+                                onSelect: function (date) {
+                                    $('.datefield1').datepicker('getDate');
+
+                                }
+                            });
+                        }
+                        else if (attributedata.FKTableName && attributedata.FKTableName.length > 0) {
+                            var iBODID = 0;
+                            var sBOName = attributedata.FKTableName
+                            var AutoCompleteList = 0;
+                            var sRefType = "bo";
+                            if (attributedata.iOneClickID > 0) {
+                                sRefType = "1click";
+                                iBODID = attributedata.iOneClickID;
+                            }
+                            $.ajax({
+                                url: '@Url.Action("GetAutoCompleteList", "BusinessObjects")',
+                                type: 'POST',
+                                contentType: "application/json; charset=utf-8",
+                                datatype: "json",
+                                async: true,
+                                cache: false,
+                                data: JSON.stringify({ sType: sRefType, iBODID: iBODID, sBOName: sBOName, sGUID: '@sGUID' }),
+                                success: function (data) {
+                                    debugger;
+                                    AutoCompleteList = data;
+                                    var autoDict = 0;
+                                    if (attributedata.sFKBOName != "") {
+                                        AutoCompleteDict.push({
+                                            key: attributedata.sFKBOName,
+                                            value: AutoCompleteList
+                                        });
+                                        for (var k = 0; k < AutoCompleteDict.length; k++) {
+
+                                            if (AutoCompleteDict[k].key == attributedata.sFKBOName) {
+                                                autoDict = AutoCompleteDict[k].value;
+                                            }
+                                        }
+                                    }
+                                    if (attributedata.iOneClickID > 0) {
+                                        AutoCompleteDict.push({
+                                            key: attributedata.iOneClickID,
+                                            value: AutoCompleteList
+                                        });
+                                        if (attributedata.iOneClickID > 0) {
+                                            for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                if (AutoCompleteDict[k].key == attributedata.iOneClickID) {
+                                                    autoDict = AutoCompleteDict[k].value;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    var Autotext;
+                                    if (selected != "") {
+                                        var EditOptionptionsList = 0;
+                                        for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                            EditOptionptionsList = AutoCompleteDict[k].value;
+                                        }
+                                        var EditList = [];
+                                        $.each(EditOptionptionsList, function (key, value) {
+                                            EditList.push({ label: key, value: value });
+                                        });
+                                        $.each(EditList, function (a, b) {
+                                            if (b.value == selected) {
+                                                Autotext = b.label;
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        Autotext = "";
+                                    }
+                                    //var seleList = EditList.where(s=>s.value == selected).select(s=>s.key);
+
+                                    $(idd).find(".AttributeDiv").html('');
+                                    $(idd).find(".AttributeDiv").html('<input class="form-control" id="DDLwherevalue1" type="text" value="' + Autotext + '"><input type="hidden" id="DDLHiddenwherevalue">');
+                                    if (attributedata.TypeID == 60 || attributedata.TypeID == 10) {
+                                        $(idd).find(".OperatorDiv").html('');
+                                        $(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control" id=OperatorID name="' + OperatorField + '">--Select--</select>')
+                                        $(idd).find(".Operatordrp").append('<option value="=">equals</option><option value=">">greater than</option><option value="<">less than</option><option value=">=">greater than or equal to</option><option value="<=">less than or equal to</option><option value="!=">not equal to</option>');
+                                        $(idd).find(".Operatordrp").val(Operatorselected);
+                                    }
+                                    else if (attributedata.TypeID == 180) {
+                                        $(idd).find(".OperatorDiv").html('');
+                                        $(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control" id=OperatorID name="' + OperatorField + '"></select>')
+                                        $(idd).find(".Operatordrp").append('<option value="starts with">starts with</option><option value="not starts with">not starts with</option><option value="ends with">ends with</option><option value="not ends with">not ends with</option><option value="contains">contains</option><option value="=">equals</option>');
+                                        $(idd).find(".Operatordrp").val(Operatorselected);
+                                    }
+                                    $("#DDLwherevalue1").autocomplete({
+                                        source: function (request, response) {
+                                            var DOptionsList = 0;
+                                            if (attributedata.iOneClickID > 0) {
+                                                for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                    if (AutoCompleteDict[k].key == attributedata.iOneClickID) {
+                                                        DOptionsList = AutoCompleteDict[k].value;
+                                                    }
+                                                }
+                                            }
+                                            else if (attributedata.sFKBOName != "") {
+                                                for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                    if (AutoCompleteDict[k].key == attributedata.sFKBOName) {
+                                                        DOptionsList = AutoCompleteDict[k].value;
+                                                    }
+                                                }
+                                            }
+                                            $("#DDLHiddenwherevalue").val("");
+                                            var List = [];
+                                            $.each(DOptionsList, function (key, value) {
+                                                List.push({ label: key, value: value });
+                                            });
+                                            response($.ui.autocomplete.filter(List, request.term));
+                                        },
+                                        select: function (event, ui) {
+                                            $("#DDLHiddenwherevalue").val(ui.item.value);
+                                            $("#DDLwherevalue1").val(ui.item.label);
+                                            return false;
+                                        },
+                                        focus: function (event, ui) {
+                                            $("#DDLHiddenwherevalue").val(ui.item.value);
+                                            $("#DDLwherevalue1").val(ui.item.label);
+                                            return false;
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        else {
+                            $(idd).find(".DataTypesDiv").hide();
+                            $(idd).find(".AttributeDiv").html('');
+                            $(idd).find(".AttributeDiv").html('<input class="form-control" id="DDLwherevalue" type="text" name="' + AttrField + '" value=' + selected + '>');
+                            if (attributedata.TypeID == 20) {
+                                $(idd).find(".OperatorDiv").html('');
+                                $(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control" id=OperatorID name="' + OperatorField + '">--Select--</select>')
+                                $(idd).find(".Operatordrp").append('<option value="=">equals</option><option value="!=">not equals</option>');
+                                $(idd).closest('td').find(".AttributeDiv").html('');
+                                if (selected == 1) {
+                                    $(idd).find(".AttributeDiv").html('<input type="checkbox" class="CheckboxClass" id="DDLwherevalue" checked>');
+                                }
+                                else {
+                                    $(idd).find(".AttributeDiv").html('<input type="checkbox" class="CheckboxClass" id="DDLwherevalue">');
+                                }
+                                $(idd).find(".Operatordrp").val(Operatorselected);
+                            }
+                            else if (attributedata.FKiDataType == 180) {
+                                $(idd).find(".OperatorDiv").html('');
+                                $(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control" id=OperatorID name="' + OperatorField + '">--Select--</select>')
+                                $(idd).find(".Operatordrp").append('<option value="starts with">starts with</option><option value="not starts with">not starts with</option><option value="ends with">ends with</option><option value="not ends with">not ends with</option><option value="contains">contains</option><option value="=">equals</option>');
+                                $(idd).find(".Operatordrp").val(Operatorselected);
+                            }
+                            else {
+                                $(idd).find(".OperatorDiv").html('');
+                                $(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control" name="' + OperatorField + '"></select>');
+                                $(idd).find(".Operatordrp").append('<option value="=">equals</option><option value=">">greater than</option><option value="<">less than</option><option value=">=">greater than or equal to</option><option value="<=">less than or equal to</option><option value="!=">not equal to</option>');
+                                $(idd).find(".Operatordrp").val(Operatorselected);
+
+                            }
+                        } }
+                    else {
+                        if (attributedata.IsOptionList) {
+                            var attributes = attributedata.OptionList;
+                            if (attributes.length != "0") {
+                                $(idd).find(".OperatorDiv").html('');
+
+                                $(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control" name="' + OperatorField + '"></select>');
+                                //$(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control"></select>');
+
+                                $(idd).find(".AttributeDiv").html('<select class="AttributeValue form-control" id="DDLwherevalue" name="' + AttrField + '"></select>');
+                                //$(idd).find(".AttributeDiv").html('<select class="AttributeValue form-control" id="DDLwherevalue"></select>');
+                                var value = $(".AttributeValue").attr('data-nonformdata');
+                                for (var k = 0; k < attributedata.OptionList.length; k++) {
+                                    $(idd).find(".AttributeValue").append('<option value="' + attributes[k].sValues + '"' + selected + '>' + attributes[k].sOptionName + '</option>');
+                                }
+                                if (selected != "") {
+                                    $(idd).find(".AttributeValue").val(selected);
+                                }
+                                else {
+                                    $(idd).find(".AttributeValue").val("-1");
+                                }
+                            }
+                            else {
+                                $(idd).find(".AttributeDiv").html('<select class="AttributeValue form-control" id="DDLwherevalue"></select>')
+                            }
+                            $(idd).find(".Operatordrp").append('<option value="=">equals</option><option value=">">greater than</option><option value="<">less than</option><option value=">=">greater than or equal to</option><option value="<=">less than or equal to</option><option value="!=">not equal to</option>');
+                            $(idd).find(".Operatordrp").val(Operatorselected);
+                        }
+                        else if (attributedata.TypeID == 150) {
+                            $(idd).find(".AttributeDiv").html('');
+                            $(idd).find(".DataTypesDiv").remove();
+                            $($this).closest('div').append('<div class="DataTypesDiv form-input"></div>');
+                            //$(idd).find(".DataTypesDiv").append('<select class="dateTypes form-control" id="DateTypeID">--Select--</select>')
+                            //$(idd).find(".dateTypes").append('<option value="Absolute">Absolute</option><option value="Relative" selected>Relative</option>')
+                            $(idd).find(".OperatorDiv").html('');
+                            $(idd).find(".OperatorDiv").append('<select class="Operatordrp form-control" id="OperatorID1" name="' + OperatorField + '">--Select--</select>')
+                            $(idd).find(".Operatordrp").append('<option value="=">equals</option><option value=">">greater than</option><option value="<">less than</option><option value=">=">greater than or equal to</option><option value="<=">less than or equal to</option><option value="!=">not equal to</option><option value="between">between</option>');
+                            if (Operatorselected != undefined) {
+                                var selectedvalue = selected.split("#");
+                                //if (Operatorselected.split("#")[1] == "between" && Operatorselected.split("#")[0] == "Absolute") {
+                                //    $(idd).find(".AttributeDiv").html('<input class="datefield1 form-control"  type="text"  value=' + selectedvalue[0] + '><input class="datefield2 form-control"  type="text" id="DatePickerWhere" value=' + selectedvalue[1] + '>');
+                                //}
+                                //else if (Operatorselected.split("#")[1] == "between" && Operatorselected.split("#")[0] == "Relative") {
+                                //    $(idd).find(".AttributeDiv").html('<input class="form-control" value=' + selectedvalue[0] + ' type="text"><input class="form-control"  type="text" id="DatePickerWhere" value=' + selectedvalue[1] + '>');
+                                //}
+                                //else if (Operatorselected.split("#")[0] == "Relative") {
+                                //    $(idd).find(".AttributeDiv").html('<input class="form-control" value=' + selectedvalue[0] + ' type="text">');
+                                //}
+                                //else {
+                                    $(idd).find(".AttributeDiv").html('<input class="datefield1 form-control"  type="text"  value=' + selectedvalue[0] + '>');
+                               // }
+                                $(idd).find(".Operatordrp").val(Operatorselected.split("#")[1]);
+                                $(idd).find(".dateTypes").val(Operatorselected.split("#")[0])
+                            }
+                            else {
+                                $(idd).find(".AttributeDiv").html('<input class="form-control"  type="text">');
+                            }
+                            //$(idd).find(".Operatordrp").change(function () {
+                            //    var DateType = $(idd).find("select#DateTypeID option:selected").val(); //$('select#DateTypeID option:selected').val();
+                            //    var operator = $(idd).find('select#OperatorID1 option:selected').val();
+                            //    if (DateType == "Absolute" && operator == "between") {
+                            //        $(idd).find(".AttributeDiv").html('<input class="datefield1 form-control"  type="text"><input class="datefield2 form-control"  type="text" id="DatePickerWhere">');
+
+                            //    }
+                            //    else if (DateType == "Relative" && operator == "between") {
+                            //        $(idd).find(".AttributeDiv").html('<input class="form-control"  type="text"><input class="form-control"  type="text" id="DatePickerWhere">');
+                            //    }
+                            //    else if (DateType == "Relative") {
+                            //        $(idd).find(".AttributeDiv").html('<input class="form-control"  type="text">');
+                            //    }
+                            //    else {
+                            //        $(idd).find(".AttributeDiv").html('<input class="datefield1 form-control"  type="text">');
+                            //    }
+                            //    $(".datefield1").datepicker({
+                            //        dateFormat: 'yy-mm-dd',
+                            //        changeMonth: true,
+                            //        changeYear: true,
+                            //        yearRange: "-70:+0",
+                            //        maxDate: new Date(),
+                            //        onSelect: function (date) {
+                            //            $('.datefield1').datepicker('getDate');
+
+                            //        }
+                            //    });
+                            //    $(idd).find(".datefield2").datepicker({
+                            //        dateFormat: 'yy-mm-dd',
+                            //        changeMonth: true,
+                            //        changeYear: true,
+                            //        yearRange: "-70:+0",
+                            //        maxDate: new Date(),
+                            //        onSelect: function (date) {
+                            //            $('.datefield1').datepicker('getDate');
+
+                            //        }
+                            //    });
+                            //});
+                            //$(idd).find(".dateTypes").change(function () {
+                            //    var DateType = $(idd).find("select#DateTypeID option:selected").val(); //$('select#DateTypeID option:selected').val();
+                            //    var operator = $(idd).find('select#OperatorID1 option:selected').val();
+                            //    if (DateType == "Absolute" && operator == "between") {
+                            //        $(idd).find(".AttributeDiv").html('<input class="datefield1 form-control"  type="text"><input class="datefield2 form-control"  type="text" id="DatePickerWhere">');
+                            //    }
+                            //    else if (DateType == "Relative" && operator == "between") {
+                            //        $(idd).find(".AttributeDiv").html('<input class="form-control"  type="text"><input class="form-control"  type="text" id="DatePickerWhere">');
+                            //    }
+                            //    else if (DateType == "Relative") {
+                            //        $(idd).find(".AttributeDiv").html('<input class="form-control"  type="text">');
+                            //    }
+                            //    else {
+                            //        $(idd).find(".AttributeDiv").html('<input class="datefield1 form-control"  type="text">');
+                            //    }
+                            //    $(".datefield1").datepicker({
+                            //        dateFormat: 'yy-mm-dd',
+                            //        changeMonth: true,
+                            //        changeYear: true,
+                            //        yearRange: "-70:+0",
+                            //        maxDate: new Date(),
+                            //        onSelect: function (date) {
+                            //            $('.datefield1').datepicker('getDate');
+
+                            //        }
+                            //    });
+                            //    $(idd).find(".datefield2").datepicker({
+                            //        dateFormat: 'yy-mm-dd',
+                            //        changeMonth: true,
+                            //        changeYear: true,
+                            //        yearRange: "-70:+0",
+                            //        maxDate: new Date(),
+                            //        onSelect: function (date) {
+                            //            $('.datefield1').datepicker('getDate');
+
+                            //        }
+                            //    });
+                            //});
+                            $(idd).find(".datefield1").datepicker({
+                                dateFormat: 'yy-mm-dd',
+                                changeMonth: true,
+                                changeYear: true,
+                                yearRange: "-70:+0",
+                                maxDate: new Date(),
+                                onSelect: function (date) {
+                                    $('.datefield1').datepicker('getDate');
+
+                                }
+                            });
+                            $(idd).find(".datefield2").datepicker({
+                                dateFormat: 'yy-mm-dd',
+                                changeMonth: true,
+                                changeYear: true,
+                                yearRange: "-70:+0",
+                                maxDate: new Date(),
+                                onSelect: function (date) {
+                                    $('.datefield1').datepicker('getDate');
+
+                                }
+                            });
+                            $(Divs).find(".DataTypesDiv").hide();
+                        }
+                        else if (attributedata.FKTableName && attributedata.FKTableName.length >0) {
+                            var iBODID = 0;
+                            var sBOName = attributedata.FKTableName
+                            var AutoCompleteList = 0;
+                            var sRefType = "bo";
+                            if (attributedata.iOneClickID > 0) {
+                                sRefType = "1click";
+                                iBODID = attributedata.iOneClickID;
+                            }
+                            $.ajax({
+                                url: '@Url.Action("GetAutoCompleteList", "BusinessObjects")',
+                                type: 'POST',
+                                contentType: "application/json; charset=utf-8",
+                                datatype: "json",
+                                async: true,
+                                cache: false,
+                                data: JSON.stringify({ sType: sRefType, iBODID: iBODID, sBOName: sBOName, sGUID: '@sGUID' }),
+                                success: function (data) {
+                                    debugger;
+                                    AutoCompleteList = data;
+                                    var autoDict = 0;
+                                    if (attributedata.sFKBOName != "") {
+                                        AutoCompleteDict.push({
+                                            key: attributedata.sFKBOName,
+                                            value: AutoCompleteList
+                                        });
+                                        for (var k = 0; k < AutoCompleteDict.length; k++) {
+
+                                            if (AutoCompleteDict[k].key == attributedata.sFKBOName) {
+                                                autoDict = AutoCompleteDict[k].value;
+                                            }
+                                        }
+                                    }
+                                    if (attributedata.iOneClickID > 0) {
+                                        AutoCompleteDict.push({
+                                            key: attributedata.iOneClickID,
+                                            value: AutoCompleteList
+                                        });
+                                        if (attributedata.iOneClickID > 0) {
+                                            for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                if (AutoCompleteDict[k].key == attributedata.iOneClickID) {
+                                                    autoDict = AutoCompleteDict[k].value;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    var Autotext;
+                                    if (selected != "") {
+                                        var EditOptionptionsList = 0;
+                                        for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                            EditOptionptionsList = AutoCompleteDict[k].value;
+                                        }
+                                        var EditList = [];
+                                        $.each(EditOptionptionsList, function (key, value) {
+                                            EditList.push({ label: key, value: value });
+                                        });
+                                        $.each(EditList, function (a, b) {
+                                            if (b.value == selected) {
+                                                Autotext = b.label;
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        Autotext = "";
+                                    }
+                                    //var seleList = EditList.where(s=>s.value == selected).select(s=>s.key);
+
+                                    $(idd).find(".AttributeDiv").html('');
+                                    $(idd).find(".AttributeDiv").html('<input class="form-control" id="DDLwherevalue1" type="text" value="' + Autotext + '"><input type="hidden" id="DDLHiddenwherevalue">');
+                                    if (attributedata.TypeID == 60 || attributedata.TypeID == 10) {
+                                        $(idd).find(".OperatorDiv").html('');
+                                        $(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control" id=OperatorID name="' + OperatorField + '">--Select--</select>')
+                                        $(idd).find(".Operatordrp").append('<option value="=">equals</option><option value=">">greater than</option><option value="<">less than</option><option value=">=">greater than or equal to</option><option value="<=">less than or equal to</option><option value="!=">not equal to</option>');
+                                        $(idd).find(".Operatordrp").val(Operatorselected);
+                                    }
+                                    else if (attributedata.TypeID == 180) {
+                                        $(idd).find(".OperatorDiv").html('');
+                                        $(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control" id=OperatorID name="' + OperatorField + '"></select>')
+                                        $(idd).find(".Operatordrp").append('<option value="starts with">starts with</option><option value="not starts with">not starts with</option><option value="ends with">ends with</option><option value="not ends with">not ends with</option><option value="contains">contains</option><option value="=">equals</option>');
+                                        $(idd).find(".Operatordrp").val(Operatorselected);
+                                    }
+                                    $("#DDLwherevalue1").autocomplete({
+                                        source: function (request, response) {
+                                            var DOptionsList = 0;
+                                            if (attributedata.iOneClickID > 0) {
+                                                for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                    if (AutoCompleteDict[k].key == attributedata.iOneClickID) {
+                                                        DOptionsList = AutoCompleteDict[k].value;
+                                                    }
+                                                }
+                                            }
+                                            else if (attributedata.sFKBOName != "") {
+                                                for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                    if (AutoCompleteDict[k].key == attributedata.sFKBOName) {
+                                                        DOptionsList = AutoCompleteDict[k].value;
+                                                    }
+                                                }
+                                            }
+                                            $("#DDLHiddenwherevalue").val("");
+                                            var List = [];
+                                            $.each(DOptionsList, function (key, value) {
+                                                List.push({ label: key, value: value });
+                                            });
+                                            response($.ui.autocomplete.filter(List, request.term));
+                                        },
+                                        select: function (event, ui) {
+                                            $("#DDLHiddenwherevalue").val(ui.item.value);
+                                            $("#DDLwherevalue1").val(ui.item.label);
+                                            return false;
+                                        },
+                                        focus: function (event, ui) {
+                                            $("#DDLHiddenwherevalue").val(ui.item.value);
+                                            $("#DDLwherevalue1").val(ui.item.label);
+                                            return false;
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        else {
+                            $(idd).find(".DataTypesDiv").hide();
+                            $(idd).find(".AttributeDiv").html('');
+                            $(idd).find(".AttributeDiv").html('<input class="form-control" id="DDLwherevalue" type="text" name="' + AttrField + '" value=' + selected + '>');
+                            if (attributedata.TypeID == 20) {
+                                $(idd).find(".OperatorDiv").html('');
+                                $(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control" id=OperatorID name="' + OperatorField + '">--Select--</select>')
+                                $(idd).find(".Operatordrp").append('<option value="=">equals</option><option value="!=">not equals</option>');
+                                $(idd).closest('td').find(".AttributeDiv").html('');
+                                if (selected == 1) {
+                                    $(idd).find(".AttributeDiv").html('<input type="checkbox" class="CheckboxClass" id="DDLwherevalue" checked>');
+                                }
+                                else {
+                                    $(idd).find(".AttributeDiv").html('<input type="checkbox" class="CheckboxClass" id="DDLwherevalue">');
+                                }
+                                $(idd).find(".Operatordrp").val(Operatorselected);
+                            }
+                            else if (attributedata.TypeID == 180) {
+                                $(idd).find(".OperatorDiv").html('');
+                                $(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control" id=OperatorID name="' + OperatorField + '">--Select--</select>')
+                                $(idd).find(".Operatordrp").append('<option value="starts with">starts with</option><option value="not starts with">not starts with</option><option value="ends with">ends with</option><option value="not ends with">not ends with</option><option value="contains">contains</option><option value="=">equals</option>');
+                                $(idd).find(".Operatordrp").val(Operatorselected);
+                            }
+                            else {
+                                $(idd).find(".OperatorDiv").html('');
+                                $(idd).find(".OperatorDiv").html('<select class="Operatordrp form-control" name="' + OperatorField + '"></select>');
+                                $(idd).find(".Operatordrp").append('<option value="=">equals</option><option value=">">greater than</option><option value="<">less than</option><option value=">=">greater than or equal to</option><option value="<=">less than or equal to</option><option value="!=">not equal to</option>');
+                                $(idd).find(".Operatordrp").val(Operatorselected);
+
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    $(document).ready(function () {
+        debugger;
+        $('.attrselect select').each(function () {
+            AttributeChange(this);
+        });
+    });
+</script>
+<form class="CreateForm form-h form-hd fullwidth" id="MultiCreate" data-type="form" data-sbo="@sBOName">
+    <div class="box-container">
+        <div class="box-body">
+            <div class="table-clean table-responsive" id="trCount">
+                <div id="MultiRow">
+                    <table class="NameValuePairs1 table custom-table table-condensed tablelook no-footer tableset">
+                        <tr class="">
+                            <td colspan="15" class="text-right">
+                                <input type="button" id="AddMore1" value="Add" class="btn btn-theme btn-xs">
+                                <input type="button" id="AddQS1" value="Add QS" class="btn btn-theme btn-xs">
+                            </td>
+                        </tr>
+                       <tr>
+                            @if (oBOIList.Count > 0)
+                            {
+                                foreach (var it in oBOIList.FirstOrDefault().Attributes)
+                                {
+                                    var AttrD = oBOD.Attributes.Values.Where(m => m.Name.ToLower() == it.Key.ToLower() || m.LabelName.ToLower() == it.Key.ToLower()).FirstOrDefault();
+                                    if (it.Value.bDirty && !it.Value.bIsHidden)
+                                    {
+                                        <td class="">@AttrD.LabelName</td>
+                                    }
+                                }
+                            }
+                            <td></td>
+                        </tr>
+                        @if (@BOIDByOneClick != null)
+                        {
+                            <input type="hidden" value="@BOIDByOneClick+@sBOName" />
+                        }
+                        else
+                        {
+                            <input type="hidden" value="@oneclickid+@sBOName" />
+                        }
+                        @foreach (var oBOI in oBOIList)
+                        {
+                            string sRowNo = "tr" + k + "_RowNo";
+                            if (oBOI != null)
+                            {
+                                string[] wherefields = { };
+                                string[] orderfields = { };
+                                string[] SelectedFields = { };
+                                if ((!string.IsNullOrEmpty(o1Click.FKiWhereValue) && WatchParams == "Where") || (!string.IsNullOrEmpty(o1Click.sRowColour) && WatchParams == "Colours"))
+                                {
+                                    if (WatchParams == "Where" && !string.IsNullOrEmpty(o1Click.FKiWhereValue))
+                                    {
+                                        wherefields = o1Click.FKiWhereValue.Split(',');
+                                    }
+                                    else if (WatchParams == "Colours" && !string.IsNullOrEmpty(o1Click.sRowColour))
+                                    {
+                                        wherefields = o1Click.sRowColour.Split(',');
+                                    }
+
+                                    if (o1Click != null)
+                                    {
+                                        for (var i = 0; i < wherefields.Count(); i++)
+                                        {
+                                            int j = 0;
+                                            <tr class="NVPairs1" id="addrow" data-row="@sRowNo">
+                                                @foreach (var items in oBOI.Attributes.Values.Where(m => m.bDirty == true).ToList())
+                                                {
+                                                    var fields = wherefields[i].Split('^');
+
+                                                    var value = fields[j];
+                                                    if (fields.Count() > 4)
+                                                    {
+                                                        value = fields[j + 1];
+                                                    }
+                                                    var AttrD = oBOI.BOD.Attributes.Values.Where(m => m.Name.ToLower() == items.sName.ToLower() || m.LabelName.ToLower() == items.sName.ToLower()).FirstOrDefault();
+                                                    var bIsSelect = false;
+                                                    bool IsHidden = items.bIsHidden;
+                                                    var Hiddenclass = "";
+                                                    if (IsHidden)
+                                                    {
+                                                        Hiddenclass = "hidden";
+                                                    }
+                                                    @*var Label = AttrD.LabelName;
+                                    <label class="form-label">@Label</label>*@
+                                                    if (AttrD.FKiType > 0)
+                                                    {
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="field-errmsg fc-red">
+                                                                <span class="@NewsGUID-@oBOI.BOD.Name-@items.sName"></span>
+                                                            </div>
+                                                            @if (AttrD.sFKBOSize == "10")
+                                                            {
+                                                                <div class="form-input attrselect">
+                                                                    <select name="@items.sName" class="form-control" data-attrname="@items.sName" onchange="AttributeChange(this)" onload="AttributeChange(this)" id="DDLAttribute" data-nonformdata="@items.sPreviousValue">
+                                                                        @{var OptValue = value;
+                                                                            if (items.FieldDDL != null && items.FieldDDL.Count() > 0)
+                                                                            {
+                                                                                <option value="-1">Please Select</option>
+                                                                                foreach (var opt in items.FieldDDL.OrderBy(m => m.Expression))
+                                                                                {
+                                                                                    if (opt.Expression != null && opt.Expression.ToLower() == "please select")
+                                                                                    {
+                                                                                        {
+                                                                                            bIsSelect = true;
+                                                                                        }
+                                                                                    }
+                                                                                    else if (string.IsNullOrEmpty(OptValue))
+                                                                                    {
+                                                                                        <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        if (opt.text == OptValue)
+                                                                                        {
+                                                                                            <option value="@opt.text" data-sType="@opt.Type" selected>@opt.Expression</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            else if (AttrD.FieldDDL != null && AttrD.FieldDDL.Count() > 0)
+                                                                            {
+                                                                                <option value="-1">Please Select</option>
+                                                                                foreach (var opt in AttrD.FieldDDL.OrderBy(m => m.Expression))
+                                                                                {
+                                                                                    if (opt.Expression != null && opt.Expression.ToLower() == "please select")
+                                                                                    {
+                                                                                        {
+                                                                                            bIsSelect = true;
+                                                                                        }
+                                                                                    }
+                                                                                    else if (string.IsNullOrEmpty(OptValue))
+                                                                                    {
+                                                                                        <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        if (opt.text == OptValue)
+                                                                                        {
+                                                                                            <option value="@opt.text" data-sType="@opt.Type" selected>@opt.Expression</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="0"></option>
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                            }
+                                                        </td>
+                                                    }
+                                                    else if (AttrD.IsOptionList)
+                                                    {
+                                                        var OptValue = value;
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="field-errmsg fc-red">
+                                                                <span class="@NewsGUID-@oBOI.BOD.Name-@items.sName"></span>
+                                                            </div>
+
+                                                            @if (AttrD.OptionList != null && AttrD.OptionList.Count() != 0)
+                                                            {
+                                                                <input type="hidden" value="flag" />
+                                                                <div class="form-input">
+                                                                    <select name="@items.sName" class="form-control" id="DDL-@items.sName@NewsGUID" data-nonformdata="@items.sPreviousValue">
+
+
+                                                                        <option value="">Please Select</option>
+                                                                        @foreach (var opt in AttrD.OptionList.OrderBy(m => m.sOptionName))
+                                                                        {
+                                                                            if (opt.sOptionName != null && opt.sOptionName.ToLower() == "please select")
+                                                                            {
+                                                                                {
+                                                                                    bIsSelect = true;
+                                                                                }
+                                                                            }
+                                                                            else if (OptValue == null)
+                                                                            {
+                                                                                if (!string.IsNullOrEmpty(AttrD.DefaultValue))
+                                                                                {
+                                                                                    if (opt.sOptionName == AttrD.DefaultValue)
+                                                                                    {
+                                                                                        <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                if (opt.sValues == OptValue)
+                                                                                {
+                                                                                    <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        }
+                                                                    </select>
+                                                                </div>
+
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="OperatorDiv form-input" id="@value" data-sField="@items.sName">
+                                                                    <select name="@items.sName" class="form-control" id="DDL-@items.sName@NewsGUID" data-nonformdata="@items.sPreviousValue">
+                                                                        <option value="">Please Select</option>
+                                                                        @foreach (var opt in AttrD.OptionList.OrderBy(m => m.sOptionName))
+                                                                        {
+                                                                            if (opt.sOptionName != null && opt.sOptionName.ToLower() == "please select")
+                                                                            {
+                                                                                {
+                                                                                    bIsSelect = true;
+                                                                                }
+                                                                            }
+                                                                            else if (OptValue == null)
+                                                                            {
+                                                                                if (!string.IsNullOrEmpty(AttrD.DefaultValue))
+                                                                                {
+                                                                                    if (opt.sOptionName == AttrD.DefaultValue)
+                                                                                    {
+                                                                                        <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                if (opt.sValues == OptValue)
+                                                                                {
+                                                                                    <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                            }
+                                                        </td>
+                                                    }
+                                                    else if (items.sName.ToLower() == oBOD.sPrimaryKey.ToLower())
+                                                    {
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="" id="@items.sValue">
+                                                                @Html.TextBoxFor(m => items.sValue, new { @Name = items.sName.ToLower(), @class = "form-control" })
+                                                            </div>
+                                                        </td>
+                                                    }
+                                                    else if (items.sName.ToLower() == "bIsExposedFilter".ToLower())
+                                                    {
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="" id="@items.sValue">
+                                                                @if (fields[3] == "0")
+                                                                {
+                                                                    <input type="checkbox" name="ExposedCheck" id="ExposedFiler" class="ExposedFilterBox" /> }
+                                                                else
+                                                                {
+                                                                    <input type="checkbox" name="ExposedCheck" id="ExposedFiler" class="ExposedFilterBox" checked />
+                                                                }
+                                                                @*@Html.CheckBoxFor(m => items.sValue, new { @Name = items.sName.ToLower(), @class = "form-control" })*@
+                                                            </div>
+                                                        </td>
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="" id="@items.sValue">
+                                                                @*<input type="button" name="ExposedCheckButton" id="ExposedButton" value="." onclick="fnc1clickPopup(this,'CADEF03E-75C5-4767-986B-9135CCE3F7A7',sGUID)"/>*@
+                                                                <button type="button" class="btn btn-theme btn-xs ExposedButton" id="ExposedButton_" @j>.</button>
+                                                                @*@Html.CheckBoxFor(m => items.sValue, new { @Name = items.sName.ToLower(), @class = "form-control" })*@
+                                                            </div>
+                                                        </td>
+                                                    }
+                                                    else
+                                                    {
+                                                        items.sValue = value;
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="AttributeDiv" id="@items.sValue" data-sField="@items.sName">
+                                                                @Html.TextBoxFor(m => items.sValue, new { @Name = items.sName.ToLower(), @class = "form-control" })
+                                                            </div>
+                                                        </td>
+                                                    }
+                                                    j++;
+                                                }
+                                                @*<td class="">
+                                    <input type="checkbox" class="CheckboxClass" id="ExposedFilter">
+                                </td>*@
+                                                <td class="">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteNVPair1">Delete</button>
+                                                </td>
+                                            </tr>
+
+                                        }
+                                    }
+                                }
+                                else if ((!string.IsNullOrEmpty(o1Click.FKiOrderValue) && WatchParams == "Order") || (!string.IsNullOrEmpty(o1Click.sRowColour) && WatchParams == "Colours"))
+                                {
+                                    if (WatchParams == "Order" && !string.IsNullOrEmpty(o1Click.FKiOrderValue))
+                                    {
+                                        orderfields = o1Click.FKiOrderValue.Split(',');
+                                    }
+                                    else if (WatchParams == "Colours" && !string.IsNullOrEmpty(o1Click.sRowColour))
+                                    {
+                                        orderfields = o1Click.sRowColour.Split(',');
+                                    }
+
+                                    if (o1Click != null)
+                                    {
+                                        for (var i = 0; i < orderfields.Count(); i++)
+                                        {
+                                            int j = 0;
+                                            <tr class="NVPairs1" id="addrow" data-row="@sRowNo">
+                                                @foreach (var items in oBOI.Attributes.Values.Where(m => m.bDirty == true).ToList())
+                                                {
+                                                    var fields = orderfields[i].Split('^');
+                                                    var value = fields[j];
+                                                    var AttrD = oBOI.BOD.Attributes.Values.Where(m => m.Name.ToLower() == items.sName.ToLower() || m.LabelName.ToLower() == items.sName.ToLower()).FirstOrDefault();
+                                                    var bIsSelect = false;
+                                                    bool IsHidden = items.bIsHidden;
+                                                    var Hiddenclass = "";
+                                                    if (IsHidden)
+                                                    {
+                                                        Hiddenclass = "hidden";
+                                                    }
+                                                    @*var Label = AttrD.LabelName;
+                                    <label class="form-label">@Label</label>*@
+                                                    if (AttrD.FKiType > 0)
+                                                    {
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="field-errmsg fc-red">
+                                                                <span class="@NewsGUID-@oBOI.BOD.Name-@items.sName"></span>
+                                                            </div>
+                                                            @if (AttrD.sFKBOSize == "10")
+                                                            {
+                                                                <div class="form-input attrselect">
+                                                                    <select name="@items.sName" class="form-control" data-attrname="@items.sName" onchange="AttributeChange(this)" onload="AttributeChange(this)" id="DDLAttribute" data-nonformdata="@items.sPreviousValue">
+                                                                        @{var OptValue = value;
+                                                                            if (items.FieldDDL != null && items.FieldDDL.Count() > 0)
+                                                                            {
+                                                                                <option value="-1">Please Select</option>
+                                                                                foreach (var opt in items.FieldDDL.OrderBy(m => m.Expression))
+                                                                                {
+                                                                                    if (opt.Expression != null && opt.Expression.ToLower() == "please select")
+                                                                                    {
+                                                                                        {
+                                                                                            bIsSelect = true;
+                                                                                        }
+                                                                                    }
+                                                                                    else if (string.IsNullOrEmpty(OptValue))
+                                                                                    {
+                                                                                        <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        if (opt.text == OptValue)
+                                                                                        {
+                                                                                            <option value="@opt.text" data-sType="@opt.Type" selected>@opt.Expression</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            else if (AttrD.FieldDDL != null && AttrD.FieldDDL.Count() > 0)
+                                                                            {
+                                                                                <option value="-1">Please Select</option>
+                                                                                foreach (var opt in AttrD.FieldDDL.OrderBy(m => m.Expression))
+                                                                                {
+                                                                                    if (opt.Expression != null && opt.Expression.ToLower() == "please select")
+                                                                                    {
+                                                                                        {
+                                                                                            bIsSelect = true;
+                                                                                        }
+                                                                                    }
+                                                                                    else if (string.IsNullOrEmpty(OptValue))
+                                                                                    {
+                                                                                        <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        if (opt.text == OptValue)
+                                                                                        {
+                                                                                            <option value="@opt.text" data-sType="@opt.Type" selected>@opt.Expression</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="0"></option>
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                            }
+                                                        </td>
+                                                    }
+                                                    else if (AttrD.IsOptionList)
+                                                    {
+                                                        var OptValue = value;
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="field-errmsg fc-red">
+                                                                <span class="@NewsGUID-@oBOI.BOD.Name-@items.sName"></span>
+                                                            </div>
+
+                                                            @if (AttrD.OptionList != null && AttrD.OptionList.Count() != 0)
+                                                            {
+                                                                <input type="hidden" value="flag" />
+                                                                <div class="form-input">
+                                                                    <select name="@items.sName" class="form-control" id="DDL-@items.sName@NewsGUID" data-nonformdata="@items.sPreviousValue">
+
+
+                                                                        <option value="">Please Select</option>
+                                                                        @foreach (var opt in AttrD.OptionList.OrderBy(m => m.sOptionName))
+                                                                        {
+                                                                            if (opt.sOptionName != null && opt.sOptionName.ToLower() == "please select")
+                                                                            {
+                                                                                {
+                                                                                    bIsSelect = true;
+                                                                                }
+                                                                            }
+                                                                            else if (OptValue == null)
+                                                                            {
+                                                                                if (!string.IsNullOrEmpty(AttrD.DefaultValue))
+                                                                                {
+                                                                                    if (opt.sOptionName == AttrD.DefaultValue)
+                                                                                    {
+                                                                                        <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                if (opt.sValues == OptValue)
+                                                                                {
+                                                                                    <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        }
+                                                                    </select>
+                                                                </div>
+
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="OperatorDiv form-input" id="@value" data-sField="@items.sName">
+                                                                    <select name="@items.sName" class="form-control" id="DDL-@items.sName@NewsGUID" data-nonformdata="@items.sPreviousValue">
+                                                                        <option value="">Please Select</option>
+                                                                        @foreach (var opt in AttrD.OptionList.OrderBy(m => m.sOptionName))
+                                                                        {
+                                                                            if (opt.sOptionName != null && opt.sOptionName.ToLower() == "please select")
+                                                                            {
+                                                                                {
+                                                                                    bIsSelect = true;
+                                                                                }
+                                                                            }
+                                                                            else if (OptValue == null)
+                                                                            {
+                                                                                if (!string.IsNullOrEmpty(AttrD.DefaultValue))
+                                                                                {
+                                                                                    if (opt.sOptionName == AttrD.DefaultValue)
+                                                                                    {
+                                                                                        <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                if (opt.sValues == OptValue)
+                                                                                {
+                                                                                    <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                            }
+                                                        </td>
+                                                    }
+                                                    else if (items.sName.ToLower() == oBOD.sPrimaryKey.ToLower())
+                                                    {
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="" id="@items.sValue">
+                                                                @Html.TextBoxFor(m => items.sValue, new { @Name = items.sName.ToLower(), @class = "form-control" })
+                                                            </div>
+                                                        </td>
+                                                    }
+                                                    else
+                                                    {
+                                                        items.sValue = value;
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="AttributeDiv" id="@items.sValue" data-sField="@items.sName">
+                                                                @Html.TextBoxFor(m => items.sValue, new { @Name = items.sName.ToLower(), @class = "form-control" })
+                                                            </div>
+                                                        </td>
+                                                    }
+                                                    j++;
+                                                }
+
+                                                <td class="">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteNVPair1">Delete</button>
+                                                </td>
+                                            </tr>
+
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            else if ((!string.IsNullOrEmpty(o1Click.FKiSelectedValue) && WatchParams.ToLower() == "select") || (!string.IsNullOrEmpty(o1Click.sRowColour) && WatchParams == "Colours"))
+                                                                            {
+                                                                                if (WatchParams.ToLower() == "select" && !string.IsNullOrEmpty(o1Click.FKiSelectedValue))
+                                                                                {
+                                                                                    SelectedFields = o1Click.FKiSelectedValue.Split(',');
+                                                                                }
+                                                                                else if (WatchParams == "Colours" && !string.IsNullOrEmpty(o1Click.sRowColour))
+                                                                                {
+                                                                                    SelectedFields = o1Click.sRowColour.Split(',');
+                                                                                }
+
+                                                                                if (o1Click != null)
+                                                                                {
+                                                                                    int j = 0;
+                                                                                    for (var i = 0; i < SelectedFields.Count(); i++)
+                                                                                    {
+                                            <tr class="NVPairs1" id="addrow" data-row="@sRowNo">
+                                                @foreach (var items in oBOI.Attributes.Values.Where(m => m.bDirty == true).ToList())
+                                                {
+                                                    var fields = SelectedFields;
+                                                    var value = fields[j];
+                                                    var AttrD = oBOI.BOD.Attributes.Values.Where(m => m.Name.ToLower() == items.sName.ToLower() || m.LabelName.ToLower() == items.sName.ToLower()).FirstOrDefault();
+                                                    var bIsSelect = false;
+                                                    bool IsHidden = items.bIsHidden;
+                                                    var Hiddenclass = "";
+                                                    if (IsHidden)
+                                                    {
+                                                        Hiddenclass = "hidden";
+                                                    }
+                                                    @*var Label = AttrD.LabelName;
+                                    <label class="form-label">@Label</label>*@
+                                                    if (AttrD.FKiType > 0)
+                                                    {
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="field-errmsg fc-red">
+                                                                <span class="@NewsGUID-@oBOI.BOD.Name-@items.sName"></span>
+                                                            </div>
+                                                            @if (AttrD.sFKBOSize == "10")
+                                                            {
+                                                                <div class="form-input attrselect">
+                                                                    <select name="@items.sName" class="form-control" data-attrname="@items.sName" onchange="AttributeChange(this)" onload="AttributeChange(this)" id="DDLAttribute" data-nonformdata="@items.sPreviousValue">
+                                                                        @{
+                                                                            var OptSearchValue = value;
+                                                                            if (items.FieldDDL != null && items.FieldDDL.Count() > 0)
+                                                                            {
+                                                                                <option value="-1">Please Select</option>
+                                                                                foreach (var opt in items.FieldDDL.OrderBy(m => m.Expression))
+                                                                                {
+                                                                                    if (opt.Expression != null && opt.Expression.ToLower() == "please select")
+                                                                                    {
+                                                                                        {
+                                                                                            bIsSelect = true;
+                                                                                        }
+                                                                                    }
+                                                                                    else if (string.IsNullOrEmpty(OptSearchValue))
+                                                                                    {
+                                                                                        <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        if (opt.text == OptSearchValue)
+                                                                                        {
+                                                                                            <option value="@opt.text" data-sType="@opt.Type" selected>@opt.Expression</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            else if (AttrD.FieldDDL != null && AttrD.FieldDDL.Count() > 0)
+                                                                            {
+                                                                                <option value="-1">Please Select</option>
+                                                                                foreach (var opt in AttrD.FieldDDL.OrderBy(m => m.Expression))
+                                                                                {
+                                                                                    if (opt.Expression != null && opt.Expression.ToLower() == "please select")
+                                                                                    {
+                                                                                        {
+                                                                                            bIsSelect = true;
+                                                                                        }
+                                                                                    }
+                                                                                    else if (string.IsNullOrEmpty(OptSearchValue))
+                                                                                    {
+                                                                                        <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        if (opt.text == OptSearchValue)
+                                                                                        {
+                                                                                            <option value="@opt.text" data-sType="@opt.Type" selected>@opt.Expression</option>
+                                                                                        }
+                                                                                        else
+                                                                                        {
+                                                                                            <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="0"></option>
+                                                                            }
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                            }
+                                                        </td>
+                                                    }
+                                                    else if (AttrD.IsOptionList)
+                                                    {
+                                                        var OptValue = value;
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="field-errmsg fc-red">
+                                                                <span class="@NewsGUID-@oBOI.BOD.Name-@items.sName"></span>
+                                                            </div>
+
+                                                            @if (AttrD.OptionList != null && AttrD.OptionList.Count() != 0)
+                                                            {
+                                                                <input type="hidden" value="flag" />
+                                                                <div class="form-input">
+                                                                    <select name="@items.sName" class="form-control" id="DDL-@items.sName@NewsGUID" data-nonformdata="@items.sPreviousValue">
+
+
+                                                                        <option value="">Please Select</option>
+                                                                        @foreach (var opt in AttrD.OptionList.OrderBy(m => m.sOptionName))
+                                                                        {
+                                                                            if (opt.sOptionName != null && opt.sOptionName.ToLower() == "please select")
+                                                                            {
+                                                                                {
+                                                                                    bIsSelect = true;
+                                                                                }
+                                                                            }
+                                                                            else if (OptValue == null)
+                                                                            {
+                                                                                if (!string.IsNullOrEmpty(AttrD.DefaultValue))
+                                                                                {
+                                                                                    if (opt.sOptionName == AttrD.DefaultValue)
+                                                                                    {
+                                                                                        <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                if (opt.sValues == OptValue)
+                                                                                {
+                                                                                    <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        }
+                                                                    </select>
+                                                                </div>
+
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="OperatorDiv form-input" id="@value" data-sField="@items.sName">
+                                                                    <select name="@items.sName" class="form-control" id="DDL-@items.sName@NewsGUID" data-nonformdata="@items.sPreviousValue">
+                                                                        <option value="">Please Select</option>
+                                                                        @foreach (var opt in AttrD.OptionList.OrderBy(m => m.sOptionName))
+                                                                        {
+                                                                            if (opt.sOptionName != null && opt.sOptionName.ToLower() == "please select")
+                                                                            {
+                                                                                {
+                                                                                    bIsSelect = true;
+                                                                                }
+                                                                            }
+                                                                            else if (OptValue == null)
+                                                                            {
+                                                                                if (!string.IsNullOrEmpty(AttrD.DefaultValue))
+                                                                                {
+                                                                                    if (opt.sOptionName == AttrD.DefaultValue)
+                                                                                    {
+                                                                                        <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                    }
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                if (opt.sValues == OptValue)
+                                                                                {
+                                                                                    <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        }
+                                                                    </select>
+                                                                </div>
+                                                            }
+                                                        </td>
+                                                    }
+                                                    else if (items.sName.ToLower() == oBOD.sPrimaryKey.ToLower())
+                                                    {
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="" id="@items.sValue">
+                                                                @Html.TextBoxFor(m => items.sValue, new { @Name = items.sName.ToLower(), @class = "form-control" })
+                                                            </div>
+                                                        </td>
+                                                    }
+                                                    else
+                                                    {
+                                                        items.sValue = value;
+                                                        <td class="" @Hiddenclass>
+                                                            <div class="AttributeDiv" id="@items.sValue" data-sField="@items.sName">
+                                                                @Html.TextBoxFor(m => items.sValue, new { @Name = items.sName.ToLower(), @class = "form-control" })
+                                                            </div>
+                                                        </td>
+                                                    }
+                                                    j++;
+                                                }
+
+                                                <td class="">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteNVPair1">Delete</button>
+                                                </td>
+                                            </tr>
+
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                    <tr class="NVPairs1" id="addrow" data-row="@sRowNo">
+                        @foreach (var items in oBOI.Attributes.Values.Where(m => m.bDirty == true).ToList())
+                        {
+                            int j = 0;
+                            bool IsHidden = items.bIsHidden;
+                            var Hiddenclass = "";
+                            if (IsHidden)
+                            {
+                                Hiddenclass = "hidden";
+                            }
+                            var AttrD = oBOI.BOD.Attributes.Values.Where(m => m.Name.ToLower() == items.sName.ToLower() || m.LabelName.ToLower() == items.sName.ToLower()).FirstOrDefault();
+                            var sName = "tr" + k + "_" + AttrD.Name.ToLower();
+                            if (AttrD.FKiType > 0)
+                            {
+                                <td class="" @Hiddenclass>
+                                    <div class="field-errmsg fc-red">
+                                        <span class="@NewsGUID-@oBOI.BOD.Name-@items.sName"></span>
+                                    </div>
+                                    @if (AttrD.sFKBOSize == "10")
+                                    {
+                                        var bIsSelect = false;
+                                        <div class="attrselect form-input">
+                                            <select name="@sName" class="form-control" data-attrname="@items.sName" onchange="AttributeChange(this)" onload="AttributeChange(this)" id="DDLAttribute" data-nonformdata="@items.sPreviousValue">
+                                                @{var OptValue = items.sPreviousValue;
+                                                    if (items.FieldDDL != null && items.FieldDDL.Count() > 0)
+                                                    {
+                                                        <option value="">Please Select</option>
+                                                        foreach (var opt in items.FieldDDL.OrderBy(m => m.Expression))
+                                                        {
+                                                            if (opt.Expression != null && opt.Expression.ToLower() == "please select")
+                                                            {
+                                                                {
+                                                                    bIsSelect = true;
+                                                                }
+                                                            }
+                                                            else if (string.IsNullOrEmpty(OptValue))
+                                                            {
+                                                                <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                if (opt.text == OptValue)
+                                                                {
+                                                                    <option value="@opt.text" data-sType="@opt.Type" selected>@opt.Expression</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    else if (AttrD.FieldDDL != null && AttrD.FieldDDL.Count() > 0)
+                                                    {
+                                                        <option value="">Please Select</option>
+                                                        foreach (var opt in AttrD.FieldDDL.OrderBy(m => m.Expression))
+                                                        {
+                                                            if (opt.Expression != null && opt.Expression.ToLower() == "please select")
+                                                            {
+                                                                {
+                                                                    bIsSelect = true;
+                                                                }
+                                                            }
+                                                            else if (string.IsNullOrEmpty(OptValue))
+                                                            {
+                                                                <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                if (opt.text == OptValue)
+                                                                {
+                                                                    <option value="@opt.text" data-sType="@opt.Type" selected>@opt.Expression</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@opt.text" data-sType="@opt.Type">@opt.Expression</option>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="0"></option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    }
+                                </td>
+                            }
+                            else if (AttrD.IsOptionList)
+                            {
+                                var bIsSelect = false;
+                                var OptValue = items.sPreviousValue;
+                                <td class="" @Hiddenclass>
+                                    <div class="field-errmsg fc-red">
+                                        <span class="@NewsGUID-@oBOI.BOD.Name-@items.sName"></span>
+                                    </div>
+                                    @if (AttrD.OptionList != null && AttrD.OptionList.Count() != 0)
+                                    {
+                                        <input type="hidden" value="flag" />
+                                        <div class="form-input">
+                                            <select name="@sName" class="form-control" id="DDL-@items.sName@NewsGUID" data-nonformdata="@items.sPreviousValue">
+
+
+                                                <option value="">Please Select</option>
+                                                @foreach (var opt in AttrD.OptionList.OrderBy(m => m.sOptionName))
+                                                {
+                                                    if (opt.sOptionName != null && opt.sOptionName.ToLower() == "please select")
+                                                    {
+                                                        {
+                                                            bIsSelect = true;
+                                                        }
+                                                    }
+                                                    else if (OptValue == null)
+                                                    {
+                                                        if (!string.IsNullOrEmpty(AttrD.DefaultValue))
+                                                        {
+                                                            if (opt.sOptionName == AttrD.DefaultValue)
+                                                            {
+                                                                <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        if (opt.sValues == OptValue)
+                                                        {
+                                                            <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                        }
+                                                    }
+                                                }
+                                                }
+                                            </select>
+                                        </div>
+
+                                    }
+                                    else
+                                    { <div class="OperatorDiv form-input" data-sField="@sName">
+                                            <select name="@sName" class="form-control" id="DDL-@items.sName@NewsGUID" data-nonformdata="@items.sPreviousValue">
+                                                <option value="">Please Select</option>
+                                                @foreach (var opt in AttrD.OptionList.OrderBy(m => m.sOptionName))
+                                                {
+                                                    if (opt.sOptionName != null && opt.sOptionName.ToLower() == "please select")
+                                                    {
+                                                        {
+                                                            bIsSelect = true;
+                                                        }
+                                                    }
+                                                    else if (OptValue == null)
+                                                    {
+                                                        if (!string.IsNullOrEmpty(AttrD.DefaultValue))
+                                                        {
+                                                            if (opt.sOptionName == AttrD.DefaultValue)
+                                                            {
+                                                                <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        if (opt.sValues == OptValue)
+                                                        {
+                                                            <option value="@opt.sValues" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@opt.sValues" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                        }
+                                                    }
+                                                }
+                                                }
+                                            </select>
+                                        </div>
+                                    }
+                                </td>
+                            }
+                            else if (items.sName.ToLower() == oBOD.sPrimaryKey.ToLower())
+                            {
+                                <td class="" @Hiddenclass>
+                                    <div class="" id="@items.sValue">
+                                        @Html.TextBoxFor(m => items.sValue, new { @Name = sName.ToLower(), @class = "form-control" })
+                                    </div>
+                                </td>
+                            }
+                            else if (items.sName.ToLower() == "bIsExposedFilter".ToLower())
+                            {
+                                <td class="" @Hiddenclass>
+                                    <div class="" id="@items.sValue">
+                                        @*@if (fields[3] == "0")
+                                        {
+                                            <input type="checkbox" name="ExposedCheck" id="ExposedFiler" class="ExposedFilterBox" /> }
+                                        else
+                                        {*@
+                                            <input type="checkbox" name="ExposedCheck" id="ExposedFiler" class="ExposedFilterBox" checked />
+                                        //}
+                                        @*@Html.CheckBoxFor(m => items.sValue, new { @Name = items.sName.ToLower(), @class = "form-control" })*@
+                                    </div>
+                                </td>
+                                <td class="" @Hiddenclass>
+                                    <div class="" id="@items.sValue">
+                                        @*<input type="button" name="ExposedCheckButton" id="ExposedButton" value="." onclick="fnc1clickPopup(this,'CADEF03E-75C5-4767-986B-9135CCE3F7A7',sGUID)"/>*@
+                                        <button type="button" class="btn btn-theme btn-xs ExposedButton" id="ExposedButton_" @j>.</button>
+                                        @*@Html.CheckBoxFor(m => items.sValue, new { @Name = items.sName.ToLower(), @class = "form-control" })*@
+                                    </div>
+                                </td>
+                            }
+
+                            else
+                            {
+
+                                <td class="" @Hiddenclass>
+                                    <div class="AttributeDiv" data-sField="@sName">
+                                        @Html.TextBoxFor(m => items.sValue, new { @Name = sName.ToLower(), @class = "form-control" })
+                                    </div>
+                                </td>
+                            }
+
+                        }
+                        <td class="DeleteDIv" hidden></td>
+                        <td class="">
+                            <button type="button" class="btn btn-theme btn-xs DeleteNVPair1">Delete</button>
+                        </td>
+                    </tr>
+
+
+                                }
+
+                            }
+                            k++;
+                        }
+
+
+                    </table>
+                    <div>
+                        <button type="button" class="btn btn-theme btn-xs" onclick="SaveGridData(this, null, '@sBOName')">Save</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,61 @@
+﻿@model List<XIDNA.Models.XiLinkNVs>
+@{
+    Layout = null;
+    int iID = @ViewBag.LeadID;
+}
+<style>
+    .nav-tabs.tab-line,
+    .tab-content {
+        display: inline;
+    }
+</style>
+
+<script src="~/Content/plugins/tabScroll/jquery.scrolling-tabs.js"></script>
+<script src="~/Content/plugins/tabScroll/st-demo.js"></script>
+
+<div class="nav-tabs-custom">
+    <ul class="nav nav-tabs tab-line tab-Scroll">
+        @for (int i = 0; i < Model.Count(); i++)
+        {
+            <li><a id="btnCalls_@Model[i].XiLinkID-@iID" data-xilinkid="@Model[i].Value" class="tabbtn" role="tab" data-toggle="tab">@Model[i].Name</a></li>
+        }
+        @*<li id="liquery" class="active"><a href="#QueryFormTab" data-toggle="tab">Query</a></li>*@
+    </ul>
+</div>
+
+<script>
+    $(document).ready(function () {
+        //GetXiParameters();
+        $('.tabbtn').click(function () {
+            var iInstanceID = $(this).attr('data-instanceid');
+            var XiLinkID = $(this).attr('data-xilinkid');
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            XIRun(null,XiLinkID, 0, sGUID, 0, true);
+        });
+    });
+
+    function fncMergeXIlinkintoXIParameters(XiLinkID) {
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("GetXiParameters", "XiLink")',
+            data: { XiLinkID: parseInt(ID) },
+            cache: false,
+            async: false,
+            success: function (data) {
+                $("#DisplayContent").html(data);
+            }
+        });
+    }
+
+    //$(activate);
+    //function activate() {
+    //    $('.nav-tabs.tab-Scroll')
+    //      .scrollingTabs({
+    //          enableSwiping: true
+    //      })
+    //    //.on('ready.scrtabs', function () {
+    //    //    $('.tab-content').show();
+    //    //});
+    //}
+
+</script>

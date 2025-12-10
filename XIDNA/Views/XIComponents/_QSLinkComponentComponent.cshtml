@@ -1,0 +1,245 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIQSLink oLink = new XIQSLink();
+    if (Model.oContent.ContainsKey(XIConstant.QSLinkComponent))
+    {
+        oLink = (XIQSLink)Model.oContent[XIConstant.QSLinkComponent];
+        if (oLink == null)
+        {
+            oLink = new XIQSLink();
+        }
+    }
+}
+
+<div class="form-group">
+    <div id="addClass">
+        <div class="m-t-b-15">
+            <section class="content">
+                <div class="row">
+                    <div class="box">
+                        <div class="box-body">
+                            <div class="innerborder">
+                                <h3 class="maintitle">QSLink Mapping</h3>
+                                @using (Ajax.BeginForm("SaveXIQSLinks", "XISemantics", new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "QSXiLinkMappingForm", @class = "form-horizontal" }))
+                                {
+                                    @Html.ValidationSummary(true);
+                                    <input type="hidden" id="ID" name="ID" value="@oLink.ID" />
+                                    <div id="clear-text">
+                                        @if (oLink.ID > 0)
+                                        {
+                                            <div class="form-group">
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn">ID:<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <label for="inputEmail" class="gn">@oLink.ID<span class="danger"></span></label>
+                                                </div>
+                                            </div>
+                                        }
+                                        @*@if (oLink.FKiApplicationID == 0)
+                                        {
+                                            <div class="form-group">
+                                                <div class="col-md-6">
+                                                    <label for="inputEmail" class="gn">Application<span class="danger"></span></label>
+                                                    @Html.DropDownList("FKiApplicationID", new SelectList(oLink.ddlApplications, "Value", "text"), new { @class = "form-control" })
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <input type="hidden" id="FKiApplicationID" name="FKiApplicationID" value="@oLink.FKiApplicationID" />
+                                        }*@
+                                        <div class="form-group">
+                                            <div class="col-md-6">
+                                                <label for="inputEmail" class="gn">Code<span class="danger">*</span></label>
+                                                @Html.DropDownList("sCode", new SelectList(oLink.ddlQSLinkCodes, "Expression", "text", oLink.sCode), "Please Select", new { @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-3 taberrormsg">
+                                                @Html.ValidationMessage("sCode", null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-6">
+                                                <label for="inputEmail" class="gn">Question Set<span class="danger">*</span></label>
+                                                @Html.DropDownList("FKiQSDefinitionID", new SelectList(oLink.ddlQuestionSets, "Value", "text", oLink.FKiQSDefinitionID), "Please Select", new { @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-3 taberrormsg">
+                                                @Html.ValidationMessage("FKiQSDefinitionID", null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-6">
+                                                <label for="inputEmail" class="gn">Step<span class="danger">*</span></label>
+                                                @Html.DropDownList("FKiStepDefinitionID", new SelectList(oLink.ddlQSStteps, "Value", "text", oLink.FKiStepDefinitionID), "Please Select", new { @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-3 taberrormsg">
+                                                @Html.ValidationMessage("FKiStepDefinitionID", null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-6">
+                                                <label for="inputEmail" class="gn">Section<span class="danger"></span></label>
+                                                @Html.DropDownList("FKiSectionDefinitionID", new SelectList(oLink.ddlSections, "Value", "text", oLink.FKiSectionDefinitionID), "Please Select", new { @class = "form-control" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-10">
+                                                <input type="submit" class="btn btn-theme" value="Save" />
+                                                @if (oLink.ID == 0)
+                                                {
+                                                    <button type="reset" class="btn btn-theme reverse" id="ResetBoBtn">Reset</button>
+                                                }
+                                                <button type="button" class="btn btn-theme decline" id="CancelBO">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        GetQSLinks();
+        GetQuestionSets();
+        $('#FKiQSDefinitionID').change(function () {
+            var Value = $(this).val();
+            if (Value > 0) {
+                GetQSSteps(Value)
+                //fncGetQSData(Value, "QS");
+            }
+            else {
+                $('#FKiStepDefinitionID').empty();
+                $('#FKiStepDefinitionID').append('<option value="">--Select--</option>');
+            }
+        });
+        $('#FKiStepDefinitionID').change(function () {
+            var Value = $(this).val();
+            if (Value > 0) {
+                GetQSSections(Value)
+                //fncGetQSData(Value, "Step");
+            }
+            else {
+                $('#FKiSectionDefinitionID').empty();
+            }
+        });
+        $('#CancelBO').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#QSXiLinkMappingForm')[0].reset();
+            $('#QSXiLinkMappingForm .taberrormsg').find('span').html('');
+        });
+    })
+    function OnFormBegin() {
+        $('#QSXiLinkMappingForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+
+    function OnComplete(e) {
+        $('#QSXiLinkMappingForm').unblock();
+        CustomMessage(e.ResponseMessage, e.Status);
+    }
+
+    function fncGetQSData(ID, Type) {
+        $.ajax({
+            url: '@Url.Action("IDEGetXIQSData", "XISemantics")',
+            type: "Post",
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            cache: false,
+            async: false,
+            data: JSON.stringify({ ID: ID, Type: Type }),
+            success: function (data) {
+                if (Type == "QS") {
+                    $('#FKiStepDefinitionID').empty();
+                    for (i = 0; i < data.length; i++) {
+                        $('#FKiStepDefinitionID').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                    }
+                }
+                else if (Type == "Step") {
+                    $('#FKiSectionDefinitionID').empty();
+                    for (i = 0; i < data.length; i++) {
+                        $('#FKiSectionDefinitionID').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                    }
+                }
+            }
+        });
+    }
+
+    function GetQSLinks() {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("Get_QSLinks", "XISemantics")',
+            cache: false,
+            async: false,
+            dataType: 'json',
+            success: function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    $('#sCode').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                }
+            }
+        });
+    }
+
+    function GetQuestionSets() {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("Get_QuestionSets", "XISemantics")',
+            cache: false,
+            async: false,
+            dataType: 'json',
+            success: function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    $('#FKiQSDefinitionID').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                }
+            }
+        });
+    }
+
+    function GetQSSteps(iQSDID) {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("Get_QSSteps", "XISemantics")',
+            data: { iQSDID: iQSDID },
+            cache: false,
+            async: false,
+            dataType: 'json',
+            success: function (data) {
+                $('#FKiStepDefinitionID').empty();
+                $('#FKiStepDefinitionID').append('<option value="">Please Select</option>');
+                for (var i = 0; i < data.length; i++) {
+                    $('#FKiStepDefinitionID').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                }
+            }
+        });
+    }
+
+    function GetQSSections(iStepID) {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("Get_QSSections", "XISemantics")',
+            data: { iQSStepID: iStepID },
+            cache: false,
+            async: false,
+            dataType: 'json',
+            success: function (data) {
+                $('#FKiSectionDefinitionID').empty();
+                $('#FKiSectionDefinitionID').append('<option value="">Please Select</option>');
+                for (var i = 0; i < data.length; i++) {
+                    $('#FKiSectionDefinitionID').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                }
+            }
+        });
+    }
+
+</script>

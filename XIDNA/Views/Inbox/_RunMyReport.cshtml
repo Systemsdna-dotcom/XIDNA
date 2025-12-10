@@ -1,0 +1,74 @@
+﻿@model XIDNA.ViewModels.VMQueryPreview
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        var table = $('#UserResult').dataTable({
+            "aoColumnDefs": [
+           {
+               "aTargets": [0],
+               "bVisible": false,
+               "bsearchable": false
+           }
+            ],
+        })
+        $('#UserResult tbody').on('click', 'tr', function () {
+            var hg =@Html.Raw(Json.Encode(Model.Headings));
+            var table = $('#UserResult').dataTable();
+            var tr = $(this).closest('tr');
+            var data1 = table.fnGetData(tr);
+            var id;
+            for (var i = 0; i < hg.length; i++) {
+                if (hg[i] == "ID") {
+                    id = data1[i];
+                }
+            }
+            var selid = parseInt(id);
+            var url = "@Url.Action("LeadView", "Inbox")?leadid=" + selid +"&QueryID="+ '@Model.QueryID';
+            if('@Model.IsPopup'=="True"){
+                window.open(url, '_blank',"scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            }
+
+        });
+    })
+</script>
+<section class="content-header hedr">
+    <h1>@Model.QueryName - One Click Result </h1>
+</section>
+<div class="content">
+    <div class="box">
+        <div class="tab_scroll main-table col-xs-12">
+            <div class="dataTables_wrapper no-footer table-responsive">
+                <div id="UserQueryResult">
+                    <h4></h4>
+                    <table id="UserResult" class="table table-bordered table-striped dataTable">
+                        <thead>
+                            <tr>
+                                @foreach (var items in @Model.Headings)
+                                {
+                                    <th>@items</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in @Model.Rows)
+                            {
+
+                                <tr>
+                                    @foreach (var value in item)
+                                    {
+                                        <td>@value</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,159 @@
+﻿@model XIDNA.Models.XIQSLinks
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<section class="content-header hedr">
+    @if (Model.ID == 0)
+    {
+        <h1> Add QS XiLinks </h1>
+    }
+    else
+    {
+        <h1> Edit QS XiLinks </h1>
+    }
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> QS XiLinks </a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+
+<div class="form-group">
+    <div id="addClass">
+        <div class="m-t-b-15">
+            <section class="content">
+                <div class="row">
+                    <div class="box">
+                        <div class="box-body">
+                            <div class="innerborder">
+                                @using (Ajax.BeginForm("SaveXIQSLinks", "XISematics", new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "QSXiLinkForm", @class = "form-horizontal" }))
+                                {
+                                    @Html.ValidationSummary(true);
+                                    @Html.HiddenFor(m => m.ID)
+                                    <div id="clear-text">
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">Code<span class="danger">*</span></label>
+                                                @Html.DropDownListFor(m => m.sCode, new SelectList(Model.ddlQSLinkCodes, "Expression", "text"), "--Select--", new { @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-3 taberrormsg">
+                                                @Html.ValidationMessageFor(m => m.sCode, null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">Question Set<span class="danger">*</span></label>
+                                                @Html.DropDownListFor(m => m.FKiQSDefinitionID, new SelectList(Model.ddlQuestionSets, "Value", "text"), "--Select--", new { @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-3 taberrormsg">
+                                                @Html.ValidationMessageFor(m => m.FKiQSDefinitionID, null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">Step<span class="danger">*</span></label>
+                                                @Html.DropDownListFor(m => m.FKiStepDefinitionID, new SelectList(Model.ddlQSStteps, "Value", "text"), "--Select--", new { @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-3 taberrormsg">
+                                                @Html.ValidationMessageFor(m => m.FKiStepDefinitionID, null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn">Section<span class="danger"></span></label>
+                                                @Html.DropDownListFor(m => m.FKiSectionDefinitionID, new SelectList(Model.ddlSections, "Value", "text"), new { @class = "form-control" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-sm-10">
+                                                <input type="submit" class="btn btn-theme" value="Save" />
+                                                @if (Model.ID == 0)
+                                                {
+                                                    <button type="reset" class="btn btn-theme reverse" id="ResetBoBtn">Reset</button>
+                                                }
+                                                <button type="button" class="btn btn-theme decline" id="CancelBO">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#FKiQSDefinitionID').change(function () {
+            var Value = $(this).val();
+            if (Value > 0) {
+                fncGetQSData(Value, "QS");
+            }
+            else {
+                $('#FKiStepDefinitionID').empty();
+                $('#FKiStepDefinitionID').append('<option value="">--Select--</option>');
+            }
+        });
+        $('#FKiStepDefinitionID').change(function () {
+            var Value = $(this).val();
+            if (Value > 0) {
+                fncGetQSData(Value, "Step");
+            }
+            else {
+                $('#FKiSectionDefinitionID').empty();
+                //$('#FKiSectionDefinitionID').append('<option value="">--Select--</option>');
+            }
+        });
+        $('#CancelBO').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#QSXiLinkForm')[0].reset();
+            $('#QSXiLinkForm .taberrormsg').find('span').html('');
+        });
+    })
+    function OnFormBegin() {
+        $('#QSXiLinkForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+
+    function OnComplete(e) {
+        $('#QSXiLinkForm').unblock();
+        CustomMessage(e.ResponseMessage, e.Status);
+        opener.window.location.reload();
+    }
+
+    function fncGetQSData(ID, Type) {
+        $.ajax({
+            url: '@Url.Action("GetXIQSData", "XISemantics")',
+            type: "Post",
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            cache: false,
+            async: false,
+            data: JSON.stringify({ ID: ID, Type: Type }),
+            success: function (data) {
+                if (Type == "QS") {
+                    $('#FKiStepDefinitionID').empty();
+                    $('#FKiStepDefinitionID').append('<option value="">--Select--</option>');
+                    for (i = 0; i < data.length; i++) {
+                        $('#FKiStepDefinitionID').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                    }
+                }
+                else if (Type == "Step") {
+                    $('#FKiSectionDefinitionID').empty();
+                    for (i = 0; i < data.length; i++) {
+                        $('#FKiSectionDefinitionID').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                    }
+                }
+            }
+        });
+    }
+
+
+</script>

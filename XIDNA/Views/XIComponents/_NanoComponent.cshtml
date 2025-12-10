@@ -1,0 +1,227 @@
+﻿@model Dictionary<string, object>
+@using XICore
+@using XIDNA
+@{
+    var iOrgObjectType = string.Empty;
+    var iBOIID = string.Empty;
+    var iBODID = string.Empty;
+    var iLayoutID = 0;
+    string sMesType = string.Empty;
+    string sMessage = string.Empty;
+    var Time = string.Empty;
+    var iUserOrg = SessionManager.iUserOrg;
+    var sRead = "yes";
+    var sWrite = "yes";
+    var sCreate = "yes";
+    var sDelete = "yes";
+    var iNannoOrgID = string.Empty;
+    var iMessageID = string.Empty;
+    if (Model != null)
+    {
+        var Message = new XIIBO();
+
+        if (Model.ContainsKey("LeftMessage"))
+        {
+            sMesType = "Left";
+            Message = (XIIBO)Model["LeftMessage"];
+        }
+        else if (Model.ContainsKey("RightMessage"))
+        {
+            sMesType = "Right";
+            Message = (XIIBO)Model["RightMessage"];
+        }
+
+        if (Model.ContainsKey("iNannoOrgID"))
+        {
+            iNannoOrgID = (string)Model["iNannoOrgID"];
+        }
+
+        if (Model.ContainsKey("Permission"))
+        {
+            var Permission = (Dictionary<string, string>)Model["Permission"];
+            if (Permission != null && Permission.Count() > 0)
+            {
+                if (Permission.ContainsKey("10"))
+                {
+                    if (Permission["10"] == "20")
+                    {
+                        sRead = "no";
+                    }
+                }
+                if (Permission.ContainsKey("20"))
+                {
+                    if (Permission["20"] == "20")
+                    {
+                        sWrite = "no";
+                    }
+                }
+                if (Permission.ContainsKey("30"))
+                {
+                    if (Permission["30"] == "20")
+                    {
+                        sCreate = "no";
+                    }
+                }
+                if (Permission.ContainsKey("40"))
+                {
+                    if (Permission["40"] == "20")
+                    {
+                        sDelete = "no";
+                    }
+                }
+            }
+        }
+
+        var Widget = (XIDWidget)Model["Widget"];
+        iLayoutID = Widget.FKiLayoutID;
+        //iOrgObjectType = Model.AttributeI("FKiOrgObjectTypeID").sValue;
+        iBOIID = Message.AttributeI("iBOIID").sValue;
+        iBODID = Message.AttributeI("iBODID").sValue;
+        sMessage = Message.AttributeI("sMessage").sValue;
+        iMessageID = Message.AttributeI("ID").sValue;
+        Time = Message.AttributeI("XICreatedWhen").sResolvedValue;
+    }
+}
+<script>
+    $(document).ready(function(){
+        @*fncLoadWidget(@iOrgObjectType, @iBOIID, @iBODID);*@
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            url: GetBONameURL,
+            datatype: 'json',
+            cache: false,
+            async: true,
+            //data: { sStep: DefaultStep, iQSID: iQSDID, i1ClickID: i1ClickID, sDefaultStep: DefaultStep, iInstanceID: iInstanceID, sGUID: sGUID },
+            data: JSON.stringify({ iBODID:'@iBODID' }),
+            success: function (sBO) {
+                var InputParams = [];
+                var param1 = {};
+                param1["sName"] = '{XIP|ActiveBO}';
+                param1["sValue"] = sBO;
+                InputParams.push(param1);
+                var param2 = {};
+                param2["sName"] = '{-iInstanceID}';
+                param2["sValue"] = '@iBOIID';
+                InputParams.push(param2);
+                param2 = {};
+                param2["sName"] = '{XIP|sRead}';
+                param2["sValue"] = '@sRead';
+                InputParams.push(param2);
+                param2 = {};
+                param2["sName"] = '{XIP|sWrite}';
+                param2["sValue"] = '@sWrite';
+                InputParams.push(param2);
+                param2 = {};
+                param2["sName"] = '{XIP|sCreate}';
+                param2["sValue"] = '@sCreate';
+                InputParams.push(param2);
+                param2 = {};
+                param2["sName"] = '{XIP|sDelete}';
+                param2["sValue"] = '@sDelete';
+                InputParams.push(param2);
+                param2 = {};
+                param2["sName"] = 'iNannoOrgID';
+                param2["sValue"] = '@iNannoOrgID';
+                InputParams.push(param2);
+                var NannoDiv = $('.Nanno-@iUserOrg');
+                var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', NannoDiv[0]);
+                fncLoadLayout(@iLayoutID, InputParams, sGUID, '@iBOIID'+'-'+'@iBODID'+'-'+'@iMessageID', 'Nanno');
+                $("#FeedData").scrollTop($("#FeedData")[0].scrollHeight);
+            }
+        });
+    })
+</script>
+
+@if (sMesType == "Left")
+{
+    <div class="user sender">
+        <div class="msgContent">
+            @if (!string.IsNullOrEmpty(sMessage))
+                {
+                <p>@sMessage</p>
+            }
+            <div class="Layout_@iLayoutID @iBOIID-@iBODID-@iMessageID"></div>
+            <span class="msgTime">@Time</span>
+        </div>
+    </div>
+}
+
+@if (sMesType == "Right")
+{
+    <div class="user reciever">
+        <div class="msgContent viewed">
+            @if (!string.IsNullOrEmpty(sMessage))
+                {
+                <p>@sMessage</p>
+            }
+            <div class="Layout_@iLayoutID @iBOIID-@iBODID-@iMessageID"></div>
+            <span class="msgTime">@Time</span>
+        </div>
+    </div>
+}
+
+
+    @*@{
+            Layout = "~/views/shared/_nanolayout.cshtml";
+        }*@
+    @*<script>
+            $(document).ready(function () {
+
+                $('#btnHTMLSubmit').click(function () {
+                    var sBO = $('#sBO').val();
+                    var iInstanceID = $('#iInstanceID').val();
+                    var iClickID = $('#i1ClickID').val();
+                    var HTML = $('#HTMLInput').val();
+                    fncHTMLMerge(sBO, iInstanceID, iClickID, HTML);
+                });
+            });
+        </script>
+
+        <div class="htmlinput">
+            <div class="col-md-12">
+                <div class="col-md-6">
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <div class="wrap-width clearfix control-block">
+                                <label class="form-label">BO</label>
+                            </div>
+                            <div class="form-input">
+                                <input type="text" class="form-control" id="sBO" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="wrap-width clearfix control-block">
+                                <label class="form-label">Instance</label>
+                            </div>
+                            <div class="form-input">
+                                <input type="text" class="form-control" id="iInstanceID" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="wrap-width clearfix control-block">
+                                <label class="form-label">1Click</label>
+                            </div>
+                            <div class="form-input">
+                                <input type="text" class="form-control" id="i1ClickID" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="wrap-width clearfix control-block">
+                                <label class="form-label">HTML</label>
+                            </div>
+                            <div class="form-input">
+                                <textarea rows="10" cols="50" id="HTMLInput" class="form-control"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" class="btn btn-theme" id="btnHTMLSubmit">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-12">
+            <div class="htmloutput"></div>
+        </div>*@

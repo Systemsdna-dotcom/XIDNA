@@ -1,0 +1,714 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Data
+@{
+    List<Dictionary<string, object>> Data = new List<Dictionary<string, object>>();
+    List<Dictionary<string, XIChainReports>> scripts = new List<Dictionary<string, XIChainReports>>();
+    List<object> col = new List<object>();
+    List<object> Rows = new List<object>();
+    string ColColours = "";
+    string Collapse = "";
+    string Rowcolour = "";
+    string ReportName = "";
+    int ColCount = 0;
+    int TotalRowCount = 0;
+    //bool RowClick = false;
+    bool Exhaust = false;
+    string RowXilink = "";
+    string CellXilink = "";
+    List<string> CellCount = new List<string>();
+    List<string> RowCount = new List<string>();
+    List<string> Header = new List<string>();
+    List<string> ColHeader = new List<string>();
+    Dictionary<string, object> Alignment = new Dictionary<string, object>();
+    Dictionary<string, object> Colour = new Dictionary<string, object>();
+    XIReports Reports = new XIReports();
+    var report = (XIReports)Model.oContent[XIConstant.ReportComponent];
+    if (Model.oContent.ContainsKey(XIConstant.ReportComponent))
+    {
+        foreach (var item in (Dictionary<string, object>)report.Result)
+        {
+            if (item.Key == "Data" && item.Value != null)
+            {
+                Reports.Data = (List<Dictionary<string, object>>)item.Value;
+            }
+            else if (item.Key == "Colours" && item.Value != null)
+            {
+                col = (List<object>)item.Value;
+            }
+            else if (item.Key == "Colcolour")
+            {
+                ColColours = item.Value.ToString();
+            }
+            else if (item.Key == "Collapse")
+            {
+                Collapse = item.Value.ToString();
+            }
+            else if (item.Key == "CellValue" && item.Value != null)
+            {
+                Reports.Cell = (Dictionary<string, object>)item.Value;
+            }
+            else if (item.Key == "Barcolours")
+            {
+                Reports.Barcolours = (List<Dictionary<string, object>>)item.Value;
+            }
+            else if (item.Key.ToLower() == "scripts")
+            {
+                scripts = (List<Dictionary<string, XIChainReports>>)item.Value;
+            }
+            else if (item.Key.ToLower() == "reportname")
+            {
+                ReportName = (string)item.Value;
+            }
+            else if (item.Key == "Data1" && item.Value != null)
+            {
+                Reports.SplitData = (List<DataTable>)item.Value;
+            }
+            else if (item.Key == "ColHeader" && item.Value != null)
+            {
+                ColHeader = (List<string>)item.Value;
+            }
+            else if (item.Key == "Header" && item.Value != null)
+            {
+                Header = (List<string>)item.Value;
+            }
+            else if (item.Key == "ColumnCount")
+            {
+                ColCount = Convert.ToInt32(item.Value);
+            }
+            //else if (item.Key == "bIsRowClick")
+            //{
+            //    RowClick = Convert.ToBoolean(item.Value);
+            //}
+            else if (item.Key == "CellCount")
+            {
+                CellCount = item.Value.ToString().Split(',').ToList();
+            }
+            else if (item.Key == "CellXilink")
+            {
+                CellXilink = item.Value.ToString();
+            }
+            else if (item.Key == "RowCount")
+            {
+                RowCount = item.Value.ToString().Split(',').ToList();
+            }
+            else if (item.Key == "RowXilink")
+            {
+                RowXilink = item.Value.ToString();
+            }
+            else if (item.Key == "TotalExhaust")
+            {
+                Exhaust = Convert.ToBoolean(item.Value);
+            }
+            else
+            {
+                Rowcolour = item.Value.ToString();
+            }
+        }
+    }
+    var Headers = Reports.Data.FirstOrDefault();
+    var item1 = Rowcolour.Split(',');
+    var Cells = Reports.Cell.Values.ToList();
+    Reports.scri = scripts;
+
+    var lastItem = Reports.Data[Reports.Data.Count - 1];
+}
+
+<head>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            if ('@Collapse' == "True") {$(".report").attr('id', 'DashBoardReport')}
+            $('#DashBoardReport thead th:first-child').before('<th></th>');
+            $('#DashBoardReport > tbody > tr:first-child').find('div').removeClass();
+            $("#DashBoardReport > tbody > tr:first-child > td:first-child").before('<td><i class="fa fa-plus-square-o" aria-hidden="true"></i></td>');
+            $("#DashBoardReport > tbody > tr:not(:first-child)").hide();
+            $('#DashBoardReport > tbody > tr:not(:first-child) td:first-child').before('<td><i class="fa fa-minus-square-o" aria-hidden="true"></i></td>');
+
+            $("#DashBoardReport > tbody > tr:first-child > td:first-child").click(function () {
+                $("#DashBoardReport tr:not(:first-child)").toggle();
+            });
+        });
+
+
+        function fncCellorRowClick(RowXilinkID,SupplierID,RowHeader) {
+            var Param = {};
+            var oParams = [];
+            Param = {};
+            Param["sName"] = "{XIP|SupplierID}";
+            Param["sValue"] = SupplierID ;
+            oParams.push(Param);
+            Param = {};
+            Param["sName"] = "{XIP|sCellHeader}";
+            Param["sValue"] = RowHeader;
+            oParams.push(Param);
+            XILinkLoadJson(RowXilinkID,'@Model.sGUID', oParams, "");
+            @*$.ajax({
+                type: 'POST',
+              url: '@Url.Action("GetSubReport", "XiLink")',
+                  //url: DataURL,
+                contentType: "application/json; charset=utf-8",
+                data: { oParams: oParams/*, sGUID: sGUID*/},
+                async: true,
+                cache: false,
+                dataType: 'json',
+                //beforeSend: function (request) {
+                //    $.blockUI({ message: '<h3 class="nh3"><img src="/Scripts/ckfinder/plugins/gallery/colorbox/images/loading.gif" width="50px" /> Please wait while loading...</h3>' });
+                //},
+                success: function (data) {
+                }
+            });*@
+        }
+
+        $(".Cellvalue").click(function () {
+            var key = $(this).attr('id').split('_')[1];
+            var XiLinkID =@report.XiLinkID;
+            if (key != null) {
+                var oParams = [];
+                var Param = {};
+                Param["sName"] = "{XIP|iStatus}";
+                Param["sValue"] = key.split('+')[0];
+                oParams.push(Param);
+                Param = {};
+                Param["sName"] = "{XIP|iFKiUserID}";
+                Param["sValue"] = key.split('+')[1];
+                oParams.push(Param);
+            }
+            XILinkLoadJson(XiLinkID,'@Model.sGUID', oParams, "");
+
+        });
+    </script>
+</head>
+<body>
+
+    <div class="TableReport">
+        <h3><span>@ReportName</span></h3>
+        @if (Reports.SplitData.Count > 0 && Reports.SplitData != null)
+        {
+            for (int y = 0; y < Reports.SplitData.Count(); y++)
+            {
+                DataTable dt = Reports.SplitData[y];
+                //foreach (DataTable dt in Reports.SplitData)
+                //{
+                <table class="table table-striped table-bordered table-condensed table-hover">
+                    <span>@string.Join("---", @Header[y].Split('|').ToList())</span>
+                    @if (ColColours == "Column")
+                    {
+                        <thead>
+                            <tr>
+                                @for (int g = 0; g < ColHeader.Count(); g++)
+                                {
+                                    for (int i = 0; i < Headers.Count(); i++)
+                                    {
+                                        if (ColHeader[g] != Headers.ElementAt(i).Key)
+                                        {
+                                            if (item1.Contains(Headers.ElementAt(i).Key))
+                                            {
+                                                <th class="@col[i]">@Headers.ElementAt(i).Key</th>
+                                            }
+                                            else
+                                            {
+                                                <th class="text-center">@Headers.ElementAt(i).Key</th>
+                                            }
+                                        }
+                                    }
+                                }
+                            </tr>
+                        </thead>
+                    }
+                    else if (ColColours == "Rows")
+                    {
+                        <thead>
+                            <tr class="@col[0]">
+                                @for (int i = 0; i < Headers.Count(); i++)
+                                {
+                                    if (item1.Contains(Headers.ElementAt(i).Key))
+                                    {
+                                        <th class="text-center @col[0]">@Headers.ElementAt(i).Key</th>
+                                    }
+                                    else
+                                    {
+                                        <th class="@col[0]">@Headers.ElementAt(i).Key</th>
+                                    }
+
+                                }
+
+                            </tr>
+                        </thead>
+                    }
+                    else
+                    {
+                        <thead>
+                            <tr>
+
+                                @*@for (int g = 0; g < ColHeader.Count(); g++)
+                                    {*@
+                                @*@foreach (string item in list)
+                                    {
+                                        if (item != lastItem)
+
+
+                                            else
+                                            }*@
+                                @for (int i = ColCount; i < Headers.Count(); i++)
+                                {
+                                    //if (ColHeader[g] != @Headers.ElementAt(i).Key)
+                                    //{
+                                    if (col.Count() != 0)
+                                    {
+                                        <th class="text-center @col[0]">@Headers.ElementAt(i).Key</th>
+                                    }
+                                    else
+                                    {
+                                        <th class="text-center">@Headers.ElementAt(i).Key</th>
+                                    }
+                                }
+                                @*}
+                                    }*@
+                            </tr>
+                        </thead>
+
+                    }
+                    <tbody>
+                        @{int index = 0;}
+                        @{ int i2 = -1;}
+                        @{int index1 = 0; }
+                        @{int i4 = -1;}
+                        @{int ik = 0;}
+                        @*@foreach (DataRow dr in dt.Rows)
+                            {*@
+                        @if (dt.Rows.Count > 0)
+                        {
+                            List<string[]> results = dt.Select().Select(d => d.ItemArray.Select(x => x.ToString()).ToArray()).ToList();
+                            var Listitem = results.ToList();
+                            foreach (var itme in results)
+                            {
+                                <tr>
+                                    @* @foreach (var io in @itme)*@
+                                    @for (int i = ColCount; i < itme.Count(); i++)
+                                    {
+                                        <td> @itme[i] </td>
+                                    }
+                                </tr>
+                            }
+                            //foreach(var item in dr.)
+                            //     {
+
+                            //     }
+                        }
+
+                        //}
+                        @*foreach (var Record in dt)
+                            {
+                                var StatusType = Record.ElementAt(0).Value;
+
+                                    var PremiumValue = "";
+                                    if (i2 != -1)
+                                    {
+                                        Reports.scri[i2].Values.ElementAt(0).RowHeader = null;
+                                    }
+                                    if (index1 != 0)
+                                    {
+                                        <tr>
+                                            @foreach (var Cell in Record)
+                                            {
+
+                                                    <td> @Cell.Value </td>
+                                            }
+                                        </tr>
+                                    }
+                                    index1++;
+                                    i4++;
+
+
+
+                            }*@
+
+                    </tbody>
+                </table>
+            }
+        }
+        @*@if (Reports.Data != null && Reports.Data.Count != 0)*@
+        else
+        {
+            <table class="table table-striped table-bordered table-condensed table-hover report">
+                @if (ColColours == "Column")
+                {
+                    <thead>
+                        <tr>
+                            @for (int z = 0; z < Headers.Count(); z++)
+                            {
+                                if (item1.Contains(Headers.ElementAt(z).Key))
+                                {
+                                    <th class="@col[z]">@Headers.ElementAt(z).Key</th>
+                                }
+                                else
+                                {
+                                    <th class="text-center">@Headers.ElementAt(z).Key</th>
+                                }
+                            }
+                        </tr>
+                    </thead>
+                }
+                else if (ColColours == "Rows")
+                {
+                    <thead>
+                        <tr class="@col[0]">
+                            @for (int i = 0; i < Headers.Count(); i++)
+                            {
+                                if (item1.Contains(Headers.ElementAt(i).Key))
+                                {
+                                    <th class="text-center @col[0]">@Headers.ElementAt(i).Key</th>
+                                }
+                                else
+                                {
+                                    <th class="@col[0]">@Headers.ElementAt(i).Key</th>
+                                }
+
+                            }
+
+                        </tr>
+                    </thead>
+                }
+                else
+                {
+                    <thead>
+                        <tr>
+
+                            @for (int i = 0; i < Headers.Count(); i++)
+                            {
+                                if (col.Count() != 0)
+                                {
+                                    <th class="text-center @col[0]">@Headers.ElementAt(i).Key</th>
+                                }
+                                else
+                                {
+                                    if (@Headers.ElementAt(i).Key.ToLower() == "id") { }
+                                    <th class="text-center">@Headers.ElementAt(i).Key</th>
+                                }
+                            }
+                        </tr>
+                    </thead>
+                }
+
+                <tbody>
+                    @{int index = 0;}
+                    @{ int i2 = -1;}
+                    @{int index1 = 0; }
+                    @{int i4 = -1; }
+                    @{int ik = 0; }
+                    @if (Reports.Data.Count() > 1)
+                    {
+                        TotalRowCount = Reports.Data.Count();
+                        foreach (var Record in Reports.Data)
+                        {
+                            ik = 0;
+                            var StatusType = Record.ElementAt(0).Value;
+                            if (ColColours == "Rows")
+                            {
+                                index++;
+                                if (item1.Contains(Record.ElementAt(0).Value))
+                                {
+                                    <tr class="@col[1]">
+
+                                        @foreach (var Cell in Record)
+                                        {
+                                            if (Reports.Barcolours.Count() != 0)
+                                            {
+                                                if (Reports.Barcolours.Select(s => s.Keys).FirstOrDefault().Contains(Cell.Key) && i4 > 0)
+                                                {
+
+                                                    <td class="text-center">
+                                                        <div class="progress-bar progress-bar-@Reports.Barcolours.ElementAt(i4 - 1).Where(s => s.Key == Cell.Key).Select(s => s.Value).FirstOrDefault().ToString().Split(',')[1]" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:@Reports.Barcolours.ElementAt(i4 - 1).Where(s => s.Key == Cell.Key).Select(s => s.Value).FirstOrDefault().ToString().Split(',')[0]">
+                                                            @Cell.Value
+                                                        </div>
+                                                    </td>
+                                                }
+                                                else
+                                                {
+                                                    <td> @Cell.Value</td>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <td class="text-right bold"> @Cell.Value </td>
+                                            }
+                                        }
+                                    </tr>
+                                }
+                                else
+                                {
+                                    if (index1 != 0)
+                                    {
+                                        <tr>
+                                            @foreach (var Cell in Record)
+                                            {
+                                                var res = scripts.Where(x => x.ContainsKey(Cell.Value.ToString())).Select(s => s.Keys).FirstOrDefault();
+                                                if (res != null)
+                                                {
+                                                    if (Cell.Value.ToString() == res.FirstOrDefault())
+                                                    {
+                                                        i2++;
+                                                        Reports.scri[i2].Values.ElementAt(0).RowHeader = Cell.Value.ToString();
+
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    res = new Dictionary<string, XIChainReports>().Keys;
+                                                }
+                                                if (i2 != -1)
+                                                {
+                                                    if (Cell.Value.ToString() != Reports.scri[i2].Values.ElementAt(0).RowHeader && Reports.scri[i2].Values.ElementAt(0).RowHeader != null)
+                                                    {
+                                                        Reports.scri[i2].Values.ElementAt(0).Value = Cell.Value;
+                                                        <td hidden="hidden"> @Html.Raw(Reports.scri[i2].Values.ElementAt(0).ExecuteScript) </td>
+                                                        <td class="@Reports.scri[i2].Values.ElementAt(0).ExecuteScript text-right bold"> @Cell.Value </td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td class="text-right bold"> @Cell.Value </td>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    var List = Reports.Cell.Where(x => x.Value.ToString() == StatusType.ToString()).ToDictionary(m => m.Key, m => m.Value);
+                                                    if (List.Count() != 0)
+                                                    {
+                                                        foreach (var it in List.Keys)
+                                                        {
+                                                            var sp = it.Split('+');
+                                                            // var sp1 = it.Split(',').Contains(StatusType);
+                                                            if (sp.Contains(Cell.Key.ToString()))
+                                                            {
+                                                                <td id="Cellvalue_@it" class="Cellvalue text-right bold">@Cell.Value</td>
+                                                            }
+                                                            else
+                                                            {
+                                                                <td class="text-right bold">@Cell.Value</td>
+                                                            }
+
+                                                        }
+                                                    }
+                                                    else if (Reports.Barcolours.Count() != 0)
+                                                    {
+                                                        if (Reports.Barcolours.Select(s => s.Keys).FirstOrDefault().Contains(Cell.Key) && i4 > 0)
+                                                        {
+
+                                                            <td class="text-center">
+                                                                <div class="progress-bar progress-bar-@Reports.Barcolours.ElementAt(i4-1).Where(s=>s.Key==Cell.Key).Select(s => s.Value).FirstOrDefault().ToString().Split(',')[1]" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:@Reports.Barcolours.ElementAt(i4-1).Where(s=>s.Key==Cell.Key).Select(s => s.Value).FirstOrDefault().ToString().Split(',')[0]">
+                                                                    @Cell.Value
+                                                                </div>
+                                                            </td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td> @Cell.Value </td>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+
+                                                        <td class="text-right bold"> @Cell.Value </td>
+                                                    }
+                                                }
+                                            }
+                                        </tr>
+                                    }
+                                    index1++;
+                                    i4++;
+                                }
+                            }
+                            else if (ColColours == "Column")
+                            {
+                                if (i2 != -1)
+                                {
+                                    Reports.scri[i2].Values.ElementAt(0).RowHeader = null;
+                                }
+                                if (index1 != 0)
+                                {
+                                    <tr>
+                                        @foreach (var Cell in Record)
+                                        {
+
+                                            var res = scripts.Where(x => x.ContainsKey(Cell.Value.ToString())).Select(s => s.Keys).FirstOrDefault();
+                                            if (res != null)
+                                            {
+                                                if (Cell.Value.ToString() == res.FirstOrDefault())
+                                                {
+                                                    i2++;
+                                                    Reports.scri[i2].Values.ElementAt(0).RowHeader = Cell.Value.ToString();
+                                                }
+                                            }
+                                            else
+                                            {
+                                                res = new Dictionary<string, XIChainReports>().Keys;
+                                            }
+                                            if (i2 != -1)
+                                            {
+                                                if (Cell.Value.ToString() != Reports.scri[i2].Values.ElementAt(0).RowHeader.ToString() && Reports.scri[i2].Values.ElementAt(0).RowHeader != null)
+                                                {
+                                                    Reports.scri[i2].Values.ElementAt(0).Value = Cell.Value;
+                                                    // Reports.scri[0].Values.ElementAt(i).RowHeader = scripts[i].ElementAt(i).Key;
+                                                    <td hidden="hidden"> @Html.Raw(Reports.scri[i2].Values.ElementAt(0).ExecuteScript) </td>
+                                                    <td class="@Reports.scri[i2].Values.ElementAt(0).ExecuteScript text-right bold"> @Cell.Value </td>
+                                                }
+                                                else
+                                                {
+                                                    if (item1.Contains(Cell.Key))
+                                                    {
+                                                        <td class="@col[index] text-right bold"> @Cell.Value </td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td class="text-right bold"> @Cell.Value </td>
+                                                    }
+                                                }
+                                            }
+                                            else if (item1.Contains(Cell.Key))
+                                            {
+                                                <td class="@col[index] text-right bold"> @Cell.Value </td>
+                                            }
+                                            else
+                                            {
+                                                if (Reports.Cell.Values.Contains(Cell.Key.ToString()))
+                                                {
+
+                                                    var key = Reports.Cell.Where(x => x.Value.ToString() == Cell.Key).Select(t => t.Key).FirstOrDefault();
+                                                    @*<td onclick="XILinkLoadJson('5437', null, null, 'Cell Data Report','@key')"> @Cell.Value </td>*@
+                                                    <td id="Cellvalue_@key" class="Cellvalue text-right bold">@Cell.Value</td>
+                                                }
+                                                else
+                                                {
+                                                    <td class="text-right bold"> @Cell.Value </td>
+                                                }
+                                            }
+                                        }
+                                    </tr>
+                                }
+                                index1++;
+                                i4++;
+                            }
+                            else
+                            {
+                                var PremiumValue = "";
+                                if (i2 != -1)
+                                {
+                                    Reports.scri[i2].Values.ElementAt(0).RowHeader = null;
+                                }
+                                if (index1 != 0)
+                                {
+                                    <tr>
+                                        @foreach (var Cell in Record)
+                                        {
+                                            if (Reports.Cell.Values.Contains(Cell.Value.ToString()))
+                                            {
+                                                PremiumValue = Cell.Value.ToString();
+                                            }
+                                            if (item1.Contains(Cell.Key))
+                                            {
+                                                <td class="@col[index] text-right bold"> @Cell.Value </td>
+                                            }
+                                            else if (Reports.Cell.Values.Contains(StatusType.ToString()))
+                                            {
+                                                var res = scripts.Where(x => x.ContainsKey(Cell.Value.ToString())).Select(s => s.Keys).FirstOrDefault();
+                                                if (res != null)
+                                                {
+                                                    if (Cell.Value.ToString() == res.FirstOrDefault())
+                                                    {
+                                                        i2++;
+                                                        Reports.scri[i2].Values.ElementAt(0).RowHeader = Cell.Value.ToString();
+                                                    }
+                                                }
+                                                else if (Reports.scri.Count() != 0)
+                                                {
+                                                    if (i2 == -1)
+                                                    {
+                                                        i2++;
+                                                        Reports.scri[0].Values.ElementAt(0).RowHeader = PremiumValue;
+                                                    }
+                                                    else
+                                                    {
+                                                        Reports.scri[0].Values.ElementAt(0).RowHeader = PremiumValue;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    res = new Dictionary<string, XIChainReports>().Keys;
+                                                }
+                                                if (i2 != -1)
+                                                {
+                                                    if (Cell.Value.ToString() != Reports.scri[i2].Values.ElementAt(0).RowHeader && Reports.scri[i2].Values.ElementAt(0).RowHeader != null)
+                                                    {
+                                                        Reports.scri[i2].Values.ElementAt(0).Value = Cell.Value;
+                                                        var key = Reports.Cell.Where(x => x.Value.ToString() == PremiumValue.ToString()).Select(t => t.Key).FirstOrDefault();
+                                                        <td hidden="hidden"> @Html.Raw(Reports.scri[i2].Values.ElementAt(0).ExecuteScript) </td>
+                                                        <td id="Cellvalue_@key+@Cell.Key" class="Cellvalue text-right bold @Reports.scri[i2].Values.ElementAt(0).ExecuteScript"> @Cell.Value </td>
+                                                    }
+                                                    else
+                                                    {
+                                                        var key = Reports.Cell.Where(x => x.Value.ToString() == StatusType.ToString()).Select(t => t.Key).FirstOrDefault();
+                                                        <td id="Cellvalue_@key+@Cell.Key" class="Cellvalue text-right bold @col[0]">@Cell.Value</td>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    var key = Reports.Cell.Where(x => x.Value.ToString() == StatusType.ToString()).Select(t => t.Key).FirstOrDefault();
+                                                    <td id="Cellvalue_@key+@Cell.Key" class="Cellvalue text-right bold">@Cell.Value</td>
+                                                }
+                                            }
+                                            else if (Reports.Barcolours.Count() != 0)
+                                            {
+                                                if (Reports.Barcolours.Select(s => s.Keys).FirstOrDefault().Contains(Cell.Key) && i4 > 0 && Reports.Barcolours.Count != 0)
+                                                {
+
+                                                    <td class="text-center">
+                                                        <div class="progress-bar progress-bar-@Reports.Barcolours.ElementAt(i4 - 1).Where(s => s.Key == Cell.Key).Select(s => s.Value).FirstOrDefault().ToString().Split(',')[1]" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:@Reports.Barcolours.ElementAt(i4 - 1).Where(s => s.Key == Cell.Key).Select(s => s.Value).FirstOrDefault().ToString().Split(',')[0]">
+                                                            @Cell.Value
+                                                        </div>
+                                                    </td>
+                                                }
+                                                else
+                                                {
+                                                    <td> @Cell.Value </td>
+                                                }
+                                            }
+                                            else
+                                            {
+
+                                                if (Exhaust==true && index1== TotalRowCount - 1)
+                                                { <td>@Cell.Value</td> }
+
+                                                else if (CellCount.Any(x => x.ToLower() == ik.ToString()))
+                                                {
+                                                    <td onclick='fncCellorRowClick("@CellXilink", "@Record.FirstOrDefault().Value", "@Cell.Key")'> @Cell.Value </td>
+                                                }
+                                                else if (RowCount.Any(rule => rule == ik.ToString()))
+                                                {
+                                                    <td onclick='fncCellorRowClick("@RowXilink", "@Record.FirstOrDefault().Value",null)'> @Cell.Value </td>
+                                                }
+                                                else
+                                                {
+                                                    <td>@Cell.Value</td>
+                                                }
+
+                                                ik++;
+                                            }
+                                        }
+                                        @*<td><input type='button' class='btn btn-theme lbluebtn' value='+' onclick='fncAddInstanceTopReport(this, @Record.FirstOrDefault().Value, "19946")' /></td>*@
+
+                                    </tr>
+                                }
+                                index1++;
+                                i4++;
+
+                            }
+
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</body>
+

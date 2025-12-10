@@ -1,0 +1,47 @@
+﻿@model IEnumerable<XIDNA.ViewModels.SectionsData>
+<style>
+    .DetailsTable {
+        width: 530px;
+    }
+
+    .panel-title {
+        padding: 10px 10px;
+    }
+
+    .panel-heading {
+        padding: 0px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="panel-group" id="accordion">
+    </div>
+    @foreach (var items in Model)
+    {
+        <div class="panel panel-default">
+            @if (items.SectionName != null)
+            {
+                <div class="panel-heading usericon Lead1">
+                    <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#@items.SectionName.Replace(" ","" )@items.TabID">
+                        <h4 class="panel-title">@items.SectionName</h4>
+                    </a>
+            </div>
+            }
+            <div class="panel-collapse collapse in" id=@items.SectionName.Replace(" ","" )@items.TabID>
+                <div class="panel-body LeadContent">
+                    <table class="table table-striped tablebrd DetailsTable">
+                        @for (var i = 0; i < items.SectionFields.Count; i++)
+                        {
+                            <tr>
+                                <td class="lightblue">@items.SectionFields[i]</td>
+                                <td>:</td>
+                                <td class="leftpd drkieblue">@items.SectionData[i]</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+

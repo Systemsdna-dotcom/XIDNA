@@ -1,0 +1,34 @@
+﻿@model XIDNA.ViewModels.VMResultList
+
+<div class="content" id="XICParams">
+    <form id="XiFieldsForm">
+        <div class="row">
+            <div class="box">
+                <div class="box-body">
+                    <div id="XIComponentParams">
+                        <input type="hidden" id="IsValueSet" value="@ViewBag.IsValueSet" />
+                        @if (Model.XIClickParams.Count() > 0)
+                        {
+                            foreach (var items in Model.XIClickParams)
+                            {
+                                <div class="form-group col-md-12 NVPairs">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn" data-sname="@items.sName"> @items.sName <span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input type="text" name="Names" id="valid-@items.sName" placeholder="Value" class="form-control" value="@items.sValue" />
+                                    </div>
+                                </div>
+                            }
+                        }
+                        <div class="form-group">
+                            <div class="col-md-2">
+                                <input type="button" value="Run" class="btn btn-theme" id="XIOneClickParamsBtn" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

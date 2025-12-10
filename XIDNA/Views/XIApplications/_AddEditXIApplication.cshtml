@@ -1,0 +1,181 @@
+﻿@model XIDNA.Models.cXIApplications
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+    string XIAppLogosPath = System.Configuration.ConfigurationManager.AppSettings["XIAppLogosPath"];
+}
+<section class="content-header hedr">
+    @if (Model.ID == 0)
+    {
+        <h1> Add XI Application </h1>
+    }
+    else
+    {
+        <h1> Edit XI Application </h1>
+    }
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Business Objects</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    @using (Ajax.BeginForm("SaveXIApplication", "XIApplications", new AjaxOptions { OnBegin = "OnFormBegin", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "XIAppForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.ID)
+                        <div id="clear-text">
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.sApplicationName, new { @placeholder = "Enter Application name", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sApplicationName, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Description<span class="danger">*</span></label>
+                                    @Html.TextAreaFor(model => model.sDescription, new { @placeholder = "Application description", @class = "form-control", @rows = 5, @cols = 50 })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sDescription, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">Logo</label>
+                                    <input type="file" id="UploadImage" name="UploadImage" />
+                                </div>
+                                <div class="col-md-5">
+                                    <div class=form-group id="dvPreview">
+                                        @if (Model.sLogo != null)
+                                        {
+                                            <img src="@XIAppLogosPath/@Model.sLogo" />
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">User Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.XIAppUserName, new { @placeholder = "Username", @class = "form-control", @Value = "" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.XIAppUserName, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Password<span class="danger">*</span></label>
+                                    @Html.PasswordFor(model => model.XIAppPassword, new { @placeholder = "Password", @class = "form-control", @Value = "" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.XIAppPassword, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Confirm Passsword<span class="danger">*</span></label>
+                                    @Html.PasswordFor(model => model.XIAppConfirmPassword, new { @placeholder = "Confirm Password", @class = "form-control", @Value = "" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.XIAppConfirmPassword, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="submit" class="btn btn-theme" value="Save" />
+                                @if (Model.ID == 0)
+                                {
+                                    <button type="button" class="btn btn-theme reverse" id="ScriptFrmReset">Reset</button>
+                                }
+                                <button type="button" class="btn btn-theme decline" id="ScriptFrmCancel">Cancel</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<style>
+    #dvPreview img {
+        width: 200px;
+        height: 100px;
+    }
+</style>
+<script src="~/Scripts/ajaxfileupload.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#UploadImage").change(function () {
+            $("#dvPreview").html("");
+            if (typeof (FileReader) != "undefined") {
+                $("#dvPreview").show();
+                $("#dvPreview").append("<img />");
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#dvPreview img").attr("src", e.target.result);
+                }
+                reader.readAsDataURL($(this)[0].files[0]);
+            }
+        });
+        $('#ScriptFrmCancel').click(function () {
+            window.close();
+        });
+    });
+    function OnFormBegin() {
+        $.blockUI({ message: '<h3><img src="@PhysicalPath/Scripts/ckfinder/plugins/gallery/colorbox/images/loading.gif" width="50px" /> Please wait while saving details...</h3>' });
+    }
+
+    function OnComplete(response) {
+        if (response.Status) {
+            if ($("#UploadImage").val() != "") {
+                $.ajaxFileUpload({
+                    url: '@Url.Action("SaveXIAppLogo", "XIApplications")',
+                    secureuri: false,
+                    type: 'POST',
+                    fileElementId: "UploadImage",
+                    dataType: 'json',
+                    data: {
+                        XIAppID: response.ID,
+                    },
+                    success: function (data, result) {
+                        $.unblockUI();
+                        if (parseInt(result) > 0) {
+                            CustomMessage("Success! Data Saved Successfully", true);
+                        }
+                        else {
+                            CustomMessage("Failure! Error Occured", false);
+                        }
+
+                    },
+                    error: function (data, status, e) {
+                    }
+                })
+            }
+            else {
+                $.unblockUI();
+                CustomMessage(response.ResponseMessage, response.Status);
+            }
+        }
+        else {
+            CustomMessage(response.ResponseMessage, response.Status);
+        }
+
+    }
+</script>

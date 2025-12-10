@@ -1,0 +1,294 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIDComponent oXIDC = new XIDComponent();
+    if (Model.oContent.ContainsKey(XIConstant.XIComponentComponent))
+    {
+        oXIDC = (XIDComponent)Model.oContent[XIConstant.XIComponentComponent];
+        if (oXIDC == null)
+        {
+            oXIDC = new XIDComponent();
+        }
+    }
+}
+<script>
+    $(document).ready(function () {
+        if (parseInt('@oXIDC.ID') > 0) {
+            $('#ComponentType').val('@oXIDC.sType');
+        }
+        $('#AddMore').click(function () {
+            var Divs = $('.NVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $('#NameValuePairs').append(Divs);
+            $('.NVPairs').last().css("display", "block");
+        });
+
+        $('#AddTrigger').click(function () {
+            var Divs = $('.Triggers').first().clone();
+            $(Divs).find('input').val('');
+            $('#TriggerNVs').append(Divs);
+            $('.Triggers').last().css("display", "block");
+        });
+
+        $(document.body).on('click', 'button.DeleteNVPair', function () {
+            $(this).closest(".NVPairs").hide();
+        });
+
+        $(document.body).on('click', 'button.DeleteTriggerNV', function () {
+            $(this).closest(".Triggers").hide();
+        });
+
+        $('#SaveXIComponent').click(function () {
+            var empty = $('#XiComponentsForm').find("input.req").filter(function () {
+                return this.value === "";
+            });
+            if (empty.length) {
+                CustomMessage("Please fill * marked fields", false);
+            }
+            else {
+                var XIComponentName = $('#Name').val();
+                var ApplicationID = $('#FKiApplicationID').val();
+                var XIComponentType = $('#ComponentType').val();
+                var XIComponentClass = $('#Class').val();
+                var XIComponentHTMLPage = $('#HTMLPage').val();
+                var Status = $('#StatusTypeID').val();
+                var NVPairs = [];
+                var Triggers = [];
+                $('.NVPairs:visible').each(function () {
+                    var Name; var Value; var Type;
+                    $(this).find('input').each(function (i, obj) {
+                        var Nname = obj.name;
+                        if (Nname == "Names") {
+                            Name = $(this).val();
+                        }
+                        else if (Nname == "Values") {
+                            Value = $(this).val();
+                        }
+                        else if (Nname == "Type") {
+                            Type = $(this).val();
+                        }
+                    });
+                    if (Name.length > 0) {
+                        NVPairs.push(Name + "_" + Value + "_" + Type);
+                    }
+                });
+                $('.Triggers:visible').each(function () {
+                    var Name; var Value; var Type;
+                    $(this).find('input').each(function (i, obj) {
+                        var Nname = obj.name;
+                        if (Nname == "Names") {
+                            Name = $(this).val();
+                        }
+                        else if (Nname == "Values") {
+                            Value = $(this).val();
+                        }
+                    });
+                    if (Name.length > 0) {
+                        Triggers.push(Name + "_" + Value);
+                    }
+                });
+                var model = { ID: $('#XIComponentID').val(), sName: XIComponentName, sType: XIComponentType, sClass: XIComponentClass, sHTMLPage: XIComponentHTMLPage, FKiApplicationID: ApplicationID, NVPairs: NVPairs, Triggers: Triggers, Status: Status };
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("Save_XIComponents", "XIComponents")',
+                    data: JSON.stringify(model),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    success: function (data) {
+                        CustomMessage(data.ResponseMessage, data.Status);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    <form id="XiComponentsForm" class="form-horizontal">
+                        <div id="clear-text">
+                            <input type="hidden" value="@oXIDC.ID" id="XIComponentID" />
+                            @if (oXIDC.ID > 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn">Component ID:<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">@oXIDC.ID<span class="danger"></span></label>
+                                    </div>
+                                </div>
+                            }
+                            @if (oXIDC.FKiApplicationID == 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Application<span class="danger"></span></label>
+                                        @Html.DropDownList("FKiApplicationID", new SelectList(oXIDC.ddlApplications, "Value", "text"), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" id="FKiApplicationID" name="FKiApplicationID" value="@oXIDC.FKiApplicationID" />
+                            }
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn"> Name<span class="danger">*</span></label>
+                                    <input type="text" name="Name" id="Name" placeholder="XIComponent name" class="form-control req" value="@oXIDC.sName" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Type<span class="danger"></span></label>
+                                    <select class="form-control" id="ComponentType">
+                                        <option value="Internal">Internal</option>
+                                        <option value="External">External</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn"> Class<span class="danger">*</span></label>
+                                    <input type="text" name="Class" id="Class" placeholder="XIComponent Class" class="form-control" value="@oXIDC.sClass" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn"> HTML Page<span class="danger">*</span></label>
+                                    <input type="text" name="HTMLPage" id="HTMLPage" placeholder="XIComponent HTML Page" class="form-control" value="@oXIDC.sHTMLPage" />
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-left:-10px">
+                                <div id="NameValuePairs" class="col-md-12">
+                                    @if (oXIDC.ID == 0 || oXIDC.NVs.Count() == 0)
+                                    {
+                                        <div class="form-group NVPairs">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                <input type="text" name="Names" placeholder="Name" class="form-control" />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                <input type="text" name="Values" placeholder="Value" class="form-control" />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn"> Type<span class="danger"></span></label>
+                                                <input type="text" name="Type" placeholder="Type" class="form-control" />
+                                            </div>
+                                            <br />
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        foreach (var NVs in oXIDC.NVs)
+                                        {
+                                            <div class="form-group NVPairs">
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                    <input type="text" name="Names" placeholder="Name" class="form-control" value="@NVs.sName" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                    <input type="text" name="Values" placeholder="Value" class="form-control" value="@NVs.sValue" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn"> Type<span class="danger"></span></label>
+                                                    <input type="text" name="Type" placeholder="Type" class="form-control" value="@NVs.sType" />
+                                                </div>
+                                                <br />
+                                                <div class="col-md-2">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <input type="button" id="AddMore" value="Add" class="btn btn-theme btn-xs">
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-left:-10px">
+                                <div id="TriggerNVs" class="col-md-12">
+                                    @if (oXIDC.ID == 0 || oXIDC.Triggers.Count() == 0)
+                                    {
+                                        <div class="form-group Triggers">
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn"> Trigger<span class="danger"></span></label>
+                                                <input type="text" name="Names" placeholder="Name" class="form-control" />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                <input type="text" name="Values" placeholder="Value" class="form-control" />
+                                            </div>
+                                            <br />
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-theme btn-xs DeleteTriggerNV">Delete</button>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        foreach (var trigger in oXIDC.Triggers)
+                                        {
+                                            <div class="form-group Triggers">
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn"> Trigger<span class="danger"></span></label>
+                                                    <input type="text" name="Names" placeholder="Name" class="form-control" value="@trigger.sName" />
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="inputEmail" class="gn"> Output Area<span class="danger"></span></label>
+                                                    <input type="text" name="Values" placeholder="Value" class="form-control" value="@trigger.sValue" />
+                                                </div>
+                                                <br />
+                                                <div class="col-md-2">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteTriggerNV">Delete</button>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <input type="button" id="AddTrigger" value="Add" class="btn btn-theme btn-xs">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    <select class="form-control" id="StatusTypeID">
+                                        <option value="10">Active</option>
+                                        <option value="20">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="button" class="btn btn-theme" value="Save" id="SaveXIComponent" />
+                                <button type="button" class="btn btn-theme decline CancelXiComponent">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="SavePopupDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    $('.CancelXiComponent').click(function () {
+        window.close();
+    });
+</script>

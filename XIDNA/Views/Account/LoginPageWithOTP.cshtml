@@ -1,0 +1,93 @@
+﻿@model XIDNA.Models.LoginWithOtp
+@using XIDNA
+@{
+    var ApplicationID = SessionManager.ApplicationID;
+    var Length = Model.sLength;
+    var i = 0;
+    var Userid = Model.UserName;
+}
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" type="image/png" href="~/favicon.ico" />
+    <link rel="stylesheet" href="~/Content/css/bootstrap.min.css">
+    <link href="~/Content/css/main.css" rel="stylesheet">
+    <link href="~/Content/css/custom.css" rel="stylesheet" />
+    <script src="~/Scripts/JQuery/jQuery-2.1.4.min.js"></script>
+    <link rel="stylesheet" href="~/Content/css/skins/@SessionManager.Theme.ToString()">
+</head>
+<script src="~/Scripts/JQuery/jQuery-2.1.4.min.js"></script>
+<body class="hold-transition login-page">
+    <div class="login-box">
+        <div class="login-box-logo">
+            <img src="~/Content/images/@ViewBag.Logo">
+        </div>
+        <div class="login-box-body">
+            @if (!string.IsNullOrEmpty(ViewBag.Email))
+            {
+                <h4 class="loginTitle">Confirm via @ViewBag.Email </h4>
+            }
+            @if (!string.IsNullOrEmpty(ViewBag.SMS))
+            {
+                <h4 class="loginTitle">Confirm via @ViewBag.SMS </h4>
+            }
+            <h5>We've sent a @ViewBag.length-digit verification code to systemsdna@outlook.com </h5>
+            @if (!string.IsNullOrEmpty(ViewBag.Email))
+            {
+                <h4 class="loginTitle">Enter code from @ViewBag.Email </h4>
+            }
+            @if (!string.IsNullOrEmpty(ViewBag.SMS))
+            {
+                <h4 class="loginTitle">Enter code from @ViewBag.SMS </h4>
+            }
+            @using (Ajax.BeginForm("LoginPageWithOTP", "Account", null, new AjaxOptions { HttpMethod = "POST", InsertionMode = InsertionMode.Replace }, new { @class = "", role = "form", @id = "LoginWithOTP" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true)
+                @Html.HiddenFor(m => m.UserName, new { @id = "UserName" })
+                @Html.HiddenFor(m => m.Password, new { @id = "Password" })
+                @Html.HiddenFor(m => m.iUserID, new { @id = "UserID" })
+                <div class="form-multi-input">
+                        @for(i=0;i<Length;i++)
+                        {
+                            @Html.TextBoxFor(m => m.OTP, new { @class = "inputs", @id = "OTP", @maxlength = "1" })
+                        }
+                 </div>
+                    
+                <button type="submit" class="btn btn-loginForm">Submit</button>
+                <p> Code hasn't arrived? Youcan retry in <span id="countdowntimer">51 </span> or contact us</p>
+            }
+        </div>
+    </div>
+</body>
+<script>
+     var timeleft = 51;
+    var downloadTimer = setInterval(function(){
+    timeleft--;
+    document.getElementById("countdowntimer").textContent = "retry in "+ timeleft +" Seconds";
+    if (timeleft == 0) {
+        //debugger;
+        clearInterval(downloadTimer);
+        document.getElementById("countdowntimer").innerHTML = "<a onclick="+"Resendcode('@Model.iUserID','@ApplicationID','@ViewBag.SMS','@ViewBag.Email')"+"> re-send code</a>";
+    }
+    }, 1000);
+    Resendcode = function (UserID, ApplicationID,sSMS,sEmail) {
+        ////debugger;
+        $.ajax({
+            url: '@Url.Action("ResendOTP", "Account")',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            async: true,
+            cache: false,
+            data: JSON.stringify({ UserID: UserID, ApplicationID: ApplicationID, sSMS:sSMS,sEmail:sEmail }),
+            success: function (data) {
+                //debugger;
+                }
+        });
+        //alert ("code done");
+    }
+</script>

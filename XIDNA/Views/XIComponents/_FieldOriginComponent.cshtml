@@ -1,0 +1,919 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIDFieldOrigin oFDef = new XIDFieldOrigin();
+    if (Model.oContent.ContainsKey(XIConstant.FieldOriginComponent))
+    {
+        oFDef = (XIDFieldOrigin)Model.oContent[XIConstant.FieldOriginComponent];
+        if (oFDef == null)
+        {
+            oFDef = new XIDFieldOrigin();
+        }
+    }
+}
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="innerborder">
+                        @using (Ajax.BeginForm("Save_FieldOrigin", "XISemantics", FormMethod.Post, new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "QSFieldForm", @class = "form-horizontal" }))
+                        {
+                            @Html.ValidationSummary(true);
+                            <input type="hidden" id="ID" name="ID" value="@oFDef.ID" />
+                            <div id="clear-text">
+                                @if (oFDef.ID > 0)
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-1">
+                                            <label for="inputEmail" class="gn">ID:<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">@oFDef.ID<span class="danger"></span></label>
+                                        </div>
+                                    </div>
+                                }
+                                @if (oFDef.FKiApplicationID == 0)
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Application<span class="danger"></span></label>
+                                            @Html.DropDownList("FKiApplicationID", new SelectList(oFDef.ddlApplications, "Value", "text"), new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <input type="hidden" id="FKiApplicationID" name="FKiApplicationID" value="@oFDef.FKiApplicationID" />
+                                }
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                        @Html.TextBox("sName", oFDef.sName, new { @placeholder = "Enter Field Name Here", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sName", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Display Name</label>
+                                        @Html.TextBox("sDisplayName", oFDef.sDisplayName, new { @placeholder = "Enter Display Name Here", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sDisplayName", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Additional Text</label>
+                                        @Html.TextArea("sAdditionalText", oFDef.sAdditionalText, new { @placeholder = "Enter Additional Text Here", @class = "form-control", @rows = 5, @cols = 10 })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">QS Code<span class="danger"></span></label>
+                                        @Html.DropDownList("sQSCode", new SelectList(new List<Object>
+                                                    {
+                                                    new { key= "MCMH" , value = "MCMH" },
+                                                    new { key= "MCTC" , value = "MCTC" },
+                                                    new { key= "MCSC" , value = "MCSC" },
+                                                    new { key= "MCPHC" , value = "MCPHC" },
+                                                    new { key= "ZEEMH" , value = "ZEEMH" }
+                                                    }, "key", "Value", oFDef.sQSCode), new { @class = "form-control" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-8" id="ddldatatype">
+                                        <label for="inputEmail" class="gn">Data Type<span class="danger">*</span></label>
+                                        @Html.DropDownList("FKiDataType", new SelectList(oFDef.ddlDataTypes, "Value", "text", oFDef.FKiDataType), "--Select--", new { @class = "form-control", @id = "ddlDatatype" })
+                                    </div>
+                                    <div class="col-sm-7 fielderror">
+                                        @Html.ValidationMessage("FKiDataType", "", new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group" id="MinMaxDates">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn">Minimum<span class="danger"></span></label>
+                                        @Html.TextBox("sMinDate", oFDef.sMinDate, new { @placeholder = "Minimum Date", @class = "form-control" })
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn">Maximum<span class="danger"></span></label>
+                                        @Html.TextBox("sMaxDate", oFDef.sMaxDate, new { @placeholder = "Maximum Date", @class = "form-control" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-5">
+                                        @Html.CheckBox("bIsHidden", oFDef.bIsHidden)
+                                        <label for="inputEmail" class="gn">Is Hidden</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Length</label>
+                                        @Html.TextBox("iLength", oFDef.iLength, new { @placeholder = "Enter Length Here", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("iLength", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Field Default Value</label>
+                                        @Html.TextBox("sFieldDefaultValue", oFDef.sFieldDefaultValue, new { @placeholder = "Enter Field Default Value", @class = "form-control" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Display Help</label>
+                                        @Html.TextBox("sDisplayHelp", oFDef.sDisplayHelp, new { @placeholder = "Enter Display Help", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sDisplayHelp", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Placeholder</label>
+                                        @Html.TextBox("sPlaceHolder", oFDef.sPlaceHolder, new { @placeholder = "Enter Placeholder text Here", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sPlaceHolder", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Code</label>
+                                        @Html.TextBox("sCode", oFDef.sCode, new { @placeholder = "Enter Code Here", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sCode", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-5">
+                                        @Html.CheckBox("bIsMandatory", oFDef.bIsMandatory)
+                                        <label for="inputEmail" class="gn">Is Mandatory</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Validation Type<span class="danger"></span></label>
+                                        @Html.DropDownList("iValidationType", new SelectList(new List<Object>
+                                                    {
+                                                    new { key= 10 , value = "As typing" },
+                                                    new { key= 20 , value = "After leaving the field" },
+                                                    new { key= 30 , value = "Manually" }
+                                                    }, "key", "Value", oFDef.iValidationType), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Validation Display Type<span class="danger"></span></label>
+                                        @Html.DropDownList("iValidationDisplayType", new SelectList(new List<Object>
+                                                    {
+                                                    new { key= 10 , value = "Field highlight" },
+                                                    new { key= 20 , value = "Icon" },
+                                                    new { key= 30 , value = "Vertical highlight" }
+                                                    }, "key", "Value", oFDef.iValidationDisplayType), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-5">
+                                        @Html.CheckBox("bIsOptionList", oFDef.bIsOptionList)
+                                        <label for="inputEmail" class="gn">Is Option List</label>
+                                    </div>
+                                </div>
+                                <div id="OptionListDiv">
+                                    <div class="form-group">
+                                        <div id="NameValuePairs" class="col-md-12">
+                                            @if (oFDef.ID == 0 || (oFDef.ddlFieldOptionList != null && oFDef.ddlFieldOptionList.Count() == 0))
+                {
+                                                <div class="form-group NVPairs col-md-12">
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                        <input type="text" name="Names" placeholder="Name" class="form-control" />
+                                                    </div>
+                                                    <div class="col-md-1">
+                                                        <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                        <input type="text" name="Values" placeholder="Value" class="form-control" />
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn"> Option Code<span class="danger"></span></label>
+                                                        <input type="text" name="OptionCode" placeholder="Code" class="form-control" />
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn"> Show/Hide<span class="danger"></span></label>
+                                                        <select class="form-control SHType">
+                                                            <option value="0">--Select--</option>
+                                                            <option value="10">Field</option>
+                                                            <option value="20">Section</option>
+                                                            <option value="30">Step</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="ShowHideFields">
+                                                        <div class="col-md-2">
+                                                            <label for="inputEmail" class="gn"> Show Field<span class="danger"></span></label>
+                                                            <input type="text" name="ShowField" placeholder="Show Field" class="form-control XIField" />
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label for="inputEmail" class="gn"> Hide Field<span class="danger"></span></label>
+                                                            <input type="text" name="HideField" placeholder="Hide Field" class="form-control XIField" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="ShowHideSection">
+                                                        <div class="col-md-2">
+                                                            <label for="inputEmail" class="gn"> Show Section<span class="danger"></span></label>
+                                                            <input type="text" name="ShowSection" placeholder="Show Section" class="form-control" />
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label for="inputEmail" class="gn"> Hide Section<span class="danger"></span></label>
+                                                            <input type="text" name="HideSection" placeholder="Hide Section" class="form-control" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="ShowHideStep">
+                                                        <div class="col-md-2">
+                                                            <label for="inputEmail" class="gn"> Show Step<span class="danger"></span></label>
+                                                            <input type="text" name="ShowStep" placeholder="Show Step" class="form-control" />
+                                                        </div>
+                                                        <div class="col-md-2">
+                                                            <label for="inputEmail" class="gn"> Hide Step<span class="danger"></span></label>
+                                                            <input type="text" name="HideStep" placeholder="Hide Step" class="form-control" />
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <div class="col-md-1">
+                                                        <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                if (oFDef.ddlFieldOptionList != null)
+                                                {
+                                                    foreach (var NVs in oFDef.ddlFieldOptionList)
+                                                    {
+                                                        <div class="form-group NVPairs col-md-12">
+                                                            <div class="col-md-2">
+                                                                <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                                <input type="text" name="Names" placeholder="Name" class="form-control" value="@NVs.sOptionName" />
+                                                            </div>
+                                                            <div class="col-md-1">
+                                                                <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                                <input type="text" name="Values" placeholder="Value" class="form-control" value="@NVs.sOptionValue" />
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <label for="inputEmail" class="gn"> Option Code<span class="danger"></span></label>
+                                                                <input type="text" name="OptionCode" placeholder="Code" class="form-control" value="@NVs.sOptionCode" />
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <label for="inputEmail" class="gn"> Show/Hide<span class="danger"></span></label>
+                                                                <select class="form-control SHType">
+                                                                    <option value="0">--Select--</option>
+                                                                    @if (NVs.iType == 10)
+                                                                    {
+                                                                        <option value="10" selected>Field</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="10">Field</option>
+                                                                    }
+                                                                    @if (NVs.iType == 20)
+                                                                    {
+                                                                        <option value="20" selected>Section</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="20">Section</option>
+                                                                    }
+                                                                    @if (NVs.iType == 30)
+                                                                    {
+                                                                        <option value="30" selected>Step</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="30">Step</option>
+                                                                    }
+                                                                </select>
+                                                            </div>
+                                                            @if (NVs.iType == 10)
+                                                            {
+                                                                <div class="ShowHideFields">
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Show Field<span class="danger"></span></label>
+                                                                        <input type="text" name="ShowField" placeholder="Show Field" class="form-control XIField" value="@NVs.sShowField" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Hide Field<span class="danger"></span></label>
+                                                                        <input type="text" name="HideField" placeholder="Hide Field" class="form-control XIField" value="@NVs.sHideField" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ShowHideSection" style="display:none;">
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Show Section<span class="danger"></span></label>
+                                                                        <input type="text" name="ShowSection" placeholder="Show Section" class="form-control" value="@NVs.sShowField" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Hide Section<span class="danger"></span></label>
+                                                                        <input type="text" name="HideSection" placeholder="Hide Section" class="form-control" value="@NVs.sHideField" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ShowHideStep" style="display:none;">
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Show Step<span class="danger"></span></label>
+                                                                        <input type="text" name="ShowStep" placeholder="Show Step" class="form-control" value="@NVs.sShowField" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Hide Step<span class="danger"></span></label>
+                                                                        <input type="text" name="HideStep" placeholder="Hide Step" class="form-control" value="@NVs.sHideField" />
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                            else if (NVs.iType == 20)
+                                                            {
+                                                                <div class="ShowHideFields" style="display:none;">
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Show Field<span class="danger"></span></label>
+                                                                        <input type="text" name="ShowField" placeholder="Show Field" class="form-control XIField" value="@NVs.sShowField" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Hide Field<span class="danger"></span></label>
+                                                                        <input type="text" name="HideField" placeholder="Hide Field" class="form-control XIField" value="@NVs.sHideField" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ShowHideSection">
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Show Section<span class="danger"></span></label>
+                                                                        <input type="text" name="ShowSection" placeholder="Show Section" class="form-control" value="@NVs.sShowField" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Hide Section<span class="danger"></span></label>
+                                                                        <input type="text" name="HideSection" placeholder="Hide Section" class="form-control" value="@NVs.sHideField" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ShowHideStep" style="display:none;">
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Show Step<span class="danger"></span></label>
+                                                                        <input type="text" name="ShowStep" placeholder="Show Step" class="form-control" value="@NVs.sShowField" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Hide Step<span class="danger"></span></label>
+                                                                        <input type="text" name="HideStep" placeholder="Hide Step" class="form-control" value="@NVs.sHideField" />
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                            else if (NVs.iType == 30)
+                                                            {
+                                                                <div class="ShowHideFields" style="display:none;">
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Show Field<span class="danger"></span></label>
+                                                                        <input type="text" name="ShowField" placeholder="Show Field" class="form-control XIField" value="@NVs.sShowField" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Hide Field<span class="danger"></span></label>
+                                                                        <input type="text" name="HideField" placeholder="Hide Field" class="form-control XIField" value="@NVs.sHideField" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ShowHideSection" style="display:none;">
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Show Section<span class="danger"></span></label>
+                                                                        <input type="text" name="ShowSection" placeholder="Show Section" class="form-control" value="@NVs.sShowField" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Hide Section<span class="danger"></span></label>
+                                                                        <input type="text" name="HideSection" placeholder="Hide Section" class="form-control" value="@NVs.sHideField" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ShowHideStep">
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Show Step<span class="danger"></span></label>
+                                                                        <input type="text" name="ShowStep" placeholder="Show Step" class="form-control" value="@NVs.sShowField" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Hide Step<span class="danger"></span></label>
+                                                                        <input type="text" name="HideStep" placeholder="Hide Step" class="form-control" value="@NVs.sHideField" />
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="ShowHideFields" style="display:none;">
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Show Field<span class="danger"></span></label>
+                                                                        <input type="text" name="ShowField" placeholder="Show Field" class="form-control XIField" value="@NVs.sShowField" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Hide Field<span class="danger"></span></label>
+                                                                        <input type="text" name="HideField" placeholder="Hide Field" class="form-control XIField" value="@NVs.sHideField" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ShowHideSection" style="display:none;">
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Show Section<span class="danger"></span></label>
+                                                                        <input type="text" name="ShowSection" placeholder="Show Section" class="form-control" value="@NVs.sShowField" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Hide Section<span class="danger"></span></label>
+                                                                        <input type="text" name="HideSection" placeholder="Hide Section" class="form-control" value="@NVs.sHideField" />
+                                                                    </div>
+                                                                </div>
+                                                                <div class="ShowHideStep" style="display:none;">
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Show Step<span class="danger"></span></label>
+                                                                        <input type="text" name="ShowStep" placeholder="Show Step" class="form-control" value="@NVs.sShowField" />
+                                                                    </div>
+                                                                    <div class="col-md-2">
+                                                                        <label for="inputEmail" class="gn"> Hide Step<span class="danger"></span></label>
+                                                                        <input type="text" name="HideStep" placeholder="Hide Step" class="form-control" value="@NVs.sHideField" />
+                                                                    </div>
+                                                                </div>
+                                                            }
+
+                                                            <br />
+                                                            <div class="col-md-1">
+                                                                <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-2">
+                                            <input type="button" id="AddMore" value="Add" class="btn btn-theme btn-xs">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Default Value</label>
+                                            @Html.TextBox("sDefaultValue", oFDef.sDefaultValue, new { @placeholder = "Enter Default Value Here", @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessage("sDefaultValue", null, new { @class = "red" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-5">
+                                        <input type="checkbox" id="MasterChkBox" />
+                                        <label for="inputEmail" class="gn">Is Master Data</label>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="MasterDataDiv">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Master Data<span class="danger">*</span></label>
+                                        @Html.DropDownList("iMasterDataID", new SelectList(oFDef.ddlMasterTypes, "Value", "text", oFDef.iMasterDataID), "--Select--", new { @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-7 fielderror">
+                                        @Html.ValidationMessage("iMasterDataID", "", new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-5">
+                                        <input type="checkbox" id="FKChkBox" />
+                                        <label for="inputEmail" class="gn">Is 1-Click</label>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="1ClickDiv">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">1-Click</label>
+                                        <input type="text" placeholder="Enter 1-Click Name Here" class="form-control" id="FKOneClickID" name="sOneClickName" value="@oFDef.sOneClickName" />
+                                        @*@Html.TextBoxFor(model => model.FK1ClickID, new { @placeholder = "Enter 1-Click Name Here", @class = "form-control" })*@
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @*@Html.ValidationMessageFor(m => m.FK1ClickID, null, new { @class = "red" })*@
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-5">
+                                        <input type="checkbox" id="FKBOCkB" />
+                                        <label for="inputEmail" class="gn">Is BO</label>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="BOsDiv">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">BO</label>
+                                        <input type="text" placeholder="Enter BO Name Here" class="form-control" id="FKBO" name="sBOName" value="@oFDef.sBOName" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-5">
+                                        @Html.CheckBox("bIsMerge", oFDef.bIsMerge)
+                                        <label for="inputEmail" class="gn">Is Merge</label>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="MergeDiv">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Merge Field</label>
+                                        @Html.TextBox("sMergeField", oFDef.sMergeField, new { @placeholder = "Enter Merge Field", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sDisplayHelp", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group" id="MergeDiv">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Merge BO</label>
+                                        @Html.TextBox("sMergeBo", oFDef.sMergeBo, new { @placeholder = "Enter Merge BO Name", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sDisplayHelp", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group" id="MergeDiv">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Merge BO Field</label>
+                                        @Html.TextBox("sMergeBoField", oFDef.sMergeBoField, new { @placeholder = "Enter Merge BO Field", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sDisplayHelp", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group" id="MergeDiv">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Merge Variable</label>
+                                        @Html.TextBox("sMergeVariable", oFDef.sMergeVariable, new { @placeholder = "Enter Merge Variable", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sDisplayHelp", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-5">
+                                        @Html.CheckBox("bIsCompare", oFDef.bIsCompare, new { @id = "bIsCompare" })
+                                        <label for="inputEmail" class="gn">Is Compare</label>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="CompareFieldDiv">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Compare Field<span class="danger"></span></label>
+                                        @Html.TextBox("sCompareField", oFDef.sCompareField, new { @class = "form-control", @placeholder = "Enter Compare Field" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-5">
+                                        @Html.CheckBox("bIsDisable", oFDef.bIsDisable, new { @id = "bIsDisable" })
+                                        <label for="inputEmail" class="gn">Is Disable</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-5">
+                                        @Html.CheckBox("bIsUpperCase", oFDef.bIsUpperCase, new { @id = "bIsUpperCase" })
+                                        <label for="inputEmail" class="gn">Is Uppercase</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-5">
+                                        @Html.CheckBox("bIsLowerCase", oFDef.bIsLowerCase, new { @id = "bIsLowerCase" })
+                                        <label for="inputEmail" class="gn">Is Lowercase</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-5">
+                                        @Html.CheckBox("bIsHelpIcon", oFDef.bIsHelpIcon, new { @id = "bIsHelpIcon" })
+                                        <label for="inputEmail" class="gn">Is Help Icon</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Script</label>
+                                        @Html.TextArea("sScript", oFDef.sScript, new { @placeholder = "Enter Script Here", @class = "form-control", @rows = "5", @cols = "10" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sScript", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Validation Message</label>
+                                        @Html.TextArea("sValidationMessage", oFDef.sValidationMessage, new { @placeholder = "Enter Validation Message", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("sValidationMessage", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                        @Html.DropDownList("StatusTypeID", new SelectList(new List<Object>
+                                                    {
+                                                    new { key= 10 , value = "Active" },
+                                                    new { key= 20 , value = "Inactive" }
+                                                    }, "key", "Value", oFDef.StatusTypeID), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-10">
+                                        <input type="submit" class="btn btn-theme" value="Save" />
+                                        <button type="button" class="btn btn-theme decline" id="CancelQSField">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#MergeDiv').hide();
+        $('#CompareFieldDiv').hide();
+        $('#MinMaxDates').hide();
+        $('#OptionListDiv').hide();
+        if('@oFDef.FKiDataType' == 8)
+        {
+            $('#MinMaxDates').show();
+        }
+        if('@oFDef.ID' == 0){
+            $('.ShowHideFields').hide();
+            $('.ShowHideSection').hide();
+            $('.ShowHideStep').hide();
+        }
+        $(document.body).on('change','.SHType', function(){
+            if($(this).val() > 0){
+                if($(this).val() == 10){
+                    $(this).closest('div').next('div').next('div.ShowHideSection').hide();
+                    $(this).closest('div').next('div').next('div').next('div.ShowHideStep').hide();
+                    $(this).closest('div').next('div.ShowHideFields').show();
+                }
+                else if($(this).val() == 20){
+                    $(this).closest('div').next('div').next('div').next('div.ShowHideStep').hide();
+                    $(this).closest('div').next('div.ShowHideFields').hide();
+                    $(this).closest('div').next('div').next('div.ShowHideSection').show();
+                }
+                else if($(this).val() == 30){
+                    $(this).closest('div').next('div').next('div.ShowHideSection').hide();
+                    $(this).closest('div').next('div.ShowHideFields').hide();
+                    $(this).closest('div').next('div').next('div').next('div.ShowHideStep').show();
+                }
+            }
+            else{
+                $(this).closest('div').next('div').next('div.ShowHideSection').hide();
+                $(this).closest('div').next('div').next('div').next('div.ShowHideStep').hide();
+                $(this).closest('div').next('div.ShowHideFields').hide();
+            }
+        });
+        var XIFields = @Html.Raw(Json.Encode(oFDef.XIFields));
+        var availableTags = Object.keys(XIFields);
+        $( ".XIField" ).autocomplete({
+            source: availableTags
+        });
+        //OneClicks Autocomplete
+        var OneClicks = @Html.Raw(Json.Encode(oFDef.ddlOneClicks));
+        var availableOneClicks = Object.keys(OneClicks);
+        $( "#FKOneClickID" ).autocomplete({
+            source: availableOneClicks
+        });
+        var BOs = @Html.Raw(Json.Encode(oFDef.ddlBOs));
+        var AvailableBOs = Object.keys(BOs);
+        $( "#FKBO" ).autocomplete({
+            source: AvailableBOs
+        });
+
+        fncresetchkbox();
+        if('@oFDef.iMasterDataID' > 0){
+            $('#MasterChkBox').attr('checked','checked');
+            $('#MasterDataDiv').show();
+            $('#iMasterDataID').val('@oFDef.iMasterDataID');
+            $('#bIsOptionList').attr('disabled','disabled');
+            $('#FKChkBox').attr('disabled','disabled');
+        }
+
+        if('@oFDef.FK1ClickID' > 0){
+            $('#FKChkBox').attr('checked','checked');
+            $('#1ClickDiv').show();
+            $('#FKOneClickID').val('@oFDef.sOneClickName');
+            $('#bIsOptionList').attr('disabled','disabled');
+            $('#MasterChkBox').attr('disabled','disabled');
+        }
+
+        if ('@oFDef.bIsOptionList' == "True") {
+            $('#OptionListDiv').show();
+            $('#MasterChkBox').attr('disabled','disabled');
+            $('#FKChkBox').attr('disabled','disabled');
+        }
+        if('@oFDef.FKiBOID' > 0){
+            $('#FKBOCkB').attr('checked','checked');
+            $('#BOsDiv').show();
+            $('#FKBO').val('@oFDef.sBOName');
+            $('#bIsOptionList').attr('disabled','disabled');
+            $('#MasterChkBox').attr('disabled','disabled');
+            $('#FKChkBox').attr('disabled','disabled');
+        }
+        if('@oFDef.bIsCompare' == "True"){
+            $('#bIsCompare').attr('checked','checked');
+            $('#CompareFieldDiv').show();
+            $('#sCompareField').val('@oFDef.sCompareField');
+        }
+        $('#CancelQSField').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#QSFieldForm')[0].reset();
+            $('#QSFieldForm .taberrormsg').find('span').html('');
+        });
+        $('#bIsOptionList').change(function () {
+            if ($(this).is(":checked")) {
+                fncresetchkbox();
+                $('#OptionListDiv').show();
+                $('.SHType').closest('div').next('div').next('div.ShowHideSection').hide();
+                $('.SHType').closest('div').next('div').next('div').next('div.ShowHideStep').hide();
+                $('.SHType').closest('div').next('div.ShowHideFields').hide();
+                $('#MasterChkBox').attr('disabled','disabled');
+                $('#FKChkBox').attr('disabled','disabled');
+            }
+            else {
+                fncresetchkbox();
+            }
+        });
+        $('#MasterChkBox').change(function () {
+            if ($(this).is(":checked")) {
+                fncresetchkbox();
+                $('#MasterDataDiv').show();
+                $('#bIsOptionList').attr('disabled','disabled');
+                $('#FKChkBox').attr('disabled','disabled');
+                $('#FKBOCkB').attr('disabled','disabled');
+            }
+            else {
+                fncresetchkbox();
+            }
+        });
+        $('#FKChkBox').change(function () {
+            if ($(this).is(":checked")) {
+                fncresetchkbox();
+                $('#1ClickDiv').show();
+                $('#bIsOptionList').attr('disabled','disabled');
+                $('#MasterChkBox').attr('disabled','disabled');
+                $('#FKBOCkB').attr('disabled','disabled');
+            }
+            else {
+                fncresetchkbox();
+            }
+        });
+        $('#FKBOCkB').change(function () {
+            if ($(this).is(":checked")) {
+                fncresetchkbox();
+                $('#BOsDiv').show();
+                $('#bIsOptionList').attr('disabled','disabled');
+                $('#MasterChkBox').attr('disabled','disabled');
+                $('#FKChkBox').attr('disabled','disabled');
+            }
+            else {
+                fncresetchkbox();
+            }
+        });
+        $('#bIsMerge').change(function () {
+            $('#sMergeField').val('');
+            if ($(this).is(":checked")) {
+                $('#MergeDiv').show();
+            }
+            else {
+                $('#MergeDiv').hide();
+            }
+        });
+        if ($('#bIsMerge').is(":checked")) {
+            $('#MergeDiv').show();
+        }
+        $('#bIsCompare').change(function () {
+            if ($(this).is(":checked")) {
+                $('#CompareFieldDiv').show();
+            }
+            else {
+                fncresetchkbox();
+            }
+        });
+        $('#AddMore').click(function () {
+            var Divs = $('.NVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $(Divs).find('.ShowHideFields').hide();
+            $(Divs).find('.ShowHideSection').hide();
+            $(Divs).find('.ShowHideStep').hide();
+            $('#NameValuePairs').append(Divs);
+            $('.NVPairs').last().css("display", "block");
+        });
+        $(document.body).on('click', 'button.DeleteNVPair', function () {
+            $(this).closest(".NVPairs").hide();
+        });
+    })
+    function OnFormBegin() {
+        $('#QSFieldForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+
+    function OnComplete(response) {
+        debugger
+        var QSFieldID = response;
+        if ($('#bIsOptionList').is(":checked")) {
+            var NVPairs = [];
+            $('.NVPairs:visible').each(function () {
+                var Name; var Value; var Type = 0; var ShowField = ""; var HideField = ""; var OptionCode = "";
+                $(this).find('input').each(function (i, obj) {
+                    var Nname = obj.name;
+                    if (Nname == "Names") {
+                        Name = $(this).val();
+                    }
+                    else if (Nname == "Values") {
+                        Value = $(this).val();
+                    }
+                    else if (Nname == "OptionCode") {
+                        OptionCode = $(this).val();
+                    }
+                });
+                $(this).find('select').each(function (i, obj) {
+                    if($(this).val() > 0){
+                        Type = $(this).val();
+                    }
+                });
+                $(this).find('input').each(function (i, obj) {
+                    debugger
+                    if(Type == 10){
+                        var Nname = obj.name;
+                        if (Nname == "ShowField") {
+                            ShowField = $(this).val();
+                        }
+                        else if (Nname == "HideField") {
+                            HideField = $(this).val();
+                        }
+                    }
+                    else if(Type == 20){
+                        var Nname = obj.name;
+                        if (Nname == "ShowSection") {
+                            ShowField = $(this).val();
+                        }
+                        else if (Nname == "HideSection") {
+                            HideField = $(this).val();
+                        }
+                    }
+                    else if(Type == 30){
+                        var Nname = obj.name;
+                        if (Nname == "ShowStep") {
+                            ShowField = $(this).val();
+                        }
+                        else if (Nname == "HideStep") {
+                            HideField = $(this).val();
+                        }
+                    }
+                });
+                if (Name.length > 0) {
+                    NVPairs.push(Name + "^" + Value+"^"+Type+"^"+ShowField+"^"+HideField+"^"+OptionCode);
+                }
+            });
+            var model = { ID: QSFieldID, NVPairs: NVPairs };
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SaveQSFieldOptionList", "XISemantics")',
+                data: JSON.stringify(model),
+                contentType: 'application/json;',
+                dataType: 'json',
+                traditional: true,
+                success: function (data) {
+                    //CustomMessage(data.ResponseMessage, data.Status);
+                    $('#QSFieldForm').unblock();
+                    $('#QSFieldForm')[0].reset();
+                    //opener.window.location.reload();
+                }
+            });
+            CustomMessage("Data Saved Successfully!", true);
+        }
+        else {
+            CustomMessage(response.ResponseMessage, response.Status);
+            $('#QSFieldForm').unblock();
+            $('#QSFieldForm')[0].reset();
+            //opener.window.location.reload();
+        }
+    }
+    function fncresetchkbox(){
+        $('#OptionListDiv').hide();
+        $('#MasterDataDiv').hide();
+        $('#1ClickDiv').hide();
+        $('#bIsOptionList').removeAttr('disabled');
+        $('#MasterChkBox').removeAttr('disabled');
+        $('#FKChkBox').removeAttr('disabled');
+        $('#FKOneClickID').val('');
+        $('#iMasterDataID').val('');
+        $('#BOsDiv').hide();
+        $('#FKBO').val('');
+        $('#FKBOCkB').removeAttr('disabled');
+    }
+
+    $('#ddldatatype').change(function(){
+        var Type = $('#ddlDatatype :selected').text();
+        if(Type == "Date")
+        {
+            $('#MinMaxDates').show();
+        }
+        else
+        {
+            $('#MinMaxDates').hide();
+        }
+    });
+
+</script>

@@ -1,0 +1,78 @@
+﻿@model int
+
+<script>
+
+    $(document).ready(function () {
+        var popups = new Array();
+        var table = $('#Spesubtbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("SpecificOrgLocationGrid", "Organization", new { LocOrgID = @Model })",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+            {},
+                             {
+                                 "sName": "ID",
+                                 "visible": false
+                             },
+                            {
+                                "sName": "Location"
+                            },
+                            {
+                                "sName": "LocationCode"
+                            },
+                            {
+                                "sName": "Status"
+                            },
+            ],
+            "columnDefs": [
+              {
+                  "targets": [4],
+                  "createdCell": function (td, cellData, rowData, row, col) {
+                      if (cellData == 10)
+                          $(td).replaceWith('<td>Active</td>')
+                      else
+                          $(td).replaceWith('<td>Inactive</td>')
+                  }
+              }
+            ],
+        });
+        //$('#Mastertbl').on('click', 'a.EditBtn', function () {
+        //    var url = $(this).attr('data-url');
+        //    var edit = window.open(url, '_blank', "scrollbars=1,resizable=1,width=1400, height=700,left=0,top=0");
+        //    popups.push(edit);
+        //})
+        //$('#OrgsubBtn').on('click', 'input', function (e) {
+        //    e.preventDefault();
+        //    var url = $(this).attr('data-url');
+        //    var newquery = window.open(url, '_blank', "scrollbars=1,resizable=1,width=1400, height=700,left=0,top=0");
+        //    popups.push(newquery);
+        //});
+    });
+</script>
+
+
+<div id="SubscriptionGrid">
+    <div id="box-body">
+        <div class="table-clean">
+            <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="Spesubtbl">
+                <thead>
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th>ID</th>
+                        <th>Location</th>
+                        <th>Location Code</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody></tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
+

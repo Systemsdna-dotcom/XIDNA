@@ -1,0 +1,24 @@
+﻿@model XICore.XIDQS
+
+
+@*@if (ViewBag.iUserID > 0)
+{
+    <ul class="list-inline clientDialogTabs">
+        <li class="active"><a href="#">Policy Details</a></li>
+        <li><a href="#">Requirements</a></li>
+        <li><a href="#">Policy Documents</a></li>
+        <li><a href="#">Request a change</a></li>
+    </ul>
+}*@
+<div id="QSID_@Model.ID" data-name="QS_Info">
+    @foreach (var items in Model.Steps)
+    {
+        var Component = items.Value.ComponentDefinition;
+        <div id="Component-@items.Value.ID" data-type="Component" data-name="Component-@items.Value.ID">
+
+            @{ Html.RenderAction("LoadComponentByID", "XIComponents", new { iXIComponentID = Component.ID, sGUID = ViewBag.sGUID, nParams = Component.Params, sName = string.Empty, sType = "QSStepSection", ID = items.Value.XIGUID, iInstanceID = 0, sContext = "FixedTemplate", iQSIID = Model.ID }); }
+
+        </div>
+                }
+</div>
+

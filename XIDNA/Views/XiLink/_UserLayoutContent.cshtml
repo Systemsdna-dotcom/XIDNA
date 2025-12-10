@@ -1,0 +1,30 @@
+﻿@model XICore.XIDLayout
+@*@{
+    Layout = "~/Views/Shared/_ClientLayout.cshtml";
+}*@
+
+<script>
+    $(document).ready(function () {
+        ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+        DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+        PopupURL = '@Url.Action("GetPopupDetails", "XiLink")';
+        PopupORDialogURL = '@Url.Action("GetPopupORDialog", "XiLink")';
+        DialogURL = '@Url.Action("GetDialog", "XiLink")';
+        SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+        SemanticURL = '@Url.Action("GetSemanticDetails", "XiLink")';
+        ComponentURL = '@Url.Action("LoadComponentByID", "XIComponents")';
+        StepURL = '@Url.Action("GetStepContent", "XiLink")';
+        StepContentURL = '@Url.Action("GetStepContent", "XiLink")';
+        StepDataURL = '@Url.Action("GetStepData", "XiLink")';
+        ComponentParmsByStepURL = '@Url.Action("GetComponentParmsByStep", "XIComponents")';
+        XIContentURL = '@Url.Action("XIContent", "XiLink")';
+        DeleteBOURL = '@Url.Action("DeleteBO", "XiLink")';
+        var ilayoutID = '@Model.ID';
+        fncLoadLayout(ilayoutID);
+    });
+</script>
+<div class="Layout_@Model.ID"></div>
+
+@*@{
+    Html.RenderAction("GetLayoutData", "XiLink", new { model = Model });
+}*@

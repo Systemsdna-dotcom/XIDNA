@@ -1,0 +1,1443 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    List<XIDStructure> oTreeDef = new List<XIDStructure>();
+    if (Model.oContent.ContainsKey(XIConstant.XIBOStructureComponent))
+    {
+        oTreeDef = (List<XIDStructure>)Model.oContent[XIConstant.XIBOStructureComponent];
+        if (oTreeDef == null)
+        {
+            oTreeDef = new List<XIDStructure>();
+        }
+
+    }
+    var iBODID = 0;
+    var sSaveType = string.Empty;
+    if (oTreeDef.Count() > 0)
+    {
+        sSaveType = oTreeDef.FirstOrDefault().sSavingType;
+        iBODID = oTreeDef.FirstOrDefault().BOID;
+    }
+}
+<script>
+    const content_height = $(window).height() - $('#HomeHeader').height();
+    $('.scroll_vh_100').slimScroll({
+        //height: '250px',
+        height: content_height,
+    });
+</script>
+<section class="">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <h3 class="maintitle">Structure</h3>
+                    <!--  <div class="innerborder"> -->
+                    <div class="StrStatusMessages"></div>
+                    <div class="scroll_vh_100 p5">
+                        <div class="form-container">
+                            @if (!string.IsNullOrEmpty(sSaveType) && sSaveType.ToLower() == "add")
+                            {
+
+                            }
+                            else
+                            {
+                                <input type="hidden" id="ID" name="ID" value="@oTreeDef.FirstOrDefault().ID" />
+                                <input type="hidden" id="XIGUID" name="XIGUID" value="@oTreeDef.FirstOrDefault().XIGUID" />
+                                if (oTreeDef.FirstOrDefault().ID != 0)
+                                {
+                                    <div class="form-group row">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn">ID:<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="inputEmail" class="gn">@oTreeDef.FirstOrDefault().ID<span class="danger"></span></label>
+                                        </div>
+                                    </div>
+                                }
+                            }
+
+                            @if (oTreeDef.FirstOrDefault().BOID == 0)
+                            {
+                                <div class="form-group row">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">BO Name<span class="danger"></span></label>
+                                        @Html.DropDownList("BOID", new SelectList(oTreeDef.FirstOrDefault().ddlAllBOs, "sGUID", "text", oTreeDef.FirstOrDefault().BOIDXIGUID), new { @class = "form-control", @id = "CreateBOStructure" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("BOID", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group row">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">BO Name<span class="danger"></span></label>
+                                        @Html.DropDownList("BOID", new SelectList(oTreeDef.FirstOrDefault().ddlAllBOs, "sGUID", "text", oTreeDef.FirstOrDefault().BOIDXIGUID), new { @class = "form-control", @disabled = "disabled" })
+                                        <input type="hidden" name="BOID" id="BOID" value="@oTreeDef.FirstOrDefault().BOID" />
+                                        <input type="hidden" name="BOIDXIGUID" id="BOIDXIGUID" value="@oTreeDef.FirstOrDefault().BOIDXIGUID" />
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("BOID", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    @Html.TextBox("sStructureName", oTreeDef.FirstOrDefault().sStructureName, new { @class = "form-control", @placeholder = "Structure name here" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Code<span class="danger">*</span></label>
+                                    @Html.TextBox("sCode", oTreeDef.FirstOrDefault().sCode, new { @autocomplete = "off", @class = "form-control", @placeholder = "Structure code here" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+
+                                </div>
+                            </div>
+                            <div class="form-group row" id="BusinessObj">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Business Objects<span class="danger"></span></label>
+                                    @Html.DropDownList("sBO", new SelectList(oTreeDef.FirstOrDefault().BOList.Where(m => !string.IsNullOrEmpty(m.text)).OrderBy(m => m.text), "sGUID", "text", oTreeDef.FirstOrDefault().BOID), "--Select--", new { @class = "form-control", @placeholder = "Structure name here", @id = "BODDL" })
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Entity Type<span class="danger"></span></label>
+                                    @Html.DropDownList("sType", new SelectList(new List<Object>{
+                                               new { key= "0" , value = "--Select--" },
+                                               new { key= "Main BO" , value = "Main Entity" },
+                       new { key= "Sub Entity" , value = "Sub Entity" },
+                       new { key= "Popup" , value = "Popup" }
+                    }, "key", "Value", oTreeDef.FirstOrDefault().sType), new { @class = "form-control", @id = "TypesDDL" })
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Mode<span class="danger"></span></label>
+                                    @Html.DropDownList("sMode", new SelectList(new List<Object>{
+                                               new { key= "0" , value = "--Select--" },
+                                               new { key= "Single" , value = "Single" },
+                       new { key= "Multiple" , value = "Multiple" }
+                    }, "key", "Value", oTreeDef.FirstOrDefault().sMode), new { @class = "form-control", @id = "ModeDDL" })
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    @Html.CheckBox("bIsVisible", oTreeDef.FirstOrDefault().bIsVisible)
+                                    <label for="inputEmail" class="gn">Is Visible<span class="danger"></span></label>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    @Html.CheckBox("bIsLoadParent", oTreeDef.FirstOrDefault().bIsLoadParent)
+                                    <label for="inputEmail" class="gn">Is Load Parent<span class="danger"></span></label>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Order<span class="danger">*</span></label>
+                                    @Html.TextBox("iOrder", oTreeDef.FirstOrDefault().iOrder, new { @class = "form-control", @placeholder = "Order", @id = "iorder" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Parent FK Column<span class="danger">*</span></label>
+                                    @Html.TextBox("sParentFKColumn", oTreeDef.FirstOrDefault().sParentFKColumn, new { @class = "form-control", @placeholder = "Parent Foregin key column name" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Linking Type<span class="danger"></span></label>
+                                    @Html.DropDownList("sLinkingType", new SelectList(new List<Object>{
+                               new { key= "0" , value = "--Select--" },
+                                               new { key= "PtoC" , value = "Parent to child" },
+                       new { key= "CtoP" , value = "Child to parent" }
+                    }, "key", "Value", oTreeDef.FirstOrDefault().sLinkingType), new { @class = "form-control", @id = "LinkingTypeDDL" })
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Default Step<span class="danger">*</span></label>
+                                    @Html.TextBox("FKiStepDefinitionName", oTreeDef.FirstOrDefault().FKiStepDefinitionName, new { @class = "form-control Defaultstep", @id = "DefaultStep", @placeholder = "Enter Step Name" })
+                                    @Html.Hidden("FKiStepDefinitionID", oTreeDef.FirstOrDefault().FKiStepDefinitionID, new { @id = "stepdefinationID" })
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Output Area<span class="danger">*</span></label>
+                                    @Html.TextBox("sOutputArea", oTreeDef.FirstOrDefault().sOutputArea, new { @class = "form-control", @id = "soutputareaid", @placeholder = "Enter PlaceHolderUnique Name" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">CSS Class<span class="danger">*</span></label>
+                                    @Html.TextBox("sOutputArea", oTreeDef.FirstOrDefault().sCSS, new { @class = "form-control", @id = "scss", @placeholder = "Enter css class" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownList("StatusTypeID", new SelectList(new List<Object>{
+                                   new { key= "0" , value = "--Select--" },
+                                               new { key= "10" , value = "Active" },
+                       new { key= "20" , value = "Inactive" }
+                    }, "key", "Value", oTreeDef.FirstOrDefault().StatusTypeID), new { @class = "form-control", @id = "StatusTypeDDL" })
+                                </div>
+                            </div>
+
+                            <div id="MainDiv" class="form-group row">
+                                <div id="XIBOStructTree">
+
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-sm-10">
+                                    <input type="button" class="btn btn-theme" id="BOStructSaveBtn" value="Save" />
+                                    @if (sSaveType == null)
+                                    {
+                                        <input type="button" class="btn btn-theme" id="BOStructRefreshBtn" value="Refresh" />
+                                    }
+                                    <button type="button" class="btn btn-theme decline" id="CancelBOStruct">Cancel</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div id="DetailsForm" class="col-md-9"></div>
+                    <!--                     </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="@Url.Content("~/Scripts/treeview/jstree.min.js")"></script>
+
+<link href="@Url.Content("~/Content/jsTree/themes/default/style.min.css")" rel="stylesheet" />
+
+<script type="text/javascript">
+    var sStepID=0;
+    var BOName;
+    var BODID;
+    var IsExists = false;
+    var NodeId = 1;
+    var SelectedNode;
+    var Tree = @Html.Raw(Json.Encode(oTreeDef));
+    LoadTree(Tree);
+    var List = [];
+    var Links=[];
+    $('#DefaultStep').autocomplete({
+        source: function(request, response) {
+            @*var Allqslist = @Html.Raw(Json.Encode(oTreeDef.FirstOrDefault().AllQSSteps.Where(m => !string.IsNullOrEmpty(m.Key))));
+            var List = [];
+            $.each(Allqslist, function (key, value) {
+                List.push({ label: value.Key, value: value.Value });
+            });*@
+            var TypeDDLVal = $('#TypesDDL :selected').val();
+            if(TypeDDLVal == 'Main BO' || TypeDDLVal=='Sub Entity'){
+                fncGetStepsForAutoComplete(request.term, 0).then(function (AllSteps) {
+                    response($.ui.autocomplete.filter(AllSteps, request.term));
+                })
+            }
+            else if(TypeDDLVal == 'Popup'){
+                fncGetXILinksForAutoComplete(request.term, 0).then(function (ALLLinks) {
+                    response($.ui.autocomplete.filter(ALLLinks, request.term));
+                })
+            }
+        },
+        select: function (event, ui) {
+            $("#DefaultStep").val(ui.item.label);
+            $("#stepdefinationID").val(ui.item.value);
+            return false;
+        },
+        focus: function (event, ui) {
+            $("#DefaultStep").val(ui.item.label);
+            return false;
+        }
+    });
+
+    $(document).ready(function () {
+
+
+        $('#bIsVisible').prop('checked', false);
+        $('#bIsLoadParent').prop('checked', false);
+        $('#BOStructSaveBtn').click(function () {
+            debugger
+            var TreePairs= [];
+            var sStructureName = $('#sStructureName').val();
+            var sCode = $('#sCode').val();
+            var iStructID = $('#ID').val();
+            if(sStructureName && sCode && sStructureName.length > 0 && sCode.length > 0){
+                for(i=0;i<Tree.length;i++){
+                    TreePairs.push({
+                        ID:Tree[i].ID,
+                        XIGUID:Tree[i].XIGUID,
+                        FKiParentID : Tree[i].FKiParentID,
+                        FKiParentIDXIGUID : Tree[i].FKiParentIDXIGUID,
+                        BOID : Tree[i].BOID,
+                        BOIDXIGUID : Tree[i].BOIDXIGUID,
+                        sBO : Tree[i].sBO,
+                        sType : Tree[i].sType,
+                        sName:Tree[i].sName,
+                        sStructureName:Tree[i].sStructureName,
+                        sCode:Tree[i].sCode,
+                        FKiStepDefinitionID : Tree[i].FKiStepDefinitionID,
+                        FKiStepDefinitionIDXIGUID : Tree[i].FKiStepDefinitionIDXIGUID,
+                        sOutputArea : Tree[i].sOutputArea,
+                        sMode:Tree[i].sMode,
+                        sParentFKColumn:Tree[i].sParentFKColumn,
+                        sLinkingType:Tree[i].sLinkingType,
+                        bMasterEntity:Tree[i].bMasterEntity,
+                        bIsAutoCreateDone:Tree[i].bIsAutoCreateDone,
+                        StatusTypeID : Tree[i].StatusTypeID,
+                        sSavingType: Tree[i].sSavingType,
+                        iOrder:  Tree[i].iOrder,
+                        bIsVisible: Tree[i].bIsVisible,
+                        bIsLoadParent: Tree[i].bIsLoadParent,
+                        sCSS: Tree[i].sCSS
+                    });
+                }
+                var model = { oStructure: TreePairs, sStructureName:sStructureName, sCode:sCode};
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("Save_BOStructure", "BusinessObjects")',
+                    data: JSON.stringify(model),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    async: false,
+                    success: function (data) {
+                        $('.StrStatusMessages').empty();
+                        if(data == true)
+                        {
+                            $('.StrStatusMessages').prepend($('<div class="alert alert-success">Data Saved Succesfully</div>'));
+                        }
+                        else
+                        {
+                            $('.StrStatusMessages').prepend($('<div class="alert alert-danger">Failure! Error Occured</div>'));
+                            //CustomMessage("Failure! Error Occured", false);
+                        }
+                    }
+                });
+            }
+            else{
+                $('.StrStatusMessages').prepend($('<div class="alert alert-danger">Plese fill * marked fields</div>'));
+                //CustomMessage('Plese fill * marked fields', false);
+            }
+        });
+
+        $('#BOStructRefreshBtn').click(function(){
+            var BODID = '@iBODID';
+            var iStructID = $('#ID').val();
+            var sCode = $('#sCode').val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Refresh_BOStructure", "BusinessObjects")',
+                data: JSON.stringify({ iBODID: BODID, ID:iStructID}),
+                contentType: 'application/json;',
+                dataType: 'json',
+                traditional: true,
+                async: false,
+                success: function (NewNodes) {
+                    if(NewNodes && NewNodes.length >0){
+                        var tree = $("#XIBOStructTree").jstree(true);
+                        var ParentNode = $("#XIBOStructTree").jstree(true).get_node(iStructID);
+                        for(var i=0;i<NewNodes.length;i++){
+                            var id = NewNodes[i].ID;
+                            var Node = $("#XIBOStructTree").jstree(true).get_node(id);
+                            if(Node && Node.id > 0){}
+                            else if(NewNodes[i].sName && NewNodes[i].sName.length >0){
+                                var data = [];
+                                var attr={};
+                                attr["BODID"] = 0;
+                                data.push(attr);
+                                var attr={};
+                                attr["Type"] = '';
+                                data.push(attr);
+                                var attr={};
+                                attr["sMode"] = '';
+                                data.push(attr);
+                                var attr={};
+                                attr["bIsVisible"] = '';
+                                data.push(attr);
+                                var attr = {};
+                                attr["bIsLoadParent"] = '';
+                                data.push(attr);
+                                var attr={};
+                                attr["sParentFKColumn"] = '';
+                                data.push(attr);
+                                var attr={};
+                                attr["sLinkingType"] = '';
+                                data.push(attr);
+                                var attr={};
+                                attr["FKiStepDefinitionID"] = 0;
+                                data.push(attr);
+                                var attr={};
+                                attr["FKiStepDefinitionIDXIGUID"] = 0;
+                                data.push(attr);
+                                var attr={};
+                                attr["sOutputArea"] = '';
+                                data.push(attr);
+                                var attr={};
+                                attr["StatusTypeID"] = 0;
+                                data.push(attr);
+                                var attr={};
+                                attr["BOIDXIGUID"] = 0;
+                                data.push(attr);
+                                var attr = {};
+                                attr["sCSS"] = 0;
+                                data.push(attr);
+                                tree.create_node(ParentNode, { text: NewNodes[i].sName, type: 'default', id: NewNodes[i].ID, data:data });
+                                var item = {};
+                                item["ID"] = NewNodes[i].ID
+                                item["FKiParentID"] = ParentNode.id;
+                                item["sName"] = NewNodes[i].sName;
+                                item["sSavingType"] = 'Add';
+                                $('#StatusTypeDDL').val(0);
+                                Tree.push(item);
+                            }
+                        }
+                    }
+                }
+            });
+        })
+
+        $('#CancelBOStruct').click(function (){
+            window.close();
+        });
+
+        $('#CreateBOStructure').change(function(){
+            var iBOID = $('#CreateBOStructure option:selected').val();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Get_BOStructureDetails", "BusinessObjects")',
+                data: JSON.stringify({ iBOID: iBOID}),
+                contentType: 'application/json;',
+                dataType: 'json',
+                traditional: true,
+                async: false,
+                success: function (data) {
+                    if (data.length > 0) {
+                        Tree = data;
+                        LoadTree(data);
+                    }
+                }
+            });
+        });
+
+        $('#BODDL').change(function(){
+            debugger
+            $('#TypesDDL').val(0);
+            $('#ModeDDL').val(0);
+
+            var BOName;
+            if($(this).val() && $(this).val().length > 0){
+                BOName = $('#BODDL :selected').text();
+                BODID = $('#BODDL :selected').val();
+            }
+            if(SelectedNode.id && SelectedNode.id.length > 0 && BOName.length>0){
+                var id = SelectedNode.id;
+                var ChangeText = SelectedNode.text;
+                $("#XIBOStructTree").jstree('rename_node', SelectedNode , BOName );
+                $("#XIBOStructTree").jstree(true).get_node(id).data[0].BODID = 0;
+                $("#XIBOStructTree").jstree(true).get_node(id).data[11].BOIDXIGUID = BODID;
+                var nid = $("#XIBOStructTree").jstree(true).get_node(id)
+                //if(ChangeText == 'New Node')
+                //{
+                //    $("#XIBOStructTree").jstree('rename_node', SelectedNode , BOName );
+                //}
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].XIGUID == id){
+                        Tree[i].sName = BOName;
+                        Tree[i].BOID = 0;
+                        Tree[i].BOIDXIGUID = BODID;
+                    }
+                }
+            }
+        });
+
+        $('#TypesDDL').change(function(){
+            var sType;
+            if($(this).val().length>0 && $(this).val() != 0){
+                sType = $('#TypesDDL :selected').val();
+            }
+            else if($(this).val() == 0){
+                if(SelectedNode.id && SelectedNode.id.length > 0){
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.Type = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].XIGUID == id){
+                            Tree[i].sType = null;
+                        }
+                    }
+                }
+            }
+            if(SelectedNode && SelectedNode.id && SelectedNode.id.length > 0 && sType && sType.length>0){
+                var id = SelectedNode.id;
+                if($('#XIBOStructTree').jstree(true).get_node(id).data != null)
+                {
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.Type = sType;
+                }
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].XIGUID == id){
+                        Tree[i].sType = sType;
+                    }
+                }
+            }
+            $('#DefaultStep').val('');
+            $('#stepdefinationID').val(0);
+        });
+
+        $('#ModeDDL').change(function(){
+            var sMode;
+            if($(this).val().length>0 && $(this).val() != 0){
+                sMode = $('#ModeDDL :selected').val();
+            }
+            else if($(this).val() == 0){
+                if(SelectedNode.id && SelectedNode.id.length > 0){
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.sMode = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].XIGUID == id){
+                            Tree[i].sMode = null;
+                        }
+                    }
+                }
+            }
+            if(SelectedNode.id && SelectedNode.id.length > 0 && sMode && sMode.length>0){
+                var id = SelectedNode.id;
+                if($('#XIBOStructTree').jstree(true).get_node(id).data != null)
+                {
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.sMode = sMode;
+                }
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].XIGUID == id){
+                        Tree[i].sMode = sMode;
+                    }
+                }
+            }
+        });
+
+        $('#StatusTypeDDL').change(function(){
+            var StatusTypeID;
+            if($(this).val().length>0 && $(this).val() != 0){
+                StatusTypeID = $('#StatusTypeDDL :selected').val();
+            }
+            else if($(this).val() == 0){
+                if(SelectedNode.id && SelectedNode.id.length > 0){
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.StatusTypeID = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].XIGUID == id){
+                            Tree[i].StatusTypeID = null;
+                        }
+                    }
+                }
+            }
+            if(SelectedNode.id && SelectedNode.id.length > 0 && StatusTypeID && StatusTypeID.length>0){
+                var id = SelectedNode.id;
+                if($('#XIBOStructTree').jstree(true).get_node(id).data != null)
+                {
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.StatusTypeID = StatusTypeID;
+                }
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].XIGUID == id){
+                        Tree[i].StatusTypeID = StatusTypeID;
+                    }
+                }
+            }
+        });
+
+        $('#LinkingTypeDDL').change(function(){
+            var sLinkingType;
+            if($(this).val().length>0 && $(this).val() != 0){
+                sLinkingType = $('#LinkingTypeDDL :selected').val();
+            }
+            else if($(this).val() == 0){
+                if(SelectedNode.id && SelectedNode.id.length > 0){
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.sLinkingType = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].XIGUID == id){
+                            Tree[i].sLinkingType = null;
+                        }
+                    }
+                }
+            }
+            if(SelectedNode.id && SelectedNode.id.length > 0 && sLinkingType && sLinkingType.length>0){
+                var id = SelectedNode.id;
+                if($('#XIBOStructTree').jstree(true).get_node(id).data != null)
+                {
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.sLinkingType = sLinkingType;
+                }
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].XIGUID == id){
+                        Tree[i].sLinkingType = sLinkingType;
+                    }
+                }
+            }
+        });
+        $('#sParentFKColumn').change(function(){
+            var sParentFKColumn;
+            if($(this).val().length>0 && $(this).val() != 0){
+                sParentFKColumn = $('#sParentFKColumn').val();
+            }
+            else if($(this).val() == '' || $(this).val().length == 0){
+                if(SelectedNode.id && SelectedNode.id.length > 0){
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.sParentFKColumn = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].XIGUID == id){
+                            Tree[i].sParentFKColumn = null;
+                        }
+                    }
+                }
+            }
+            if(SelectedNode.id && SelectedNode.id.length > 0 && sParentFKColumn && sParentFKColumn.length>0){
+                var id = SelectedNode.id;
+                $('#XIBOStructTree').jstree(true).get_node(id).data.sParentFKColumn = sParentFKColumn;
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].XIGUID == id){
+                        Tree[i].sParentFKColumn = sParentFKColumn;
+                    }
+                }
+            }
+        })
+
+        $('#bIsVisible').change(function(){
+            if($('#bIsVisible').is(':checked')){
+                var bIsVisible = true;
+                if(SelectedNode.id && SelectedNode.id.length > 0){
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.bIsVisible = bIsVisible;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].XIGUID == id){
+                            Tree[i].bIsVisible = bIsVisible;
+                        }
+                    }
+                }
+            }
+            else{
+                var bIsVisible = false;
+                if(SelectedNode.id && SelectedNode.id.length > 0){
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.bIsVisible = false;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].XIGUID == id){
+                            Tree[i].bIsVisible = false;
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#bIsLoadParent').change(function () {
+            debugger
+            if ($('#bIsLoadParent').is(':checked')) {
+                var bIsLoadParent = true;
+                if (SelectedNode.id && SelectedNode.id.length > 0) {
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.bIsLoadParent = bIsLoadParent;
+                    for (i = 0; i < Tree.length; i++) {
+                        if (Tree[i].XIGUID == id) {
+                            Tree[i].bIsLoadParent = bIsLoadParent;
+                        }
+                    }
+                }
+            }
+            else {
+                var bIsLoadParent = false;
+                if (SelectedNode.id && SelectedNode.id.length > 0) {
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.bIsLoadParent = false;
+                    for (i = 0; i < Tree.length; i++) {
+                        if (Tree[i].XIGUID == id) {
+                            Tree[i].bIsLoadParent = false;
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#iorder').change(function(){
+            var iOrder;
+            if($(this).val().length>0 && $(this).val() != 0){
+                iOrder = $('#iorder').val();
+            }
+            else if($(this).val() == '' || $(this).val().length == 0){
+                if(SelectedNode.id && SelectedNode.id.length > 0){
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.iOrder = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].XIGUID == id){
+                            Tree[i].iOrder = null;
+                        }
+                    }
+                }
+            }
+            if(SelectedNode.id && SelectedNode.id.length > 0 && iOrder && iOrder.length>0){
+                var id = SelectedNode.id;
+                $('#XIBOStructTree').jstree(true).get_node(id).data.iOrder = iOrder;
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].XIGUID == id){
+                        Tree[i].iOrder = iOrder;
+                    }
+                }
+            }
+        })
+
+        $('#DefaultStep').change(function(){
+            debugger
+            var sStepName;
+            var iStepDefinationID;
+            if($(this).val().length>0 && $(this).val() != 0){
+                sStepName = $('#DefaultStep').val();
+                iStepDefinationID = $('#stepdefinationID').val();
+            }
+            else if($(this).val() == '' || $(this).val().length == 0){
+                if(SelectedNode.id && SelectedNode.id.length > 0){
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.FKiStepDefinitionID = null;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.FKiStepDefinitionIDXIGUID = null;
+                    $("#XIBOStructTree").jstree(true).get_node(id).data[6].FKiStepDefinitionID = null;
+                    $("#XIBOStructTree").jstree(true).get_node(id).data[7].FKiStepDefinitionIDXIGUID = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].XIGUID == id){
+                            Tree[i].FKiStepDefinitionID = null;
+                            Tree[i].FKiStepDefinitionIDXIGUID = null;
+                        }
+                    }
+                    $('#stepdefinationID').val('');
+                }
+            }
+            if(SelectedNode.id && SelectedNode.id.length > 0 && sStepName && sStepName.length>0){
+                var id = SelectedNode.id;
+                $('#XIBOStructTree').jstree(true).get_node(id).data.FKiStepDefinitionIDXIGUID = iStepDefinationID;
+                $("#XIBOStructTree").jstree(true).get_node(id).data[7].FKiStepDefinitionIDXIGUID = iStepDefinationID;
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].XIGUID == id){
+                        Tree[i].FKiStepDefinitionID = 0;
+                        Tree[i].FKiStepDefinitionIDXIGUID = iStepDefinationID;
+                    }
+                }
+            }
+        })
+
+        $('#soutputareaid').change(function () {
+            debugger
+            var sOutputArea;
+            if($(this).val().length>0 && $(this).val() != 0){
+                sOutputArea = $('#soutputareaid').val();
+            }
+            else if($(this).val() == '' || $(this).val().length == 0){
+                if(SelectedNode.id && SelectedNode.id.length > 0){
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.sOutputArea = null;
+                    for(i=0;i<Tree.length;i++){
+                        if(Tree[i].XIGUID == id){
+                            Tree[i].sOutputArea = null;
+                        }
+                    }
+                }
+            }
+            if (SelectedNode.id && SelectedNode.id.length > 0 && sOutputArea && sOutputArea.length > 0) {
+                var id = SelectedNode.id;
+                $('#XIBOStructTree').jstree(true).get_node(id).data.sOutputArea = sOutputArea;
+                for(i=0;i<Tree.length;i++){
+                    if(Tree[i].XIGUID == id){
+                        Tree[i].sOutputArea = sOutputArea;
+                    }
+                }
+            }
+        })
+        $('#scss').change(function () {
+            debugger
+            var sCSS;
+            if ($(this).val().length > 0 && $(this).val() != 0) {
+                sCSS = $('#scss').val();
+            }
+            else if ($(this).val() == '' || $(this).val().length == 0) {
+                if (SelectedNode.id && SelectedNode.id.length > 0) {
+                    var id = SelectedNode.id;
+                    $('#XIBOStructTree').jstree(true).get_node(id).data.sCSS = null;
+                    for (i = 0; i < Tree.length; i++) {
+                        if (Tree[i].XIGUID == id) {
+                            Tree[i].sCSS = null;
+                        }
+                    }
+                }
+            }
+            if (SelectedNode.id && SelectedNode.id.length > 0 && sCSS && sCSS.length > 0) {
+                var id = SelectedNode.id;
+                $('#XIBOStructTree').jstree(true).get_node(id).data.sCSS = sCSS;
+                for (i = 0; i < Tree.length; i++) {
+                    if (Tree[i].XIGUID == id) {
+                        Tree[i].sCSS = sCSS;
+                    }
+                }
+            }
+        })
+        $('#CreateStructure').click(function () {
+            $('body').block({
+                message: '<h4>Saving</h4>',
+                blockMsgClass: 'report-success',
+            });
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SaveBODetailsToXIStructure", "BusinessObjects")',
+                data: JSON.stringify({ BOID: 0, BOName: BOName }),
+                contentType: 'application/json;',
+                dataType: 'json',
+                traditional: true,
+                async: false,
+                success: function (data) {
+                    if (data.Status && !data.Status) {
+                        CustomMessage(data.ResponseMessage, data.Status)
+                        $('body').unblock();
+                    }
+                    else {
+                        if(data.length > 0){
+                            LoadTree(data);
+                        }
+                        else {
+                            $('body').unblock();
+                        }
+                    }
+                }
+            });
+        });
+    });
+
+    function LoadTree(data){
+        var jsondata = [];
+        var Nodes = data;
+        if (Nodes && Nodes != null) {
+            var j = 0;
+            for (var i = 0; i < Nodes.length; i++) {
+                var item = {}
+                item["id"] = Nodes[i].XIGUID;
+                if (Nodes[i].FKiParentIDXIGUID == null || Nodes[i].FKiParentIDXIGUID == '00000000-0000-0000-0000-000000000000') {
+                    item["parent"] = "#";
+                }
+                else {
+                    item["parent"] = Nodes[i].FKiParentIDXIGUID;
+                }
+
+                item["text"] = Nodes[i].sName;
+                var data = [];
+                var attr={};
+                attr["BODID"] = Nodes[i].BOID;
+                data.push(attr);
+                var attr={};
+                attr["Type"] = Nodes[i].sType;
+                data.push(attr);
+                var attr={};
+                attr["sMode"] = Nodes[i].sMode;
+                data.push(attr);
+                var attr={};
+                attr["bIsVisible"] = Nodes[i].bIsVisible;
+                data.push(attr);
+                var attr = {};
+                attr["bIsLoadParent"] = Nodes[i].bIsLoadParent;
+                data.push(attr);
+                var attr={};
+                attr["sParentFKColumn"] = Nodes[i].sParentFKColumn;
+                data.push(attr);
+                var attr={};
+                attr["sLinkingType"] = Nodes[i].sLinkingType;
+                data.push(attr);
+                var attr={};
+                attr["FKiStepDefinitionID"] = Nodes[i].FKiStepDefinitionID;
+                data.push(attr);
+                var attr={};
+                attr["FKiStepDefinitionIDXIGUID"] = Nodes[i].FKiStepDefinitionIDXIGUID;
+                data.push(attr);
+                var attr={};
+                attr["sOutputArea"] = Nodes[i].sOutputArea;
+                data.push(attr);
+                var attr={};
+                attr["StatusTypeID"] = Nodes[i].StatusTypeID;
+                data.push(attr);
+                var attr={};
+                attr["iOrder"] = Nodes[i].iOrder;
+                data.push(attr);
+                var attr={};
+                attr["BOIDXIGUID"] = Nodes[i].BOIDXIGUID;
+                data.push(attr);
+                var attr = {};
+                attr["sCSS"] = Nodes[i].sCSS;
+                data.push(attr);
+                item["data"] = data;
+
+                jsondata.push(item);
+            }
+            if (jsondata.length > 0) {
+                var jsonString = JSON.stringify(jsondata);
+                createJSTree(JSON.parse(jsonString));
+                $('body').unblock();
+            }
+        }
+    }
+
+
+    //check if main node "Add Menu"
+    function CheckIfMain($node) {
+        var NodeID = $node.id;
+        if (NodeID == "1") {
+            return 0;
+        }
+        else {
+            return 1;
+        }
+
+    }
+
+    function RenameNode($node, action) {
+        var NodeID = $node.id;
+        var NodeTitle = $node.text;
+        for(i=0;i<Tree.length;i++){
+            if(Tree[i].XIGUID == NodeID)
+            {
+                Tree[i].sName = NodeTitle;
+            }
+        }
+    }
+
+    //Add details form
+    function AddDetails($node) {
+        var AddPopups = [];
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+
+        if (NodeID != "1") {
+            var ID = $(this).attr('id');
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddDetailsForStructure", "BusinessObjects")',
+                data: { ParentNode: ParentID, NodeID: NodeID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    if (data != null) {
+                        $("#DetailsForm").empty();
+                        $("#DetailsForm").append(data);
+                    }
+                }
+            });
+        }
+        else {
+
+        }
+    }
+    //delete
+    function DeleteNodeDetails($node, action) {
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ChildrnID = "";
+        for (var i = 0; i < ChldnID.length; i++) {
+            var chldID = ChldnID[i];
+            ChildrnID = chldID + "," + ChildrnID;
+
+        }
+        var ChildrnIDs = ChildrnID.substring(0, ChildrnID.length - 1);
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        if (NodeID != "1" && ParentID != "#") {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("DeleteNodeDetails", "BusinessObjects")',
+                data: { BOID: BOID, ParentNode: ParentID, NodeID: NodeID, ChildrnIDs: ChildrnIDs, Type: action },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    //you can also remove this... as client side has the details and on load we are displaying above
+                    if (data != null) {
+                        var jsondata = [];
+                        for (var i = 0; i < data.length; i++) {
+                            var ID = data[i].ID;
+                            var Parent = data[i].FKiParentID;
+                            var text = data[i].sName;
+
+                            item = {}
+                            item["id"] = ID;
+                            item["parent"] = Parent;
+                            item["text"] = text;
+                            jsondata.push(item);
+
+                        }
+                        var jsonString = JSON.stringify(jsondata);
+                    }
+                    else {
+                        jsonString = [
+                           { "id": "1", "parent": "#", "text": "XIStructure" }
+                        ];
+                    }
+                    //call function to recreate tree
+                    //createJSTree(JSON.parse(jsonString));
+                    //$('#jstree').jstree(true).settings.core.data = jsonString;
+                    //$('#jstree').jstree(true).refresh();
+                }
+            });
+        }
+        else {
+
+        }
+
+    }
+
+    function createJSTree(jsondata) {
+        $('#XIBOStructTree').empty();
+        $('#XIBOStructTree').removeAttr('class');
+        $('#XIBOStructTree').jstree({
+            "core": {
+                "themes": {
+                    "variant": "large"
+                },
+                "check_callback": true,
+                'data': jsondata,
+            },
+            "plugins": ["contextmenu", "dnd"],
+            "dnd": {},
+            "contextmenu": {
+                "items": function ($node) {
+                    var tree = $("#XIBOStructTree").jstree(true);
+                    return {
+                        "Create": {
+                            "separator_before": false,
+                            "separator_after": true,
+                            "label": "Create",
+                            action: function (obj) {
+                                var data = [];
+                                var attr={};
+                                attr["BODID"] = 0;
+                                data.push(attr);
+                                var attr={};
+                                attr["Type"] = '';
+                                data.push(attr);
+                                var attr={};
+                                attr["sMode"] = '';
+                                data.push(attr);
+                                var attr={};
+                                attr["bIsVisible"] = '';
+                                data.push(attr);
+                                var attr = {};
+                                attr["bIsLoadParent"] = '';
+                                data.push(attr);
+                                var attr={};
+                                attr["sParentFKColumn"] = '';
+                                data.push(attr);
+                                var attr={};
+                                attr["sLinkingType"] = '';
+                                data.push(attr);
+                                var attr={};
+                                attr["FKiStepDefinitionID"] = 0;
+                                data.push(attr);
+                                var attr={};
+                                attr["FKiStepDefinitionIDXIGUID"] = 0;
+                                data.push(attr);
+                                var attr={};
+                                attr["sOutputArea"] = '';
+                                data.push(attr);
+                                var attr={};
+                                attr["StatusTypeID"] = 0;
+                                data.push(attr);
+                                var attr={};
+                                attr["iOrder"] = 0;
+                                data.push(attr);
+                                var attr={};
+                                attr["BOIDXIGUID"] = 0;
+                                data.push(attr);
+                                var attr = {};
+                                attr["sCSS"] = 0;
+                                data.push(attr);
+                                var ID = 0;
+                                var ParentNode = $node.id;
+                                $node = tree.create_node($node, { text: 'New Node', type: 'default', id: NodeId, data:data });
+                                tree.deselect_all();
+                                tree.select_node($node);
+                                var item = {};
+                                item["ID"] = NodeId;
+                                item["XIGUID"] = NodeId;
+                                item["FKiParentIDXIGUID"] = ParentNode;
+                                item["sName"] = 'New Node';
+                                item["sSavingType"] = 'Add';
+                                $('#StatusTypeDDL').val(0);
+                                Tree.push(item);
+                                NodeId++;
+                                $('#BODDL').val('');
+                                $('#TypesDDL').val(0);
+                                $('#ModeDDL').val(0);
+                                $('#iorder').val(0);
+                                $('#LinkingTypeDDL').val(0);
+                                $('#sParentFKColumn').val('');
+                                $('#DefaultStep').val('');
+                                $('#stepdefinationID').val(0);
+                                $('#soutputareaid').val('');
+                                $('#scss').val('');
+                                $('#bIsVisible').prop('checked', false);
+                                $('#bIsLoadParent').prop('checked', false);
+                                @*$.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("CreateAndSaveTreeNode", "BusinessObjects")',
+                                    data: { BOID: BOID, ParentNode: ParentNode, NodeID: '', NodeTitle: 'New Menu', Type: 'create' },
+                                    cache: false,
+                                    dataType: 'json',
+                                    success: function (data) {
+                                        if (parseInt(data) > 0) {
+                                            ID = parseInt(data);
+                                            $node = tree.create_node($node, { text: 'New Menu', type: 'default', id: ID });
+                                            tree.deselect_all();
+                                            tree.select_node($node);
+                                        }
+                                        else {
+                                            alert('Error Occurred');
+                                        }
+                                    }
+                                });*@
+                            }
+                        },
+                        "Rename": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Rename",
+                            "action": function (obj) {
+                                tree.edit($node, null, function (node, status) {
+                                    if (node.original.text != node.text) {
+                                        RenameNode($node, "rename");
+                                        //var id = $node.id;
+                                        //for(i=0;i<Tree.length;i++){
+                                        //    if(Tree[i].ID == id){
+                                        //        Tree[i].sName = $node.text;
+                                        //    }
+                                        //}
+                                    }
+                                });
+
+                                //var CheckNode = CheckIfMain($node);
+                                //if (CheckNode == '1') {
+                                //    tree.edit($node, null, function (node, status) {
+                                //        if (node.original.text != node.text) {
+                                //            //RenameAndSaveToDB($node, "rename");
+                                //        }
+                                //    });
+                                //}
+
+                            }
+                        },
+                        "Remove": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Remove",
+                            "action": function (obj) {
+                                tree.delete_node($node);
+                                debugger
+                                var id =  $node.id;
+                                for(i=0;i<Tree.length;i++){
+                                    if(Tree[i].XIGUID== id){
+                                        Tree.splice(i, 1);
+                                    }
+                                }
+                                //var CheckNode = CheckIfMain($node);
+                                //if (CheckNode == '1') {
+                                //    tree.delete_node($node);
+                                //    //DeleteNodeDetails($node, "delete");
+                                //}
+                            }
+                        },
+                        "AddDetails": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Add Details",
+                            "action": function (obj) {
+                                var CheckNode = CheckIfMain($node);
+                                if (CheckNode == '1') {
+                                    //AddDetails($node);
+                                    AddStructureDetails($node);
+                                }
+                            }
+                        }
+                    };
+                }
+            },
+            //}).bind("move_node.jstree", function (e, data) {
+            //    DragAndDropNodes(data)
+        }).bind("move_node.jstree", function (e, data) {
+            DragAndDropNodes(data)
+        }).bind("loaded.jstree", function (event, data) {
+            $(this).jstree("close_all");
+        }).bind("select_node.jstree", function (NODE, REF_NODE) {
+            var BODID;
+            var Type;
+            var sMode;
+            var bIsVisible;
+            var bIsLoadParent;
+            var sParentFKColumn;
+            var sLinkingType;
+            var StatusTypeID;
+            var iStepID;
+            var iStepIDXIGUID;
+            var sOutputArea;
+            var sCSS;
+            var iOrder;
+            var BOIDXIGUID;
+            SelectedNode = REF_NODE.node;
+            if(SelectedNode.data != null)
+            {
+                debugger
+                BODID = SelectedNode.data[0].BODID;
+                Type = SelectedNode.data[1].Type;
+                sMode = SelectedNode.data[2].sMode;
+                bIsVisible = SelectedNode.data[3].bIsVisible;
+                bIsLoadParent = SelectedNode.data[4].bIsLoadParent;
+                sParentFKColumn = SelectedNode.data[5].sParentFKColumn;
+                sLinkingType = SelectedNode.data[6].sLinkingType;
+                StatusTypeID = SelectedNode.data[10].StatusTypeID;
+                sOutputArea = SelectedNode.data[9].sOutputArea;
+                iStepID = SelectedNode.data[7].FKiStepDefinitionID;
+                iStepIDXIGUID = SelectedNode.data[8].FKiStepDefinitionIDXIGUID;
+                iOrder = SelectedNode.data[11].iOrder;
+                BOIDXIGUID = SelectedNode.data[12].BOIDXIGUID;
+                sCSS = SelectedNode.data[13].sCSS;
+                if(!Type){
+                    Type = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.Type;
+                }
+                if(!sMode){
+                    sMode = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.sMode;
+                }
+                if(!bIsVisible){
+                    bIsVisible = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.bIsVisible;
+                }
+                if (!bIsLoadParent) {
+                    bIsLoadParent = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.bIsLoadParent;
+                }
+                if(!sParentFKColumn){
+                    sParentFKColumn = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.sParentFKColumn;
+                }
+                if(!sLinkingType){
+                    sLinkingType = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.sLinkingType;
+                }
+                if(!StatusTypeID){
+                    StatusTypeID = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.StatusTypeID;
+                }
+                if(!iStepID){
+                    iStepID = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.FKiStepDefinitionID;
+                }
+                if(!iStepIDXIGUID){
+                    iStepIDXIGUID = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.FKiStepDefinitionIDXIGUID;
+                }
+                if(!sOutputArea){
+                    sOutputArea = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.sOutputArea;
+                }
+                if (!sCSS) {
+                    sCSS = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.sCSS;
+                }
+                if(!iOrder){
+                    iOrder = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.iOrder;
+                }
+                if(!BOIDXIGUID){
+                    BOIDXIGUID = $('#XIBOStructTree').jstree(true).get_node(SelectedNode.id).data.BOIDXIGUID;
+                }
+                //if(BODID && BODID > 0){
+                //    $('#BODDL').val(BOIDXIGUID);
+                //}
+                if(BOIDXIGUID && BOIDXIGUID.length > 0){
+                    $('#BODDL').val(BOIDXIGUID);
+                }
+                if(Type && Type.length > 0){
+                    $('#TypesDDL').val(Type);
+                }
+                else{
+                    $('#TypesDDL').val(0);
+                }
+                if(sMode && sMode.length > 0){
+                    $('#ModeDDL').val(sMode);
+                }
+                else{
+                    $('#ModeDDL').val(0);
+                }
+                if(bIsVisible){
+                    $('#bIsVisible').prop('checked', true);
+                }
+                else{
+                    $('#bIsVisible').prop('checked', false);
+                }
+                if (bIsLoadParent) {
+                    $('#bIsLoadParent').prop('checked', true);
+                }
+                else {
+                    $('#bIsLoadParent').prop('checked', false);
+                }
+                if(sParentFKColumn && sParentFKColumn.length > 0){
+                    $('#sParentFKColumn').val(sParentFKColumn);
+                }
+                else{
+                    $('#sParentFKColumn').val('');
+                }
+                if(sLinkingType && sLinkingType.length > 0){
+                    $('#LinkingTypeDDL').val(sLinkingType);
+                }
+                else{
+                    $('#LinkingTypeDDL').val(0);
+                }
+                if(StatusTypeID > 0){
+                    $('#StatusTypeDDL').val(StatusTypeID);
+                }
+                else{
+                    $('#StatusTypeDDL').val(0);
+                }
+                debugger
+                if(iStepID > 0 || (iStepIDXIGUID && iStepIDXIGUID.length > 0)){
+                    debugger
+                    if(Type== 'Main BO' || Type=='Sub Entity'){
+                        fncGetStepsForAutoComplete("", iStepIDXIGUID).then(function (AllSteps) {
+                            List = AllSteps;
+                            var sStepName = getKeyByValue(iStepIDXIGUID);
+                            $('#DefaultStep').val(sStepName);
+                            $('#stepdefinationID').val(iStepIDXIGUID);
+                        })
+                        @*const AllSteps = @Html.Raw(Json.Encode(oTreeDef.FirstOrDefault().AllQSSteps));*@
+
+                        function getKeyByValue(iStepID) {
+                            debugger
+                            var keyFound= List.filter(function (x) { return x.value === iStepID; })
+                            if(keyFound && keyFound.length > 0){
+                                return keyFound[0].label;
+                            }
+                        }
+                    }
+                    else if(Type=='Popup'){
+                        fncGetXILinksForAutoComplete("", iStepID).then(function (AllLinks) {
+                            Links = AllLinks;
+                            var sLinkName =  getLinkNameByValue(iStepID);
+                            $('#DefaultStep').val(sLinkName);
+                            $('#stepdefinationID').val(iStepID);
+                        })
+
+                        function getLinkNameByValue(iStepID) {
+                            var keyFound= Links.filter(function (x) { return x.value === iStepID; })
+                            if(keyFound && keyFound.length > 0){
+                                return keyFound[0].label;
+                            }
+                            //return Object.keys(Links).find(key => Links[key] === iStepID);
+                        }
+
+                    }
+                }
+                else{
+                    $('#DefaultStep').val('');
+                    $('#stepdefinationID').val(0);
+                }
+                if(sOutputArea  && sOutputArea.length > 0){
+                    $('#soutputareaid').val(sOutputArea);
+                }
+                else{
+                    $('#soutputareaid').val('');
+                }
+                if (sCSS && sCSS.length > 0) {
+                    $('#scss').val(sCSS);
+                }
+                else {
+                    $('#scss').val('');
+                }
+                if(iOrder  && iOrder > 0){
+                    $('#iorder').val(iOrder);
+                }
+                else{
+                    $('#iorder').val(0);
+                }
+            }
+        });
+    }
+
+    function DragAndDropNodes(data) {
+        var NodeID = data.node.id;
+        var OldParentID = data.old_parent;
+        var old_position = data.old_position;
+        var position = data.position;
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("DragAndDropNodes", "BusinessObjects")',
+            data: { NodeID: NodeID, OldParentID: OldParentID, Oldposition: old_position, Newposition: position },
+            cache: false,
+            dataType: 'json',
+            success: function (data) { }
+        });
+    }
+
+    function fncGetStepsForAutoComplete(sSearchText, iStepID){
+        return new Promise(function (resolve, reject) {
+            var Params = { sSearchText: sSearchText, iStepID:iStepID};
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Get_StepsForAutoComplete", "QuestionSet")',
+                contentType: 'application/json;',
+                dataType: 'json',
+                data: JSON.stringify(Params),
+                traditional: true,
+                async: true,
+                success: function (data) {
+                    debugger
+                    List=[];
+                    $.each(data, function (key, value) {
+                        List.push({ label: value.sName, value: value.sValue });
+                    });
+                    resolve(List);
+                }
+            });
+        })
+    }
+
+    function fncGetXILinksForAutoComplete(sSearchText, iXILinkID){
+        return new Promise(function (resolve, reject) {
+            var Params = { sSearchText: sSearchText, iXILinkID:iXILinkID};
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Get_XILinksForAutoComplete", "QuestionSet")',
+                contentType: 'application/json;',
+                dataType: 'json',
+                data: JSON.stringify(Params),
+                traditional: true,
+                async: true,
+                success: function (XILinks) {
+                    Links=[];
+                    $.each(XILinks, function (key, value) {
+                        Links.push({ label: key, value: value });
+                    });
+                    resolve(Links);
+                }
+            });
+        })
+    }
+</script>
+

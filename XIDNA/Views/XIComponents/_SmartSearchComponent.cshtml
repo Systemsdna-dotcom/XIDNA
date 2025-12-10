@@ -1,0 +1,99 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using XIDNA
+@{
+    List<CNV> oNVs = new List<CNV>();
+    Dictionary<string, object> Data = new Dictionary<string, object>();
+    string InstanceID = string.Empty;
+    if (Model.oContent.ContainsKey(XIConstant.SmartSearchComponent))
+    {
+        Data = (Dictionary<string, object>)Model.oContent[XIConstant.SmartSearchComponent];
+        if (Data.ContainsKey("NVs"))
+        {
+            oNVs = (List<CNV>)Data["NVs"];
+        }
+        if (Data.ContainsKey("InstanceID"))
+        {
+            InstanceID = (string)Data["InstanceID"];
+        }
+        if (oNVs == null)
+        {
+            oNVs = new List<CNV>();
+        }
+    }
+}
+<div class="p5 col-md-4">
+    <div class="scroll_vh_100 form-container">
+        <div class="DlgStatusMessages"></div>
+        <div class="clearfix flex-head">
+            <h3 class="maintitle">Smart Search</h3>
+            <h3 data-iid="@InstanceID" id="InstanceID">@InstanceID</h3>
+            <span class="sssuccessmsg"></span>
+        </div>
+        <select class="form-control input-sm" id="SmartSearchDDL">
+            <option>Please Select</option>
+            @foreach (var NV in oNVs)
+            {
+                <option value="@NV.sValue" data-type="@NV.sType" data-pc="@NV.sContext" data-popup="@NV.sLabel">@NV.sName</option>
+            }
+        </select>
+        <input type="text" class="form-control input-large input-sm" placeholder="Search Here" data-identity="SelectedSmartSrch" data-type="smartsearch" onkeyup="fncgetautocomplete('', this, event)">
+        <span id="SelectedSmartSrch" class="danger" data-iid="">
+        </span>
+        <a class="btn btn-theme" onclick="fncLoadPopup()">
+            <i class="far fa-window-restore" aria-hidden="true"></i>
+        </a>
+    </div>
+    <button class="btn" id="AssignComm">Assign</button>
+</div>
+<div class="smartsearch-dialog"></div>
+<script>
+    $(document).ready(function()
+    {
+        $('#AssignComm').click(function () {
+            debugger
+            var GUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            var CommID = $('#InstanceID').attr('data-iid');
+            var BOIID = $('#SelectedSmartSrch').attr('data-iid');
+            var BO = $("#SmartSearchDDL :selected").attr('data-type');
+            var PCGUID = $("#SmartSearchDDL :selected").attr('data-pc');
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Execute_Algorithm", "BusinessObjects")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({ CommID: CommID, BOIID: BOIID, BO: BO, PCGUID: PCGUID, sGUID:GUID }),
+                cache: false,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    debugger
+                    if (data) {
+                        $('.LayoutCode_' + GUID).prepend($('<div class="StatusMessages"></div>'));
+                        var sMsg = "";
+                        for (var key in data) {
+                            if (key.toLowerCase().startsWith('error')) {
+                                sMsg = sMsg + '<div class="alert alert-danger">' + data[key] + '</div>';
+                            }
+                            else if (key.toLowerCase().startsWith('success')) {
+                                sMsg = sMsg + '<div class="alert alert-success">' + data[key] + '</div>';
+                            }
+                            else {
+                                sMsg = sMsg + '<div class="alert alert-success">' + data[key] + '</div>';
+                            }
+                        }
+                        $('.LayoutCode_' + GUID).find('.StatusMessages').html(sMsg);
+                    }
+                }
+            });
+        })
+    })
+    function fncLoadPopup() {
+        debugger
+        var BOIID = $('#SelectedSmartSrch').attr('data-iid');
+        var iPopupID = $("#SmartSearchDDL :selected").attr('data-popup');
+        var BO = $("#SmartSearchDDL :selected").attr('data-type');
+        fncXILinkLoad(iPopupID, BOIID, BO)
+    }
+</script>

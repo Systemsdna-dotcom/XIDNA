@@ -1,0 +1,174 @@
+﻿@model XIDNA.Models.cXIDataTypes
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<section class="content-header hedr">
+    @if (@Model.ID == 0)
+    {
+        <h1> Add XIDataType </h1>
+    }
+    else
+    {
+        <h1> Edit XIDataType </h1>
+    }
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> XI DataTypes </a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box box-primary">
+            <div class="box-body">
+                <div class="innerborder">
+                    @* SaveBO *@
+                    @using (Ajax.BeginForm("SaveEditXIDataType", "XISemantics", new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "XIDataTypeForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.ID)
+                        <div id="clear-text">
+                            @if (Model.FKiApplicationID == 0)
+                            {
+                                <div class="form-group" id="XIFKiApplicationDDL">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn"> Application <span class="danger">*</span></label>
+                                        <select class="form-control" id="ApplicationID" name="FKiApplicationID">
+                                            <option value="0">--Select--</option>
+                                            @foreach (var items in Model.ddlApplications)
+                                            {
+                                                if (Model.FKiApplicationID == items.Value)
+                                                {
+                                                    <option selected value="@items.Value">@items.text</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@items.Value">@items.text</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" id="ApplicationID" name="FKiApplicationID" value="@Model.FKiApplicationID" />
+                            }
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.sName, new { @placeholder = "Enter Name Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sName, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Base Data Type</label>
+                                    @Html.DropDownListFor(m => m.sBaseDataType, new SelectList(new List<Object>{
+                                               new { key= "int" , value = "int" },
+                       new { key= "varchar" , value = "varchar" },
+                       new { key= "datetime" , value = "datetime" },
+                       new { key= "decimal" , value = "decimal" },
+                       new { key= "boolean" , value = "boolean" },
+                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sBaseDataType, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Start Range</label>
+                                    @Html.TextBoxFor(model => model.sStartRange, new { @placeholder = "Enter Start Range", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sStartRange, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">End Range</label>
+                                    @Html.TextBoxFor(model => model.sEndRange, new { @placeholder = "Enter End Range", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sEndRange, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Regex</label>
+                                    @Html.TextAreaFor(model => model.sRegex, new { @placeholder = "Enter Regex Here", @class = "form-control", @rows = "5", @cols = "10" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sRegex, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Script</label>
+                                    @Html.TextAreaFor(model => model.sScript, new { @placeholder = "Enter Script Here", @class = "form-control", @rows = "5", @cols = "10" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sScript, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Validation Message</label>
+                                    @Html.TextBoxFor(model => model.sValidationMessage, new { @placeholder = "Enter Validation Message", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.sValidationMessage, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="submit" class="btn btn-theme" value="Save" />
+                                    @if (Model.ID == 0)
+                                    {
+                                        <button type="button" class="btn btn-theme reverse" id="ResetXIData">Reset</button>
+                                    }
+                                    <button type="button" class="btn btn-theme decline" id="CancelXIData">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+
+    function OnComplete(e) {
+        CustomMessage(e.ResponseMessage, e.Status);
+        window.opener.location.reload();
+    }
+
+    $('#ResetXIData').click(function () {
+        $('#XIDataTypeForm')[0].reset();
+        $('#XIDataTypeForm .taberrormsg').find('span').html('');
+    });
+
+    $('#CancelXIData').click(function () {
+        window.close();
+    });
+
+</script>
+
+
+

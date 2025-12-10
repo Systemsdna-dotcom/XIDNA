@@ -1,0 +1,128 @@
+﻿@model IEnumerable<XIDNA.Models.Reports>
+
+@{
+    if (Model.FirstOrDefault().ResultIn == "Inline")
+    {
+        //Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    }
+    else if (Model.FirstOrDefault().ResultIn == "Popup")
+    {
+        Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    }
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        var popups = new Array();
+        var newpopups = new Array();
+        var id = "#@Model.FirstOrDefault().ID";
+        $('#1ClicksTree').jstree({
+            "core": {
+                "check_callback": function (op, node, par, pos, more) {
+                    if (op === "delete_node") {
+                        return confirm("Are you sure you want to delete?");
+                    }
+                }
+            },
+            "plugins": [
+               "themes", "html_data", "ui", "state",
+            ],
+        }).jstree('select_node', '#@Model.FirstOrDefault().ID')
+        $('#OneClicksButton').on('click', 'input', function (e) {
+            e.preventDefault();
+            var url = $(this).attr('data-url');
+            if (newpopups.length > 0) {
+                for (i = 0; i < newpopups.length; i++) {
+                    newpopups[i].close();
+                }
+            }
+            //var newquery = window.open(url, '_blank', 'fullscreen=yes,resizable=yes,scrollbars=yes,toolbar=yes,menubar=yes,location=yes,left=0,top=0');
+            //var newquery = window.open(url, '_blank', "scrollbars=1,resizable=1,width=1400, height=700,left=0,top=0");
+            var newquery = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            newpopups.push(newquery);
+            newquery.moveTo(0, 0);
+        });
+    });
+</script>
+<style>
+    .treegroup {
+        width: 230px;
+        margin-top: 22px;
+        margin-bottom: 30px;
+        float: left;
+    }
+
+    .BOTabs li {
+        cursor: pointer;
+    }
+</style>
+@*<section class="content-header hedr">
+        <h1> Structured One Clicks </h1>
+        <ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-dashboard"></i> One Clicks</a></li>
+            <li class="active">Home</li>
+        </ol>
+    </section>*@
+<div class="content">
+    <div class="row">
+        <div class="box">
+
+            <div class="box-body col-md-2">
+                <div class="tree">
+                    @helper TreeView(IEnumerable<XIDNA.Models.Reports> nodes)
+{
+    foreach (var node in nodes)
+    {
+        <li id="@node.ID">
+            @if (node.IsLeaf)
+            {
+                @Ajax.ActionLink(node.Name.ToString(),
+                                           "ReportResult", "Inbox",
+                                             new { QueryID = node.ID, PageIndex = 1, SearchType = "Structured", SearchText = "", BO = "", ParentID = node.ParentID },
+                                new AjaxOptions
+                                {
+                                    UpdateTargetId = "ReportResult",
+                                    InsertionMode = InsertionMode.Replace,
+                                    HttpMethod = "GET",
+                                    LoadingElementId = "ajax-loader",
+                                }
+                                )
+            }
+            else
+            {
+                @Ajax.ActionLink(node.Name.ToString(),
+                                                "ReportResult", "Inbox",
+                                             new { QueryID = node.ID, PageIndex = 1, SearchType = "Structured", SearchText = "", BO = "" },
+                                new AjaxOptions
+                                {
+
+                                    UpdateTargetId = "ReportResult",
+                                    InsertionMode = InsertionMode.Replace,
+                                    HttpMethod = "GET",
+                                    LoadingElementId = "ajax-loader",
+                                }
+                                )
+                <ul>
+                    @TreeView(node.Sub1Clicks)
+                </ul>
+            }
+        </li>
+    }
+}
+                    <div id="1ClicksTree">
+                        <ul>
+                            @TreeView(Model)
+                        </ul>
+                    </div>
+
+
+                </div>
+            </div>
+            <div class="box-body col-md-10 no-padding" id="ReportResult">
+                @{
+                    Html.RenderAction("ReportResult", "Inbox", new { ReportID = Model.FirstOrDefault().ID, PageIndex = 1, SearchType = "Structured", BO = "" });
+                }
+            </div>
+        </div>
+
+    </div>
+</div>

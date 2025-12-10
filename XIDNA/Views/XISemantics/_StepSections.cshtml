@@ -1,0 +1,1452 @@
+﻿@using XIDNA.ViewModels
+@model XICore.XIDQSSection
+
+<script>
+    var DOptionsList = "";
+    $(document).ready(function () {
+        LoadSections();
+        $('#GrpDescDiv').hide();
+        $('#IsFieldsGroup').change(function () {
+            if ($(this).prop("checked")) {
+                $('#GrpDescDiv').show();
+            }
+            else { $('#GrpDescDiv').hide(); }
+        });
+        if ('@Model.bIsGroup' == "True") {
+            $('#IsFieldsGroup').attr('checked', 'checked')
+            $('#GrpDescDiv').show();
+        }
+        if ('@Model.bIsHidden' == "True") {
+            $('#IsSectionHidden').attr('checked', 'checked')
+        }
+        $("#AutoSectionShow").autocomplete({
+            source: function (request, response) {
+                //var DOptionsList = 0;
+                $("#AutoSection").val("");
+                var List = [];
+                debugger
+                if(DOptionsList && DOptionsList!= 0){
+                    $.each(DOptionsList, function (key, value) {
+                        List.push({ label: value.text, value: value.ID });
+                    });
+                    response($.ui.autocomplete.filter(List, request.term));
+                }
+            },
+            select: function( event, ui ) {
+                $("#AutoSectionShow").val(ui.item.label);
+                $("#AutoSection").val(ui.item.value);
+                return false;
+            },
+            focus: function(event, ui) {
+                $("#AutoSectionShow").val(ui.item.label);
+                $("#AutoSection").val(ui.item.value);
+                return false;
+            }
+        });
+    });
+    function LoadSections() {
+        $.ajax({
+            url: '@Url.Action("Get_QSSectionsALL", "XISemantics")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            async: true,
+            cache: false,
+            success: function (data) {
+                debugger
+                DOptionsList = data;
+            }
+        })
+    }
+</script>
+<div class="row">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    @if (Model != null && ViewBag.SectionID != null)
+                    {
+                        if (Model.iDisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.Fields.ToString()))
+                        {
+                            <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                            <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+                            <div id="SecFieldsDiv">
+                                <div class="form-group">
+                                    <div id="SecNameValuePairs" class="col-md-12 no-padding">
+                                        @if (Model.FieldDefinitions != null && Model.FieldDefinitions.Count() > 0)
+                                        {
+                                            <div class="form-group col-md-12 no-padding">
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" name="sName" id="SectionNametxtbox" placeholder="Enter Section Name" class="form-control SectionName" value="@Model.sName" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 no-padding">
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" value="@Model.sCode" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 no-padding">
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" value="@Model.sCssClass" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 no-padding">
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Rule<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <select class="form-control" id="RuleDDL">
+                                                        <option value="">--Select-</option>
+                                                        @foreach (var items in Model.ddlRules)
+                                                        {
+                                                            if (Model.FkiRuleIDXIGUID == items.XIGUID)
+                                                            {
+                                                                <option value="@items.XIGUID" selected>@items.text</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@items.XIGUID">@items.text</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 no-padding">
+                                                <input type="checkbox" id="IsSectionHidden" value="@Model.bIsHidden" />                        <label for="inputEmail" class="gn"> Is Hidden<span class="danger"></span></label>
+                                            </div>
+                                            <div class="form-group col-md-12 no-padding">
+                                                <input type="checkbox" id="IsFieldsGroup" value="@Model.bIsGroup" />                        <label for="inputEmail" class="gn"> Is Group<span class="danger"></span></label>
+                                            </div>
+                                            <div id="GrpDescDiv">
+                                                <div class="form-group col-md-12 no-padding">
+                                                    <div class="col-md-4">
+                                                        <label for="inputEmail" class="gn"> Group Label<span class="danger"></span></label>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <input type="text" name="sName" id="FieldsGroupLabel" placeholder="Enter Group Label" class="form-control" value="@Model.sGroupLabel" />
+                                                    </div>
+                                                </div>
+                                                <div class="form-group col-md-12 no-padding">
+                                                    <div class="col-md-4">
+                                                        <label for="inputEmail" class="gn"> Group Description<span class="danger"></span></label>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <input type="text" name="sName" id="FieldsGroupDescription" placeholder="Enter Group Description" class="form-control" value="@Model.sGroupDescription" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            foreach (var field in Model.FieldDefinitions)
+                                            {
+
+                                                <div class="form-group SecNVPairs col-md-12 no-padding">
+                                                    <div class="col-md-1">
+                                                        <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" value="@field.FieldOrigin.sName" data-value="@field.FKiXIFieldOriginIDXIGUID" />
+                                                    </div>
+                                                    <div class="col-md-1">
+                                                        <button type="button" class="btn btn-theme btn-xs DeleteSecNVPair" data-secid="@ViewBag.SecID" onclick="fncDeleteSecNVPair(this)">Delete</button>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="form-group col-md-12 no-padding">
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" name="sName" id="SectionNametxtbox" placeholder="Enter Section Name" class="form-control SectionName" value="@Model.sName" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 no-padding">
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" value="@Model.sCode" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 no-padding">
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" value="@Model.sCssClass" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 no-padding">
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Rule<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <select class="form-control" id="RuleDDL">
+                                                        <option value="">--Select-</option>
+                                                        @foreach (var items in Model.ddlRules)
+                                                        {
+                                                            if (Model.FkiRuleIDXIGUID == items.XIGUID)
+                                                            {
+                                                                <option value="@items.XIGUID" selected>@items.text</option>
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="@items.XIGUID">@items.text</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 no-padding">
+                                                <input type="checkbox" id="IsSectionHidden" value="@Model.bIsHidden" />                        <label for="inputEmail" class="gn"> Is Hidden<span class="danger"></span></label>
+                                            </div>
+                                            <div class="form-group col-md-12 no-padding">
+                                                <input type="checkbox" id="IsFieldsGroup" value="@Model.bIsGroup" />                        <label for="inputEmail" class="gn"> Is Group<span class="danger"></span></label>
+                                            </div>
+                                            <div id="GrpDescDiv">
+                                                <div class="form-group col-md-12 no-padding">
+                                                    <div class="col-md-4">
+                                                        <label for="inputEmail" class="gn"> Group Label<span class="danger"></span></label>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <input type="text" name="sName" id="FieldsGroupLabel" placeholder="Enter Group Label" class="form-control" value="@Model.sGroupLabel" />
+                                                    </div>
+                                                </div>
+                                                <div class="form-group col-md-12 no-padding">
+                                                    <div class="col-md-4">
+                                                        <label for="inputEmail" class="gn"> Group Description<span class="danger"></span></label>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <input type="text" name="sName" id="FieldsGroupDescription" placeholder="Enter Group Description" class="form-control" value="@Model.sGroupDescription" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group SecNVPairs col-md-12 no-padding">
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" />
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteSecNVPair" data-secid="@ViewBag.SecID" onclick="fncDeleteSecNVPair(this)">Delete</button>
+                                                </div>
+                                            </div>
+                                            <div class="form-group SecNVPairs col-md-12 no-padding">
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" />
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteSecNVPair" data-secid="@ViewBag.SecID" onclick="fncDeleteSecNVPair(this)">Delete</button>
+                                                </div>
+                                            </div>
+                                            <div class="form-group SecNVPairs col-md-12 no-padding">
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" />
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteSecNVPair" data-secid="@ViewBag.SecID" onclick="fncDeleteSecNVPair(this)">Delete</button>
+                                                </div>
+                                            </div>
+                                        }
+
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-12">
+                                    <div class="col-sm-10">
+                                        <button type="button" id="SecAddMore" class="btn btn-theme btn-xs" data-secid="@ViewBag.SecID" onclick="fncSectionAddMore(this)">Add</button>
+                                        @*<button type="button" id="SaveSecFieldsBtn" class="btn btn-theme btn-xs" onclick="fncSaveSecFields(this)">Save</button>*@
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="QSLinkPairs" class="col-md-12 no-padding">
+                                @if (Model.QSLinkCodes == null || Model.QSLinkCodes.Count() == 0)
+                                {
+                                    <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    if (Model.QSLinkCodes != null)
+                                    {
+                                        foreach (var link in Model.QSLinkCodes)
+                                        {
+                                            <div id="QSLinkPairs" class="col-md-12 no-padding">
+                                                <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" value="@link" />
+                                                    </div>
+                                                    <div class="col-md-1">
+                                                        <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                            <div class="form-group col-md-12">
+                                <div class="col-md-2">
+                                    <button type="button" id="AddMoreQSLink" class="btn btn-theme btn-xs">Add</button>
+                                    <button type="button" id="SaveSecFieldsBtn" class="btn btn-theme btn-xs" onclick="fncSaveSecFields(this)">Save</button>
+                                </div>
+                            </div>
+                        }
+                        else if (Model.iDisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.Sections.ToString()))
+                        {
+                            <input type="hidden" id="SecContentDisplayAs" value="@ViewBag.DisplayAs" />
+                            <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                            <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+
+                            if (string.IsNullOrEmpty(Model.sName))
+                            {
+                                <div class="form-group col-md-12 no-padding">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" />
+                                    </div>
+                                </div>
+                            }
+                            if (string.IsNullOrEmpty(Model.sCode))
+                            {
+                                <div class="form-group col-md-12 no-padding">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" />
+                                    </div>
+                                </div>
+                            }
+                            if (string.IsNullOrEmpty(Model.sCssClass))
+                            {
+                                <div class="form-group col-md-12 no-padding">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" />
+                                    </div>
+                                </div>
+                            }
+                            if (!string.IsNullOrEmpty(Model.sName))
+                            {
+                                <div class="form-group col-md-12 no-padding">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" value="@Model.sName" />
+                                    </div>
+                                </div>
+                            }
+                            if (!string.IsNullOrEmpty(Model.sCode))
+                            {
+                                <div class="form-group col-md-12 no-padding">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" value="@Model.sCode" />
+                                    </div>
+                                </div>
+                            }
+                            if (!string.IsNullOrEmpty(Model.sCssClass))
+                            {
+                                <div class="form-group col-md-12 no-padding">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" value="@Model.sCssClass" />
+                                    </div>
+                                </div>
+                            }
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Rule<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-control" id="RuleDDL">
+                                        <option value="">--Select-</option>
+                                        @foreach (var items in Model.ddlRules)
+                                        {
+                                            if (Model.FkiRuleIDXIGUID == items.XIGUID)
+                                            {
+                                                <option value="@items.XIGUID" selected>@items.text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@items.XIGUID">@items.text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <input type="checkbox" id="IsSectionHidden" value="@Model.bIsHidden" />                        <label for="inputEmail" class="gn"> Is Hidden<span class="danger"></span></label>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="inputEmail" class="gn">Section<span class="danger">*</span></label>
+                                <input type="text" id="AutoSectionShow" class="form-control" />
+                                <input type="hidden" id="AutoSection" />
+
+                                @*<select class="form-control" id="ContentDDL">
+                                    @*<option value="">--Select-</option>
+                                    @foreach (var items in Model.ddlSections)
+                    {
+                        if (Model.FKiParentSectionID == items.ID)
+                        {
+                                            <option value="@items.Value" selected>@items.text</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@items.ID">@items.text</option>
+                                        }
+                                    }
+                                </select>*@
+                                <button type="button" class="btn btn-theme ShowParamDlg1" id="XIComponentBtn" data-type="QSStepSection" data-secid="@ViewBag.SecID" onclick="fncShowComponentParam(this)"><i class="fa fa-bars"></i></button>
+
+                            </div>
+                            <div id="QSLinkPairs" class="col-md-12 no-padding">
+                                @if (Model.QSLinkCodes == null || Model.QSLinkCodes.Count() == 0)
+                                {
+                                    <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    if (Model.QSLinkCodes != null)
+                                    {
+                                        foreach (var link in Model.QSLinkCodes)
+                                        {
+                                            <div id="QSLinkPairs" class="col-md-12 no-padding">
+                                                <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" value="@link" />
+                                                    </div>
+                                                    <div class="col-md-1">
+                                                        <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <button type="button" id="AddMoreQSLink" class="btn btn-theme btn-xs">Add</button>
+                                <button type="button" id="SaveSecContentBtn" class="btn btn-theme btn-xs" onclick="fncSaveSectionContent(this)">Save</button>
+                            </div>
+                        }
+                        else if (Model.iDisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.XIComponent.ToString()))
+                        {
+                            <input type="hidden" id="SecContentDisplayAs" value="@ViewBag.DisplayAs" />
+                            <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                            <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+
+                            if (string.IsNullOrEmpty(Model.sName))
+                            {
+                                <div class="form-group col-md-12 no-padding">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" />
+                                    </div>
+                                </div>
+                            }
+                            if (string.IsNullOrEmpty(Model.sCode))
+                            {
+                                <div class="form-group col-md-12 no-padding">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" />
+                                    </div>
+                                </div>
+                            }
+                            if (string.IsNullOrEmpty(Model.sCssClass))
+                            {
+                                <div class="form-group col-md-12 no-padding">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" />
+                                    </div>
+                                </div>
+                            }
+                            if (!string.IsNullOrEmpty(Model.sName))
+                            {
+                                <div class="form-group col-md-12 no-padding">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" value="@Model.sName" />
+                                    </div>
+                                </div>
+                            }
+                            if (!string.IsNullOrEmpty(Model.sCode))
+                            {
+                                <div class="form-group col-md-12 no-padding">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" value="@Model.sCode" />
+                                    </div>
+                                </div>
+                            }
+                            if (!string.IsNullOrEmpty(Model.sCssClass))
+                            {
+                                <div class="form-group col-md-12 no-padding">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" value="@Model.sCssClass" />
+                                    </div>
+                                </div>
+                            }
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Rule<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-control" id="RuleDDL">
+                                        <option value="">--Select-</option>
+                                        @foreach (var items in Model.ddlRules)
+                                        {
+                                            if (Model.FkiRuleIDXIGUID == items.XIGUID)
+                                            {
+                                                <option value="@items.XIGUID" selected>@items.text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@items.XIGUID">@items.text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <input type="checkbox" id="IsSectionHidden" value="@Model.bIsHidden" />                        <label for="inputEmail" class="gn"> Is Hidden<span class="danger"></span></label>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="inputEmail" class="gn">XI Component<span class="danger">*</span></label>
+                                <select class="form-control" id="ContentDDL">
+                                    @*<option value="">--Select-</option>*@
+                                    @foreach (var items in Model.ddlXIComponents)
+                                    {
+                                        if (Model.iXIComponentIDXIGUID.ToString() == items.sGUID)
+                                        {
+                                            <option value="@items.sGUID" selected>@items.text</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@items.sGUID">@items.text</option>
+                                        }
+                                    }
+                                </select>
+
+                                <button type="button" class="btn btn-theme ShowParamDlg1" id="XIComponentBtn" data-type="QSStepSection" data-secid="@ViewBag.SecID" onclick="fncShowComponentParam(this)"><i class="fa fa-bars"></i></button>
+
+                            </div>
+                            <div id="QSLinkPairs" class="col-md-12 no-padding">
+                                @if (Model.QSLinkCodes == null || Model.QSLinkCodes.Count() == 0)
+                                {
+                                    <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    if (Model.QSLinkCodes != null)
+                                    {
+                                        foreach (var link in Model.QSLinkCodes)
+                                        {
+                                            <div id="QSLinkPairs" class="col-md-12 no-padding">
+                                                <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" value="@link" />
+                                                    </div>
+                                                    <div class="col-md-1">
+                                                        <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <button type="button" id="AddMoreQSLink" class="btn btn-theme btn-xs">Add</button>
+                                <button type="button" id="SaveSecContentBtn" class="btn btn-theme btn-xs" onclick="fncSaveSectionContent(this)">Save</button>
+                            </div>
+                        }
+                        else if (Model.iDisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.OneClick.ToString()))
+                        {
+                            <input type="hidden" id="SecContentDisplayAs" value="@ViewBag.DisplayAs" />
+                            <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                            <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" value="@Model.sName" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" value="@Model.sCode" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" value="@Model.sCssClass" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Rule<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-control" id="RuleDDL">
+                                        <option value="">--Select-</option>
+                                        @foreach (var items in Model.ddlRules)
+                                        {
+                                            if (Model.FkiRuleIDXIGUID == items.XIGUID)
+                                            {
+                                                <option value="@items.XIGUID" selected>@items.text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@items.XIGUID">@items.text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <input type="checkbox" id="IsSectionHidden" value="@Model.bIsHidden" />                        <label for="inputEmail" class="gn"> Is Hidden<span class="danger"></span></label>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="inputEmail" class="gn">1-Click<span class="danger">*</span></label>
+                                <select class="form-control" id="ContentDDL">
+                                    <option value="">--Select-</option>
+                                    @foreach (var items in Model.ddlOneClicks)
+                                    {
+                                        if (Model.i1ClickID == items.Value)
+                                        {
+                                            <option value="@items.Value" selected>@items.text</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@items.Value">@items.text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <button type="button" id="SaveSecContentBtn" class="btn btn-theme btn-xs" onclick="fncSaveSectionContent(this)">Save</button>
+                            </div>
+                        }
+                        else if (Model.iDisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.Html.ToString()))
+                        {
+                            <div class="HTMLStatusMsg"></div>
+                            <input type="hidden" id="SecContentDisplayAs" value="@ViewBag.DisplayAs" />
+                            <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                            <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" value="@Model.sName" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" value="@Model.sCode" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" value="@Model.sCssClass" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Rule<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-control" id="RuleDDL">
+                                        <option value="">--Select-</option>
+                                        @foreach (var items in Model.ddlRules)
+                                        {
+                                            if (Model.FkiRuleIDXIGUID == items.XIGUID)
+                                            {
+                                                <option value="@items.XIGUID" selected>@items.text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@items.XIGUID">@items.text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <input type="checkbox" id="IsSectionHidden" value="@Model.bIsHidden" />                        <label for="inputEmail" class="gn"> Is Hidden<span class="danger"></span></label>
+                            </div>
+                            <div class="form-group col-md-12">
+                                <label for="inputEmail" class="gn">HTML Content<span class="danger">*</span></label>
+                                <textarea rows="7" cols="10" class="form-control" id="SecHTMLContent">@Model.HTMLContent</textarea>
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <button type="button" id="SaveSecHTMLContentBtn" class="btn btn-theme btn-xs SaveSecHTMLContentBtns">Save</button>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        if (ViewBag.DisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.Fields.ToString()))
+                        {
+                            <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                            <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+                            <div id="SecFieldsDiv">
+                                <div class="form-group">
+                                    <div id="SecNameValuePairs" class="col-md-12 no-padding">
+
+                                        <div class="form-group col-md-12 no-padding">
+                                            <div class="col-md-2">
+                                                <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="text" name="sName" placeholder="Enter Section Name" id="SectionNametxtbox" class="form-control SectionName" value="@Model.sName" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-md-12 no-padding">
+                                            <div class="col-md-2">
+                                                <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" value="@Model.sCode" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-md-12 no-padding">
+                                            <div class="col-md-2">
+                                                <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" value="@Model.sCssClass" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-md-12 no-padding">
+                                            <div class="col-md-2">
+                                                <label for="inputEmail" class="gn"> Rule<span class="danger"></span></label>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <select class="form-control" id="RuleDDL">
+                                                    <option value="">--Select-</option>
+                                                    @foreach (var items in Model.ddlRules)
+                                                    {
+                                                        if (Model.FkiRuleIDXIGUID == items.XIGUID)
+                                                        {
+                                                            <option value="@items.XIGUID" selected>@items.text</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@items.XIGUID">@items.text</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-md-12 no-padding">
+                                            <input type="checkbox" id="IsSectionHidden" value="@Model.bIsHidden" />                        <label for="inputEmail" class="gn"> Is Hidden<span class="danger"></span></label>
+                                        </div>
+                                        <div class="form-group col-md-12 no-padding">
+                                            <input type="checkbox" id="IsFieldsGroup" />                        <label for="inputEmail" class="gn"> Is Group<span class="danger"></span></label>
+                                        </div>
+                                        <div id="GrpDescDiv">
+                                            <div class="form-group col-md-12 no-padding">
+                                                <div class="col-md-4">
+                                                    <label for="inputEmail" class="gn"> Group Label<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" name="sName" id="FieldsGroupLabel" placeholder="Enter Group Label" class="form-control" />
+                                                </div>
+                                            </div>
+                                            <div class="form-group col-md-12 no-padding">
+                                                <div class="col-md-4">
+                                                    <label for="inputEmail" class="gn"> Group Description<span class="danger"></span></label>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <input type="text" name="sName" id="FieldsGroupDescription" placeholder="Enter Group Description" class="form-control" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group SecNVPairs col-md-12 no-padding">
+                                            <div class="col-md-1">
+                                                <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" />
+                                            </div>
+                                            <div class="col-md-1">
+                                                <button type="button" class="btn btn-theme btn-xs DeleteSecNVPair" data-secid="@ViewBag.SecID" onclick="fncDeleteSecNVPair(this)">Delete</button>
+                                            </div>
+                                        </div>
+                                        <div class="form-group SecNVPairs col-md-12 no-padding">
+                                            <div class="col-md-1">
+                                                <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" />
+                                            </div>
+                                            <div class="col-md-1">
+                                                <button type="button" class="btn btn-theme btn-xs DeleteSecNVPair" data-secid="@ViewBag.SecID" onclick="fncDeleteSecNVPair(this)">Delete</button>
+                                            </div>
+                                        </div>
+                                        <div class="form-group SecNVPairs col-md-12 no-padding">
+                                            <div class="col-md-1">
+                                                <label for="inputEmail" class="gn"> Field<span class="danger"></span></label>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="text" name="StepXIFiled" placeholder="Field Name" class="form-control XIField" />
+                                            </div>
+                                            <div class="col-md-1">
+                                                <button type="button" class="btn btn-theme btn-xs DeleteSecNVPair" data-secid="@ViewBag.SecID" onclick="fncDeleteSecNVPair(this)">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-12">
+                                    <div class="col-sm-10">
+                                        <button type="button" id="SecAddMore" class="btn btn-theme btn-xs" data-secid="@ViewBag.SecID" onclick="fncSectionAddMore(this)">Add</button>
+                                        @*<button type="button" id="SaveSecFieldsBtn" class="btn btn-theme btn-xs" onclick="fncSaveSecFields(this)">Save</button>*@
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="QSLinkPairs" class="col-md-12 no-padding">
+                                <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12">
+                                <div class="col-md-2">
+                                    <button type="button" id="AddMoreQSLink" class="btn btn-theme btn-xs">Add</button>
+                                    <button type="button" id="SaveSecFieldsBtn" class="btn btn-theme btn-xs" onclick="fncSaveSecFields(this)">Save</button>
+                                </div>
+                            </div>
+                        }
+                        else if (ViewBag.DisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.Sections.ToString()))
+                        {
+                            <input type="hidden" id="SecContentDisplayAs" value="@ViewBag.DisplayAs" />
+                            <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                            <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Rule<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-control" id="RuleDDL">
+                                        <option value="">--Select-</option>
+                                        @foreach (var items in Model.ddlRules)
+                                        {
+                                            if (Model.FkiRuleIDXIGUID == items.XIGUID)
+                                            {
+                                                <option value="@items.XIGUID" selected>@items.text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@items.XIGUID">@items.text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <input type="checkbox" id="IsSectionHidden" value="@Model.bIsHidden" />                        <label for="inputEmail" class="gn"> Is Hidden<span class="danger"></span></label>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="inputEmail" class="gn">Section<span class="danger">*</span></label>
+                                <input type="text" id="AutoSectionShow" class="form-control" />
+                                <input type="hidden" id="AutoSection" />
+                                @*<select class="form-control" id="ContentDDL">
+
+                        @*<option value="">--Select-</option>
+                        @foreach (var items in Model.ddlSections)
+                        {
+                            <option value="@items.ID">@items.text</option>
+                        }
+                    </select>*@
+                                <button type="button" class="btn btn-theme ShowParamDlg1" id="XIComponentBtn" data-type="QSStepSection" data-secid="@ViewBag.SecID" onclick="fncShowComponentParam(this)"><i class="fa fa-bars"></i></button>
+
+                            </div>
+                            <div id="QSLinkPairs" class="col-md-12 no-padding">
+                                <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <button type="button" id="SaveSecContentBtn" class="btn btn-theme btn-xs IDESaveSecContentBtn" onclick="fncSaveSectionContent(this)">Save</button>
+                            </div>
+                        }
+                        else if (ViewBag.DisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.XIComponent.ToString()))
+                        {
+                            <input type="hidden" id="SecContentDisplayAs" value="@ViewBag.DisplayAs" />
+                            <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                            <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Rule<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-control" id="RuleDDL">
+                                        <option value="">--Select-</option>
+                                        @foreach (var items in Model.ddlRules)
+                                        {
+                                            if (Model.FkiRuleIDXIGUID == items.XIGUID)
+                                            {
+                                                <option value="@items.XIGUID" selected>@items.text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@items.XIGUID">@items.text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <input type="checkbox" id="IsSectionHidden" value="@Model.bIsHidden" />                        <label for="inputEmail" class="gn"> Is Hidden<span class="danger"></span></label>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="inputEmail" class="gn">XI Component<span class="danger">*</span></label>
+                                <select class="form-control" id="ContentDDL">
+                                    @*<option value="">--Select-</option>*@
+                                    @foreach (var items in Model.ddlXIComponents)
+                                    {
+                                        <option value="@items.sGUID">@items.text</option>
+                                    }
+                                </select>
+
+                                <button type="button" class="btn btn-theme ShowParamDlg1" id="XIComponentBtn" data-type="QSStepSection" data-secid="@ViewBag.SecID" onclick="fncShowComponentParam(this)"><i class="fa fa-bars"></i></button>
+
+                            </div>
+                            <div id="QSLinkPairs" class="col-md-12 no-padding">
+                                <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="form-group QSLPairs col-md-12" data-name="QSLinkNV">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> QS Link<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" name="QSLinktbox" placeholder="Enter QS Link Name" class="form-control qslinkvalue" />
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-theme btn-xs DeleteQSLinkPair" onclick="fncDeleteQSLinkPair(this)">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <button type="button" id="SaveSecContentBtn" class="btn btn-theme btn-xs IDESaveSecContentBtn" onclick="fncSaveSectionContent(this)">Save</button>
+                            </div>
+                        }
+                        else if (ViewBag.DisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.OneClick.ToString()))
+                        {
+                            <input type="hidden" id="SecContentDisplayAs" value="@ViewBag.DisplayAs" />
+                            <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                            <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Rule<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-control" id="RuleDDL">
+                                        <option value="">--Select-</option>
+                                        @foreach (var items in Model.ddlRules)
+                                        {
+                                            if (Model.FkiRuleIDXIGUID == items.XIGUID)
+                                            {
+                                                <option value="@items.XIGUID" selected>@items.text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@items.XIGUID">@items.text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <input type="checkbox" id="IsSectionHidden" value="@Model.bIsHidden" />                        <label for="inputEmail" class="gn"> Is Hidden<span class="danger"></span></label>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="inputEmail" class="gn">1-Click<span class="danger">*</span></label>
+                                <select class="form-control" id="ContentDDL">
+                                    <option value="">--Select-</option>
+                                    @foreach (var items in Model.ddlOneClicks)
+                                    {
+                                        <option value="@items.Value">@items.text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <button type="button" id="SaveSecContentBtn" class="btn btn-theme btn-xs" onclick="fncSaveSectionContent(this)">Save</button>
+                            </div>
+                        }
+                        else if (ViewBag.DisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.Html.ToString()))
+                        {
+                            <div class="HTMLStatusMsg"></div>
+                            <input type="hidden" id="SecContentDisplayAs" value="@ViewBag.DisplayAs" />
+                            <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                            <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Rule<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-control" id="RuleDDL">
+                                        <option value="">--Select-</option>
+                                        @foreach (var items in Model.ddlRules)
+                                        {
+                                            if (Model.FkiRuleIDXIGUID == items.XIGUID)
+                                            {
+                                                <option value="@items.XIGUID" selected>@items.text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@items.XIGUID">@items.text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <input type="checkbox" id="IsSectionHidden" value="@Model.bIsHidden" />                        <label for="inputEmail" class="gn"> Is Hidden<span class="danger"></span></label>
+                            </div>
+                            <div class="form-group col-md-12">
+                                <label for="inputEmail" class="gn">HTML Content<span class="danger">*</span></label>
+                                <textarea rows="7" cols="10" class="form-control" id="SecHTMLContent"></textarea>
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <button type="button" id="SaveSecHTMLContentBtn" class="btn btn-theme btn-xs SaveSecHTMLContentBtns">Save</button>
+                            </div>
+                        }
+                        @*else if (ViewBag.DisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.Html.ToString()))
+            {
+                <input type="hidden" id="SecContentDisplayAs" value="@ViewBag.DisplayAs" />
+                <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+                <div class="form-group col-md-10" id="SecHtml">
+                    <label for="inputEmail" class="gn">HTML Code</label>
+                    <textarea rows="8" cols="8" class="form-control" placeholder="HTML Code"></textarea>
+                </div>
+                <div class="form-group col-sm-10">
+                    <button type="button" id="SaveSecHtmlBtn" class="btn btn-theme btn-xs">Save</button>
+                </div>
+            }*@
+                        else if (ViewBag.DisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.Bespoke.ToString()))
+                        {
+                            <input type="hidden" id="SecContentDisplayAs" value="@ViewBag.DisplayAs" />
+                            <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                            <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Name<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" placeholder="Enter Section Name" class="form-control SectionName" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Section Code<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="sName" id="SectionCodetxtbox" placeholder="Enter Section Code" class="form-control SectionCode" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Css Class<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" name="CssClass" id="CssClass" placeholder="Enter css class" class="form-control CssClass" />
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Rule<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <select class="form-control" id="RuleDDL">
+                                        <option value="">--Select-</option>
+                                        @foreach (var items in Model.ddlRules)
+                                        {
+                                            if (Model.FkiRuleIDXIGUID == items.XIGUID)
+                                            {
+                                                <option value="@items.XIGUID" selected>@items.text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@items.XIGUID">@items.text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-12 no-padding">
+                                <input type="checkbox" id="IsSectionHidden" value="@Model.bIsHidden" />                        <label for="inputEmail" class="gn"> Is Hidden<span class="danger"></span></label>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="inputEmail" class="gn">Bespoke</label>
+                                <input type="text" placeholder="Enter Url Here" class="form-control" />
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <button type="button" id="SaveSecContentBtn" class="btn btn-theme btn-xs" onclick="fncSaveSectionContent(this)">Save</button>
+                            </div>
+
+                        }
+                        else if (ViewBag.DisplayAs == (Int32)Enum.Parse(typeof(EnumSemanticsDisplayAs), EnumSemanticsDisplayAs.OneClick.ToString()))
+                        {
+                            <input type="hidden" id="SecContentDisplayAs" value="@ViewBag.DisplayAs" />
+                            <input type="hidden" id="SecID" value="@ViewBag.SecID" />
+                            <input type="hidden" id="SectionName" value="@ViewBag.SectionName" />
+                            <div class="form-group col-md-6">
+                                <label for="inputEmail" class="gn">1-Click</label>
+                                <input type="text" placeholder="Enter 1-Click Here" class="form-control" />
+                            </div>
+                            <div class="form-group col-sm-10">
+                                <button type="button" id="SaveSecOneClickBtn" class="btn btn-theme btn-xs">Save</button>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

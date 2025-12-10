@@ -1,0 +1,175 @@
+﻿@model XIDNA.ViewModels.VM_CacheData
+@using XIDNA.ViewModels
+@{
+    Layout = "";
+    int SNO = 0;
+}
+@if (Model.Cachefilteredtype == EnumCacheTypes.None)
+{
+    <h2>Cache List</h2>
+}
+else if (Model.Cachefilteredtype == EnumCacheTypes.User)
+{
+    <h2>User Level List</h2>
+}
+else
+{
+    <h2>Application Level List</h2>
+}
+<div class="table-clean">
+    <div class="datatable-scroll">
+        <table class="table table-striped custom-table dark-head dark-head2 table-condensed table-hover dataTable no-footer" id="">
+            <thead>
+                <tr role="row">
+                    <th>S.No</th>
+                    <th>Key</th>
+                    <th>Size (Kbs)</th>
+                    <th>UserName</th>
+                    <th>Role Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.CacheList)
+                {
+                    SNO = SNO + 1;
+                    <tr>
+                        <th>@SNO</th>
+                        <th onclick='fncCacheKey(id$@item.sKey)'>@item.sKey</th>
+                        <th>@item.Size</th>
+                        <th>@item.sUserName</th>
+                        <th>@item.sRole</th>
+                        <th><input type="button" class="RemoveCacheBtn btn btn-theme btn-xs" id="id$@item.sKey" value="Remove" data-Cachetype="@item.CacheType"></th>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td></td>
+                    <td>Total: </td>
+                    <td>@Model.CacheList.Select(d => d.Size).Sum()</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#SearchCacheBtn').click(function () {
+            debugger
+            var sGUID = $('#sGUID').val();
+            var sKey = $('#sSessionKey').val();
+            var sParam = $('#sParam').val();
+            if (sParam && sParam.length > 0) {
+                if (sGUID && sGUID.length > 0) {
+                    fncSearchCache(sKey, sGUID, sParam)
+                }
+                else {
+
+                }
+            }
+            else if (sGUID && sGUID.length > 0) {
+                fncSearchCache(sKey, sGUID)
+            }
+        });
+        $('#ResetCacheBtn').click(function () {
+            var sKey = $('#sSessionKey').val();
+            fncResetCache(sKey);
+        })
+    })
+    function fncCacheKey(sKey) {
+        var sKey = sKey.id.split('$')[1];
+        $('#sSessionKey').val(sKey);
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("UserLevelCache", "Home")',
+            data: { sKey: sKey },
+            contentType: 'application/json;',
+            dataType: 'html',
+            success: function (data) {
+                $(".CacheDetails").html(data);
+                $("#CacheKeyDetails").dialog({
+                    title: "User Level Cache Information",
+                    modal: true,
+                    resizable: true,
+                    width: 1391,
+                    height: 740,
+                    buttons: [
+                    {
+                        text: "Close",
+                        click: function () {
+                            $("#CacheKeyDetails").dialog('close');
+                        }
+                    }
+                    ]
+                });
+            }
+        });
+    }
+    function fncSearchCache(sKey, sGUID, sParam) {
+        debugger
+        var Data = { sKey:sKey, sGUID: sGUID, sParam: sParam };
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Search_Cache", "Home")',
+                        data: JSON.stringify(Data),
+                        contentType: 'application/json;',
+                        dataType: 'html',
+                        traditional: true,
+                        async: false,
+                        success: function (response) {
+                            debugger
+                            $(".CacheDetails").html(response);
+                        },
+                        error: function (response) { },
+                    })
+    }
+
+    function fncResetCache(sKey) {
+        $('#sSessionKey').val(sKey);
+        $.ajax({
+            type: 'GET',
+            url: '@Url.Action("UserLevelCache", "Home")',
+            data: { sKey: sKey },
+            contentType: 'application/json;',
+            dataType: 'html',
+            success: function (data) {
+                $('#sGUID').val('');
+                $('#sParam').val('');
+                $(".CacheDetails").html(data);
+            }
+        });
+    }
+</script>
+
+<div id="CacheKeyDetails" style="display:none">
+    <div class="CacheSrch">
+        <div class="row">
+            <div class="innerborder">
+                <form class="form-horizontal">
+                    <input type="hidden" id="sSessionKey" />
+                    <div class="form-group">
+                        <div class="col-md-4">
+                            <label for="inputEmail" class="gn">GUID<span class="danger"></span></label>
+                            <input type="text" name="sUserName" id="sGUID" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-4">
+                            <label for="inputEmail" class="gn">Parameter<span class="danger"></span></label>
+                            <input type="text" name="sTable" id="sParam" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-10">
+                            <input type="button" class="btn btn-theme" id="SearchCacheBtn" value="Search" />
+                            <input type="button" class="btn btn-theme" id="ResetCacheBtn" value="Reset" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="CacheDetails"></div>
+</div>
+

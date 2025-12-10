@@ -1,0 +1,141 @@
+﻿@{
+
+}
+
+
+<script>
+    $(document).ready(function () {
+        var addpopups = new Array();
+        var editpopups = new Array();
+        var table = $('#Botbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("GetBusinessObjects", "BusinessObjects")",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"l<"new-query">f><"datatable-scroll"t><"dtable-footer"ip>',
+            "initComplete": function () {
+                $("div.new-query").html('<button type="button" class="savebtn btn btn-theme" id="NewBOBtn" data-url="@Url.Action("AddBO", "BusinessObjects")" >Add</button>');
+            },
+            'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+            { "bSortable": false },
+                            {
+                                "sName": "BOID",
+                                "bSearchable": true,
+                                "bSortable": false,
+                                "bVisible": false
+                            },
+                            {
+                                "sName": "Name"
+                            },
+                            {
+                                "sName": "TableName",
+                            },
+                            {
+                                "sName": "Description"
+                            },
+                            {
+                                "sName": "TypeID",
+                            },
+                            {
+                                "sName": "AssignedFields",
+                                "bSortable": false
+                            },
+                            {
+                                "sName": "StatusTypeID",
+                            },
+                            { "bSortable": false }
+            ],
+            "columnDefs": [
+                  {
+
+                      "targets": [5],
+                      "createdCell": function (td, cellData, rowData, row, col) {
+                          if (cellData == 10)
+                              $(td).replaceWith('<td>Table</td>')
+                          else
+                              $(td).replaceWith('<td>View</td>')
+                      }
+                  },
+                  {
+                      "targets": [7],
+                      "createdCell": function (td, cellData, rowData, row, col) {
+                          if (cellData == 10)
+                              $(td).replaceWith('<td>Active</td>')
+                          else
+                              $(td).replaceWith('<td>Inactive</td>')
+                      }
+                  }
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(1)', nRow).html(aData[2]);
+                $('td:eq(7)', nRow).html('<input type="button" class="EditBOBtn btn btn-theme btn2 btn-xs" id="' + aData[1] + '" value="Edit"/>');
+                return nRow;
+            }
+        });
+        $('.new-query').on('click', 'button#NewBOBtn', function () {
+            var url = $(this).attr('data-url');
+            if (addpopups.length > 0) {
+                for (i = 0; i < addpopups.length; i++) {
+                    addpopups[i].close();
+                }
+            }
+            var newbo = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            addpopups.push(newbo);
+            newbo.moveTo(0, 0);
+        });
+        $('#Botbl').on('click', 'input.EditBOBtn', function () {
+            var ID = $(this).attr('id');
+            if (editpopups.length > 0) {
+                for (i = 0; i < editpopups.length; i++) {
+                    editpopups[i].close();
+                }
+            }
+            var editbo = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("EditBO", "BusinessObjects")',
+                data: { ID: ID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {                    
+                    with (editbo.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    editpopups.push(editbo);
+                    editbo.moveTo(0, 0);
+                }
+            });
+        })
+    });
+</script>
+
+<div id="BOAttributesWithGrid"></div>
+
+<div id="BOGrid box-body" class="col-xs-12">
+    <div class="table-clean">
+        <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="Botbl">
+            <thead>
+                <tr role="row">
+                    <th>S.No</th>
+                    <th style="display:none">ID</th>
+                    <th>BO</th>
+                    <th>Table Name</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Assigned Fields</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+
+        </table>
+    </div>
+</div>

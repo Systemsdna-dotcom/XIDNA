@@ -1,0 +1,195 @@
+﻿@model XIDNA.ViewModels.VMLeadRecord
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        var Headings = @Html.Raw(Json.Encode(Model.Labels));
+        var LeadHeadings = new Array();
+        for(i=0;i<Headings.length;i++){
+            LeadHeadings.push(Headings[i]);
+        }
+        $('#ViewLeadRecordForm-@Model.LeadID td.Label').attr('style', 'padding-top: 5px !important; width:100px');
+        $('#ViewLeadRecordForm-@Model.LeadID td.Value').css({'width':'150px'})
+        $('#EditLeadRecordForm-@Model.LeadID').hide();
+        var error = 0;
+        $('#LeadEdit-@Model.LeadID').on('change', 'input', function () {
+            error = 0;
+            var name = $(this).attr('name');
+            var value = $(this).val();
+            var length = $(this).attr('length');
+            var type = $(this).attr('type');
+            if (type == "VARCHAR") {
+                if (value.length == 0) {
+                    $('span[class*="' + name + '"]').html('Cannot Be Empty');
+                    error = 1;
+                }
+                else if (value.length > length) {
+                    $('span[class*="' + name + '"]').html(length + ' characters Only');
+                    error = 1;
+                }
+                else {
+                    $('span[class*="' + name + '"]').html('');
+                    error = 0;
+                }
+            }else{
+                if(value.length==0){
+                    $('span[class*="' + name + '"]').html('Cannot Be Empty');
+                    error = 1;
+                }
+            }
+            $('.' + name).css({'color':'red','margin-top':'7px','display':'block'});
+        });
+        $('.SaveLeadButtons').on('click', 'button.UpdateRecord', function () {
+            var formid = "LeadEdit-@Model.LeadID";
+            var leadid = '@Model.LeadID';
+            if (error == 0) {
+                var formData = JSON.parse(JSON.stringify(jQuery('#' + formid).serializeArray()))
+                var Popup = [];
+                var i, j, titleid = [];
+                var values = new Array();
+                for(i=0;i<formData.length;i++){
+                    values.push(formData[i].value);
+                }
+                var pvalue = {
+                    Labels : LeadHeadings,
+                    Values : values,
+                    LeadID: leadid,
+                    ReportID: '@Model.ReportID'
+                }
+                $.ajax({
+                    url: '@Url.Action("SaveLeadRecord", "Popup")',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    data: JSON.stringify(pvalue),
+                    success: function (data) {
+                        $('#EditLeadRecordForm-@Model.LeadID').hide();
+                        var result = $(data).find('#ViewPart');
+                        $("#ViewPart").html(result.html());
+                        $('#ViewLeadRecordForm-@Model.LeadID').show();
+                        $('#ViewLeadRecordForm-@Model.LeadID td.Label').attr('style', 'padding-top: 5px !important; width:100px');
+                        $('#ViewLeadRecordForm-@Model.LeadID td.Value').css({'width':'150px'})
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+        })
+        $('.SaveLeadButtons').on('click', 'button.BackRecord', function () {
+            $.ajax({
+                url: '@Url.Action("EditLeadRecord", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: {LeadID:'@Model.LeadID',ReportID:'@Model.ReportID'},
+                success: function (data) {
+                    $('#EditLeadRecordForm-@Model.LeadID').hide();
+                    var result = $(data).find('#EditPart');
+                    $("#EditPart").html(result.html());
+                    $('#ViewLeadRecordForm-@Model.LeadID').show();
+                    $('#ViewLeadRecordForm-@Model.LeadID td.Label').css({'width':'100px'})
+                    $('#ViewLeadRecordForm-@Model.LeadID td.Value').css({'width':'150px'})
+                },
+                error: function (data) {
+                }
+            });
+            $('#EditLeadRecordForm-@Model.LeadID').hide();
+            $('#ViewLeadRecordForm-@Model.LeadID').show();
+        });
+        $('.ViewLeadButtons').on('click', 'button.EditLeadRecord', function(){
+            $('#ViewLeadRecordForm-@Model.LeadID').hide();
+            $('#EditLeadRecordForm-@Model.LeadID').show();
+            $('#EditLeadRecordForm-@Model.LeadID td.Label').attr('style', 'padding-top: 10px !important;');
+            $('#EditLeadRecordForm-@Model.LeadID td.Colon').attr('style', 'padding-top: 10px !important;');
+        });
+    });
+</script>
+<style>
+    .SaveLeadButtons {
+        margin-left: 125px;
+    }
+    .ViewLeadButtons {
+        margin-left: 130px;
+    }
+        #FieldLengthError; {
+        /*color: red;*/
+        font-size: 11px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Edit Lead </h1>
+    @*<ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-dashboard"></i> 1-Clicks</a></li>
+            <li class="active">Home</li>
+        </ol>*@
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    
+                        <div id="ViewLeadRecordForm-@Model.LeadID">
+                            <form class="form-@Model.LeadID" id="ViewLeadEdit-@Model.LeadID">
+                                <div id="ViewPart">
+                                    <table class="table table-striped tablebrd DetailsTable col-md-7">
+                                        <tbody>
+                                            @for (var i = 0; i < Model.Labels.Count; i++)
+                                            {
+                                                <tr class="col-sm-12">
+                                                    <td class="Label">@Model.Labels[i]</td>
+                                                    <td>:</td>
+                                                    <td class="Value">@Html.DisplayFor(m => Model.Values[i], new { @Name = @Model.Labels[i] + @Model.LeadID })</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                    <div class="ViewLeadButtons">
+                                        <button type="button" class="btn btn-theme EditLeadRecord">Edit</button>
+                                        <button type="button" class="btn btn-theme decline CancelLeadRecord">Cancel</button>
+                                    </div>
+                                </form>
+                        </div>
+                    <div id="EditLeadRecordForm-@Model.LeadID">
+                        <form class="form-@Model.LeadID" id="LeadEdit-@Model.LeadID">
+                            <div id="EditPart">
+                                <table class="table table-striped tablebrd DetailsTable col-md-7">
+                                    <tbody>
+                                        @for (var i = 0; i < Model.Labels.Count; i++)
+                                        {
+                                            <tr class="col-sm-12">
+                                                <td class="col-sm-2 Label">@Model.Labels[i]</td>
+                                                <td class="col-sm-1 Colon">:</td>
+                                                <td class="col-sm-5">@Html.TextBoxFor(m => Model.Values[i], new { @class = "form-control", @Name = @Model.Labels[i] + @Model.LeadID, @type = @Model.DataTypes[i], @length = @Model.Lengths[i] })</td>
+                                                <td class="col-sm-4">@Html.ValidationMessageFor(m => Model.Values[i], null, new { @class = @Model.Labels[i] + @Model.LeadID })</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="SaveLeadButtons">
+                                <button type="button" class="btn btn-theme UpdateRecord">Save</button>
+                                <button type="button" class="btn btn-theme CreateRecord">Create</button>
+                                <button type="button" class="btn btn-theme decline DeleteRecord">Delete</button>
+                                <button type="button" class="btn btn-theme BackRecord">Back</button>
+                                <button type="button" class="btn btn-theme decline CancelLeadRecord">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $('.CancelLeadRecord').click(function () {
+        window.close();
+    });
+</script>

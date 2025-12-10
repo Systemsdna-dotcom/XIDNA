@@ -1,0 +1,273 @@
+﻿@model IEnumerable<XIDNA.ViewModels.SectionsData>
+
+<script>
+    $(document).ready(function () {
+        var popupheadings = @Html.Raw(Json.Encode(Model));
+        var EditableHeadings = new Array();
+        for(i=0;i<popupheadings.length;i++){
+            var headings = popupheadings[i].EditFields;
+            for(j=0;j<headings.length;j++){
+                if(headings[j].indexOf("NE-")>=0 || headings[j].indexOf("Null")>=0){
+
+                }
+                else{
+                    EditableHeadings.push(headings[j]);
+                }
+            }
+        }
+        var leadid='@Model.FirstOrDefault().LeadID';
+        var tabid = '@Model.FirstOrDefault().TabID';
+        var classid = '@Model.FirstOrDefault().ClassID';
+        var tab1clickid = '@Model.FirstOrDefault().Tab1ClickID';
+        var error = 1;
+        $('.CreateRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').on('change','input',function(){
+            error = 0;
+            var name = $(this).attr('name');
+            var value = $(this).val();
+            var length = $(this).attr('length');
+            var type = $(this).attr('type');
+            if(type=="VARCHAR"){
+                if(value.length==0){
+                    $('span[class*="'+name+'"]').html('Value Cannot Be Empty');
+                    error = 1;
+                }
+                else if(value.length>length){
+                    $('span[class*="'+name+'"]').html('Cannot Take More Than '+length+' characters');
+                    error = 1;
+                }
+                else{
+                    $('span[class*="'+name+'"]').html('');
+                    error=0;
+                }
+            }else{
+                if(value.length==0){
+                    $('span[class*="' + name + '"]').html('Value Cannot Be Empty');
+                    error = 1;
+                }
+                else{
+                    $('span[class*="' + name + '"]').html('');
+                }
+            }
+        });
+        $('.CreateButtons').on('click', 'button.Save', function () {
+            var formid = '@Model.FirstOrDefault().TabID';
+            var tabid='@Model.FirstOrDefault().TabID';
+            var formData = JSON.parse(JSON.stringify(jQuery('.Create-'+formid).serializeArray()))
+            for(i=0;i<formData.length;i++){
+                if(!(formData[i].value)){
+                    var name = formData[i].name;
+                    $('span[class*="' + name + '"]').html('Value Cannot Be Empty');
+                    error=1;
+                }
+                else{
+                    var name = formData[i].name;
+                    $('span[class*="' + name + '"]').html('');
+                }
+            }
+            
+            if(error==0){
+                var Data = JSON.parse(JSON.stringify(jQuery('.Create-'+formid).serializeArray()))
+                var Popup = [];
+                var i, j, titleid = [];
+                for (i = 0, j = EditableHeadings.length; i < j; i++) {
+                    Popup.push({ Label: EditableHeadings[i], Value: Data[i].value});
+                }
+                var pvalue = {
+                    popupvalue: Popup,
+                    Tab1ClickID:tab1clickid,
+                    LeadID:leadid
+                }
+                $.ajax({
+                    url: '@Url.Action("", "Inbox")',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache:false,
+                    data:JSON.stringify(pvalue),
+                    success: function (data) {
+                        $(".ViewRecordForm").html(data);
+                        $('.EditRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+                        $('.ViewRecordForm').show();
+                        $('.EditButtons').hide();
+                        $('.CreateButtons').hide();
+                        $('.ViewButtons').show();
+                        opener.location.reload();
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+        })
+        $('.CreateButtons').on('click', 'button.CreateBack', function () {
+            $('.CreateRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+            $('.EditRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+            $('.ViewRecordForm').show();
+            $('.EditButtons').hide();
+            $('.CreateButtons').hide();
+            $('.ViewButtons').show();
+        });
+        $('input').val('');
+    });
+</script>
+<div class="CreateRecordFormDiv">
+    <form class="Create-@Model.FirstOrDefault().TabID">
+        @foreach (var items in Model)
+    {
+        if (items.SectionName != null)
+        {
+            if (items.CreateFields != null)
+            {
+                <div class="panel panel-default">
+                @if (items.SectionName != null)
+                {
+                    <div class="panel-heading usericon Lead1">
+                        <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#Create-@items.SectionName.Replace(" ","" )@items.TabID">
+                            <h4 class="panel-title">@items.SectionName</h4>
+                        </a>
+                    </div>
+                }
+                <div class="panel-collapse collapse in" id="Create-@items.SectionName.Replace(" ","" )@items.TabID">
+                    <div class="panel-body LeadContent">
+                        <table class="table table-striped tablebrd DetailsTable">
+                            <tbody class="col-md-5">
+                                @if (items.CreateFields.Count() > 0 && items.CreateFields != null)
+                                {
+                                    for (var i = 0; i < items.CreateFields.Count; i++)
+                                    {
+                                        if (items.CreateFields[i] != null && items.CreateFields[i] != "Null")
+                                        {
+                                            
+                                            <tr>
+                                               @if (items.CreateFields[i] != "ID")
+                                               {
+                                                   var fieldname = "";
+                                                    if (items.CreateFields[i].Contains("NE-"))
+                                                    {
+                                                        var field = items.CreateFields[i].Replace("NE-", "");
+                                                        fieldname = field;
+                                                        if (field != "ID")
+                                                        {
+                                                            <td class="lightblue col-md-2">@field</td>    
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        if (@items.CreateFields[i] != "ID")
+                                                        {
+                                                            <td class="lightblue col-md-2">@items.CreateFields[i]</td>    
+                                                        }
+                                                    }
+                                                   if (fieldname != "ID")
+                                                   {
+                                                        <td class="col-md-1">:</td>
+                                                        <td class="col-md-5">@Html.TextBoxFor(m => items.CreateFields[i], new { @class = "form-control", @Name = @items.CreateFields[i] +"-"+ @items.TabID, @type = @items.CreateDataTypes[i], @length = @items.CreateLengths[i] })@Html.ValidationMessageFor(m => @items.CreateFields[i], null, new { @class = @items.CreateFields[i] +"-"+ @items.TabID, @id = "FieldLengthError" })</td>          
+                                                   }
+                                               }
+
+                                            </tr>
+                                        }
+                                    }
+                                }
+                                <tr>
+                                    <td class="col-md-2"></td>
+                                    <td class="col-md-1"></td>
+                                    <td class="col-md-3">
+                                        <div class="CreateButtons">
+                                            <button type="button" class="btn btn-theme Save">Insert</button>
+                                            <button type="button" class="btn btn-theme CreateBack">Back</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+            </div>
+            }
+            else
+            {
+                <div class="panel panel-default">
+                @if (items.SectionName != null)
+                {
+                    <div class="panel-heading usericon Lead1">
+                        <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#Create-@items.SectionName.Replace(" ","" )@items.TabID">
+                            <h4 class="panel-title">@items.SectionName</h4>
+                        </a>
+                    </div>
+                }
+                <div class="panel-collapse collapse in" id="Create-@items.SectionName.Replace(" ","" )@items.TabID">
+                    <div class="panel-body LeadContent">
+                        <h4>Create Fields Not Assigned</h4>
+                        <div class="CreateButtons">
+                            <button type="button" class="btn btn-theme CreateBack">Back</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            }
+        }
+        else
+        {
+            <table class="table table-striped tablebrd DetailsTable">
+                <tbody class="col-md-5">
+                    @for (var i = 0; i < items.CreateFields.Count; i++)
+                    {
+                        if (items.CreateFields[i] != null && items.CreateFields[i] != "Null")
+                        {
+                            <tr>
+                                @if (items.CreateFields[i].Contains("NE-"))
+                                {
+                                    var field = items.CreateFields[i].Replace("NE-", "");
+                                    <td class="lightblue col-md-2">@field</td>
+                                }
+                                else
+                                {
+                                    <td class="lightblue col-md-2">@items.CreateFields[i]</td>
+                                }
+                                <td class="col-md-1">:</td>
+                                @if (items.CreateFields[i].Contains("NE-"))
+                                {
+                                    <td class="leftpd drkieblue col-md-3">@Html.DisplayFor(m => items.CreateFields[i], new { @Name = @items.CreateFields[i] })</td>
+                                }
+                                else
+                                {
+                                    <td class="col-md-5">@Html.TextBoxFor(m => items.CreateFields[i], new { @class = "form-control", @Name = @items.CreateFields[i] + @items.TabID, @type = @items.CreateDataTypes[i], @length = @items.CreateLengths[i] })@Html.ValidationMessageFor(m => items.CreateFields[i], null, new { @class = @items.CreateFields[i] + @items.TabID, @id = "FieldLengthError" })</td>
+                                }
+
+                            </tr>
+                        }
+                    }
+                    <tr>
+                        <td class="col-md-2"></td>
+                        <td class="col-md-1"></td>
+                        <td class="col-md-3">
+                            <div class="CreateButtons">
+                                <button type="button" class="btn btn-theme Save">Save</button>
+                                <button type="button" class="btn btn-theme CreateBack">Back</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        }
+    }
+    </form>
+</div>
+    @*<table class="table table-striped tablebrd DetailsTable">
+            <tbody class="col-md-5">
+                <tr>
+                    <td class="col-md-2"></td>
+                    <td class="col-md-1"></td>
+                    <td class="col-md-3">
+                        <div class="CreateButtons">
+                            <button type="button" class="btn btn-primary Save">Save</button>
+                            <button type="button" class="btn btn-primary Back">Back</button>
+                        </div>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>*@

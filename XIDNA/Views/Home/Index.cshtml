@@ -1,0 +1,132 @@
+﻿@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>BusinessObjectsList</title>
+    <script>
+        $(document).ready(function () {
+            var table = $('#Bostbl').dataTable({
+                //"bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Url.Action("GetBusinessObjects", "Home")",
+                "order": [[3, "desc"]],
+                "aoColumns": [
+                {},
+                                {
+                                    "sName": "ID",
+                                    "bSearchable": true,
+                                    "bSortable": false,
+                                    "bVisible": false
+                                },
+                                {
+                                    "sName": "Name"
+                                },
+
+                                {
+                                    "sName": "Type",
+                                },
+                                {
+                                    "sName": "AssignedFields",
+                                }
+                ],
+                "columnDefs": [
+                      {
+
+                          "targets": [3],
+                          "createdCell": function (td, cellData, rowData, row, col) {
+                              if (cellData == 10)
+                                  $(td).replaceWith('<td>Table</td>')
+                              else
+                                  $(td).replaceWith('<td>View</td>')
+                          }
+                      }
+                ],
+                "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                    $('td:eq(1)', nRow).html(' <input type="button" style="background:none;border:none;color:#1560bd;" value="' + aData[2] + '" data-url="@Url.Action("AssignBOAttributesFromGrid", "BusinessObjects")?BOName=' + aData[2] + '&BOID=' + aData[1] + '" })"> ');
+                    return nRow;
+                }
+            })
+
+            $('#Bostbl').on('click', 'input', function () {
+                var url = $(this).attr('data-url');
+                window.open(url, '_blank', "scrollbars=1,resizable=1,width=1400, height=700,left=0,top=0");
+            })
+        });
+    </script>
+    <style>
+        .subnav {
+            margin-bottom: 10px;
+        }
+
+        #Bostbl {
+            width: 100% !important;
+        }
+    </style>
+</head>
+<body>
+    <section class="content-header hedr">
+        <h1> Business Object Management </h1>
+        <ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-dashboard"></i> BO</a></li>
+            <li class="active">Home</li>
+        </ol>
+    </section>
+    <div class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="row">
+                        <div class="col-xs-12 tree_btn">
+                            @*<div class="nav-tabs-custom">
+                                    <ul class="nav nav-tabs">
+                                        <li class="active BoTab">@Ajax.ActionLink(" BO", "BusinessObjectsList", "BusinessObjects", new { }, new AjaxOptions { UpdateTargetId = "BOGrid", InsertionMode = InsertionMode.Replace, HttpMethod = "GET", LoadingElementId = "ajax-loader" }, new { @class = "BO-tab BOGrid", data_toggle="tab" })</li>
+                                        <li class="BOAttributesTab">@Ajax.ActionLink(" BO Attributes", "AddAttributesFromTab", "BusinessObjects", new { BOName = "Leads", BOID = 1 }, new AjaxOptions { UpdateTargetId = "BOAttributes", InsertionMode = InsertionMode.Replace, HttpMethod = "GET", LoadingElementId = "ajax-loader" }, new { @class = "BO-tab BOAttributes" })</li>
+                                        <li class="BOGroupingTab">@Ajax.ActionLink(" BO Grouping", "BOAttributeGroupingFromTab", "BusinessObjects", new { }, new AjaxOptions { UpdateTargetId = "BoAttributeGrouping", InsertionMode = InsertionMode.Replace, HttpMethod = "GET", LoadingElementId = "ajax-loader" }, new { @class = "BO-tab BOGrouping" })</li>
+                                    </ul>
+                                </div>*@
+                        </div>
+                    </div>
+                    <div id="BOAttributes"></div>
+                    <div id="AttributesFromGrid"></div>
+                    <div id="BoAttributeGrouping"></div>
+                    <div id="BOGrid" class="col-xs-12">
+                        <div id="box-body">
+                            <div class="tab_scroll main-table">
+                                <div class="dataTables_wrapper no-footer table-responsive">
+                                    <table class="table table-bordered table-striped dataTable" id="Bostbl">
+                                        <thead>
+                                            <tr role="row">
+                                                <th style="border-left: #1560bd !important;">S.No</th>
+                                                <th style="display:none">ID</th>
+                                                <th>BO</th>
+                                                <th>Type</th>
+                                                <th style="border-right: #1560bd !important;">Assigned Fields</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody></tbody>
+
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function OnComplete() {
+            $('#AttributesForm').empty();
+        }
+        $('.CancelBtn').click(function () {
+            $('#AttributesForm').hide();
+        });
+    </script>
+</body>
+</html>

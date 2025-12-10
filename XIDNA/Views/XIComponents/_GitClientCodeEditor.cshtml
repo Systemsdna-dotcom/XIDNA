@@ -1,0 +1,34 @@
+﻿@*@{
+        Layout = "~/Views/Shared/_PopupLayout.cshtml";
+        int i = 1;
+    }*@
+<div>
+    <input type="button" value="Save" onclick="save()" /><br />
+    @*<input type="button" value="Get" onclick="get()" />*@
+</div>
+<script>
+    function save() {
+debugger
+        $.ajax({
+            url: "/BlockChain/XIComponents/SaveGitCode",
+            success: function (data) {
+                //$("#BCDashboard").append(data);
+            },
+            error: function (er) {
+
+            }
+        });
+    }
+    function get() {
+        $.ajax({
+            url: "/BlockChain/XIComponents/GetGitCode",
+            success: function (data) {
+                //$("#BCDashboard").append(data);
+            },
+            error: function (er) {
+
+            }
+        });
+    }
+</script>
+

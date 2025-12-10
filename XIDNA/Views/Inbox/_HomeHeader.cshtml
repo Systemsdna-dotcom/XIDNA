@@ -1,0 +1,633 @@
+﻿@model IEnumerable<XIDNA.ViewModels.VMReports>
+@using Microsoft.AspNet.Identity
+@using XIDNA.Models
+@using XIDNA.ViewModels
+@using XIDNA
+@using XISystem
+@{
+    var sGUID = Guid.NewGuid().ToString();
+    var AppName = SessionManager.AppName;
+    var QuickSearch = Model.Where(m => m.Location == "QuickSearch").ToList();
+    var Themes = Model.Where(m => m.Location == "Theme").ToList();
+    List<VMDropDown> QuickBos = new List<VMDropDown>();
+    if (Model.Count() > 0)
+    {
+        QuickBos = Model.FirstOrDefault().AllBOs;
+    }
+    var signalr = Model.Where(e => e.ConstantID != null && e.ConstantID != "").Select(r => r.ConstantID).ToList();
+    string ApplicationPath = System.Configuration.ConfigurationManager.AppSettings["ApplicationPath"];
+    var SignOutPath = ApplicationPath + "/" + AppName;
+    var sRole = SessionManager.sRoleName;
+    var iUserOrg = SessionManager.iUserOrg;
+    var bOrgSwitch = SessionManager.bOrgSwitch;
+    var AppID = SessionManager.ApplicationID;
+}
+
+<script>
+    $(document).ready(function () {
+
+        var selectedItem = sessionStorage.getItem("SelectedItem");
+        if (selectedItem == null) {
+            $("#ThemesDDL").val($("#ThemesDDL option:first").val());
+        }
+        else {
+            $('#ThemesDDL').val(selectedItem);
+        }
+        $('#ThemesDDL').on("change", function () {
+            var ddURL = $('option:selected', this).attr('value');
+            sessionStorage.setItem("SelectedItem", ddURL);
+            window.location.href = ddURL;
+        });
+
+        if ('@AppID' == '26') {
+            GetCampaigns();
+        }
+        if ('@bOrgSwitch' == "True") {
+            GetOrganisations();
+        }
+
+        GetApplications();
+
+
+        $('.UserPrefer').click(function () {
+            XILinkLoadJson(8716, '@sGUID');
+
+            //$("#UserPreferences").dialog({
+            //    title: "Select your menu preference",
+            //    buttons: {
+            //        //"Yes": function () {
+
+            //        //},
+            //        //"No": function () {
+            //        //    $(this).dialog("close");
+            //        //}
+            //    }
+            //});
+        });
+        $('.upBtn1').click(function () {
+            var Type = $(this).attr('data-type');
+            $('.slctpro').attr('data-menu', Type);
+            $('#UserPreferences').dialog("close");
+            if (Type == "normal") {
+                $('.tabList').find('.submenu').remove();
+            }
+        })
+        //callGitSave();
+    });
+
+    function callGitSave() {
+        debugger
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            //url: '@Url.Action("SaveGitCode", "XIComponents")',
+            url: ("/XIComponents/SaveGitCode?Id=" + 1),
+            //data: JSON.stringify(Params),
+            cache: false,
+            async: true,
+            dataType: 'JSON',
+            success: function (data) {
+                @*if (data && data.length > 0) {
+                    var Options = "";
+                    for (var n = 0; n < data.length; n++) {
+                        Options = Options + '<option value="' + data[n].sValue + '">' + data[n].sName + '</option>'
+                    }
+                    $('#multiorg').html(Options);
+                    if (parseInt('@iUserOrg') > 0) {
+                        $('#multiorg').val(@iUserOrg);
+                    }
+                }*@
+            }, error: function (er) {
+                debugger
+            }
+        })
+    }
+
+    $(document).on('click', 'li.notify-msg', function () {
+        debugger
+        var Info = $(this).attr('data-info');
+        var Data = Info.split(':');
+        fncLoadDefaultObjectPopup(Data[0], Data[1]);
+    })
+    function ChangeOrganisation(_this) {
+        var ID = $(_this).val();
+        window.location = "@ApplicationPath/Home/Landing?ID=" + ID;
+    }
+
+    function ChangeApplication(_this) {
+        var ID = $(_this).val();
+        window.location = "@ApplicationPath/Home/AppLanding?ID=" + ID;
+    }
+
+    function GetOrganisations() {
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("Get_Organisations", "Home")',
+            //data: JSON.stringify(Params),
+            cache: false,
+            async: true,
+            dataType: 'JSON',
+            success: function (data) {
+                if (data && data.length > 0) {
+                    var Options = "";
+                    for (var n = 0; n < data.length; n++) {
+                        Options = Options + '<option value="' + data[n].sValue + '">' + data[n].sName + '</option>'
+                    }
+                    $('#multiorg').html(Options);
+                    if (parseInt('@iUserOrg') > 0) {
+                        $('#multiorg').val(@iUserOrg);
+                    }
+                }
+            }
+        })
+    }
+
+    function GetApplications() {
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("Get_Applications", "Home")',
+            //data: JSON.stringify(Params),
+            cache: false,
+            async: true,
+            dataType: 'JSON',
+            success: function (data) {
+                if (data && data.length > 0) {
+                    var Options = "";
+                    for (var n = 0; n < data.length; n++) {
+                        Options = Options + '<option value="' + data[n].sValue + '">' + data[n].sName + '</option>'
+                    }
+                    $('#multiapp').html(Options);
+                    if (parseInt('@AppID') > 0) {
+                        $('#multiapp').val(@AppID);
+                    }
+                }
+            }
+        })
+    }
+
+    function GetCampaigns() {
+        $.ajax({
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            url: '@Url.Action("Get_Campaigns", "Home")',
+            //data: JSON.stringify(Params),
+            cache: false,
+            async: true,
+            dataType: 'JSON',
+            success: function (data) {
+                if (data && data.length > 0) {
+                    var Options = "";
+                    for (var n = 0; n < data.length; n++) {
+                        Options = Options + '<option value="' + data[n].sValue + '">' + data[n].sName + '</option>'
+                    }
+                    $('#multiCampaign').html(Options);
+                    debugger
+                    //var _this = $('#multiCampaign');
+                    //var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this[0]);
+                    //if (sGUID && sGUID.length > 0)
+                    //    fncSetParam('', sGUID, '{XIP|iCampaignID}', '1', '')
+                }
+            }
+        })
+    }
+    function ChangeCampaign(_this) {
+        debugger
+        var ID = $(_this).val();
+        var _DIV = $('#CMPHOMEINBOX');
+        var sthisGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _DIV[0]);
+        fncSetParam(ID, '', '{XIP|iCampaignID}', 'Campaign', 'Session').then(function (state, callback) {
+            fncLoadLayout(8526, null, null, 'Layout_8526', "Refresh");
+        })
+    }
+
+    if ('@AppName.ToLower()' == "createif") {
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            url: '@Url.Action("GetProjects", "File")',
+            datatype: 'json',
+            cache: false,
+            async: true,
+            success: function (data) {
+                var Btns = "";
+                if (data && data.length > 0) {
+                    for (m = 0; m < data.length; m++) {
+                        Btns = Btns + '<button class="btn btn-info btn-sm active BuildBtn" data-dismiss="modal" data-bid="' + data[m].sValue + '" data-name="' + data[m].sName + '" onclick="fncSelectProject(this)">' + data[m].sName + '</button>';
+                    }
+                    $('.BuildBtns').html(Btns);
+                    $('.select-project').html('<button class="btn btn-info btn-sm active slctpro" data-menu="normal" data-bid="' + data[0].sValue + '" data-proname="' + data[0].sName + '" data-foldername="' + data[0].sName + '">' + data[0].sName + '</button>');
+                }
+                @*var selpor = $('.slctpro');
+                var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', selpor[0]);
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SetParams", "xilink")',
+                    data: JSON.stringify({ sID: data[0].sValue, sGUID: sGUID, sName: ' {xip|iBuildingID}', sBO: '' }),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    success: function () {
+                        //resolve(true);
+                    }
+                });*@
+            },
+            error: function (data) {
+
+            }
+        })
+    }
+</script>
+
+@if (!string.IsNullOrEmpty(AppName) && AppName.ToLower() == "createif")
+{
+    <header class="main-header">
+        <!-- Logo -->
+        <!-- Logo -->
+        <a href="@ApplicationPath/Home/LandingPages" class="logo">
+            <!-- mini logo for sidebar mini 50x50 pixels -->
+            <span class="logo-mini"><b>C.iF</b></span>
+            <!-- logo for regular state and mobile devices -->
+            <span class="logo-lg">
+                <!-- <b> Create.IF</b> -->
+                <img src="~/Content/images/@SessionManager.Logo">
+            </span>
+            <span id="cifrole" data-value="@sRole"></span>
+        </a>
+        <!-- Header Navbar -->
+        <nav class="navbar" role="navigation">
+            <!-- Sidebar toggle button-->
+            <!-- <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                <span class="sr-only">Toggle navigation</span>f
+            </a> -->
+            <div class="pull-left header-search">
+                <div class="input-icon right inline-block main-search">
+                    <i class="fa fa-search"></i>
+                    <input type="text" class="form-control input-large input-sm" id="QuickSearchTextBox" placeholder="Search Here" onkeyup="GetQuickSearchResults()" />
+                </div>
+                <div class="inline-block">
+                    <select class="form-control input-sm" id="SearchBO" onchange="GetQuickSearchResults()">
+                        @foreach (var items in QuickBos)
+                        {
+                            var Bo = QuickSearch.Where(m => m.BOName == items.text).FirstOrDefault();
+                            if (Bo == null)
+                            {
+                                Bo = QuickSearch.Where(m => m.Name == items.text).FirstOrDefault();
+                            }
+                            if (Bo != null)
+                            {
+                                <option value="@Bo.ID" data-isdefined="@Bo.IsGroupDefined">@items.text</option>
+                            }
+                            else
+                            {
+                                <option value="0" data-isdefined="false">@items.text</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <duv class="inline-block">
+                    <div class="select-project"></div>
+                </duv>
+            </div>
+            <div class="navbar-custom-menu">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown user user-menu">
+                        <a class="dropdown-toggle UpldCIFDoc" onclick="fncUpLoadDocument(this, 'NewDocument')">New Document</a>
+                    </li>
+                    @*<li class="dropdown user user-menu">
+                            <a class="dropdown-toggle UpldCIFDoc" onclick="fncLoadDocHistory(this)">History</a>
+                        </li>*@
+                    <li class="dropdown user user-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <i class="fa ion-person user-image" style="line-height: 25px;text-align: center;font-size: 24px;"></i>
+                            <span class="hidden-xs">CIF User</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <!-- User image -->
+                            <li class="user-header">
+                                <img src="~/Content/images/user2-160x160.png" class="img-circle" alt="">
+                                <p>
+                                    CIF User-2
+                                </p>
+                            </li>
+                            <!-- Menu Body -->
+                            <!-- <li class="user-body">
+                                <div class="col-xs-4 text-center">
+                                    <a href="#"></a>
+                                </div>
+                                <div class="col-xs-4 text-center">
+                                    <a href="#"></a>
+                                </div>
+                                <div class="col-xs-4 text-center">
+                                    <a href="#"></a>
+                                </div>
+                            </li> -->
+                            <!-- Menu Footer-->
+                            <li class="user-footer">
+                                <div class="pull-left">
+                                    <a href="#" class="btn createIf-btn-theme btn-flat UserPrefer">Preferences</a>
+                                </div>
+                                <div class="pull-right">
+                                    <a href="@SignOutPath" class="btn createIf-btn-theme btn-flat">Sign out</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <div id="UserPreferences" style="display:none">
+        <button data-type="normal" class="upBtn btn btn-info btn-sm active">Normal</button>
+        <button data-type="dynamic" class="upBtn btn btn-info btn-sm">Dynamic</button>
+    </div>
+}
+else
+{
+    <header class="main-header">
+        <!-- Logo -->
+        <a href="#" class="logo">
+            <!-- mini logo for sidebar mini 50x50 pixels
+            <span class="logo-mini"><b>XI</b></span> -->
+            <!-- logo for regular state and mobile devices -->
+            @*<span class="logo-lg"> @*<b> CONVERTER</b> @User.Identity.GetFirstName()</span>*@
+
+            @if (ViewBag.Role.ToLower() == EnumRoles.SuperAdmin.ToString().ToLower() || ViewBag.Role.ToLower() == "AppAdmin".ToLower())
+            {
+                @*<span class="logo-lg"><b> XIDNA</b></span>*@
+                <span class="logo-lg"><b> .one dev studio </b></span>
+
+            }
+            else if (ViewBag.Role.ToLower() == "OrgAdmin".ToLower())
+            {
+                @*<span class="logo-lg"><b> XIDNA</b></span>*@
+                <span class="logo-lg"><b> .one design studio </b></span>
+
+            }
+            else if (ViewBag.Role.Contains(EnumRoles.OrgIDE.ToString()))
+            {
+                @*<span class="logo-lg"><b> XIDNA</b></span>*@
+                <span class="logo-lg"><b> .one configuration studio</b></span>
+            }
+            else if (ViewBag.Role.Contains(EnumRoles.AppAdmin.ToString()))
+            {
+                @*<span class="logo-lg"><b> XIDNA</b></span>*@
+                <span class="logo-lg"><b> @SessionManager.AppName</b></span>
+            }
+            else if (SessionManager.sRoleName.ToLower() == EnumRoles.Admin.ToString().ToLower())
+            {
+                <span class="logo-lg"> @ViewBag.UserName </span>
+            }
+            else if (ViewBag.Role == EnumRoles.PFOClient.ToString() && @ViewBag.UserName == "Nashwarren@systemsdna.com")
+            {
+                <span class="logo-lg" style="background-image: url(../Content/images/brokerstar.svg);"></span>
+            }
+            else if (ViewBag.Role == EnumRoles.PFOClient.ToString() && @ViewBag.UserName == "bco@systemsdna.com")
+            {
+                <span class="logo-lg" style="background-image: url(../Content/images/bco_logo.svg);"></span>
+            }
+            else if (ViewBag.Role == EnumRoles.PFOClient.ToString() && @ViewBag.UserName == "im@systemsdna.com")
+            {
+                <span class="logo-lg" style="background-image: url(../Content/images/im.svg);"></span>
+            }
+            else if (!string.IsNullOrEmpty(SessionManager.Logo))
+            {
+                @*<span class="logo-lg"> <img src="~/Content/images/@SessionManager.Logo" width="150" /> </span>*@
+                <span class="logo-lg" style="background-image: url(../Content/images/platform_factory_logo.svg);"></span>
+            }
+            else
+            {
+                if (SessionManager.AppName == "Legalstore")
+                {
+                    <span class="logo-lg"><b> Legal Store</b></span>
+                }
+                else
+                {
+                    <span class="logo-lg"><b> @SessionManager.AppName</b></span>
+                }
+            }
+        </a>
+        <!-- Header Navbar -->
+        <nav class="navbar" role="navigation">
+            <!-- Sidebar toggle button-->
+            @if (ViewBag.Role.Contains(EnumRoles.Admin.ToString()))
+            {
+                <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button"> <span class="sr-only">Toggle navigation</span> </a>
+            }
+
+            <div class="pull-left header-search" style="top: 5px;position: relative;">
+                @if (ViewBag.Role != EnumRoles.SuperAdmin.ToString() && ViewBag.Role != EnumRoles.User.ToString() && ViewBag.Role != EnumRoles.PFOClient.ToString())
+                {
+                    if (QuickBos != null && QuickBos.Count() > 0)
+                    {
+                        <div class="input-icon right inline-block">
+                            <i class="fa fa-search"></i>
+                            <input type="text" class="form-control input-large input-sm" id="QuickSearchTextBox" placeholder="Search Here" onkeyup="GetQuickSearchResults()" />
+                        </div>
+                        <div class="inline-block">
+                            <select class="form-control input-sm" id="SearchBO" onchange="GetQuickSearchResults()">
+                                @foreach (var items in QuickBos.OrderBy(x => x.text))
+                                {
+                                    if (items.Value > 0)
+                                    {
+                                        <option value="@items.ID" data-id="@items.Value">@items.text</option>
+                                    }
+                                    else
+                                    {
+                                        var Bo = QuickSearch.Where(m => m.BOName == items.text).FirstOrDefault();
+                                        if (Bo == null)
+                                        {
+                                            Bo = QuickSearch.Where(m => m.Name == items.text).FirstOrDefault();
+                                        }
+                                        if (Bo != null)
+                                        {
+                                            <option value="@Bo.ID" data-isdefined="@Bo.IsGroupDefined">@items.text</option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                    }
+                    if (ViewBag.Role.ToLower() == EnumRoles.Admin.ToString().ToLower() || ViewBag.Role.ToLower() == EnumRoles.SuperAdmin.ToString().ToLower())
+                    {
+                        <div class="inline-block">
+                            <select class="form-control input-sm" id="ThemesDDL">
+                                @*<option>Theme</option>*@
+                                @foreach (var items in Themes)
+                                {
+                                    <option class="select-language" value="@Url.Action("ChangeTheme", "Organization", new { Theme = items.Name, ID = items.ID, returnUrl = Request.RawUrl })">
+                                        @items.Type
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="inline-block">
+                            <button type="button" class="btn btn-theme" id="CacheBtn">Cache</button>
+                        </div>
+                        var Date = DateTime.Now;
+                        var TimeZone = System.Configuration.ConfigurationManager.AppSettings["TimeZone"];
+                        DateTime serverTime = DateTime.Now; // gives you current Time in server timeZone
+                        DateTime utcTime = serverTime.ToUniversalTime(); // convert it to Utc using timezone setting of server computer
+
+                        TimeZoneInfo tzi = TimeZoneInfo.FindSystemTimeZoneById(TimeZone);
+                        DateTime localTime = TimeZoneInfo.ConvertTimeFromUtc(utcTime, tzi);
+                        var today = localTime.ToString(XIConstant.SqlDateFormat);
+                        var to_day = Utility.GetDateResolvedValue("T", "yyyy-MM-dd");
+                        @*<div class="inline-block">
+                                <button type="button" class="btn btn-theme" id="CacheBtn">@to_day</button>
+                            </div>*@
+                        <script>
+                            $('#QuickSearchTextBox1').datepicker({
+                                changeMonth: true,
+                                changeYear: true,
+                                inline: true,
+                                yearRange: '1920:2030',
+                                dateFormat: 'dd-M-yy',
+                                minDate: new Date('@to_day'),
+                                maxDate: new Date('@to_day'),
+                            });
+                        </script>
+                        @*<div class="inline-block">
+                                <span>Your session will expire: 300 seconds</span>
+                                <span id="countDown" style="display:none"></span>
+                            </div>*@
+                        <div class="inline-block">
+                            <span class="ResponseMsg"></span>
+                        </div>
+                    }
+                }
+                @if (bOrgSwitch)
+                {
+                    <div class="inline-block">
+                        <select class="form-control input-sm" id="multiorg" onchange="ChangeOrganisation(this)"></select>
+                    </div>
+                }
+                @*  <div class="inline-block">
+                        <select class="form-control input-sm" id="multiapp" onchange="ChangeApplication(this)"></select>
+                    </div>*@
+                @if (AppID == 26)
+                {
+                    <div class="inline-block">
+                        <select class="form-control input-sm" id="multiCampaign" onchange="ChangeCampaign(this)"></select>
+                    </div>
+                }
+            </div>
+
+            <!-- Navbar Right Menu -->
+            <div class="navbar-custom-menu">
+                <ul class="nav navbar-nav">
+                    @if (ViewBag.Role.Contains(EnumRoles.XISuperAdmin.ToString()) || ViewBag.Role.Contains(EnumRoles.AppAdmin.ToString()) || ViewBag.Role.ToLower() == "OrgUser".ToLower())
+                    {
+                        @*<li class="" onclick="fncXIInterpreter()"><a><i class="fa fa-code"></i></a></li>*@
+                        <li class="" onclick="fncClearCache()"><a>Cache</a></li>
+                    }
+                    @if (ViewBag.Role != EnumRoles.PFOClient.ToString())
+                    {
+                        <li class="asidetoglbtn"><a href="#" data-toggle="control-sidebar"><i class="fa fa-bars"></i></a></li>
+                        <!-- Messages: style can be found in dropdown.less-->
+                        <li class="dropdown messages-menu">
+                            <!-- Menu toggle button -->
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <i class="far fa-envelope"></i> <span class="label label-success ReminderCount1">0</span> </a>
+                            <ul class="dropdown-menu">
+                                <li class="header">You have <span class="ReminderCount2">0</span> messages</li>
+                                <li>
+                                    <!-- inner menu: contains the messages -->
+                                    <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 200px;">
+                                        <ul class="menu" id="NotificationMessages" style="overflow: hidden; width: 100%; height: 200px;">
+                                            @*<li class="notify-msg" data-info="717:9746">
+                                                    <a>
+                                                        <h6>New Lead</h6>
+                                                    </a>
+                                                </li>*@
+                                            @*<li id="ReminderMessage">
+                                                <!-- start message -->
+                                                <a href="#">
+                                                    <div class="pull-left">
+                                                        <img src="~/Content/images/human.png" class="img-circle" alt="User Image">
+                                                    </div>
+                                                <!-- Message title and timestamp -->
+                                                <h4> Support Team <small><i class="fa fa-clock"></i> 5 mins</small> </h4>
+                                                The message
+                                                <div id="ReminderMessage"></div><br />
+                                                </a>
+                                                </li>*@
+                                            <!-- end message -->
+                                        </ul>
+                                        @* <div class="slimScrollBar" style="width: 3px; position: absolute; top: 0px; opacity: 0.4; display: block; border-radius: 7px; z-index: 99; right: 1px; background: rgb(0, 0, 0);"></div><div class="slimScrollRail" style="width: 3px; height: 100%; position: absolute; top: 0px; display: none; border-radius: 7px; opacity: 0.2; z-index: 90; right: 1px; background: rgb(51, 51, 51);"></div> *@
+                                        @* </div> *@
+                                        <!-- /.menu -->
+                                </li>
+                                <li class="footer MoreMessages"><a>See All Messages</a></li>
+                            </ul>
+                        </li>
+                        <!-- /.messages-menu -->
+                        foreach (var i in signalr)
+                        {
+                            <!-- Notifications Menu -->
+                            <li class="dropdown notifications-menu">
+                                <!-- Menu toggle button -->
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <i class="far fa-bell"></i> <span class="label label-warning NotificationsCount1" id="@i">0</span> </a>
+                                <ul class="dropdown-menu nnr">
+                                    <li class="header">You have <span class="NotificationsCount2">0</span> notifications</li>
+                                    <li>
+                                        <!-- Inner Menu: contains the notifications -->
+                                        @* <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 200px;">*@
+
+                                        <ul class="menu" id="ReminderMessage" style="position: relative; overflow: auto; width: auto; height: 200px;">
+                                            <li id="listofnotification" style="color:#000;"></li>
+
+                                            @*end notification /id="ReminderMessage"*@
+                                        </ul>
+                                        @* <div class="slimScrollBar" style="width: 3px; position: absolute; top: 0px; opacity: 0.4; display: block; border-radius: 7px; z-index: 99; right: 1px; background: rgb(0, 0, 0);"></div>
+                                            <div class="slimScrollRail" style="width: 3px; height: 100%; position: absolute; top: 0px; display: none; border-radius: 7px; opacity: 0.2; z-index: 90; right: 1px; background: rgb(51, 51, 51);"></div> *@
+                                        @* </div> *@
+                                    </li>
+                                    <li class="footer MoreMessages"><a class="AllMessages"> view all</a></li>
+                                </ul>
+                            </li>
+                        }
+                    }
+                    <!-- <li class="dropdown notifications-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <i class="fa fa-bell-o"></i> <span class="label label-warning NotificationsCount3" id="bellid">0</span> </a>
+                    </li>-->
+                    <!-- Tasks Menu -->
+                    <!-- User Account Menu -->
+                    <li class="dropdown user user-menu">
+                        <!-- Menu Toggle Button -->
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <!-- The user image in the navbar-->
+                            <!-- <img src="~/Content/images/human.png" class="user-image" alt="User Image"> -->
+                            @* <i class="far fa-user m-r-5"></i> *@
+                            <!-- hidden-xs hides the username on small devices so only the image appears. -->
+                            @*<span class="hidden-xs">@Session["UserName"].ToString()</span>*@
+                            @* <span class="hidden-xs">@User.Identity.GetUserName()</span> *@
+                            <span class="user_first_letter">@ViewBag.UserName</span> @ViewBag.UserName
+                        </a>
+                        <ul class="dropdown-menu">
+                            <!-- The user image in the menu -->
+                            @* <li class="user-header"> *@
+                            @*<img src="~/Content/images/human.png" class="img-circle" alt="User Image">
+                                <p> @User.Identity.GetFirstName()<small>@User.Identity.GetGroupName()</small> </p>*@
+                            @* </li> *@
+                            <!-- Menu Body -->
+                            <!-- Menu Footer-->
+                            <li class="user-footer">
+                                <a id="UserProfile" class="">Profile</a>
+                                @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <a href="javascript:document.getElementById('logoutForm').submit()" class="">Sign out</a>
+                                }
+                            </li>
+                        </ul>
+                    </li>
+                    <!-- Control Sidebar Toggle Button -->
+                    <!--<li> <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a> </li>-->
+                </ul>
+            </div>
+            <div id="MessagePopup"></div>
+        </nav>
+    </header>
+}

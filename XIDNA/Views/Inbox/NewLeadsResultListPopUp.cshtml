@@ -1,0 +1,50 @@
+﻿@model XIDNA.ViewModels.VMViewPopup
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+    });
+</script>
+<style>
+    .actionstab {
+        margin-left: -33px;
+    }
+
+        .actionstab a {
+            color: #000;
+        }
+</style>
+<div id="wrapper">
+
+        <div class="leftsidemenu-default leftsidemenu" role="navigation">
+        <div class="userdetadl">
+            @{Html.RenderAction("GetLeadData", "inbox", new { Popup = @Model }); }
+        </div>
+        <div class="clint-leds">
+            @{
+                Html.RenderAction("GetAllStages", "inbox", new { LeadID = @Model.LeadID });
+            }
+
+        </div>
+        <div class="clint-leds">
+            @{
+                Html.RenderAction("GetAllActions", "inbox", new { LeadID = @Model.LeadID });
+            }
+        </div>
+        <div class="clint-leds">
+            @{Html.RenderAction("GetClientData", "inbox", new { Popup = @Model }); }
+        </div>
+    </div>
+    @if (@Model.LeadID != null)
+    {
+        <div id="page-wrapper2" class="gray-bg dashbard-1">
+            <div id="renderbody">
+                @{
+        Html.RenderAction("LeadContent", "Inbox", new { LeadID = @Model.LeadID, ReportID = @Model.ReportID });
+                }
+            </div>
+        </div>
+    }
+</div>

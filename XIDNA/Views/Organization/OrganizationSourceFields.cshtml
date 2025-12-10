@@ -1,0 +1,132 @@
+﻿@model int
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+<script>
+
+        $(document).ready(function () {
+            var popups = new Array();
+            var table = $('#OrgSorFields').dataTable({
+                //"bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "@Url.Action("GetOrgSourceFields", "Organization", new{OrgID=@Model})",
+                "aaSorting": [[1, 'desc']],
+                "aoColumns": [
+                {},
+                                 {
+                                     "sName": "ID",
+                                     "visible": false
+                                 },
+                                 {
+                                     "sName": "SubsctipitonID"
+                                 },
+                                {
+                                    "sName": "FieldName"
+                                },
+                                {}
+                ],
+                //"columnDefs": [
+                //  {
+                //      "targets": [4],
+                //      "createdCell": function (td, cellData, rowData, row, col) {
+                //          if (cellData == 10)
+                //              $(td).replaceWith('<td>Active</td>')
+                //          else
+                //              $(td).replaceWith('<td>Inactive</td>')
+                //      }
+                //  }
+                //],
+                "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+
+                    $('td:eq(3)', nRow).html('<a class="DeleteBtn" id="'+aData[1]+'" data-ajax-update="#QueryPreview"  data-ajax-method="POST" data-ajax="true">Delete</a>');
+                    return nRow;
+                }
+            });
+            $('#OrgSorFields').on('click', 'a.DeleteBtn', function () {
+                var id = $(this).attr('id');
+                var rowindex = $(this);
+                $(".DeleteSorField").html('Do You Want To Delete This Field?');
+                $(".DeleteSorField").dialog({
+                    title: "Organization Source Fields",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "Yes",
+                           click: function () {
+                               $(rowindex).closest('tr').remove();
+                               $.ajax({
+                                   type: 'POST',
+                                   url: '@Url.Action("DeleteSourceField","Organization")',
+                                   data: { ID: id },
+                                   cache: false,
+                                   dataType: 'json',
+                                   success: function (data) {
+                                       $('.DeleteSorField').dialog('close');
+                                       
+                                   }
+                               });
+                           }
+                       },
+                    {
+                        text: "No",
+                        click: function () {
+                            $(".DeleteSorField").dialog("close");
+                        }
+                    }
+                    ]
+                });
+            })
+            $('#OrgsorBtn').on('click', 'input', function (e) {
+                e.preventDefault();
+                var url = $(this).attr('data-url');
+                var newquery = window.open(url, '_blank', "scrollbars=1,resizable=1,width=1400, height=700,left=0,top=0");
+                popups.push(newquery);
+            });
+        });
+</script>
+<div class="dialog-box DeleteSorField" title="Confirm Message" style="background-color:white;"></div>
+<section class="content-header hedr">
+    <h1> Source Fields Management </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Source Fields</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="row">
+                    <div class="col-xs-12 tree_btn" id="OrgsorBtn">
+                        <input class="savebtn btn btn-theme pull-right" type="button" value="New Source Field" data-url="@Url.Action("SourceFieldsForm", "Organization")" />
+                    </div>
+
+                </div>
+
+                <div id="OrgSorFieldGrid" class="col-xs-12">
+                    <div id="box-body">
+                        <div class="tab_scroll main-table">
+                            <div class="dataTables_wrapper no-footer table-responsive">
+                                <table class="table table-bordered table-striped dataTable" id="OrgSorFields">
+                                    <thead>
+                                        <tr role="row">
+                                            <th>S.No</th>
+                                            <th>ID</th>
+                                            <th>Subscription ID</th>
+                                            <th>Field Name</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody></tbody>
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

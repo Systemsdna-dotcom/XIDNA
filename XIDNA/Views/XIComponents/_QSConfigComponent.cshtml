@@ -1,0 +1,236 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIDQS oQS = new XIDQS();
+    if (Model.oContent.ContainsKey(XIConstant.QSConfigComponent))
+    {
+        oQS = (XIDQS)Model.oContent[XIConstant.QSConfigComponent];
+        if (oQS == null)
+        {
+            oQS = new XIDQS();
+        }
+    }
+    else
+    {
+
+    }
+    int iXISemanticID = oQS.ID;
+}
+
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    @* SaveBO *@
+                    @using (Ajax.BeginForm("SaveQuestionSet", "XISemantics", FormMethod.Post, new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "XIQuestionSetForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        <input type="hidden" id="ID" name="ID" value="@oQS.ID" />
+                        <div id="clear-text">
+                            @if (oQS.ID != 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">QuestionSet ID:<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">@oQS.ID<span class="danger"></span></label>
+                                    </div>
+                                </div>
+                            }
+                            @if (oQS.FKiApplicationID == 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Application<span class="danger"></span></label>
+                                        @Html.DropDownList("FKiApplicationID", new SelectList(oQS.ddlApplications, "Value", "text"), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" id="FKiApplicationID" name="FKiApplicationID" value="@oQS.FKiApplicationID" />
+                            }
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    @Html.TextBox("sName", oQS.sName, new { @placeholder = "Enter Name Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("sName", null, new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Description<span class="danger">*</span></label>
+                                    @Html.TextArea("sDescription", oQS.sDescription, new { @placeholder = "Enter Description Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("sDescription", null, new { @class = "red" })
+                                </div>
+                            </div>
+                            @*<div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Layout<span class="danger"></span></label>
+                                        @Html.DropDownListFor(m => m.iLayoutID, new SelectList(Model.ddlLayouts, "Value", "text"), new { @class = "form-control", @id= "XiLayoutsDDL" })
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="button" class="btn btn-theme btn-xs" value="Map" onclick="XiLayoutManager('XiLayout', 'Add')" />
+                                    </div>
+                                </div>*@
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">XIVisualisation<span class="danger"></span></label>
+                                    @Html.DropDownList("iVisualisationID", new SelectList(oQS.ddlXIVisualisations, "Value", "text", oQS.iVisualisationID), new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Save Type<span class="danger"></span></label>
+                                    @Html.DropDownList("SaveType", new SelectList(new List<Object>{
+                                               new { key= "Save as Populated" , value = "Save as Populated" },
+                       new { key= "Save at End" , value = "Save at End" }
+                    }, "key", "Value", oQS.SaveType), new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Mode<span class="danger"></span></label>
+                                    @Html.DropDownList("sMode", new SelectList(new List<Object>{
+                                               new { key= "Popup" , value = "Popup" },
+                       new { key= "QuestionSet" , value = "QuestionSet" }
+                    }, "key", "Value", oQS.sMode), new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                            @*<div class="form-group">
+                                    <div class="col-md-6">
+                                        @Html.CheckBoxFor(m => m.bIsTemplate)
+                                        <label for="inputEmail" class="gn">Is Template<span class="danger"></span></label>
+                                    </div>
+                                </div>*@
+                            @*<div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">HTML Page<span class="danger"></span></label>
+                                        @Html.TextBoxFor(model => model.sHTMLPage, new { @placeholder = "Enter HTML Page", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.sHTMLPage, null, new { @class = "red" })
+                                    </div>
+                                </div>*@
+
+                            <div class="form-group">
+                                <div class="col-md-3 IsContextObject">
+                                    @Html.CheckBox("bIsContextObject")
+                                    <label for="inputEmail" class="gn">Is ContextObject<span class="danger"></span></label>
+                                </div>
+                                <input type="hidden" name="bIsContextObject" id="IsContextObject" />
+                            </div>
+                            <div id="ddlParamScript">
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">XIParameters<span class="danger"></span></label>
+                                        @Html.DropDownList("FKiParameterID", new SelectList(oQS.ddlXIParameters, "Value", "text", oQS.FKiParameterID), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">XIStructures<span class="danger"></span></label>
+                                        @Html.DropDownList("FKiBOStructureID", new SelectList(oQS.ddlXIStructures, "Value", "text", oQS.FKiBOStructureID), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Source<span class="danger"></span></label>
+                                    @Html.DropDownList("FKiOriginID", new SelectList(oQS.ddlSourceList, "Value", "text", oQS.FKiOriginID), new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownList("StatusTypeID", new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value", oQS.StatusTypeID), new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="submit" class="btn btn-theme" value="Save" />
+                                    <button type="button" class="btn btn-theme decline" id="CancelBO">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#ddlParamScript').hide();
+        if(@oQS.FKiParameterID > 0 || @oQS.FKiBOStructureID > 0)
+        {
+            $('#ddlParamScript').show();
+        }
+        $('#CancelBO').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#XIQuestionSetForm')[0].reset();
+            $('#XIQuestionSetForm .taberrormsg').find('span').html('');
+        });
+    })
+    function OnFormBegin() {
+        $('#XIQuestionSetForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+    var iXISemanticID = 0;
+
+    function OnComplete(e) {
+        iXISemanticID = e.ID;
+        $('#XIQuestionSetForm').unblock();
+        //$('#XIQuestionSetForm')[0].reset();
+        $('#XISemanticIDForStep').attr('data-xisemanticid', e.ID);
+        $('#XISemanticIDForStage').attr('data-xisemanticids', e.ID);
+        $('#FKiQSDefStageID').val(e.ID);
+        $('.XiStepsTab').prop('disabled', false);
+        $('.XiStagesTab').prop('disabled',false);
+        CustomMessage(e.ResponseMessage, e.Status);
+        //opener.window.location.reload();
+    }
+
+    $('.IsContextObject').change(function(){
+        if($('#bIsContextObject').is(':checked'))
+        {
+            $("#IsContextObject").val("True");
+            $('#ddlParamScript').show();
+        }
+        else
+        {
+            $("#IsContextObject").val("False");
+            $('#ddlParamScript').hide();
+            $("#FKiParameterID")[0].selectedIndex = 0;
+            $("#FKiBOStructureID")[0].selectedIndex = 0;
+        }
+    });
+
+</script>
+<style>
+    .BOTabs li {
+        cursor: pointer;
+    }
+</style>

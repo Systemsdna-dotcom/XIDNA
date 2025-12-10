@@ -1,0 +1,53 @@
+﻿@model XIDNA.Models.AddFields
+
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+<style>
+    #ClassButtons {
+        padding-top: 7px;
+    }
+    /*input[type=radio] {
+            padding-right: 15px;
+        }*/
+</style>
+<section class="content-header hedr">
+    <h1> Class Specific Fields </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Class Fields</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div id="FieldsGrid">
+                        @{
+                            Html.RenderAction("GetClassOrgFields", "Fields", new { Type = "ClassSpecific" });
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+        var form = $('#FieldsForm');
+        $.validator.unobtrusive.parse(form);
+        function OnComplete() {
+            var classID = $('#Class').val();
+            var classname = $('#Class').text();
+            $('#FieldsForm')[0].reset();
+            $('#Class').val(classname);
+            $('#ClassID').val(classID);
+            $("#FieldsGrid").load('@Url.Action("GetClassOrgFields", "Fields", new { Type = "ClassSpecific" })');
+        }
+        $('#FieldReset').click(function () {
+            $('#FieldsForm')[0].reset();
+            $('#Class').prop("disabled", false);
+            $('#Length').prop("disabled", false);
+        });
+</script>

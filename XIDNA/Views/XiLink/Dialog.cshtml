@@ -1,0 +1,92 @@
+﻿@model XICore.XIDLayout
+    @{ 
+        var oParams = ViewBag.oPramas;
+        var DialogID = Model.DialogID;
+        var XILinkID = ViewBag.XILinkID;
+        var iXILinkID = ViewBag.iXILinkID;
+        var XILinkName = ViewBag.XILinkName;
+        var XILinkXIGUID = ViewBag.XILinkXIGUID;
+        var DialogName = ViewBag.DialogName;
+        var DialogXIGUID = ViewBag.DialogXIGUID;
+        var LinkName = string.Empty;
+        var DlgName = string.Empty;
+        var NavGUID = ViewBag.NavGUID;
+        if (XILinkName != null)
+        {
+            LinkName = (string)XILinkName;
+            LinkName = LinkName.ToLower().Replace(" ", "_");
+        }
+        if (DialogName != null)
+        {
+            DlgName = (string)DialogName;
+            DlgName = DlgName.ToLower().Replace(" ", "_");
+        }
+    }
+@*@{
+       Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    }*@
+
+@*<script>
+        $(document).ready(function () {
+            $(document.body).on('click', 'button.InlineEditSaveBtn', function () {
+                var formid = $(this).closest('form').attr('class');
+                var formData = JSON.parse(JSON.stringify(jQuery('.' + formid).serializeArray()))
+                var Dialog = [];
+                var i, j, titleid = [];
+                for (i = 0, j = formData.length; i < j; i++) {
+                    Dialog.push({ Label: formData[i].name, Data: formData[i].value });
+                }
+                var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+                var pvalue = {
+                    FormValues: Dialog,
+                    iInstanceID: '@Session["iInstanceID"]',
+                    sGUID: sGUID
+                }
+                $.ajax({
+                    url: '@Url.Action("EditData", "XiLink")',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    data: JSON.stringify(pvalue),
+                    success: function (data) {
+                        if (data != "Failure") {
+                            var IsSuccess = true;
+                            var Error = "";
+                            var Scripts = data.Definition.BOScripts;
+                            for (i = 0; i < Scripts.length; i++) {
+                                if (!Scripts[i].IsSuccess) {
+                                    for (j = 0; j < Scripts[i].ScriptResults.length; j++) {
+                                        if (Scripts[i].ScriptResults[j].sAction == "Failure") {
+                                            IsSuccess = false;
+                                            Error = Error + Scripts[i].ScriptResults[j].sMessage + "<br/>";
+                                        }
+                                    }
+                                }
+                            }
+                            if (IsSuccess) {
+                                Error = "Data saved successfully";
+                                $('#DialogErrors').html(Error);
+                            }
+                            else {
+                                $('#DialogErrors').html(Error);
+                            }
+                        }
+                        else {
+                            $('#DialogErrors').html('Error occured please check');
+                        }
+                    },
+                    error: function (data) {
+                    }
+                });
+            });
+        });
+    </script>*@
+<div class="one-link one-link-id-@iXILinkID one-link-@LinkName" data-def="@XILinkXIGUID">
+    <div class="one-dialog one-dialog-id-@DialogID one-dialog-@DlgName" data-def="@DialogXIGUID">
+        @{
+            Html.RenderAction("GetDialogContent", "XiLink", new { model = Model, oNVParams = oParams, XILinkID = iXILinkID, XILinkIDXIGUID = XILinkXIGUID, XILinkName = LinkName, NavGUID = NavGUID });
+        }
+    </div>
+</div>
+

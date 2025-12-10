@@ -1,0 +1,385 @@
+﻿@model XIDNA.ViewModels.VMUserDashContents
+@using XIDNA.ViewModels
+@{
+    int DDLClassValue = @Model.DDLClassValue;
+    int DDLDateValue = @Model.DDLDateValue;
+}
+
+<script>
+    $(document).ready(function () {
+        $('.sortable').sortable({
+            connectWith: '.sortable',
+            update: function (event, ui) {
+                var Rows = $('.sortable').find('.sortbox');
+                var ReportIDs = new Array();
+                for (i = 0; i < Rows.length; i++) {
+                    var Row = Rows[i].attributes;
+                    for (j = 0; j < Row.length; j++) {
+                        if (Row[j].name == "data-id") {
+                            id = Row[j].nodeValue;
+                        }
+                    }
+                    var type = id.split('-')[0];
+                    if (type == "Row") {
+                        var ids = "";
+                        var circles = $('.KPICircles');
+                        for (k = 0; k < circles.length; k++) {
+                            var circle = circles[k].attributes;
+                            for (l = 0; l < circle.length; l++) {
+                                if (circle[l].name == "data-id") {
+                                    ids = ids + circle[l].nodeValue + ",";
+                                }
+                            }
+                        }
+                        ids = ids.substring(0, ids.length - 1);
+                        id = "{" + ids + "}"
+                    }
+                    ReportIDs.push(id);
+                    var RowData = {
+                        ColOrder: ReportIDs, UserID: parseInt(@Model.UserID)
+                    }
+                }
+                $.ajax({
+                    url: '@Url.Action("SaveColSettings", "Inbox")',
+                    type: 'POST',
+                    data: JSON.stringify(RowData),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: 'JSON',
+                    cache: false,
+                    success: function (data) {
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+        }).disableSelection();
+
+        $('.sortbox')
+            .addClass('ui-widget ui-helper-clearfix ui-corner-all')
+            .find('.portlet-header')
+                .addClass('ui-widget-header ui-corner-all')
+                .prepend('<span class="ui-icon ui-icon-minusthick"></span>')
+            .end();
+        $('#QueryList').on('change', 'input', function () {
+            var Name = $(this).attr('data-id');
+            var datatype = $(this).attr('data-type');
+            if ($(this).is(":checked")) {
+                $('#' + Name).show();
+
+                var kpi = $('#' + Name);
+                var attrs = kpi[0].attributes;
+                for (i = 0; i < attrs.length; i++) {
+                    if (attrs[i].name == "data-id") {
+                        var visibility = attrs[i].nodeValue.split('-')[1];
+                        if (visibility == "false") {
+                            var hide = attrs[i].nodeValue.replace("false", "true");
+                            $('#' + Name).attr('data-id', hide);
+                        }
+                    }
+                }
+                $(this).attr('visible', 'true');
+                var Rows = $('.sortable').find('.portlet');
+                var ReportIDs = new Array();
+                for (i = 0; i < Rows.length; i++) {
+                    var Row = Rows[i].attributes;
+                    for (j = 0; j < Row.length; j++) {
+                        if (Row[j].name == "data-id") {
+                            id = Row[j].nodeValue;
+                        }
+                    }
+                    var type = id.split('-')[0];
+                    if (type == "Row") {
+                        var ids = "";
+                        var circles = $('.KPICircles');
+                        for (k = 0; k < circles.length; k++) {
+                            var circle = circles[k].attributes;
+                            for (l = 0; l < circle.length; l++) {
+                                if (circle[l].name == "data-id") {
+                                    ids = ids + circle[l].nodeValue + ",";
+                                }
+                            }
+                        }
+                        ids = ids.substring(0, ids.length - 1);
+                        id = "{" + ids + "}";
+                    }
+                    ReportIDs.push(id);
+                    var RowData = {
+                        ColOrder: ReportIDs, UserID: parseInt(@Model.UserID)
+                    }
+                }
+                $.ajax({
+                    url: '@Url.Action("SaveColSettings", "Inbox")',
+                    type: 'POST',
+                    data: JSON.stringify(RowData),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: 'JSON',
+                    cache: false,
+                    success: function (data) {
+                    },
+                    error: function (data) {
+                    }
+                });
+                //Saveusersettings();
+            }
+            else {
+                $('#' + Name).hide();
+                var kpi = $('#' + Name);
+                var attrs = kpi[0].attributes;
+                for (i = 0; i < attrs.length; i++) {
+                    if (attrs[i].name == "data-id") {
+                        var visibility = attrs[i].nodeValue.split('-')[1];
+                        if (visibility == "true") {
+                            var hide = attrs[i].nodeValue.replace("true", "false");
+                            $('#' + Name).attr('data-id', hide);
+                        }
+                    }
+                }
+                $(this).attr('visible', 'false');
+                var Rows = $('.sortable').find('.portlet');
+                var ReportIDs = new Array();
+                for (i = 0; i < Rows.length; i++) {
+                    var Row = Rows[i].attributes;
+                    for (j = 0; j < Row.length; j++) {
+                        if (Row[j].name == "data-id") {
+                            id = Row[j].nodeValue;
+                        }
+                    }
+                    var type = id.split('-')[0];
+                    if (type == "Row") {
+                        var ids = "";
+                        var circles = $('.KPICircles');
+                        for (k = 0; k < circles.length; k++) {
+                            var circle = circles[k].attributes;
+                            for (l = 0; l < circle.length; l++) {
+                                if (circle[l].name == "data-id") {
+                                    ids = ids + circle[l].nodeValue + ",";
+                                }
+                            }
+                        }
+                        ids = ids.substring(0, ids.length - 1);
+                        id = "{" + ids + "}"
+                    }
+                    ReportIDs.push(id);
+                    var RowData = {
+                        ColOrder: ReportIDs, UserID: parseInt(@Model.UserID)
+                    }
+                }
+                $.ajax({
+                    url: '@Url.Action("SaveColSettings", "Inbox")',
+                    type: 'POST',
+                    data: JSON.stringify(RowData),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: 'JSON',
+                    cache: false,
+                    success: function (data) {
+                    },
+                    error: function (data) {
+                    }
+                });
+                //Saveusersettings();
+            }
+            if (datatype == "KPI_Circle") {
+                var circles = $('input[data-type="' + datatype + '"][visible="true"]');
+                if (circles.length > 0) {
+                    $('#Row').show();
+                }
+                else {
+                    $('#Row').hide();
+                }
+            }
+        });
+    });
+
+</script>
+
+<div id="dashboard" class="row">
+    <div class="col-md-12">
+        @{int k = 0;}
+        @if (Model.UserSettings.Col0 != null)
+        {
+            <div class="connectedSortable">
+                @for (int n = 0; n < Model.UserSettings.ReportIDs.Count(); n++)
+                {
+                    if (Model.UserSettings.DisplayType[n] == EnumDisplayTypes.KPICircle.ToString())
+                    {
+                        if (Model.UserSettings.Visibility[n] == "true")
+                        {
+                            <div class="sortbox">
+                                <div class="col-md-12 gutter4 DashGraph" id="Row" data-id="Row" data-type="KPICircle">
+                                    @{
+                            Html.RenderAction("GetKPICircleResult", "Inbox", new { ReportID = @Model.UserSettings.ReportIDs[n], UserID = @Model.UserID, DDLClassValue = DDLClassValue, DDLDateValue = DDLDateValue });
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="sortbox">
+                                <div class="col-md-12 gutter4 DashGraph" id="Row" data-id="Row" data-type="KPICircle" style="display:none">
+                                    @{
+                            Html.RenderAction("GetKPICircleResult", "Inbox", new { ReportID = @Model.UserSettings.ReportIDs[n], UserID = @Model.UserID, DDLClassValue = DDLClassValue, DDLDateValue = DDLDateValue });
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        if (Model.UserSettings.DisplayType[n] == EnumDisplayTypes.ResultList.ToString())
+                        {
+                            if (Model.UserSettings.Visibility[n] == "true")
+                            {
+                                <div class="sortbox">
+                                    <div class="col-md-12 gutter4 DashGraph" id="@Model.UserSettings.ReportNames[n].Replace(" ","_")" data-id="@Model.UserSettings.ReportIDs[n]-@Model.UserSettings.Visibility[n]" data-type="@Model.UserSettings.DisplayType[n]">
+                                        @{
+                                Html.RenderAction("GetKPIResults", "Inbox", new { ReportID = Model.UserSettings.ReportIDs[n], DDLClassValue = DDLClassValue, DDLDateValue = DDLDateValue });
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="sortbox">
+                                    <div class="col-md-12 gutter4 DashGraph" id="@Model.UserSettings.ReportNames[n].Replace(" ","_")" data-id="@Model.UserSettings.ReportIDs[n]-@Model.UserSettings.Visibility[n]" data-type="@Model.UserSettings.DisplayType[n]" style="display:none;">
+                                        @{
+                                Html.RenderAction("GetKPIResults", "Inbox", new { ReportID = Model.UserSettings.ReportIDs[n], DDLClassValue = DDLClassValue, DDLDateValue = DDLDateValue });
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            if (Model.UserSettings.Visibility[n] == "true")
+                            {
+                                <div class="sortbox col-md-4 gutter4 DashGraph" id="@Model.UserSettings.ReportNames[n].Replace(" ","_")" data-id="@Model.UserSettings.ReportIDs[n]-@Model.UserSettings.Visibility[n]" data-type="@Model.UserSettings.DisplayType[n]">
+                                    @{
+                                Html.RenderAction("GetKPIResults", "Inbox", new { ReportID = Model.UserSettings.ReportIDs[n], DDLClassValue = DDLClassValue, DDLDateValue = DDLDateValue });
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="sortbox col-md-4 gutter4 DashGraph" id="@Model.UserSettings.ReportNames[n].Replace(" ","_")" data-id="@Model.UserSettings.ReportIDs[n]-@Model.UserSettings.Visibility[n]" data-type="@Model.UserSettings.DisplayType[n]" style="display:none">
+                                    @{
+                                Html.RenderAction("GetKPIResults", "Inbox", new { ReportID = Model.UserSettings.ReportIDs[n], DDLClassValue = DDLClassValue, DDLDateValue = DDLDateValue });
+                                    }
+                                </div>
+                            }
+                        }
+                    }
+                }
+            </div>
+        }
+        else
+        {
+            <div class="connectedSortable">
+
+                @if (Model.UserSettings.Col0 == null && Model.KPICircle.Count() > 0)
+                {
+                    <div class="sortbox">
+                        <div class="col-md-12 gutter4 DashGraph" id="Row" data-id="Row-true" data-type="KPICircle">
+                            @{
+                    Html.RenderAction("GetKPICircleResult", "Inbox", new { UserID = @Model.UserID, ClassValue = DDLClassValue, DateValue = DDLDateValue });
+                            }
+                        </div>
+                    </div>
+                }
+                @for (int m = 0; m < Model.KPIPieChart.Count(); m++)
+                {
+                    if (Model.KPIPieChart[m].Type == EnumDisplayTypes.ResultList.ToString())
+                    {
+                        <div class="sortbox">
+                            <div class="col-md-12 gutter4 DashGraph" id="@Model.KPIPieChart[m].ReportName.Replace(" ","_")" data-id="@Model.KPIPieChart[m].ReportID-true" data-type="@Model.KPIPieChart[m].Type">
+                                @{
+                        Html.RenderAction("GetDefaultKPIResults", "Inbox", new { ReportID = @Model.KPIPieChart[m].ReportID, Type = @Model.KPIPieChart[m].Type, UserID = @Model.UserID, ClassValue = DDLClassValue, DateValue = DDLDateValue });
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="sortbox col-md-4 gutter4 DashGraph" id="@Model.KPIPieChart[m].ReportName.Replace(" ", "_")" data-id="@Model.KPIPieChart[m].ReportID-true" data-type="@Model.KPIPieChart[m].Type">
+                            @if (Model.KPIPieChart[m].Type == EnumDisplayTypes.PieChart.ToString())
+                            {
+                                @Html.Partial("_KPIPieChart", new GraphData { ReportID = Model.KPIPieChart[m].ReportID, Type = "Dashboard", QueryName = Model.KPIPieChart[m].ReportName.ToString(), UserID = Model.UserID, ClassDDL = Model.ClassDDL, DateDDL = Model.DateDDL })
+                            }
+                            else if (Model.KPIPieChart[m].Type == EnumDisplayTypes.BarChart.ToString())
+                            {
+                                @Html.Partial("_KPIBarChart", new LineGraph { ReportID = Model.KPIPieChart[m].ReportID, Type = "Dashboard", QueryName = Model.KPIPieChart[m].ReportName.ToString(), UserID = Model.UserID, ClassDDL = Model.ClassDDL, DateDDL = Model.DateDDL })
+                            }
+                            else if (Model.KPIPieChart[m].Type == EnumDisplayTypes.LineChart.ToString())
+                            {
+                                @Html.Partial("_LineGraph", new LineGraph { ReportID = Model.KPIPieChart[m].ReportID, Type = "Dashboard", QueryName = Model.KPIPieChart[m].ReportName.ToString(), UserID = Model.UserID, ClassDDL = Model.ClassDDL, DateDDL = Model.DateDDL })
+                            }
+                            @*@{
+                                Html.RenderAction("GetDefaultKPIResults", "Inbox", new { ReportID = @Model.KPIPieChart[m].ReportID, Type = @Model.KPIPieChart[m].Type, UserID = @Model.UserID, ClassValue = DDLClassValue, DateValue = DDLDateValue });
+                                    }*@
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>
+</div>
+<script>
+    $(function () {
+
+        "use strict";
+
+        //Make the dashboard widgets sortable Using jquery UI
+        $(".connectedSortable").sortable({
+            placeholder: "sort-highlight",
+            connectWith: ".connectedSortable",
+            handle: ".box-header, .nav-tabs",
+            forcePlaceholderSize: true,
+            zIndex: 999999,
+            update: function (event, ui) {
+                var id;
+                var Rows = $('.connectedSortable').find('.DashGraph');
+                var ReportIDs = new Array();
+                for (i = 0; i < Rows.length; i++) {
+                    var Row = Rows[i].attributes;
+                    for (j = 0; j < Row.length; j++) {
+                        if (Row[j].name == "data-id") {
+                            id = Row[j].nodeValue;
+                        }
+                    }
+                    var type = id.split('-')[0];
+                    if (type == "Row") {
+                        var ids = "";
+                        var circles = $('.KPICircles');
+                        for (var k = 0; k < circles.length; k++) {
+                            var circle = circles[k].attributes;
+                            for (var l = 0; l < circle.length; l++) {
+                                if (circle[l].name == "data-id") {
+                                    ids = ids + circle[l].nodeValue + ",";
+                                }
+                            }
+                        }
+                        ids = ids.substring(0, ids.length - 1);
+                        id = "{" + ids + "}"
+                    }
+                    ReportIDs.push(id);
+                    var RowData = {
+                        ColOrder: ReportIDs, UserID: parseInt(@Model.UserID)
+                    }
+                }
+                $.ajax({
+                    url: '@Url.Action("SaveColSettings", "Inbox")',
+                    type: 'POST',
+                    data: JSON.stringify(RowData),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: 'JSON',
+                    cache: false,
+                    success: function (data) {
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+        });
+        $(".connectedSortable .box-header, .connectedSortable .nav-tabs-custom").css("cursor", "move");
+
+    });
+</script>

@@ -1,0 +1,400 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using xiEnumSystem
+@{
+    XIDAttribute oADef = new XIDAttribute();
+    if (Model.oContent.ContainsKey(XIConstant.XIBOAttributeComponent))
+    {
+        oADef = (XIDAttribute)Model.oContent[XIConstant.XIBOAttributeComponent];
+        if (oADef == null)
+        {
+            oADef = new XIDAttribute();
+        }
+    }
+}
+@{
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+}
+<style>
+    #BOAttributesForm a {
+        display: none;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        $('input.wherebox[type=checkbox]').on('change', function () {
+            var id = this.id;
+            var type = $(this).attr('fieldtype');
+            var name = $(this).attr('field');
+            var attribute = type + "-" + name;
+            if ($(this).prop('checked') == true) {
+                var Fieldid = $('input.FID[id="' + id + '"]').val();
+                var pid = $('a[name="' + attribute + '"]').attr('data-fieldid');
+                if (pid) { }
+                else {
+                    $(this).prop('checked', true);
+                    $(this).attr('checked', true);
+                    var values = "", checkboxes = "", fieldname, labels = "", rowid;
+                    $(this).closest('tr').find('td').each(function () {
+                        rowid = this.id;
+                        $(this).find('label').each(function () {
+                            labels = labels + $(this).text() + ',';
+                        });
+                        $(this).find('input.FieldName').each(function () {
+                            fieldname = this.value;
+                        });
+                        $(this).find("input:checkbox").each(function () {
+                            if ($(this).is(':checked')) {
+                                checkboxes = checkboxes + 'True' + ',';
+                            }
+                            else {
+                                checkboxes = checkboxes + 'False' + ',';
+                            }
+                        });
+                        $(this).removeClass('wherebox');
+                    });
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("CreateAttributeForField", "BusinessObjects")',
+                        data: { Labels: labels, FieldName: fieldname, Checkboxes: checkboxes },
+                        cache: false,
+                        dataType: 'json',
+                        success: function (data) {
+                            $('#IsWhere-' + name + '-' + id).attr('data-fieldid', data);
+                            $('#IsExpression-' + name + '-' + id).attr('data-fieldid', data);
+                            $('p.FieldIDs[id="' + id + '"]').empty();
+                            $('p.FieldIDs[id="' + id + '"]').append(data);
+                            $('input.FID[id="' + id + '"]').val(data);
+                        }
+                    });
+                }
+            }
+
+            if ($(this).prop('checked') == true) {
+                if (type == "IsWhere") {
+                    $('#IsWhere-' + name + '-' + id).addClass('whereactive');
+                }
+                else {
+                    $('#IsExpression-' + name + '-' + id).addClass('whereactive');
+                }
+            }
+            else {
+                if (type == "IsWhere") {
+                    $('#IsWhere-' + name + '-' + id).removeClass('whereactive');
+                }
+                else {
+                    $('#IsExpression-' + name + '-' + id).removeClass('whereactive');
+                }
+            }
+
+        });
+        $('#BOAttributesForm a').click(function (e) {
+            e.preventDefault();
+            var id = this.id;
+            id = id.split('-')[2];
+            var type = $(this).attr('data-type');
+            var fieldid = $(this).next('p').text();
+            window.open("@Url.Action("WherePopup", "BusinessObjects")?FieldID=" + fieldid + "&Type=" + type, '_blank', "scrollbars=1,resizable=1,width=1200, height=500,left=200,top=100");
+        })
+
+        $('.ScrBtn1').click(function () {
+            var ID = $(this).attr('id');
+            var Type = parseInt($(this).attr('data-scrtype'));
+            window.open("@Url.Action("GetScriptWindow", "BusinessObjects")?ID=" + ID + "&Type=" + Type, '_blank', "scrollbars=1,resizable=1,width=1200, height=500,left=200,top=100");
+
+        });
+        $('.ScrBtn2').click(function () {
+            var ID = $(this).attr('id');
+            var Type = parseInt($(this).attr('data-scrtype'));
+            window.open("@Url.Action("GetScriptWindow", "BusinessObjects")?ID=" + ID + "&Type=" + Type, '_blank', "scrollbars=1,resizable=1,width=1200, height=500,left=200,top=100");
+
+        });
+    });
+</script>
+
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    <input type="button" class="btn btn-theme" value="Add Field" id="AddField" />
+                    <button type="button" class="btn btn-theme" id="RefreshAttrBOBtn">Refresh</button>
+                    @using (Ajax.BeginForm("IDESaveBOAttributes", "BusinessObjects", FormMethod.Post, new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "BOAttributesFo", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        <input type="hidden" name="ID" id="ID" value="@oADef.ID" />
+
+                        <div id="clear-text BOAttributesForm">
+                            @if (oADef.ID != 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn">Attribute ID:<span class="danger"></span></label>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">@oADef.ID<span class="danger"></span></label>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (oADef.BOID == 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">BO Name<span class="danger"></span></label>
+                                        @Html.DropDownList("BOID", new SelectList(oADef.ddlAllBOs, "Value", "text", oADef.BOID), new { @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("BOID", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">BO Name<span class="danger"></span></label>
+                                        @Html.DropDownList("BOID", new SelectList(oADef.ddlAllBOs, "Value", "text", oADef.BOID), new { @class = "form-control", @disabled = "disabled" })
+                                        <input type="hidden" name="BOID" id="BOID" value="@oADef.BOID" />
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("BOID", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                            }
+
+                            @if (oADef.ID == 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Field<span class="danger">*</span></label>
+                                        @Html.TextBox("Name", oADef.Name, new { @placeholder = "Enter Attribute Name", @class = "form-control" })
+                                    </div>
+                                    <br />
+                                    <div class="col-md-5 taberrormsg">
+                                        @Html.ValidationMessage("Name", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Field<span class="danger">*</span></label>
+                                        @Html.Label("Name", oADef.Name, new { @placeholder = "Enter Attribute Name", @class = "form-control" })
+                                        <input type="hidden" name="Name" id="Name" value="@oADef.Name" />
+                                    </div>
+                                    <br />
+                                    <div class="col-md-5 taberrormsg">
+                                        <button type="button" name="BOLabel" value="BOLabel" class="BoClass btn btn-theme reverse" id="@oADef.Name+@oADef.BOID">Add More</button>
+                                        @Html.ValidationMessage("Name", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                            }
+
+                            @if (oADef.ID == 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Type<span class="danger"></span></label>
+                                        @Html.DropDownList("TypeID", new SelectList(oADef.ddlBODataTypes, "Value", "text", oADef.TypeID), new { @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("TypeID", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-6">
+                                        <label for="inputEmail" class="gn">Type<span class="danger"></span></label>
+                                        @Html.DropDownList("TypeID", new SelectList(oADef.ddlBODataTypes, "Value", "text", oADef.TypeID), new { @class = "form-control", @disabled = "disabled" })
+                                        <input type="hidden" name="TypeID" id="TypeID" value="@oADef.TypeID" />
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessage("TypeID", null, new { @class = "red" })
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn col-md-6 no-padding">Label<span class="danger"></span></label>
+                                    @Html.TextBox("LabelName", oADef.LabelName, new { @placeholder = "Enter Label Name", @class = "input col-md-6 no-padding" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("LabelName", null, new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn col-md-6 no-padding">Format<span class="danger"></span></label>
+                                    @Html.TextBox("Format", oADef.Format, new { @placeholder = "Enter Format", @class = "input col-md-6 no-padding" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("Format", null, new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn col-md-6 no-padding">FK Table Name<span class="danger"></span></label>
+                                    @Html.TextBox("FKTableName", oADef.FKTableName, new { @placeholder = "Enter Foreign Key Table", @class = "input col-md-6 no-padding" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("FKTableName", null, new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn col-md-6 no-padding">Description<span class="danger"></span></label>
+                                    @Html.TextBox("Description", oADef.Description, new { @placeholder = "Enter Description", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessage("Description", null, new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-8">
+                                    <label for="inputEmail" class="gn col-md-6 no-padding">Is Visible</label>
+                                    @Html.CheckBox("IsVisible", oADef.IsVisible, new { @id = "IsVisible" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-8">
+                                    <label for="inputEmail" class="gn col-md-6 no-padding">Is Where</label>
+                                    @Html.CheckBox("IsWhere", oADef.IsWhere, new { @id = "IsWhere" })
+                                </div>
+                            </div>
+
+                            @if (((BODatatypes)oADef.TypeID).ToString() == "INT" || ((BODatatypes)oADef.TypeID).ToString() == "DECIMAL")
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn col-md-6 no-padding">Is Total</label>
+                                        @Html.CheckBox("IsTotal", oADef.IsTotal, new { @id = "IsTotal" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-8">
+                                        <label for="inputEmail" class="gn col-md-6 no-padding">Is Total</label>
+                                        @Html.CheckBox("IsTotal", oADef.IsTotal, new { @id = "IsTotal", @disabled = "disabled" })
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <div class="col-md-8">
+                                    <label for="inputEmail" class="gn col-md-6 no-padding">Is GroupBy</label>
+                                    @Html.CheckBox("IsGroupBy", oADef.IsGroupBy, new { @id = "IsGroupBy" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-8">
+                                    <label for="inputEmail" class="gn col-md-6 no-padding">Is OrderBy</label>
+                                    @Html.CheckBox("IsOrderBy", oADef.IsOrderBy, new { @id = "IsOrderBy" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-8">
+                                    <label for="inputEmail" class="gn col-md-6 no-padding">Is Expression</label>
+                                    @Html.CheckBox("IsExpression", oADef.IsExpression, new { @id = "IsExpression" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-8">
+                                    <label for="inputEmail" class="gn col-md-6 no-padding">Is Mail</label>
+                                    @Html.CheckBox("IsMail", oADef.IsMail, new { @id = "IsMail" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="submit" class="btn btn-theme" value="Save" />
+                                    <button type="button" class="btn btn-theme decline CancelPopup">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="dialog-box BOAttributeSave" title="Confirm Message" style="background-color:white;"></div>
+<script>
+
+    function OnComplete(e) {
+        $.unblockUI();
+        if (e.Status == true) {
+            CustomMessage("Success! Data Saved Successfully", true);
+        } else {
+            CustomMessage("<strong>Failure!</strong> Error occured", false);
+        }
+    }
+
+    $('.CancelBtn').click(function () {
+        window.close();
+    });
+
+    $(document).ready(function () {
+        $(".BoClass").on('click', function () {
+            debugger
+            var BOID = 0;
+            var sName = "";
+            var ID = $(this).attr('id');
+            var SplitID = ID.split("+");
+            if (SplitID[1] != '' && SplitID[0] != 0) {
+                BOID = SplitID[1];
+                sName = SplitID[0];
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetBOAtrributesForm", "BusinessObjects")',
+                data: { FieldName: sName, BOID: BOID, IsLayout: false },
+                cache: false,
+                dataType: 'html',
+                success: function (data) {
+                    $("#AttrForm").html(data);
+                    $("#AttrForm").dialog({
+                        width: 800,
+                        height: 500,
+                        title: "BO Attribute Form",
+                        modal: true,
+                        buttons: [
+                           {
+                               text: "Close",
+                               "class": 'btn btn-theme',
+                               click: function () {
+                                   $("#AttrForm").dialog("close");
+                               }
+                           }
+                        ]
+                    });
+                }
+            });
+
+        });
+    });
+
+    $('#AddField').click(function () {
+        var BOID = $('#BOID').val();
+        window.open("@Url.Action("CreateFieldsForm", "BusinessObjects")?BOID=" + BOID, '_blank', "scrollbars=1,resizable=1,width=1200, height=500,left=200,top=100");
+    });
+
+</script>
+<div id="AttrForm"></div>

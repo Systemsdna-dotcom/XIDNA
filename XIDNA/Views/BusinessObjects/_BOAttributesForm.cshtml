@@ -1,0 +1,427 @@
+﻿@*XIDynaware Code*@
+@using XIDNA.ViewModels
+@model List<XIDNA.Models.BOFields>
+@{
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+}
+@*<script src="~/Scripts/jquery.validate.unobtrusive.js"></script>*@
+<script src="~/Scripts/jquery.blockUI.js"></script>
+<style>
+    .attributestable th {
+        padding: 0px 12px;
+    }
+
+    .attributestable td {
+        padding: 0px 12px;
+    }
+
+    .condata {
+        margin-top: 0px;
+    }
+
+    .heading {
+        font-size: 13px;
+        font-weight: bolder;
+    }
+
+    #Buttons {
+        margin-top: 10px;
+    }
+
+    .attributestable {
+        width: 75%;
+    }
+
+    #BOAttributesForm a {
+        display: none;
+    }
+
+    .AliasName {
+        width: 265px;
+    }
+
+    .HTMLScripts button {
+        border: none;
+        background: none;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        //$('input.where[type=checkbox]').on('change', function () {
+        //    var id = this.id;
+        //    if ($(this).prop('checked') == true) {
+        //        $('a[href="' + id + '"]').addClass('whereactive');
+        //    }
+        //    else {
+        //        $('a[href="' + id + '"]').removeClass('whereactive');
+        //    }
+        //});
+        $('input.wherebox[type=checkbox]').on('change', function () {
+            var id = this.id;
+            var type = $(this).attr('fieldtype');
+            var name = $(this).attr('field');
+            var attribute = type + "-" + name;
+            if ($(this).prop('checked') == true) {
+                var Fieldid = $('input.FID[id="' + id + '"]').val();
+                var pid = $('a[name="' + attribute + '"]').attr('data-fieldid');
+                if (pid) { }
+                else {
+                    $(this).prop('checked', true);
+                    $(this).attr('checked', true);
+                    var values = "", checkboxes = "", fieldname, labels = "", rowid;
+                    $(this).closest('tr').find('td').each(function () {
+                        rowid = this.id;
+                        $(this).find('label').each(function () {
+                            labels = labels + $(this).text() + ',';
+                        });
+                        $(this).find('input.FieldName').each(function () {
+                            fieldname = this.value;
+                        });
+                        $(this).find("input:checkbox").each(function () {
+                            if ($(this).is(':checked')) {
+                                checkboxes = checkboxes + 'True' + ',';
+                            }
+                            else {
+                                checkboxes = checkboxes + 'False' + ',';
+                            }
+                        });
+                        $(this).removeClass('wherebox');
+                    });
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("CreateAttributeForField", "BusinessObjects")',
+                        data: { Labels: labels, FieldName: fieldname, Checkboxes: checkboxes },
+                        cache: false,
+                        dataType: 'json',
+                        success: function (data) {
+                            $('#IsWhere-' + name + '-' + id).attr('data-fieldid', data);
+                            $('#IsExpression-' + name + '-' + id).attr('data-fieldid', data);
+                            $('p.FieldIDs[id="' + id + '"]').empty();
+                            $('p.FieldIDs[id="' + id + '"]').append(data);
+                            $('input.FID[id="' + id + '"]').val(data);
+                        }
+                    });
+                }
+            }
+
+            if ($(this).prop('checked') == true) {
+                if (type == "IsWhere") {
+                    $('#IsWhere-' + name + '-' + id).addClass('whereactive');
+                }
+                else {
+                    $('#IsExpression-' + name + '-' + id).addClass('whereactive');
+                }
+            }
+            else {
+                if (type == "IsWhere") {
+                    $('#IsWhere-' + name + '-' + id).removeClass('whereactive');
+                }
+                else {
+                    $('#IsExpression-' + name + '-' + id).removeClass('whereactive');
+                }
+            }
+
+        });
+        $('#BOAttributesForm a').click(function (e) {
+            e.preventDefault();
+            var id = this.id;
+            id = id.split('-')[2];
+            var type = $(this).attr('data-type');
+            var fieldid = $(this).next('p').text();
+            window.open("@Url.Action("WherePopup", "BusinessObjects")?FieldID=" + fieldid + "&Type=" + type, '_blank', "scrollbars=1,resizable=1,width=1200, height=500,left=200,top=100");
+        })
+
+        $('.ScrBtn1').click(function () {
+            var ID = $(this).attr('id');
+            var Type = parseInt($(this).attr('data-scrtype'));
+            window.open("@Url.Action("GetScriptWindow", "BusinessObjects")?ID=" + ID + "&Type=" + Type, '_blank', "scrollbars=1,resizable=1,width=1200, height=500,left=200,top=100");
+
+        });
+        $('.ScrBtn2').click(function () {
+            var ID = $(this).attr('id');
+            var Type = parseInt($(this).attr('data-scrtype'));
+            window.open("@Url.Action("GetScriptWindow", "BusinessObjects")?ID=" + ID + "&Type=" + Type, '_blank', "scrollbars=1,resizable=1,width=1200, height=500,left=200,top=100");
+
+        });
+    });
+</script>
+<div class="table-clean">
+    <div id="BOAttributesForm">
+        <p>Assign Attributes</p>
+        <input type="button" class="btn btn-theme" value="Add Field" id="AddField" />
+        <button type="button" class="btn btn-theme" id="RefreshAttrBOBtn">Refresh</button>
+        @using (Ajax.BeginForm("SaveBOAttributes", "BusinessObjects", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "AttributeForm", OnBegin = "OnBegin", OnSuccess = "OnComplete" }))
+        {
+            <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="assignfield">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="line-height: 46px; border-left: #1560bd !important;">Field</th>
+                        <th rowspan="2" style="line-height: 46px">Type</th>
+                        <th rowspan="2" style="line-height: 46px">Label</th>
+                        @*<th rowspan="2" style="line-height: 46px">Description</th>*@
+                        <th rowspan="2" style="line-height: 46px">Format</th>
+                        <th rowspan="2" style="line-height: 46px">FK Table Name</th>
+                        @*<th rowspan="2" style="line-height: 46px">Script</th>*@
+                        <th colspan="7" style="text-align:center; border-right: #1560bd !important;">IS</th>
+                    </tr>
+                    <tr>
+                        <th style="text-align:center">Visible</th>
+                        <th style="text-align:center">Where</th>
+                        <th style="text-align:center">Total</th>
+                        <th style="text-align:center">GroupBy</th>
+                        <th style="text-align:center">OrderBy</th>
+                        <th style="text-align:center">Expression</th>
+                        <th style="text-align:center; border-right: #1560bd !important;">Mail</th>
+                        @*<th style="text-align:center">Default</th>*@
+                    </tr>
+                </thead>
+                <tbody>
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary(true)
+                    @{int j = 0;}
+                    @foreach (var attributes in Model)
+                    {
+                        if (attributes.ID != 0)
+                        {
+                        @Html.HiddenFor(m => m[j].Name)
+                        @Html.HiddenFor(m => m[j].DataType, new { @id = j, @class = "DataType", @Value = ((BODatatypes)attributes.TypeID).ToString() })
+                        @Html.HiddenFor(m => m[j].BOID, new { @id = "BOID" })
+                        @Html.HiddenFor(m => m[j].ID)
+
+                            //@Html.HiddenFor(m => m[j].MaxLength, new { @Value=attributes.FieldMaxLength})
+                        <tr>
+                            <td>
+                                @Html.Label(attributes.Name, new { @Name = attributes.Name, @Class = "BoClass", @id = "AttributeName_" + attributes.BOID, })
+                            </td>
+                            <td>
+                                @Html.Label(((BODatatypes)attributes.TypeID).ToString())
+                            </td>
+                            <td class="AliasName">
+                                @Html.TextBoxFor(m => m[j].LabelName, new { @placeholder = "Enter Label Name", @Name = "[" + j + "].LabelName", @class = "input" })
+                                @Html.ValidationMessageFor(m => m[j].LabelName, null, new { @class = "red" })
+                            </td>
+                            @*<td class="Description">
+                                    @Html.TextBoxFor(m => m[j].Description, new { @placeholder = "Enter Description", @Name = "[" + j + "].Description", @class = "input" })
+                                    @Html.ValidationMessageFor(m => m[j].Description, null, new { @class = "red" })
+                                </td>*@
+                            <td class="Formatting">
+                                @Html.TextBoxFor(m => m[j].Format, new { @placeholder = "Enter Format", @Name = "[" + j + "].Format", @class = "input" })
+                            </td>
+                            <td class="Formatting">
+                                @Html.TextBoxFor(m => m[j].FKTableName, new { @placeholder = "Foregin key table name", @Name = "[" + j + "].FKTableName", @class = "input" })
+                            </td>
+                            @*<td class="HTMLScripts">
+                                @Html.TextBoxFor(m => m[j].Script, new { @placeholder = "Enter Script code", @Name = "[" + j + "].Script", @class = "input" })
+                                                                <button type="button" class="ScrBtn1 btn btn-theme btn2 btn-xs" id="@attributes.ID" data-scrtype="1">Script</button>@*<button type="button" data-scrtype="2" class="ScrBtn2" id="@attributes.ID">2</button>
+                                                            </td>*@
+                            <td style="display:none;">@Html.HiddenFor(m => m[j].MaxLength, new { @Value = attributes.FieldMaxLength })</td>
+                            <td style="text-align:center">
+                                @Html.CheckBoxFor(m => m[j].IsVisible, new { @Name = "[" + j + "].IsVisible" })
+                            </td>
+                            @if (attributes.IsWhere == true)
+                                {
+                                <td style="text-align:center">
+                                    @Html.CheckBoxFor(m => m[j].IsWhere, new { @Name = "[" + j + "].IsWhere", @class = "wherebox", @id = j, @checked = "checked", @field = attributes.Name, @fieldtype = "IsWhere", })
+                                    <a href=@j class="whereactive" data-type="wherecheckbox" data-fieldid="@attributes.ID" id="IsWhere-@attributes.Name-@j" name="IsWhere-@attributes.Name"><i class="fa fa-search" aria-hidden="true"></i></a>
+                                    <p style="display:none;" id=@j class="FieldID">@attributes.ID</p>
+                                </td>
+                                }
+                                else
+                                {
+                                <td style="text-align:center">
+                                    @Html.CheckBoxFor(m => m[j].IsWhere, new { @Name = "[" + j + "].IsWhere", @class = "wherebox", @id = j, @field = attributes.Name, @fieldtype = "IsWhere", })
+                                    <a href=@j id="IsWhere-@attributes.Name-@j" data-type="wherecheckbox" class="WhereCheckBox-@j" name="IsWhere-@attributes.Name" data-fieldid="@attributes.ID"><i class="fa fa-search" aria-hidden="true"></i></a>
+                                    <p style="display:none;" id=@j class="FieldID">@attributes.ID</p>
+                                </td>
+                                }
+
+                            @if (((BODatatypes)attributes.TypeID).ToString() == "INT" || ((BODatatypes)attributes.TypeID).ToString() == "DECIMAL")
+                                {
+                                <td style="text-align:center">
+                                    @Html.CheckBoxFor(m => m[j].IsTotal, new { @Name = "[" + j + "].IsTotal" })
+                                </td>
+                                }
+                                else
+                                {
+                                <td style="text-align:center">
+                                    @Html.CheckBoxFor(m => m[j].IsTotal, new { @Name = "[" + j + "].IsTotal", @disabled = "disabled" })
+                                </td>
+                                }
+
+                            <td style="text-align:center">
+                                @Html.CheckBoxFor(m => m[j].IsGroupBy, new { @Name = "[" + j + "].IsGroupBy" })
+                            </td>
+                            <td style="text-align:center">
+                                @Html.CheckBoxFor(m => m[j].IsOrderBy, new { @Name = "[" + j + "].IsOrderBy" })
+                            </td>
+                            @if (attributes.IsExpression == true)
+                                {
+                                <td style="text-align:center">
+                                    @Html.CheckBoxFor(m => m[j].IsExpression, new { @Name = "[" + j + "].IsExpression", @class = "wherebox", @id = j, @field = attributes.Name, @fieldtype = "IsExpression", @checked = "checked" })
+                                    <a href=@j class="whereactive" data-type="exprcheckbox" id="IsExpression-@attributes.Name-@j" data-fieldid="@attributes.ID" name="IsExpression-@attributes.Name"><i class="fa fa-search" aria-hidden="true"></i></a>
+                                    <p style="display:none;" id=@j class="FieldID">@attributes.ID</p>
+                                </td>
+                                }
+                                else
+                                {
+                                <td style="text-align:center">
+                                    @Html.CheckBoxFor(m => m[j].IsExpression, new { @Name = "[" + j + "].IsExpression", @class = "wherebox", @field = attributes.Name, @fieldtype = "IsExpression", @id = j })
+                                    <a href=@j class="ExpressionCheckBox-@j" data-type="exprcheckbox" id="IsExpression-@attributes.Name-@j" name="IsExpression-@attributes.Name" data-fieldid="@attributes.ID"><i class="fa fa-search" aria-hidden="true"></i></a>
+                                    <p style="display:none;" id=@j class="FieldID">@attributes.ID</p>
+                                </td>
+                                }
+                            <td style="text-align:center">
+                                @Html.CheckBoxFor(m => m[j].IsMail, new { @Name = "[" + j + "].IsMail" })
+                            </td>
+                            @*Poovanna- 2/12/2017*@
+                            @*<td style="text-align:center">
+                                       @Html.CheckBoxFor(m => m[j].IsDefault, new { @Name = "[" + j + "].IsDefault" })
+                                </td>*@
+                            @*<td class="Formatting">
+                                    @Html.TextBoxFor(m => m[j].DefaultValue, new { @placeholder = "Default table name", @Name = "[" + j + "].DefaultTableName", @class = "input" })
+                                </td>*@
+                        </tr>
+                            { j++; }
+                        }
+                        else
+                        {
+                        @Html.HiddenFor(m => m[j].Name)
+                        @Html.HiddenFor(m => m[j].BOID, new { @id = "BOID" })
+                        @Html.HiddenFor(m => m[j].DataType, new { @id = "FieldDataType" })
+                        @Html.HiddenFor(m => m[j].ID, new { @id = j, @class = "FID" })
+                        <tr>
+                            <td style="display:none;">
+                                @Html.Label("" + attributes.BOID + "")
+                            </td>
+                            <td>
+                                @Html.Label(attributes.Name, new { @Name = attributes.Name, @id = "AttributeName_" + attributes.BOID, @Class = "BoClass" })
+                            </td>
+                            <td>
+                                @Html.Label(attributes.DataType.ToUpper())
+                            </td>
+                            <td style="display:none;">@Html.HiddenFor(m => m[j].MaxLength, new { @Value = attributes.FieldMaxLength })</td>
+                            <td class="AliasName">
+                                @Html.TextBoxFor(m => m[j].LabelName, new { @class = "FieldName input", @placeholder = "Enter Label Name", @Name = "[" + j + "].LabelName" })
+                                @Html.ValidationMessageFor(m => m[j].LabelName, null, new { @class = "red" })
+                            </td>
+                            @*<td class="Description">
+                                    @Html.TextBoxFor(m => m[j].Description, new { @class = "Description input", @placeholder = "Enter Description", @Name = "[" + j + "].Description" })
+                                    @Html.ValidationMessageFor(m => m[j].Description, null, new { @class = "red" })
+                                </td>*@
+                            <td class="Formatting">
+                                @Html.TextBoxFor(m => m[j].Format, new { @class = "Format input", @placeholder = "Enter Format", @Name = "[" + j + "].Format" })
+                            </td>
+                            <td class="Formatting">
+                                @Html.TextBoxFor(m => m[j].FKTableName, new { @class = "Format input", @placeholder = "Foregin key table name", @Name = "[" + j + "].FKTableName" })
+                            </td>
+                            @*<td class="Formatting">
+                                    @Html.TextBoxFor(m => m[j].Script, new { @class = "Format input", @placeholder = "Enter Script code", @Name = "[" + j + "].Script" })
+                                </td>*@
+                            <td style="text-align:center">
+                                @Html.CheckBoxFor(m => m[j].IsVisible, new { @Name = "[" + j + "].IsVisible" })
+                            </td>
+                            <td style="text-align:center">
+                                @Html.CheckBoxFor(m => m[j].IsWhere, new { @Name = "[" + j + "].IsWhere", @class = "wherebox", @field = attributes.Name, @fieldtype = "IsWhere", @id = j })
+                                <a href=@j class="WhereCheckBox-@j" data-type="wherecheckbox" id="IsWhere-@attributes.Name-@j" name="IsWhere-@attributes.Name" data-fieldid=""><i class=" fa fa-search" aria-hidden="true"></i></a>
+                                <p style="display:none;" id=@j class="FieldIDs"></p>
+                            </td>
+
+                            @if (((BODatatypes)attributes.TypeID).ToString() == "INT" || ((BODatatypes)attributes.TypeID).ToString() == "DECIMAL")
+                                {
+                                <td style="text-align:center">
+                                    @Html.CheckBoxFor(m => m[j].IsTotal, new { @Name = "[" + j + "].IsTotal" })
+                                </td>
+                                }
+                                else
+                                {
+                                <td style="text-align:center">
+                                    @Html.CheckBoxFor(m => m[j].IsTotal, new { @Name = "[" + j + "].IsTotal", @disabled = "disabled" })
+                                </td>
+                                }
+
+                            <td style="text-align:center">
+                                @Html.CheckBoxFor(m => m[j].IsGroupBy, new { @Name = "[" + j + "].IsGroupBy" })
+                            </td>
+                            <td style="text-align:center">
+                                @Html.CheckBoxFor(m => m[j].IsOrderBy, new { @Name = "[" + j + "].IsOrderBy" })
+                            </td>
+                            <td style="text-align:center">
+                                @Html.CheckBoxFor(m => m[j].IsExpression, new { @Name = "[" + j + "].IsExpression", @field = attributes.Name, @class = "wherebox", @fieldtype = "IsExpression", @id = j })
+                                <a href=@j class="ExpressionCheckBox-@j" data-type="exprcheckbox" id="IsExpression-@attributes.Name-@j" name="IsExpression-@attributes.Name" data-fieldid=""><i class="fa fa-search" aria-hidden="true"></i></a>
+                                <p style="display:none;" id=@j class="FieldIDs"></p>
+                            </td>
+                            <td style="text-align:center">
+                                @Html.CheckBoxFor(m => m[j].IsMail, new { @Name = "[" + j + "].IsMail" })
+                            </td>
+                            @*Poovanna- 2/12/2017*@
+                            @*<td style="text-align:center">
+                                @Html.CheckBoxFor(m => m[j].IsDefault, new { @Name = "[" + j + "].IsDefault" })
+                                </td>*@
+                            @*<td class="Formatting">
+                                    @Html.TextBoxFor(m => m[j].DefaultValue, new { @placeholder = "Default table name", @Name = "[" + j + "].DefaultTableName", @class = "input" })
+                                </td>*@
+                        </tr>
+                            { j++; }
+                        }
+                    }
+                </tbody>
+            </table>
+            <div class="form-group" id="Buttons">
+                <input type="submit" class="sv_bt btn btn-theme BO-tab" value="Save" id="save">
+                <input type="button" class="btn btn-theme decline BO-tab CancelBtn" value="Cancel">
+            </div>
+                        }
+    </div>
+</div>
+<div class="dialog-box BOAttributeSave" title="Confirm Message" style="background-color:white;"></div>
+<script>
+
+    function OnComplete(e) {
+        $.unblockUI();
+        if (e == 1) {
+            $(".BOAttributeSave").html('Attributes saved successfully');
+        } else {
+            $(".BOAttributeSave").html('Something went wrong. Please try again!!!');
+        }
+        $(".BOAttributeSave").dialog({
+            title: "BO Attributes",
+            modal: true,
+            buttons: [
+            {
+                text: "Ok",
+                click: function () {
+                    $(".BOAttributeSave").dialog("close");
+                }
+            }
+            ]
+        });
+    }
+    function OnBegin() {
+        $.blockUI({ message: '<h3><img src="@PhysicalPath/Scripts/ckfinder/plugins/gallery/colorbox/images/loading.gif" width="50px" /> Please wait while saving details...</h3>' });
+    }
+    $('.CancelBtn').click(function () {
+        window.close();
+    });
+
+    //poovanna 2/12/2017
+    $(document).ready(function () {
+        //var inputID = $(this).find("label").attr("id");
+        //$('#' + inputID).click();
+        $(".BoClass").on('click', function () {
+            var ID = $(this).attr('id')
+            var SplitID = ID.split("_");
+            var BOID = SplitID[1];
+            var sName = $(this).attr('Name');
+
+            var id = this.id;
+            var details =
+        window.open("@Url.Action("GetBOAtrributesForm", "BusinessObjects")?FieldName=" + sName + "&BOID=" + BOID, '_blank', "scrollbars=1,resizable=1,width=1200, height=500,left=200,top=100");
+        });
+    });
+
+    $('#AddField').click(function () {
+        var BOID = $('#BOID').val();
+        window.open("@Url.Action("CreateFieldsForm", "BusinessObjects")?BOID=" + BOID, '_blank', "scrollbars=1,resizable=1,width=1200, height=500,left=200,top=100");
+    });
+
+</script>

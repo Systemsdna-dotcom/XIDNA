@@ -1,0 +1,65 @@
+﻿@model IEnumerable<XIDNA.Models.cFieldInstance>
+
+@foreach (var Field in Model)
+{
+    <div class="form-group">
+        <div class="col-md-4">
+            <label for="inputEmail" class="gn">@Field.FieldOrigin.sDisplayName</label>
+            @if (Field.FieldOrigin.bIsOptionList)
+            {
+                <select class="form-control" name="@Field.FieldOrigin.sName">
+                    @if (Field.FieldOrigin.ddlFieldOptionList != null && Field.FieldOrigin.ddlFieldOptionList.Count() > 0)
+                    {
+                        foreach (var opt in Field.FieldOrigin.ddlFieldOptionList)
+                        {
+                            if (!string.IsNullOrEmpty(Field.FieldOrigin.sDefaultValue))
+                            {
+                                if (opt.sOptionValue == Field.FieldOrigin.sDefaultValue)
+                                {
+                                    <option value="@opt.sOptionValue" selected>@opt.sOptionName</option>
+                                }
+                                else
+                                {
+                                    <option value="@opt.sOptionValue">@opt.sOptionName</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="@opt.sOptionValue">@opt.sOptionName</option>
+                            }
+                        }
+                    }
+
+                </select>
+            }
+            else if (Field.FieldOrigin.DataTypes.sName.ToLower() == "string")
+            {
+                if (Field.FieldOrigin.iValidationType == 10)
+                {
+                    <input type="text" name="@Field.FieldOrigin.sName" placeholder="@Field.FieldOrigin.sPlaceHolder" class="form-control" value="@Field.sValue" onkeyup="fncValidateField(this, '@Field.FieldOrigin.ID', '@Field.FKiFieldDefinitionID')" />
+                }
+                else if (Field.FieldOrigin.iValidationType == 20)
+                {
+                    <input type="text" name="@Field.FieldOrigin.sName" placeholder="@Field.FieldOrigin.sPlaceHolder" class="form-control" value="@Field.sValue" onchange="fncValidateField(this, '@Field.FieldOrigin.ID', '@Field.FKiFieldDefinitionID')" />
+                }
+                else
+                {
+                    <input type="text" name="@Field.FieldOrigin.sName" placeholder="@Field.FieldOrigin.sPlaceHolder" class="form-control" value="@Field.sValue" />
+                }
+            }
+            else if (Field.FieldOrigin.DataTypes.sName.ToLower() == "date")
+            {
+                <input type="text" name="@Field.FieldOrigin.sName" placeholder="@Field.FieldOrigin.sPlaceHolder" class="form-control Txtbx-DATETIME" value="@Field.sValue" />
+            }
+            else
+            {
+                <input type="text" name="@Field.FieldOrigin.sName" placeholder="@Field.FieldOrigin.sPlaceHolder" class="form-control" value="@Field.sValue" />
+            }
+        </div>
+        <div class="col-md-4">
+            <span class="HelpText" id="HelpText-@Field.FieldDefinition.FKiXIStepDefinitionID-@Field.FieldOrigin.ID" style="display:none;">@Field.FieldOrigin.sDisplayHelp</span>
+            <span data-type="ErrorMesg" class="ErrorMsg-@Field.FieldDefinition.FKiXIStepDefinitionID-@Field.FieldOrigin.ID danger"></span>
+        </div>
+    </div>
+}
+

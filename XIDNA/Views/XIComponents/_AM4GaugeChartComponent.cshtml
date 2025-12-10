@@ -1,0 +1,133 @@
+﻿
+@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Globalization;
+@{
+    XIGraphData oXIGraph = new XIGraphData();
+    Dictionary<string, string> values = new Dictionary<string, string>();
+    var Percentagevalue = "";
+    List<XIVisualisationNV> oXIVisualisations = new List<XIVisualisationNV>();
+    oXIGraph = (XIGraphData)Model.oContent[XIConstant.AM4GaugeChartComponent];
+    var sColour = new List<string>();
+    //var Fontsize = string.Empty;
+    if (Model.oContent.ContainsKey(XIConstant.AM4GaugeChartComponent))
+    {
+        values = oXIGraph.OneClickRes;
+        oXIVisualisations = oXIGraph.oXIVisualisations;
+        if (oXIGraph.sColours == null)
+        {
+            sColour = "#ffff00,#00ff00,#800000,#800080,#0000ff,#ffa500".Split(',').ToList();
+        }
+        else
+        {
+            sColour = oXIGraph.sColours;
+        }
+    }
+    //colours = "red";
+}
+<div class="col-md-12">
+    <div class="snippet-box-container">
+        <div style="text-align: right"><label>Last Updated:-<strong>@oXIGraph.sLastUpdated</strong></label></div>
+        @if (@values != null)
+        {
+            <p class="chart-title">@values.Select(s => s.Value).FirstOrDefault() </p>
+        }
+        <div class="" id="am4gaugechart-@oXIGraph.OnClickResultID"></div>
+        @*<div class="" id="am4gaugechart"></div>*@
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        var JsonData = @Html.Raw(Json.Encode(oXIGraph));
+        var Colour=@Html.Raw(Json.Encode(sColour));
+    if(JsonData!=null){
+        am4core.useTheme(am4themes_animated);
+        // create chart
+        var Name = "am4gaugechart-" + JsonData.OnClickResultID;
+        var chart = am4core.create(Name, am4charts.GaugeChart);
+        chart.innerRadius = am4core.percent(82);
+
+        /**
+         * Normal axis
+         */
+
+        var axis = chart.xAxes.push(new am4charts.ValueAxis());
+        axis.strictMinMax = true;
+        axis.renderer.inside = true;
+        axis.renderer.line.strokeOpacity = 1;
+        axis.renderer.ticks.template.strokeOpacity = 1;
+        axis.renderer.grid.template.disabled = true;
+        axis.renderer.labels.template.radius = 50;
+        //axis.min = 0;
+        //axis.max = 100;
+
+        /**
+         * Axis for ranges
+         */
+        var colorSet = new am4core.ColorSet();
+
+        var axis2 = chart.xAxes.push(new am4charts.ValueAxis());
+        axis2.min = 0;
+        axis2.max = 100;
+        axis2.strictMinMax = true;
+        axis2.renderer.labels.template.disabled = true;
+        axis2.renderer.ticks.template.disabled = true;
+        axis2.renderer.grid.template.disabled = true;
+        var val = parseInt(JsonData.GaugeChartvalue.replace("%", ""));
+
+        var range0 = axis2.axisRanges.create();
+        range0.endValue =val ;
+        range0.Value = 0;
+        range0.axisFill.fillOpacity = 1;
+        range0.axisFill.fill = Colour[0];//colorSet.getIndex(0);
+
+        var range1 = axis2.axisRanges.create();
+        range1.value = val;
+        range1.endValue = 100;
+        range1.axisFill.fillOpacity = 1;
+        range1.axisFill.fill = colorSet.getIndex(1);
+        range1.axisFill.fill = am4core.color("#ffffff");
+        /**
+         * Label
+         */
+
+        var label = chart.radarContainer.createChild(am4core.Label);
+        label.isMeasured = false;
+        label.fontSize = 45;
+            //label.x = am4core.percent(10);
+            //label.y = am4core.percent(100);
+            label.horizontalCenter = "middle";
+        label.verticalCenter = "bottom";
+        label.text = JsonData.GaugeChartvalue;
+        label.fill="#ffffff";
+
+        /**
+         * Hand
+         */
+
+        var hand = chart.hands.push(new am4charts.ClockHand());
+        hand.axis = axis2;
+        hand.innerRadius = am4core.percent(80);
+        hand.value = 80;
+        hand.startWidth = 10;
+        hand.pin.disabled = true;
+        hand.stroke="#000000";
+        hand.fill="#ffffff";
+
+
+        hand.events.on("propertychanged", function (ev) {
+            range0.endValue = ev.target.value;
+            range1.value = val;
+            axis2.invalidate();
+        });
+        $('g[fill="#000000"] g').css("display", "none");
+    }
+
+
+
+    });
+
+
+</script>

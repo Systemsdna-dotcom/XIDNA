@@ -1,0 +1,66 @@
+﻿@model IEnumerable<XICore.XIIBO>
+@using XICore
+@using XISystem
+
+@{
+    var data = Model;
+    var Headings = Model.Count() > 0 ? Model.FirstOrDefault().Attributes : new Dictionary<string, XIIAttribute>();
+}
+<div id="AgeReport">
+    <div class="col-xs-12">
+        <div class="box">
+            <div class="box-body" style="padding:0px;">
+                <div class="table-clean">
+                    @if (Model.Count() > 0)
+                    {
+                        <table class="table table-striped custom-table table-condensed table-hover tablesorter dataTable tablelook" id="DataTable">
+                            <thead>
+                                <tr>
+                                    @foreach (var Heading in Headings)
+                                    {
+                                        <th>@Heading.Key</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var Record in Model)
+                                {
+                                    <tr>
+                                        @foreach (var Cell in Record.Attributes)
+                                        {
+                                            <td>@Cell.Value.sValue</td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>No Data Available</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <input type="button" class="btn btn-theme btn-xs" value="Export" id="btnExcel" name="ExporttoExcel" />
+    </div>
+</div>
+<script type="text/javascript">
+    //$(document).ready(function () {
+    //    $("#DataTable").DataTable({
+    //        "pageLength": 20
+    //    });
+    //})
+    $('#btnExcel').click(function (e) {
+        e.preventDefault();
+        var data_type = 'data:application/vnd.ms-excel';
+        var table_div = document.getElementById('AgeReport');
+        var table_html = table_div.outerHTML.replace(/ /g, '%20');
+        var a = document.createElement('a');
+        a.href = data_type + ', ' + table_html;
+        a.download = 'Age Report.xls';
+        a.click();
+    });
+</script>

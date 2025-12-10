@@ -1,0 +1,187 @@
+﻿@*XIDynaware Code*@
+@model XIDNA.Models.BOs
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        $('#SuccessMsg').hide();
+        $('#ErrorMsg').hide();
+        $("ColumnName").append('<ul id="AddColDetails"></ul>')
+       
+        @*@{
+            string temp="";
+            for(int i=0; i<Model.ColumnDetails.Count(); i++)
+            {
+                if(i== Model.ColumnDetails.Count-1)
+                {
+                    temp+= Model.ColumnDetails[i];
+                }
+                else
+                {
+                    temp+= Model.ColumnDetails[i]+"\n ";
+                }
+            }
+        }
+        $("ColumnName").append(@temp);*@
+        @*for (var i=0;i<@Model.ColumnDetails.Count();i++)
+        {
+            var sDetails = @Model.ColumnDetails[0];
+            //var ColName = sDetails[0];
+            //var DataTye = sDetails[1];
+            //var MaxLength = sDetails[2];
+            //var sNull = sDetails[3];
+          
+            //.Split('_')
+            //if (TextAreaVal == "")
+            //{
+            //    TextAreaVal = ColName + "," + MaxLength + "," + NewValue + "\r\n";
+            //}
+            //else
+            //{
+            //    TextAreaVal = TextAreaVal + "\r\n" + ColName + "," + MaxLength + "," + NewValue + "\r\n";
+            //}
+
+        }*@
+
+    });
+
+</script>
+
+<section class="content-header hedr">
+    @if (Model.BOID == 0)
+    {
+        <h1> Add Business Object </h1>
+    }
+    else
+    {
+        <h1> Copy Business Object </h1>
+    }
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Business Objects</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    @using (Ajax.BeginForm("CreateTableFromBO", "BusinessObjects", new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "BOForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.BOID)
+                        <div id="clear-text">
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">BO Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.Name, new { @placeholder = "Enter BO Name Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Table Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.TableName, new { @placeholder = "Enter Table Name Here", @class = "form-control" })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.TableName, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Description<span class="danger">*</span></label>
+                                    @Html.TextAreaFor(model => model.Description, new { @placeholder = "Enter Description", @class = "form-control", @rows = 4 })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.Description, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            @*<div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Field Count<span class="danger">*</span></label>
+                                        @Html.TextBoxFor(model => model.FieldCount, new { @placeholder = "Enter BO field count", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.FieldCount, null, new { @class = "red" })
+                                    </div>
+                                </div>*@
+
+
+                            @*@if (Model.ColumnDetails == null)
+                                {
+
+                                }
+                                else
+                                {
+
+                                }*@
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Attribute Name<span class="danger">*</span></label>
+                                    @Html.TextAreaFor(m => m.ColName, new { @class = "form-control", @placeholder = "Enter Attribute Name", @id = "ColumnName", @rows = 4 })
+
+                                </div>
+                                <div class="col-sm-7 fielderror">
+                                    @Html.ValidationMessageFor(m => m.ColName, "", new { @class = "red" })
+                                    <div class="container">
+                                        @*<a href="#" data-toggle="tooltip" id="ColumnNamesHelp" title='The string has Column name, datatype with length, Column is NULL Ex:"sName,varchar(50),Null". ID will be by default primary key with no null. To create a foriegn key enter "Primary Key Table Name","Primary key Column name" with the column name details Ex: "FKiClassID,int,NOT NULL,OrganizationClasses,ID".'><i class="fa fa-question-circle-o" aria-hidden="true"></i></a>*@
+                                        <a href="#" data-toggle="tooltip" id="ColumnNamesHelp" title='The string has Column name, datatype with length, Column is NULL Ex:"sName,varchar(50),Null". ID will be by default primary key with no null values allowed. To create a foriegn key enter "Primary Key Table Name","Primary key Column name" with the column name details Ex: "FKiClassID,int,NOT NULL,OrganizationClasses,ID". To create "Computed Column" you need to type "CM" followed by computed column name and the column name in the table used to calculate the value and formula, synatx: ComputedColumnName,{Column1.Column2} AS Definition" example: CMAge,{DOB} AS DATEDIFF(YY,DOB,GETDATE())".'><i class="fa fa-question-circle-o" aria-hidden="true"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" id="ColumnDiv">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(Model.StatusTypes, "Value", "text"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="submit" class="btn btn-theme" value="Save" />
+                                @if (Model.BOID == 0)
+                                {
+                                    <button type="button" class="btn btn-theme reverse" id="ResetBoBtn">Reset</button>
+                                }
+                                <button type="button" class="btn btn-theme decline" id="CancelBO">Cancel</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+
+
+
+
+<script>
+    $(document).ready(function () {
+        $('#CancelBO').click(function () {
+            window.close();
+        });
+        $('#ResetBoBtn').click(function () {
+            $('#BOForm')[0].reset();
+            $('#BOForm .taberrormsg').find('span').html('');
+        });
+    })
+    function OnFormBegin() {
+        $('#BOForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+
+    function OnComplete(e) {
+        $('#BOForm').unblock();
+        $('#BOForm')[0].reset();
+        opener.location.reload();
+        CustomMessage(e.ResponseMessage, e.Status);
+    }
+</script>

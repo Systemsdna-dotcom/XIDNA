@@ -1,0 +1,121 @@
+﻿@model int
+
+<script>
+    $(document).ready(function () {
+        var table = $('#MasterMapFields').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Html.Raw(@Url.Action("GetMappedMasterFieldsList", "Fields", new { ClassID = @Model }))",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+            {},
+                            {
+                                "sName": "ID",
+                                "bVisible": false
+                            },
+                            {
+                                "sName": "ColumnName"
+                            },
+                            {
+                                "sName": "DataName",
+                            },
+                            {},
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(3)', nRow).html('<input type="button" class="btn btn-theme decline btn2 DeleteMapBtn btn-xs" id="' + aData[1] + '" value="Delete"/>');
+                return nRow;
+            }
+        });
+        $('#MasterMapFields').on('click', 'input.DeleteMapBtn', function () {
+            var id = $(this).attr('id');
+            $('.MasterFieldMapping').html('Do you want to delete this mapping?');
+            $('.MasterFieldMapping').dialog({
+                modal: true,
+                title: 'Delete Mapped Field',
+                buttons: {
+                    Yes: function () {
+                        $('.MasterFieldMapping').dialog("close");
+                        $.ajax({
+                            url: '@Url.Action("DeleteMasterMappedField", "Fields")',
+                            type: 'Post',
+                            datatype: 'json',
+                            cache: false,
+                            data: { ID: id },
+                            success: function (data) {
+                                var ClassID = $('#Classes').val();
+                                if (ClassID != 0) {
+                                    $.ajax({
+                                        url: '@Url.Action("GetLeadFields", "Fields")',
+                                        type: 'POST',
+                                        datatype: 'JSON',
+                                        cache: false,
+                                        data: { ClsID: ClassID, Type: "Create" },
+                                        success: function (data) {
+                                            $("#SelectLeadFields").show();
+                                            $("#HideButton").show();
+                                            //$("#LeadFieldsGrid").show();
+                                            $("#NonClassFields").empty();
+                                            $('#ClassFields').empty();
+                                            $('#DefaultFields').empty();
+                                            //for (i = 0; i < data.NonClassFields.length; i++) {
+                                            //    $('#NonClassFields').append("<li value='" + data.NonClassFields[i] + "' data-type='Lead'>" + data.NonClassFields[i] + "</li>")
+                                            //    }
+                                            for (i = 0; i < data.ClassFields.length; i++) {
+                                                $('#ClassFields').append("<li value='" + data.ClassFields[i] + "' data-type='Extra'><input type='radio' name='DataField' value='" + data.ClassFields[i] + "'>" + data.ClassFields[i] + "</li>")
+                                            }
+                                            for (i = 0; i < data.DefaultFields.length; i++) {
+                                                $('#DefaultFields').append("<li value='" + data.DefaultFields[i] + "' data-type='Extra'><input type='radio' name='ColumnField' value='" + data.DefaultFields[i] + "'>" + data.DefaultFields[i] + "</li>")
+                                            }
+                                            //for (i = 0; i < data.ExistingFields.length; i++) {
+                                            //    $('li').filter(function () { return $.text([this]) === data.ExistingFields[i]; }).remove();
+                                            //}
+
+                                        }
+                                    });
+                                    $.ajax({
+                                        url: '@Url.Action("GetMappedMasterFields", "Fields")',
+                                        type: 'POST',
+                                        datatype: 'html',
+                                        cache: false,
+                                        data: { ClassID: ClassID },
+                                        success: function (data) {
+                                            $('#MappedMasterFields').html(data);
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    },
+                    No: function () {
+                        $(this).dialog("close"); //closing on Ok click
+                    },
+                },
+
+            });
+        });
+    });
+
+</script>
+<div class="dialog-box MasterFieldMapping" title="Confirm Message" style="background-color:white;"></div>
+<div id="Fields">
+    <div class="table-clean">
+        <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="MasterMapFields">
+            <thead>
+                <tr role="row">
+                    <th>S.No</th>
+                    <th>ID</th>
+                    <th>Field Name</th>
+                    <th>Column Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+
+        </table>
+    </div>
+</div>
+

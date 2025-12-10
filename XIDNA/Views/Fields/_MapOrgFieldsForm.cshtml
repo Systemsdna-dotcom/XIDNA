@@ -1,0 +1,338 @@
+﻿@model XIDNA.ViewModels.VMLeadMappings
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<style>
+    /*.form-control {
+            width: auto;
+        }*/
+
+    .listbox {
+        height: 200px;
+    }
+
+    #MappedFields {
+        margin-left: 120px;
+    }
+
+    #FieldsPart input {
+        margin-right: 10px;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        $('#FieldsPart').hide();
+        $('#ValuesDDL').hide();
+    });
+</script>
+<section class="content-header hedr">
+    <h1>Edit Fields Mapping </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Fields Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+
+    <div class="content">
+        <div class="row">
+            <div class="box">
+                <div class="box-body padding10Tab">
+                    <div class="innerborder">
+                        <form class="form-horizontal">
+                            <div class="form-group">
+                                <div class="col-sm-5">
+                                    <label for="inputEmail" class="gn">BO<span class="danger">*</span></label>
+                                    @Html.DropDownListFor(m => m.BOID, new SelectList(Model.ddlBOs, "Value", "text" , Model.BOID), "--Select--", new { @class = "form-control" })
+                                </div>
+                                <div class="col-sm-7 orgerror">
+                                    @Html.ValidationMessageFor(m => m.BOID, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-5">
+                                    <label for="inputEmail" class="gn">Class<span class="danger">*</span></label>
+                                    @if (Model.ClassID != 0)
+                                    {
+                                        @Html.DropDownListFor(m => m.ClassID, new SelectList(Model.Classes, "Value", "text"), "--Select--", new { @class = "form-control", @id = "Classes", @disabled = "disabled" })
+                                    }
+                                    else
+                                    {
+                                        @Html.DropDownListFor(m => m.ClassID, new SelectList(Model.Classes, "Value", "text"), "--Select--", new { @class = "form-control", @id = "Classes" })
+                                    }
+                                </div>
+                                <div class="col-sm-7 orgerror">
+                                    @Html.ValidationMessageFor(m => m.ClassID, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-5">
+                                    <label for="inputEmail" class="gn">Mapping Type<span class="danger">*</span></label>
+                                    @Html.DropDownListFor(model => model.MappingType, new SelectList(new List<Object>{
+                                                               new { key= "" , value = "--Select--" },
+                                                               new { key= "Int" , value = "Int" },
+                                                               new { key= "String" , value = "String" },
+                                                               new { key= "Datetime" , value = "Date" },
+                                                               new { key= "Alphanumeric" , value = "Alphanumeric" }
+                                                              }, "key", "Value"), new { @class = "form-control", @id = "Category" })
+                                </div>
+                                <div class="col-sm-7 taberrormsg">
+                                    @*@Html.ValidationMessageFor(m => m.Category, null, new { @class = "red" })*@
+                                </div>
+                            </div>
+
+                            <div class="alert alert-danger" id="BootstrpError" style="display:none;"></div>
+
+                            <div id="FieldsPart">
+                                <div class="col-xs-12 no-padding">
+                                    <div class="col-md-5 no-padding">
+                                        <label for="inputEmail" class="gn">My Fields:</label>
+                                        <ul class="list1 task availableTasks form-control listbox" id="OrgFields">
+                                            @if (Model.ClassID != 0)
+                                            {
+                                                foreach (var items in Model.ExistingFields)
+                                                {
+                                                    <li><input type='radio' name='OrgField' value="@items">@items</li>
+                                                }
+                                            }
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-5 no-padding" id="MappedFields">
+                                        <label for="inputEmail" class="gn">XIDynaware Fields:</label>
+                                        <ul class="list1 task availableTasks form-control listbox" id="LeadFields">
+                                            @if (Model.ClassID != 0)
+                                            {
+                                                foreach (var items in Model.NonClassFields)
+                                                {
+                                                    <li><input type='radio' name='Lead' value="@items">@items</li>
+                                                }
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-5">
+                                        <input type="checkbox" id="IsDropDown" /> Is Dropdown
+                                    </div>
+                                </div>
+                                <div class="form-group" id="ValuesDDL">
+                                    <div class="col-sm-5">
+                                        <label for="inputEmail" class="gn">Dropdown Values</label>
+                                        <select class="form-control" id="ValueDDL">
+                                            <option value="0">--Select--</option>
+                                            @foreach (var items in Model.MasterTypes)
+                                            {
+                                                <option value="@items.Value">@items.text</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group col-xs-12" id="Buttons">
+                                    <input type="button" class="btn btn-theme" value="Save" id="save" />
+                                    <input type="button" class="btn btn-theme decline" value="Cancel" id="MappingCancel" />
+                                </div>
+                                <div id="LeadFieldsGrid">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="dialog-box FieldMapping" title="Confirm Message" style="background-color:white;"></div>
+    <div class="dialog-box DeleteMapField" title="Confirm Message" style="background-color:white;"></div>
+
+    <script>
+        //button click
+        $(document).ready(function () {
+            var subid = '@Model.ClassID';
+            if (subid == "") {
+                $("#FieldsPart").hide();
+            }
+            else {
+                $.ajax({
+                    url: '@Url.Action("GetOrgMappedFields", "Fields")',
+                    type: 'POST',
+                    datatype: 'HTML',
+                    cache: false,
+                    data: { ClassID: '@Model.ClassID' },
+                    success: function (data) {
+                        $('#LeadFieldsGrid').html(data);
+                    }
+                });
+            }
+            $('#IsDropDown').change(function () {
+                if ($("#IsDropDown").is(':checked')) {
+                    $('#ValuesDDL').show();
+                } else {
+                    $('#ValuesDDL').hide();
+                    $("#ValueDDL")[0].selectedIndex = 0;
+                }
+            });
+
+            $('#MappingCancel').click(function () {
+                window.close();
+            });
+            $('#BOID').change(function () {
+                var BOID = $(this).val();
+                if (BOID > 0) {
+                    $.ajax({
+                        url: '@Url.Action("GetBOClassesDDL", "Fields")',
+                        type: 'GET',
+                        contentType: "application/json; charset=utf-8",
+                        datatype: 'JSON',
+                        cache: false,
+                        data: { BOID: BOID },
+                        success: function (data) {
+                            $('#Classes').empty();
+                            $('#Classes').html('<option value="">--Select--</option>')
+                            for (i = 0; i < data.length; i++) {
+                                $('#Classes').append('<option value=' + data[i].Value + '>' + data[i].text + '</option>');
+                            }
+                        },
+                        error: function (data) {
+                        }
+                    })
+                }
+            });
+            $("#Classes").on("change", function () {
+                var Classid = $('#Classes :selected').val();
+                var Type = $('#Category :selected').val();
+                if (Classid.length > 0 && Type.length > 0) {
+                    GetFields(Classid, Type, "Create");
+                }
+                else {
+                    $("#FieldsPart").hide();
+                }
+            });
+            $("#Category").on("change", function () {
+                var Classid = $('#Classes :selected').val();
+                var Type = $('#Category :selected').val();
+                if (Classid.length > 0 && Type.length > 0) {
+                    GetFields(Classid, Type, "Create");
+                }
+                else {
+                    $("#FieldsPart").hide();
+                }
+            });
+
+            $("#save").click(function () {
+                var Classid = $('#Classes :selected').val();
+                var Type = $('#Category :selected').val();
+                var LeadField = $('input[name=Lead]:checked').val();
+                var OrgField = $('input[name=OrgField]:checked').val();
+                if (OrgField == undefined || LeadField == undefined) {
+                    //    $('.FieldMapping').html('Pelase Select Fields Properly!');
+                    //    $(".FieldMapping").dialog({
+                    //        modal: true,
+                    //        title: 'Field Mapping',
+                    //        buttons: {
+                    //            Ok: function () {
+                    //                $(this).dialog("close"); //closing on Ok click
+                    //            }
+                    //        },
+                    //    });
+                    //}
+                    $("#BootstrpError").show();
+                    $("#BootstrpError").html("Please Select Fields Properly! ");
+                    $(function () {
+                        setTimeout(function () {
+                            $("#BootstrpError").hide('blind', {}, 500)
+                        }, 1500);
+                    });
+                }
+                else {
+                    var id = 1;
+                    if ($("#IsDropDown").is(':checked')) {
+                        id = $("#ValueDDL").val();
+                    }
+                    if (id == 0) {
+                        //$('.FieldMapping').html('Pelase Select Fields Properly!');
+                        //$(".FieldMapping").dialog({
+                        //    modal: true,
+                        //    title: 'Field Mapping',
+                        //    buttons: {
+                        //        Ok: function () {
+                        //            $(this).dialog("close"); //closing on Ok click
+                        //        }
+                        //    },
+                        //});
+                        
+                        $("#BootstrpError").show();
+                        $("#BootstrpError").html("Please Select Fields Properly! ");
+                        $(function () {
+                            setTimeout(function () {
+                                $("#BootstrpError").hide('blind', {}, 500)
+                            }, 2000);
+                        });
+                    }
+                    else {
+                        var MasterID = 0;
+                        if ($("#IsDropDown").is(':checked')) {
+                            MasterID = $("#ValueDDL").val();
+                        }
+                        var Values = {
+                            ClassID: Classid,
+                            LeadField: LeadField,
+                            OrgField: OrgField,
+                            MasterID: MasterID
+                        }
+                        $.ajax({
+                            url: '@Url.Action("SaveOrgMappedLeadFields", "Fields")',
+                            type: 'POST',
+                            datatype: 'JSON',
+                            contentType: "application/json; charset=utf-8",
+                            cache: false,
+                            data: JSON.stringify(Values),
+                            success: function (data) {
+                                GetFields(data.Classid, data.Type, "Create");
+                                $('#ValueDDL').val('0');
+                                $('#ValuesDDL').hide();
+                                $('#IsDropDown').attr('checked', false);
+                                opener.location.reload();
+                                $('.FieldMapping').unblock();
+                                opener.location.reload();
+                                CustomMessage(data.ResponseMessage, data.Status);
+                                window.location.href = '/Fields/MapOrgFields';
+                            }
+                        });
+                    }
+                }
+            });
+        });
+        function GetFields(Classid, Type, CreationType) {
+            $.ajax({
+                url: '@Url.Action("GetOrgLeadFields", "Fields")',
+                type: 'POST',
+                datatype: 'JSON',
+                cache: false,
+                data: { ClassID: Classid, Category: Type, Type: "Create" },
+                success: function (data) {
+                    $('#LeadFields').empty();
+                    $('#OrgFields').empty();
+                    for (i = 0; i < data.NonClassFields.length; i++) {
+                        $('#LeadFields').append("<li><input type='radio' name='Lead' value='" + data.NonClassFields[i] + "'>" + data.NonClassFields[i] + "</li>")
+                    }
+                    for (i = 0; i < data.ExistingFields.length; i++) {
+                        $('#OrgFields').append("<li><input type='radio' name='OrgField' value='" + data.ExistingFields[i] + "'>" + data.ExistingFields[i] + "</li>")
+                    }
+                    $("#FieldsPart").show();
+                }
+            });
+            $.ajax({
+                url: '@Url.Action("GetOrgMappedFields", "Fields")',
+                type: 'POST',
+                datatype: 'HTML',
+                cache: false,
+                data: { ClassID: Classid, Type: Type },
+                success: function (data) {
+                    $('#LeadFieldsGrid').html(data);
+                }
+            });
+        }
+    </script>
+

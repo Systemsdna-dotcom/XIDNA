@@ -1,0 +1,257 @@
+﻿@model IEnumerable<XIDNA.ViewModels.SectionsData>
+
+<script>
+    $(document).ready(function () {
+        var popupheadings = @Html.Raw(Json.Encode(Model));
+        var EditableHeadings = new Array();
+        for(i=0;i<popupheadings.length;i++){
+            var headings = popupheadings[i].EditFields;
+            for(j=0;j<headings.length;j++){
+                if(headings[j].indexOf("NE-")>=0 || headings[j].indexOf("Null")>=0){
+
+                }
+                else{
+                    EditableHeadings.push(headings[j]);
+                }
+            }
+        }
+        var leadid='@Model.FirstOrDefault().LeadID';
+        var tabid = '@Model.FirstOrDefault().TabID';
+        var classid = '@Model.FirstOrDefault().ClassID';
+        var tab1clickid = '@Model.FirstOrDefault().Tab1ClickID';
+        var error = 0;
+        $('.EditRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').on('change','input',function(){
+            error = 0;
+            var name = $(this).attr('name');
+            var value = $(this).val();
+            var length = $(this).attr('length');
+            var type = $(this).attr('type');
+            if(type=="VARCHAR"){
+                if(value.length==0){
+                    $('span[class*="'+name+'"]').html('Value Cannot Be Empty');
+                    error = 1;
+                }
+                else if(value.length>length){
+                    $('span[class*="'+name+'"]').html('Cannot Take More Than '+length+' characters');
+                    error = 1;
+                }
+                else{
+                    $('span[class*="'+name+'"]').html('');
+                    error=0;
+                }
+            }else{
+                if(value.length==0){
+                    $('span[class*="' + name + '"]').html('Cannot Be Empty');
+                    error = 1;
+                }
+            }
+        });
+        $('.EditButtons-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').on('click', 'button.Update', function () {
+            var formid = $(this).closest('.EditRecordFormDiv').find('form').attr('class');
+            if(error==0){
+                var formData = JSON.parse(JSON.stringify(jQuery('.'+formid).serializeArray()))
+                var Popup = [];
+                var i, j, titleid = [];
+                for (i = 0, j = EditableHeadings.length; i < j; i++) {
+                    Popup.push({ Label: EditableHeadings[i], Value: formData[i].value});
+                }
+                var pvalue = {
+                    popupvalue: Popup,
+                    Tab1ClickID:tab1clickid,
+                    LeadID:leadid,
+                    EditType:"",
+                    BOID:0
+                }
+                $.ajax({
+                    url: '@Url.Action("EditLead", "Inbox")',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache:false,
+                    data:JSON.stringify(pvalue),
+                    success: function (data) {
+                        $(".ViewRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID").html(data);
+                        $('.EditRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+                        $('.ViewRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').show();
+                        $('.EditButtons-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+                        $('.CreateButtons').hide();
+                        $('.ViewButtons-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').show();
+                        opener.location.reload();
+                    },
+                    error: function (data) {
+                    }
+                });
+            }
+        })
+        
+        $('.EditButtons-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').on('click', 'button.EditBack', function () {
+            $('.EditRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+            $('.CreateRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+            $('.ViewRecordForm-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').show();
+            $('.EditButtons-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').hide();
+            $('.CreateButtons').hide();
+            $('.ViewButtons-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID').show();
+        });
+    });
+</script>
+<style>
+    #FieldLengthError{
+        color:red;
+        font-size:11px;
+    }
+</style>
+<div class="EditRecordFormDiv">
+    <form class="Edit-@Model.FirstOrDefault().TabID@Model.FirstOrDefault().SectionID">
+        @foreach (var items in Model)
+    {
+        if (items.SectionName != null)
+        {
+            if (items.EditFields != null)
+            {
+                <div class="panel panel-default">
+                @if (items.SectionName != null)
+            {
+                    <div class="panel-heading usericon Lead1">
+                        <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#Edit-@items.SectionName.Replace(" ","" )@items.TabID">
+                            <h4 class="panel-title">@items.SectionName</h4>
+                        </a>
+                    </div>
+            }
+                <div class="panel-collapse collapse in" id="Edit-@items.SectionName.Replace(" ","" )@items.TabID">
+                    <div class="panel-body LeadContent">
+                        <table class="table table-striped tablebrd DetailsTable">
+                            <tbody class="col-md-5">
+                                @for (var i = 0; i < items.EditFields.Count; i++)
+                            {
+                                if (items.EditFields[i] != null && items.EditFields[i] != "Null")
+                                {
+                                    <tr>
+                                        @if (items.EditFields[i].Contains("NE-"))
+                                        {
+                                            var field = items.EditFields[i].Replace("NE-", "");
+                                            <td class="lightblue col-md-2">@field</td>
+                                        }
+                                        else
+                                        {
+                                            <td class="lightblue col-md-2">@items.EditFields[i]</td>
+                                        }
+                                        <td class="col-md-1">:</td>
+                                        @if (items.EditFields[i].Contains("NE-") || items.EditFields[i]=="ID")
+                                        {
+                                            <td class="leftpd drkieblue col-md-3">@Html.DisplayFor(m => items.EditFieldsData[i], new { @Name = @items.EditFields[i] })</td>
+                                        }
+                                        else
+                                        {
+                                            <td class="col-md-5">@Html.TextBoxFor(m => items.EditFieldsData[i], new { @class = "form-control", @Name = @items.EditFields[i] +"-"+ @items.TabID, @type = @items.EditDataTypes[i], @length = @items.EditLengths[i] })@Html.ValidationMessageFor(m => items.EditFieldsData[i], null, new { @class = @items.EditFields[i] +"-"+ @items.TabID, @id = "FieldLengthError" })</td>
+                                        }
+
+                                    </tr>
+                                }
+                            }
+                                <tr>
+                                    <td class="col-md-2"></td>
+                                    <td class="col-md-1"></td>
+                                    <td class="col-md-3">
+                                        <div class="EditButtons-@Model.FirstOrDefault().SectionID@Model.FirstOrDefault().TabID">
+                                            <button type="button" class="btn btn-theme Update">Update</button>
+                                            <button type="button" class="btn btn-theme EditBack">Back</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+            </div>
+            }
+            else
+            {
+               <div class="panel panel-default">
+                @if (items.SectionName != null)
+            {
+                    <div class="panel-heading usericon Lead1">
+                        <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#Edit-@items.SectionName.Replace(" ","" )@items.TabID">
+                            <h4 class="panel-title">@items.SectionName</h4>
+                        </a>
+                    </div>
+            }
+                <div class="panel-collapse collapse in" id="Edit-@items.SectionName.Replace(" ","" )@items.TabID">
+                    <div class="panel-body LeadContent">
+                        <h4>Edit Fields Not Assigned</h4>
+                        <div class="EditButtons">
+                            <button type="button" class="btn btn-theme EditBack">Back</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div> 
+            }
+            
+        }
+        else
+        {
+            <div class="EditRecordDetails">
+                <table class="table table-striped tablebrd DetailsTable">
+                    <tbody class="col-md-5">
+                        @for (var i = 0; i < items.EditFields.Count; i++)
+                            {
+                                if (items.EditFields[i] != null && items.EditFields[i] != "Null")
+                                {
+                                    <tr>
+                                        @if (items.EditFields[i].Contains("NE-"))
+                                        {
+                                            var field = items.EditFields[i].Replace("NE-", "");
+                                            <td class="lightblue col-md-2">@field</td>
+                                        }
+                                        else
+                                        {
+                                            <td class="lightblue col-md-2">@items.EditFields[i]</td>
+                                        }
+                                        <td class="col-md-1">:</td>
+                                        @if (items.EditFields[i].Contains("NE-"))
+                                        {
+                                            <td class="leftpd drkieblue col-md-3">@Html.DisplayFor(m => items.EditFieldsData[i], new { @Name = @items.EditFields[i] })</td>
+                                        }
+                                        else
+                                        {
+                                            <td class="col-md-5">@Html.TextBoxFor(m => items.EditFieldsData[i], new { @class = "form-control", @Name = @items.EditFields[i] + @items.TabID, @type = @items.EditDataTypes[i], @length = @items.EditLengths[i] })@Html.ValidationMessageFor(m => items.EditFieldsData[i], null, new { @class = @items.EditFields[i] + @items.TabID, @id = "FieldLengthError" })</td>
+                                        }
+
+                                    </tr>
+                                }
+                            }
+                        <tr>
+                            <td class="col-md-2"></td>
+                            <td class="col-md-1"></td>
+                            <td class="col-md-3">
+                                <div class="EditButtons">
+                                    <button type="button" class="btn btn-theme Update">Update</button>
+                                    <button type="button" class="btn btn-theme EditBack">Back</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+    </form>
+    @*<table class="table table-striped tablebrd DetailsTable">
+        <tbody class="col-md-5">
+            <tr>
+                <td class="col-md-2"></td>
+                <td class="col-md-1"></td>
+                <td class="col-md-3">
+                    <div class="EditButtons">
+                        <button type="button" class="btn btn-theme Back">Back</button>
+                        <button type="button" class="btn btn-theme Update">Update</button>
+                        <input type="hidden" class="hiddenid" value=@Model.FirstOrDefault().TabID />
+                    </div>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>*@
+</div>

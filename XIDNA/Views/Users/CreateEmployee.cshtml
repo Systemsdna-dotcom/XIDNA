@@ -1,0 +1,203 @@
+﻿@model XIDNA.Models.RegisterViewModel
+
+<script>
+    function OnCreateUser(resp) {
+        debugger;
+        if (resp.Response) { CustomMessage("Data Saved Successfully", resp.Response); }
+        else {
+            CustomMessage("Error occured plase try again", resp.Response);
+        }
+        //if (resp.Response == true) {
+        //    $(this).closest('form').find("input[type=text], textarea").val("");
+        //    $(this).closest('form').find("input[type=password]").val("");
+        //    $(this).closest('form').find("select").val(0);
+
+        //    $("#ConformationDlg").html('User Created Successfully</br>Do You Want To Add One More?');
+        //    $("#ConformationDlg").dialog({
+        //        title: "",
+        //        modal: true,
+        //        buttons: [
+        //           {
+        //               text: "Yes",
+        //               click: function () {
+        //                   opener.location.reload();
+        //                   $("#ConformationDlg").dialog("close");
+        //               }
+        //           },
+        //        {
+        //            text: "No",
+        //            click: function () {
+        //                opener.location.reload();
+        //                window.close();
+        //            }
+        //        }
+        //        ]
+        //    });
+        //}
+        //else {
+        //    $("#ConformationDlg").html(resp.Error);
+        //    $("#ConformationDlg").dialog({
+        //        title: "",
+        //        modal: true,
+        //        buttons: [
+        //           {
+        //               text: "Ok",
+        //               click: function () {
+        //                   $("#ConformationDlg").dialog("close");
+        //               }
+        //           }
+        //        ]
+        //    });
+        //    //$("[name='ConfirmPassword']").after('<label class="error custom_error" For="Confirm Password">' + resp.responseJSON.Error + '</label>');
+        //}
+    }
+    function OnSubmitUser() {
+        
+        $(".custom_error").remove();
+        if ($("#GroupID").val() == "") {
+            $("[name='ConfirmPassword']").after('<label class="error custom_error" For="Confirm Password">select group from tree</label>');
+            return false;
+        }
+        if ($("#Location").val() == "") {
+            $("[name='PhoneNumber']").after('<label class="error custom_error" For="PhoneNumber">select Location</label>');
+            return false;
+        }
+    }
+</script>
+<style>
+    .HelpText {
+        font-size: 11px;
+    }
+
+    .danger {
+        color: red;
+    }
+
+    .emperrormsg {
+        margin-top: 30px;
+    }
+</style>
+
+
+<div class="box-body">
+    @using (Ajax.BeginForm("Create", "Users", new AjaxOptions { HttpMethod = "POST", OnBegin = "OnSubmitUser", OnSuccess = "OnCreateUser" }, new { @class = "form-horizontal", @id = "AddEmpForm" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.Type, new { @Value = "Create" })
+        @Html.HiddenFor(m => m.Id, new { @Value = 0 })
+        @Html.ValidationSummary(true)
+        @Html.HiddenFor(m => m.GroupID, new { @id = "GroupID" })
+        @Html.HiddenFor(m => m.Locs, new { @id = "Location" })
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">First Name<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.FirstName, new { @placeholder = "Enter First Name", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 emperrormsg">
+                @Html.ValidationMessageFor(m => m.FirstName, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Last Name<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.LastName, new { @placeholder = "Enter Last Name", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 emperrormsg">
+                @Html.ValidationMessageFor(m => m.LastName, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Phone Number<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.PhoneNumber, new { @placeholder = "Enter Phone Number", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 emperrormsg">
+                @Html.ValidationMessageFor(m => m.PhoneNumber, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Location<span class="danger">*</span> <span class="HelpText">(Please Select Location)</span></label>
+                @Html.ListBoxFor(model => model.Locs, new MultiSelectList(Model.DropDown, "Expression", "text", Model.Locs), new { size = 5, @class = "form-control" })
+            </div>
+            <div class="col-sm-7 emperrormsg">
+                @Html.ValidationMessageFor(m => m.Locs, null, new { @class = "red", @id = "Location" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Primary Role<span class="danger">*</span> <span class="HelpText">(Select Primary Role From Left Tree)</span></label>
+                @Html.DropDownListFor(model => model.RoleID, new SelectList(new List<Object> { }, "key", "Value"), "--Select--", new { @class = "form-control", @id = "RoleID" })
+            </div>
+            <div class="col-sm-7 emperrormsg">
+                @Html.ValidationMessageFor(m => m.RoleID, null, new { @class = "red" })
+            </div>
+        </div>
+        @*<div class="form-group">
+                <div class="col-md-5">
+                    <label for="inputEmail" class="gn">Report To<span class="danger">* <span class="HelpText">(Select Reporting Authority From Left Tree)</span></span></label>
+                    @Html.DropDownListFor(model => model.ReportTo, new SelectList(new List<Object> { }, "key", "Value"), "--Select--", new { @class = "form-control", @id = "ReportTo" })
+                </div>
+                <div class="col-sm-7 emperrormsg">
+                    @Html.ValidationMessageFor(m => m.ReportTo, null, new { @class = "red" })
+                </div>
+            </div>*@
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Email<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.Email, new { @Name = "Email", @placeholder = "Enter Email", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 emperrormsg">
+                @Html.ValidationMessageFor(m => m.Email, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Password<span class="danger">*</span></label>
+                @Html.PasswordFor(model => model.Password, new { @placeholder = "Enter Password", @class = "form-control", @autocomplete = "new-password" })
+            </div>
+            <div class="col-sm-7 emperrormsg">
+                @Html.ValidationMessageFor(m => m.Password, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn">Confirm Password<span class="danger">*</span></label>
+                @Html.PasswordFor(model => model.ConfirmPassword, new { @placeholder = "Enter Confirm Password", @class = "form-control" })
+            </div>
+            <div class="col-sm-7 emperrormsg">
+                @Html.ValidationMessageFor(m => m.ConfirmPassword, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-6">
+                <label for="inputEmail" class="gn">Status</label>
+                @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<object>
+                                                    {
+                                                    new { key= "10" , value = "Active" },
+                                                    new { key= "20" , value = "Inactive" }
+                                                    }, "key", "Value"), new { @class = "form-control" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-5">
+                <input type="submit" class="btn btn-theme" value="Create" />
+                <button type="button" class="btn btn-theme reverse" id="Reset">Reset</button>
+                <button type="button" class="btn btn-theme decline" id="Cancel">Cancel</button>
+            </div>
+        </div>
+    }
+</div>
+<div id="ConformationDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+
+
+
+<script>
+    $('#Cancel').click(function () {
+        window.close();
+    });
+    $('#Reset').click(function () {
+        $('#AddEmpForm')[0].reset();
+        $('#AddEmpForm .emperrormsg span').empty();
+    });
+</script>

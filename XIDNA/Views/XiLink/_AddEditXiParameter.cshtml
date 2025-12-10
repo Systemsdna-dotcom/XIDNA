@@ -1,0 +1,385 @@
+﻿@model XIDNA.ViewModels.VMXiParameters
+
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    int i = 1;
+}
+
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        $('#AddMore').click(function () {
+            var Divs = $('.NVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $('#NameValuePairs').append(Divs);
+            $('.NVPairs').last().css("display", "block");
+        });
+        $(document.body).on('click', 'input.AddMoreList', function () {
+            var Divs = $('.LNVPairs').first().clone();
+            $(Divs).find('input').val('');
+            $(Divs).filter('.LNVPairs').css("display", "block");
+            $(this).closest(".amlist").before(Divs);
+        });
+        $('.AddList').click(function () {
+            var Divs = $('.Lists').first().clone();
+            var TextBoxs = $(Divs).find('.LNVPairs').css("display", "block");
+            for (i = 0; i < TextBoxs.length; i++) {
+                if (i >= 1) {
+                    $(TextBoxs[i]).remove();
+                }
+            }
+            $(Divs).find('input[type=text]').val('');
+            $(this).closest(".alist").before(Divs);
+        });
+
+        $(document.body).on('click', 'button.DeleteNVPair', function () {
+            $(this).closest(".NVPairs").hide();
+        });
+
+        $(document.body).on('click', 'button.DeleteLNVPair', function () {
+            $(this).closest('.LNVPairs').hide();
+        });
+
+        $('#SaveXiParameter').click(function () {
+            var empty = $('#XiParameterForm').find("input.req").filter(function () {
+                return this.value === "";
+            });
+            if (empty.length) {
+                CustomMessage("Please fill * marked fields", false);
+            }
+            else {
+                var XiParameterName = $('#Name').val();
+                var Status = $('#StatusTypeID').val();
+                var ApplicationID = $('#ApplicationID').val();
+                var NVPairs = [];
+                $('.NVPairs:visible').each(function () {
+                    var Name; var Value; var Type;
+                    $(this).find('input').each(function (i, obj) {
+                        var Nname = obj.name;
+                        if (Nname == "Names") {
+                            Name = $(this).val();
+                        }
+                        else if (Nname == "Values") {
+                            Value = $(this).val();
+                        }
+                        else if (Nname == "Type") {
+                            Type = $(this).val();
+                        }
+                    });
+                    if (Name.length > 0) {
+                        NVPairs.push(Name + "^" + Value + "^" + Type);
+                    }
+                });
+                var LNVPairs = [];
+                $('.Lists').each(function () {
+                    var LName = $(this).find('input.ListName').val();
+                    //LName = "ListName-" + LName;
+                    if (LName.length > 0) {
+                        LNVPairs.push(LName);
+                        $(this).find('.LNVPairs:visible').each(function (i, obj) {
+                            var Name; var Value; var Type;
+                            $(this).find('input').each(function (i, obj) {
+                                var Nname = obj.name;
+                                if (Nname == "ListNames") {
+                                    Name = $(this).val();
+                                }
+                                else if (Nname == "ListValues") {
+                                    Value = $(this).val();
+                                }
+                                else if (Nname == "ListType") {
+                                    Type = $(this).val();
+                                }
+                            });
+                            if (Name.length > 0 && Value.length > 0) {
+                                LNVPairs.push(LName + "^" + Name + "^" + Value + "^" + Type);
+                            }
+                        });
+                    }
+                });
+                var model = { XiParameterID: $('#XiParameterID').val(), Name: XiParameterName, FKiApplicationID: ApplicationID, NVPairs: NVPairs, LNVPairs: LNVPairs, Status: Status };
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SaveEditXiParameter", "XiLink")',
+                    data: JSON.stringify(model),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    success: function (data) {
+                        CustomMessage(data.ResponseMessage, data.Status);
+                        opener.location.reload();
+                    }
+                });
+            }
+        });
+    });
+</script>
+<section class="content-header hedr">
+    @if (@Model.XiParameterID == 0)
+    {
+    <h1> Add XiParameter </h1>
+    }
+    else
+    {
+    <h1> Edit XiParameter </h1>
+    }
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> XiParameter</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body padding10Tab">
+                <div class="innerborder">
+                    <form id="XiParameterForm" class="form-horizontal">
+                        <div id="clear-text">
+                            <input type="hidden" value="@Model.XiParameterID" id="XiParameterID" />
+                            @if (Model.FKiApplicationID == 0)
+                            {
+                            <div class="form-group" id="XIFKiApplicationDDL">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn"> Application <span class="danger">*</span></label>
+                                    <select class="form-control" id="ApplicationID" name="FKiApplicationID">
+                                        <option value="0">--Select--</option>
+                                        @foreach (var items in Model.ddlApplications)
+                                            {
+                                                if (Model.FKiApplicationID == items.Value)
+                                                {
+                                            <option selected value="@items.Value">@items.text</option>
+                                                }
+                                                else
+                                                {
+                                            <option value="@items.Value">@items.text</option>
+                                                }
+                                            }
+                                    </select>
+                                </div>
+                            </div>
+                            }
+                            else
+                            {
+                            <input type="hidden" id="ApplicationID" name="FKiApplicationID" value="@Model.FKiApplicationID" />
+                            }
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn"> Name<span class="danger">*</span></label>
+                                    <input type="text" name="Name" id="Name" placeholder="XiParameter name" class="form-control req" value="@Model.Name" />
+                                </div>
+                            </div>
+                            @*<div class="form-group">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn"> URL<span class="danger">*</span></label>
+                                        <input type="text" name="URL" id="URL" placeholder="Controller/Action Method" class="form-control req" value="@Model.URL" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn"> 1-Click ID<span class="danger"></span></label>
+                                        <input type="text" name="OneClickID" id="OneClickID" placeholder="1-Click ID" class="form-control" value="@Model.OneClickID" />
+                                    </div>
+                                </div>*@
+                            <div class="form-group">
+                                <div id="NameValuePairs" class="col-md-12">
+                                    @if (Model.XiParameterID == 0 || Model.NVs.Count() == 0)
+                                    {
+                                    <div class="form-group NVPairs">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                            <input type="text" name="Names" placeholder="Name" class="form-control" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                            <input type="text" name="Values" placeholder="Value" class="form-control" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> Type<span class="danger"></span></label>
+                                            <input type="text" name="Type" placeholder="Type" class="form-control" />
+                                        </div>
+                                        <br />
+                                        <div>
+                                            <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                        </div>
+                                    </div>
+                                    }
+                                    else
+                                    {
+                                        foreach (var NVs in Model.NVs)
+                                        {
+                                    <div class="form-group NVPairs">
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                            <input type="text" name="Names" placeholder="Name" class="form-control" value="@NVs.Name" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                            <input type="text" name="Values" placeholder="Value" class="form-control" value="@NVs.Value" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> Type<span class="danger"></span></label>
+                                            <input type="text" name="Type" placeholder="Type" class="form-control" value="@NVs.Type" />
+                                        </div>
+                                        <br />
+                                        <div>
+                                            <button type="button" class="btn btn-theme btn-xs DeleteNVPair">Delete</button>
+                                        </div>
+                                    </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <input type="button" id="AddMore" value="Add" class="btn btn-theme btn-xs">
+                                </div>
+                            </div>
+                            @if (Model.XiParameterID == 0 || Model.Lists.Count() == 0)
+                            {
+                            <div class="form-group Lists">
+                                <div class="form-group col-md-12">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn"> List<span class="danger"></span></label>
+                                        <input type="text" name="List" placeholder="List name" class="form-control ListName" />
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-12 LNVPairs">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                        <input type="text" name="ListNames" placeholder="Name" class="form-control" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                        <input type="text" name="ListValues" placeholder="Value" class="form-control" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Type<span class="danger"></span></label>
+                                        <input type="text" name="ListType" placeholder="Type" class="form-control" />
+                                    </div>
+                                    <br />
+                                    <div>
+                                        <button type="button" class="btn btn-theme btn-xs DeleteLNVPair">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-12 amlist">
+                                    <div class="col-md-2">
+                                        <input type="button" value="Add" class="AddMoreList btn btn-theme btn-xs">
+                                    </div>
+                                </div>
+                            </div>
+                            }
+                            else
+                            {
+                                foreach (var items in Model.Lists)
+                                {
+                                    if (items.NVs.Count() == 0)
+                                    {
+                            <div class="form-group Lists">
+                                <div class="form-group col-md-12">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn"> List<span class="danger"></span></label>
+                                        <input type="text" name="List" placeholder="List name" class="form-control ListName" value="@items.ListName" />
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-12 LNVPairs">
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                        <input type="text" name="ListNames" placeholder="Name" class="form-control" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                        <input type="text" name="ListValues" placeholder="Value" class="form-control" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="inputEmail" class="gn"> Type<span class="danger"></span></label>
+                                        <input type="text" name="ListType" placeholder="Type" class="form-control" />
+                                    </div>
+                                    <br />
+                                    <div>
+                                        <button type="button" class="btn btn-theme btn-xs DeleteLNVPair">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-12 amlist">
+                                    <div class="col-md-2">
+                                        <input type="button" value="Add" class="AddMoreList btn btn-theme btn-xs">
+                                    </div>
+                                </div>
+                            </div>
+                                    }
+                                    else
+                                    {
+                            <div class="form-group Lists">
+                                <div class="form-group col-md-12">
+                                    <div class="col-md-4">
+                                        <label for="inputEmail" class="gn"> List<span class="danger"></span></label>
+                                        <input type="text" name="List" placeholder="List name" class="form-control ListName" value="@items.ListName" />
+                                    </div>
+                                </div>
+                                @foreach (var NVs in items.NVs)
+                                            {
+                                            <div class="form-group col-md-12 LNVPairs">
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Name<span class="danger"></span></label>
+                                                    <input type="text" name="ListNames" placeholder="Name" class="form-control" value="@NVs.Name" />
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Value<span class="danger"></span></label>
+                                                    <input type="text" name="ListValues" placeholder="Value" class="form-control" value="@NVs.Value" />
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Type<span class="danger"></span></label>
+                                                    <input type="text" name="ListType" placeholder="Type" class="form-control" value="@NVs.Type" />
+                                                </div>
+                                                <br />
+                                                <div>
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteLNVPair">Delete</button>
+                                                </div>
+                                            </div>
+                                            }
+                                <div class="form-group col-md-12 amlist">
+                                    <div class="col-md-2">
+                                        <input type="button" value="Add" class="AddMoreList btn btn-theme btn-xs">
+                                    </div>
+                                </div>
+                            </div>
+                                    }
+                                }
+                            }
+                            <div class="form-group alist">
+                                <div class="col-md-2">
+                                    <input type="button" value="Add List" class="AddList btn btn-theme btn-xs">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    <select class="form-control" id="StatusTypeID">
+                                        <option value="10">Active</option>
+                                        <option value="20">Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="button" class="btn btn-theme" value="Save" id="SaveXiParameter" />
+                                <button type="button" class="btn btn-theme decline CancelXiParameter">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="SavePopupDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    $('.CancelXiParameter').click(function () {
+        window.close();
+    });
+</script>

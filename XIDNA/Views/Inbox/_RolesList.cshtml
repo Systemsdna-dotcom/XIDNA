@@ -1,0 +1,131 @@
+﻿@model int
+@{
+               int orgID = Convert.ToInt32(ViewBag.orgid);
+}
+
+<script>
+
+    $(document).ready(function () {
+        var popups = new Array();
+        var table = $('#usertbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("GetUsersList", "Inbox", new { ID = @Model})",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+            { "bSortable": false },
+                             {
+                                 "sName": "ID",
+                                 "visible": false
+                             },
+                             {
+                                 "sName": "RoleName",
+                             },
+                             {
+                                 "sName": "OrgName",
+                             },
+            ],
+
+        })
+        $('#usertbl tbody').on('click', 'tr', function () {
+            var table = $('#usertbl').DataTable();
+            var data = table.row(this).data()
+            var ID = parseInt(data[1]);
+            var Rolename = data[2];
+            if (popups.length > 0) {
+                for (i = 0; i < popups.length; i++) {
+                    popups[i].close();
+                }
+            }
+            var newwindow = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("UserDetails", "Inbox")',
+                data: { RoleID: ID, Rolename: Rolename },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    with (newwindow.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    popups.push(newwindow);
+                    newwindow.moveTo(0, 0);
+                }
+            });
+        });
+    })
+</script>
+<style>
+    .subnav {
+        margin-bottom: 10px;
+    }
+</style>
+
+@if (orgID == 0)
+{
+    <div id="box-body">
+        <div class="table-clean">
+            <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="usertbl" style="width:100%!important;">
+                <thead>
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th>UserID</th>
+                        <th>Role Name</th>
+                        <th>Organization</th>
+                    </tr>
+                </thead>
+
+                <tbody></tbody>
+
+            </table>
+        </div>
+        </div>
+
+
+}
+
+else if (orgID != 0)
+{
+    <section class="content-header hedr">
+    <h1> Assign 1-Clicks </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> 1-Clicks</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+    <div class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    @*<div class="box-header with-border">
+                        <div id="OrgInbox">
+                        </div>
+                    </div>*@
+                        <div class="box-body">
+                            <div class="table-clean">
+                                <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="usertbl" style="width:100%!important;">
+                                    <thead>
+                                        <tr role="row">
+                                            <th>S.No</th>
+                                            <th>UserID</th>
+                                            <th>Role Name</th>
+                                            <th>Organization</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+             

@@ -1,0 +1,173 @@
+﻿@model int
+
+<script src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var table = $('.groupingtbl').dataTable({
+            //"bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("GetAttributeGroups", "BusinessObjects", new { BOID = @Model })",
+            //"order": [[3, "desc"]],
+            "sDom": 'r<"dtable-header"l<"new-query">f><"datatable-scroll"t><"dtable-footer"ip>',
+            "aoColumns": [
+            {},
+                            {
+                                "sName": "BOID",
+                                "bVisible": false
+                            },
+                            {
+                                "sName": "ID",
+                                "bVisible": false
+                            },
+                            {
+                                "sName": "B.O"
+                            },
+
+                            {
+                                "sName": "GroupName"
+                            },
+                            {
+                                "sName": "GroupFields",
+                            },
+                            {
+                                "sName": "MultiColumn",
+                            },
+                            {
+                                "sName": "Actions"
+                            }
+            ],
+            "columnDefs": [
+              {
+
+                  "targets": [6],
+                  "createdCell": function (td, cellData, rowData, row, col) {
+                      if (cellData == "True")
+                          $(td).replaceWith('<td>Yes</td>')
+                      else
+                          $(td).replaceWith('<td>No</td>')
+                  }
+              }
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(5)', nRow).html('  <a class="EditGroup" data-groupid=' + aData[2] + ' data-BOID=' + aData[1] + ' data-ajax-update="#grouping" data-ajax-mode="replace" data-ajax-method="GET" data-ajax="true"><i class="fa fa-pencil-square-o EditBtn" style="padding-left:10px;" ></i></a> <a class="remove" id="' + aData[2] + '" data-boid="' + aData[1] + '"><i class="fa fa-times" style="padding-left:10px;"></i></a> ');
+
+                return nRow;
+            }
+        });
+        $('.groupingtbl').css({'width':'100%'});
+        $(".groupingtbl").on('click', 'tr', function () {
+            $('.groupingtbl tr').removeClass('rowactive');
+            $(this).addClass('rowactive');
+        });
+
+        $(".groupingtbl").on('click', 'a.EditGroup', function () {
+            var groupid = $(this).attr('data-groupid');
+            var boid = $(this).attr('data-BOID');
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("EditBOAttributeGroup", "BusinessObjects")',
+                data: { GroupID: groupid, BOID: boid },
+                cache: false,
+                dataType: 'html',
+                success: function (griddata) {
+                    $('#groupingforms').empty();
+                    $('#groupingforms').append(griddata);
+                }
+            });
+        });
+        $(document.body).on('click', 'a.remove', function () {
+            var id = $(this).attr('id');
+            $(".GroupCrtDlg").html('Do You Want To Delete This Group?');
+            $(".GroupCrtDlg").dialog({
+                title: "Delete Group",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Yes",
+                       click: function () {
+                           $(this).dialog("close");
+                           $.ajax({
+                               type: 'POST',
+                               url: '@Url.Action("RemoveGroup", "BusinessObjects")',
+                               data: { GroupID: id },
+                               cache: false,
+                               dataType: 'html',
+                               success: function (data) {
+                                   $.ajax({
+                                       type: 'POST',
+                                       url: '@Url.Action("GroupingGrid", "BusinessObjects")',
+                                       data: { BOID: '@Model' },
+                                       cache: false,
+                                       dataType: 'html',
+                                       success: function (griddata) {
+                                           $('#GroupingGrid').empty();
+                                           $('#GroupingGrid').append(griddata);
+                                       }
+                                   });
+                               }
+                           });
+                           $('#GroupName').val('');
+                           $('#rightValues').empty();
+                           $("#splerror").hide();
+                           $("#error").hide();
+                           $.ajax({
+                               type: 'POST',
+                               url: '@Url.Action("GetAvailableFields", "BusinessObjects")',
+                               data: { BOID: '@Model' },
+                               cache: false,
+                               dataType: 'json',
+                               success: function (data) {
+                                   $('#leftValues').empty();
+                                   if (data.AvailableFields.length > 0) {
+                                       for (i = 0; i < data.AvailableFields.length; i++) {
+                                           $('#leftValues').append('<li id="' + data.AvailableFields[i].ID + '">' + data.AvailableFields[i].FieldName + '</li>');
+                                       }
+                                   }
+                               }
+                           });
+
+                       }
+                   },
+                {
+                    text: "No",
+                    click: function () {
+                        $(".GroupCrtDlg").dialog("close");
+                    }
+                }
+                ]
+            });
+
+        });
+    });
+</script>
+
+<style>
+    #groupingtbl{
+        width:100%!important;
+    }
+    tr.rowactive {
+        color: #1560bd;
+    }
+</style>
+<div id="GroupingList">
+    <div class="table-clean">
+        <table class="table table-striped custom-table dark-head dark-head2 table-condensed groupingtbl">
+            <thead>
+                <tr role="row">
+                    <th style="border-left: #1560bd !important;">S.No</th>
+                    <th style="display:none">BOID</th>
+                    <th style="display:none">ID</th>
+                    <th>B.O</th>
+                    <th>Group Name</th>
+                    <th>Group Fields</th>
+                    <th>MultiColumn</th>
+                    <th style="border-right: #1560bd !important;">Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    
+</div>
+    
+@*<div id="BOGroupDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>*@

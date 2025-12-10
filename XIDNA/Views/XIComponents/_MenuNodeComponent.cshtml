@@ -1,0 +1,980 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using Newtonsoft.Json
+@using XIDNA
+@using XICore
+@{
+    var sMenuname = "Menu";
+    var OrgID = 0;
+    List<XIAssignMenu> oXIMenu = new List<XIAssignMenu>();
+    if (Model.oContent.ContainsKey(XIConstant.MenuNodeComponent))
+    {
+        oXIMenu = (List<XIAssignMenu>)Model.oContent[XIConstant.MenuNodeComponent];
+        if (oXIMenu == null)
+        {
+            oXIMenu = new List<XIAssignMenu>();
+        }
+        if (oXIMenu.Count() > 0)
+        {
+            OrgID = oXIMenu.FirstOrDefault().OrganizationID;
+            if (!string.IsNullOrEmpty(oXIMenu.FirstOrDefault().RootName))
+            {
+                sMenuname = oXIMenu.FirstOrDefault().RootName.Replace(" ", "");
+            }
+        }
+    }
+    var ODef = (XIDComponent)Model.oDefintion;
+    var sRenderType = "Menu";
+    sRenderType = ODef.Params.Where(x => x.sName.ToLower() == "RenderType".ToLower()).Select(x => x.sValue).FirstOrDefault();
+    var SBOName = string.Empty;
+    SBOName = ODef.Params.Where(m => m.sName.ToLower() == "bo").Select(m => m.sValue).FirstOrDefault();
+    if (string.IsNullOrEmpty(sRenderType))
+    {
+        sRenderType = "Menu";
+    }
+    string sActiveMenu = ODef.Params.Where(x => x.sName.ToLower() == "-ActiveMenu".ToLower()).Select(x => x.sValue).FirstOrDefault();
+    var Role = string.Empty;
+    Role = SessionManager.sRoleName;
+}
+
+<script src="@Url.Content("~/Scripts/treeview/jstree.min.js")"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/js/select2.min.js"></script>
+
+<link href="@Url.Content("~/Content/jsTree/themes/default/style.min.css")" rel="stylesheet" />
+
+@if (oXIMenu.FirstOrDefault().sType == "CreateMenu")
+{
+    if (sRenderType == "Menu")
+    {
+        @*<div id="MenuContent" class="xicomponent">
+                        @*<span class="DialogPopout"><i class="fa fa-external-link"></i></span>
+                        <div class="control-sidebar control-sidebar-dark sidebar control-sidebar-open right-nav-btns">
+                            <ul class="sidebar-menu menulist" id="UserMenu-@sMenuname">
+                                @TreeView(oXIMenu, sActiveMenu)
+                                @helper TreeView(IEnumerable<XICore.XIAssignMenu> nodes, string sActiveMenu)
+                                {
+            int i = 0;
+            foreach (var node in nodes)
+            {
+                int ID = node.ID;
+                if (!node.isHide)
+                {
+                    if (node.SubGroups != null && node.SubGroups.Count == 0)
+                    {
+                        if (!string.IsNullOrEmpty(sActiveMenu))
+                        {
+                            if (node.Name.ToLower() == sActiveMenu.ToLower())
+                            {
+                                    <li class="treeview active">
+                                        @if (node.XiLinkID > 0)
+                                    {
+                                            <a data-xilinkid="@node.XiLinkID" id="menu_@i" data-action="@node.ActionType" onclick="fncLoadMenu(this)"><span>@node.Name</span></a>
+                                        }
+                                        else
+                                        {
+                                            <a onclick="fncLoadConfig('@node.MenuAction', '@node.MenuController', '@node.Name')"><span>@node.Name</span></a>
+                                        }
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="treeview">
+                                        @if (node.XiLinkID > 0)
+                                    {
+                                        if (node.XiLinkID == 4386 || node.XiLinkID == 4396 || node.XiLinkID == 4440 || node.XiLinkID == 4220 || node.XiLinkID == 4644 || node.XiLinkID == 4616)
+                                        {
+                                                <a onclick="XIRun(this,'@node.XiLinkID', 0, null, null, true, 0, 0,'@node.Name')" data-xilinkid="@node.XiLinkID"><span>@node.Name</span></a>
+                                            }
+                                            else
+                                            {
+                                                <a data-xilinkid="@node.XiLinkID" id="menu_@i" data-action="@node.ActionType" onclick="fncLoadMenu(this)"><span>@node.Name</span></a>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <a onclick="fncLoadConfig('@node.MenuAction', '@node.MenuController', '@node.Name')"><span>@node.Name</span></a>
+                                        }
+                                    </li>
+                                }
+                            }
+                            else if (i == 0)
+                            {
+                                <li class="treeview active">
+                                    @if (node.XiLinkID > 0)
+                                {
+                                    if (node.XiLinkID == 4386 || node.XiLinkID == 4396 || node.XiLinkID == 4440 || node.XiLinkID == 4220 || node.XiLinkID == 4644 || node.XiLinkID == 4616)
+                                    {
+                                            <a onclick="XIRun(this,'@node.XiLinkID', 0, null, null, true, 0, 0,'@node.Name')" data-xilinkid="@node.XiLinkID"><span>@node.Name</span></a>
+                                        }
+                                        else
+                                        {
+                                            <a data-xilinkid="@node.XiLinkID" id="menu_@i" data-action="@node.ActionType" onclick="fncLoadMenu(this)"><span>@node.Name</span></a>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <a onclick="fncLoadConfig('@node.MenuAction', '@node.MenuController', '@node.Name')"><span>@node.Name</span></a>
+                                    }
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="treeview">
+                                    @if (node.XiLinkID > 0)
+                                {
+                                    if (node.XiLinkID == 4386 || node.XiLinkID == 4396 || node.XiLinkID == 4440 || node.XiLinkID == 4220 || node.XiLinkID == 4644 || node.XiLinkID == 4616)
+                                    {
+                                            <a onclick="XIRun(this,'@node.XiLinkID', 0, null, null, true, 0, 0,'@node.Name')" data-xilinkid="@node.XiLinkID"><span>@node.Name</span></a>
+                                        }
+                                        else
+                                        {
+                                            <a data-xilinkid="@node.XiLinkID" id="menu_@i" data-action="@node.ActionType" onclick="fncLoadMenu(this)"><span>@node.Name</span></a>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <a onclick="fncLoadConfig('@node.MenuAction', '@node.MenuController', '@node.Name')"><span>@node.Name</span></a>
+                                    }
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="treeview">
+                                @if (node.XiLinkID > 0)
+                            {
+                                    <a href="#"><span>@node.Name</span> <i class="fa fa-angle-left pull-right"></i></a>
+                                }
+                                else
+                                {
+                                    <a href="#"><span>@node.Name</span> <i class="fa fa-angle-left pull-right"></i></a>
+                                }
+                                <ul class="treeview-menu">@TreeView(node.SubGroups, sActiveMenu)</ul>
+                            </li>
+                    }
+                    i++;
+                }
+            }
+            }
+
+                            </ul>
+                        </div>
+                    </div>*@
+
+        <section class="p5">
+            <div id="SourceForm" class="innerborder form-container">
+                <form class="">
+                    <div class="form-group row">
+                        <div class="col-md-6">
+                            <label for="inputEmail" class="gn">Menu Name<span class="danger"></span></label>
+                            @if (oXIMenu.FirstOrDefault().ID == 0)
+                            {
+                                @Html.TextBox("RootName", oXIMenu.FirstOrDefault().RootName, new { @class = "form-control", @placeholder = "RootName here", @id = "RootName" })
+                            }
+                            else
+                            {
+                                @Html.TextBox("RootName", oXIMenu.FirstOrDefault().RootName, new { @class = "form-control", @placeholder = "RootName here", @id = "RootName", @disabled = "disabled" })
+                            }
+                        </div>
+                        <div class="col-sm-4 taberrormsg">
+
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-10">
+                            @if (oXIMenu.FirstOrDefault().ID == 0)
+                            {
+                                <input type="button" class="btn btn-theme" value="Save" id="SaveMenu" />
+                            }
+                            else
+                            {
+                                <input type="button" class="btn btn-theme" value="Save" id="SaveMenu" disabled />
+                            }
+                        </div>
+                    </div>
+                </form>
+                <div id="XIMenuStructure"></div>
+            </div>
+        </section>
+    }
+    else if (sRenderType.ToLower() == "button")
+    {
+        foreach (var menu in oXIMenu)
+        {
+            <button type="button" class="btn btn-theme" onclick="XIRun(this,'@menu.XiLinkID', 0, '@Model.sGUID', null, false, 0, 0)">@menu.Name</button>
+        }
+    }
+}
+else
+{
+    <section class="p5">
+        <div id="SourceForm" class="innerborder form-container">
+            <form class="">
+                <div id="clear-text">
+
+                    @*<div class="form-group">
+                            <div class="col-md-6">
+                                <label for="inputEmail" class="gn">Organisation<span class="danger"></span></label>
+                                @if (oXIMenu.FirstOrDefault().ID == 0)
+                                {
+                                    @Html.DropDownList("OrgID", new SelectList(oXIMenu.FirstOrDefault().Organisations, "Value", "text", oXIMenu.FirstOrDefault().OrgID), new { @class = "form-control", @id = "OrgID" })
+                                }
+                                else
+                                {
+                                    @Html.DropDownList("OrgID", new SelectList(oXIMenu.FirstOrDefault().Organisations, "Value", "text", oXIMenu.FirstOrDefault().OrgID), new { @class = "form-control", @id = "OrgID", @disabled = "disabled" })
+                                }
+                            </div>
+                            <div class="col-sm-4 taberrormsg">
+                                @Html.ValidationMessage("OrgID", null, new { @class = "red" })
+                            </div>
+                        </div>*@
+
+                    @*<div class="form-group">
+                            <div class="col-md-6">
+                                <label for="inputEmail" class="gn">Role<span class="danger"></span></label>
+                                @if (oXIMenu.FirstOrDefault().ID == 0)
+                                {
+                                    @Html.DropDownList("RoleID", new SelectList(oXIMenu.FirstOrDefault().AllRoles, "Value", "text", oXIMenu.FirstOrDefault().RoleID), new { @class = "form-control", @id = "RoleID" })
+                                }
+                                else
+                                {
+                                    @Html.DropDownList("RoleID", new SelectList(oXIMenu.FirstOrDefault().AllRoles, "Value", "text", oXIMenu.FirstOrDefault().RoleID), new { @class = "form-control", @id = "RoleID", @disabled = "disabled" })
+                                }
+                            </div>
+                            <div class="col-sm-4 taberrormsg">
+                                @Html.ValidationMessage("RoleID", null, new { @class = "red" })
+                            </div>
+                        </div>*@
+
+                    @*<div class="form-group">
+                            <div class="col-md-6">
+                                <label for="inputEmail" class="gn">Menu Name<span class="danger"></span></label>
+                                @if (oXIMenu.FirstOrDefault().ID == 0)
+                                {
+                                    @Html.TextBox("RootName", oXIMenu.FirstOrDefault().RootName, new { @class = "form-control", @placeholder = "RootName here", @id = "RootName" })
+                                }
+                                else
+                                {
+                                    @Html.TextBox("RootName", oXIMenu.FirstOrDefault().RootName, new { @class = "form-control", @placeholder = "RootName here", @id = "RootName", @disabled = "disabled" })
+                                }
+                            </div>
+                            <div class="col-sm-4 taberrormsg">
+
+                            </div>
+                        </div>*@
+
+                    <div class="form-group row">
+                        <div class="col-md-6">
+                            <div id="XIMenuStructure"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group" id="MenuIDs">
+                                <div class="col-md-10">
+                                    <label for="inputEmail" class="gn">Select Menu</label>
+                                    @Html.DropDownList("FKiMenuID", new SelectList(oXIMenu.FirstOrDefault().CreatedMenus, "Value", "text", oXIMenu.FirstOrDefault().FKiMenuID), new { @class = "form-control", @id = "AssignMenuContent" })
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*@if (oXIMenu.FirstOrDefault().RootName == null)
+                        {
+                        <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="button" class="btn btn-theme" value="Save" id="SaveMenu" />
+                                    @*<button type="button" class="btn btn-theme decline" id="MenuCancel">Cancel</button>
+
+                                </div>
+                            </div>
+                        }*@
+                    <div id="MainDiv">
+                        @*<div id="XIMenuStructure" class="col-md-4"></div>*@
+                        <div id="AddDetails" class="col-md-6"></div>
+                        <div id="Remove" class="col-md-6"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+}
+
+<script src="~/Scripts/CommonFunctions.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.menulist1').on('click', 'a', function () {
+            $('.menulist li').removeClass('active');
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            $(this).closest('li').addClass('active');
+            var XiLinkID = $(this).attr('data-xilinkid');
+            var ActionType = $(this).attr('data-action');
+            var MenuName = $(this).text();
+            if (XiLinkID) {
+                if (ActionType == 30) {
+                    var InputParams = [];
+                    var param = {};
+                    param["sName"] = 'sType';
+                    param["sValue"] = 'Menu';
+                    InputParams.push(param);
+                    XILinkLoadJson(XiLinkID, sGUID, InputParams, MenuName);
+                }
+                else {
+                    if (XiLinkID != 4386 && XiLinkID != 4396 && XiLinkID != 4440 && XiLinkID != 4220 && XiLinkID != 4644 && XiLinkID != 4616) {
+                        XIRun(null,XiLinkID, 0, sGUID, null, false, 0, 0, MenuName);
+                    }
+                }
+            }
+        });
+        if ('@Role' == 'WMBeneficier') {
+            var iID = $('#WMBeneficierMenu');
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', iID[0]);
+            XIRun(null,5434, 0, sGUID, null, false);
+        }
+    });
+    function fncSelectTreeNode(_node, _this, ParamClear){
+        var Output = 'LeftTreeOutput';
+        var _uidialog = fncgetDialogFromHTMLTree('dialog', _this.element[0]);
+        if (Output && Output.length > 0) {
+            $(_uidialog).find('#' + Output).html('<div class="loader"></div>');
+        }
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this.element[0]);
+        var sLayoutType = "Dialog";
+        var Parent = _node.parent;
+        var ComponentName = fncGetComponentNameFromHTMLTree('Component', _this.element[0]);
+        if (_uidialog == null || (_uidialog && _uidialog.length == 0)) {
+            sLayoutType = "inline-layout";
+            _uidialog = fncgetInlineLayoutFromHTMLTree('inline-layout', _this.element[0]);
+        }
+        var CurrentGUID = sCurrentGUID;
+        var NewParams = [];
+        //var StepID = ComponentName.split('-')[1];
+        //if(QSInfo[2].sValue && QSInfo[2].sValue > 0){
+        //var iQSDID = QSInfo[0].sValue;
+        var jCompDef = '@Html.Raw(Json.Encode(Model.oDefintion))';
+        var ConfigParams = JSON.parse(jCompDef).Params;
+        if(ConfigParams && ConfigParams.length > 0) {
+            var InputParams = [];
+            var id = _node.id;
+            var parent = _node.parent;
+            for(var i=0;i<ConfigParams.length;i++){
+                if (ConfigParams[i].sName.toLowerCase() == "MenuNodeparamname".toLowerCase()) {
+                    var WrapperParms = {};
+                    WrapperParms["sName"] = ConfigParams[i].sValue;
+                    WrapperParms["sValue"] = "XIC|null";
+                    // if(Mode.length > 0 ){
+                    var param1 = {};
+                    param1["sName"] = '{XIP|ParentNode}';
+                    param1["sValue"] = parent;
+                    InputParams.push(param1);
+                    var param2 = {};
+                    param2["sName"] = 'iInstanceID';
+                    param2["sValue"] = id;
+                    InputParams.push(param2);
+                    WrapperParms["nSubParams"] = InputParams;
+                    NewParams.push(WrapperParms);
+                }
+            }
+            fncUpdateXIParams('', sGUID, sGUID, NewParams).then(function (data) {
+                $('#MainContent').empty();
+                $('.tabbtn').attr('data-load', 'false');
+                TriggerComponent(sGUID, ComponentName, data, 'MainContent',_uidialog).then(function (ID) {
+                    //LoadSubnodeStep(sGUID, 'Step7 with BO Component', QSInfo[0].sValue, ID);
+                });
+
+
+            })
+        }
+    }
+    function fncLoadMenu(_this) {
+        $('.menulist li').removeClass('active');
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+        $(_this).closest('li').addClass('active');
+        var XiLinkID = $(_this).attr('data-xilinkid');
+        var ActionType = $(_this).attr('data-action');
+        var MenuName = $(_this).text();
+        if (XiLinkID) {
+            if (ActionType == 30) {
+                var InputParams = [];
+                var param = {};
+                param["sName"] = 'sType';
+                param["sValue"] = 'Menu';
+                InputParams.push(param);
+                XILinkLoadJson(XiLinkID, sGUID, InputParams, MenuName);
+            }
+            else {
+                if (XiLinkID != 4386 && XiLinkID != 4396 && XiLinkID != 4440 && XiLinkID != 4220 && XiLinkID != 4644 && XiLinkID != 4616) {
+                    XIRun(null,XiLinkID, 0, sGUID, null, false, 0, 0, MenuName);
+                }
+            }
+        }
+    }
+
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#XIMenuStructure').hide();
+        $('#MenuIDs').hide();
+        var Nodes = @Html.Raw(Json.Encode(oXIMenu));
+        if ('@oXIMenu.FirstOrDefault().ID' > 0 || '@oXIMenu.FirstOrDefault().XIGUID' != null)
+        {
+            $('#XIMenuStructure').show();
+        }
+        debugger
+        var jsondata = [];
+        if(Nodes && Nodes!=null && Nodes.length > 0){
+            var j = 0;
+            for (var i = 0; i < Nodes.length; i++) {
+                var item = {}
+                if(Nodes[i].sType=="Org"){
+                    item["id"] = "Org"+Nodes[i].ID;
+                }
+                else{
+                    item["id"] = Nodes[i].XIGUID;
+                }
+                if (Nodes[i].ParentIDXIGUID == null || Nodes[i].ParentIDXIGUID == '00000000-0000-0000-0000-000000000000') {
+                    item["parent"] = "#";
+                }
+                else {
+                    item["parent"] = Nodes[i].ParentIDXIGUID;
+                }
+
+                item["text"] = Nodes[i].Name;
+                item["fkimenuid"] = Nodes[i].FKiMenuID;
+                var data = [];
+                var attr={};
+                attr["rootname"] = Nodes[i].RootName;
+                data.push(attr);
+
+                var attr={};
+                attr["menuid"] = Nodes[i].ID;
+                data.push(attr);
+
+                var attr={};
+                item["data"] = data;
+
+                jsondata.push(item);
+            }
+            if (jsondata.length > 0) {
+                var jsonString = JSON.stringify(jsondata);
+                createMenuJSTree(JSON.parse(jsonString));
+                $('body').unblock();
+            }
+        }
+    });
+
+    $('#SaveMenu').click(function () {
+        var RootName = $("#RootName").val();
+        var sParentID = @oXIMenu.FirstOrDefault().ID;
+        $.ajax({
+            type: 'POST',
+            url:'@Url.Action("SaveMenuTreeDetails", "XiLink")',
+            data: { RootNode: RootName, ParentNode: '#', NodeID: '', NodeTitle: 'New Menu', Type: 'create', SBOName: '@SBOName', iOrgID: '@OrgID', oParentID: sParentID },
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                $('#XIMenuStructure').show();
+                $('#SaveMenu').prop('disabled', true);
+                $('#RootName').prop('disabled', true);
+                var jsondata = [];
+                //for (var i = 0; i < data.length; i++) {
+                    var ID = data;
+                    item = {}
+                    item["id"] = ID;
+                    item["parent"] = '#';
+                    item["text"] = RootName;
+                    //item["children"] = "true";
+                    jsondata.push(item);
+                //}
+                var jsonString = JSON.stringify(jsondata);
+                createMenuJSTree(JSON.parse(jsonString));
+                //var tree = $("#XIMenuStructure").jstree(true);
+                //tree.create_node($node, { text: 'New Menu', type: 'default',id:ID });
+                @*$("#XIMenuStructure").remove();
+                $('#AddDetails').before(' <div id="XIMenuStructure" class="col-md-4"></div>');
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetMenuTreeDetails", "XiLink")',
+                    data:{ RootName:RootName},
+                    cache: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data != null) {
+                            var jsondata = [];
+                            for (var i = 0; i < data.length; i++) {
+                                var ID = data[i].MenuID;
+                                var Parent = data[i].ParentID;
+                                var text = data[i].Name;
+                                item = {}
+                                item["id"] = ID;
+                                item["parent"] = Parent;
+                                item["text"] = text;
+                                //item["children"] = "true";
+                                jsondata.push(item);
+                            }
+                            var jsonString = JSON.stringify(jsondata);
+                        }
+                        else {
+                            //No tree
+                        }
+                        createMenuJSTree(JSON.parse(jsonString));
+                        //createJSTree(jsondata);
+                    }
+                });*@
+            }
+        });
+    });
+    function createMenuJSTree(jsondata) {
+        debugger
+        $('#XIMenuStructure').empty();
+        $('#XIMenuStructure').removeAttr('class');
+        $('#XIMenuStructure').jstree({
+            "core": {
+                "themes": {
+                    "variant": "large"
+                },
+                "check_callback": true,
+                'data': jsondata,
+            },
+            "plugins": ["contextmenu", "dnd"],
+            "dnd": {},
+            "contextmenu": {
+                "items": function ($node) {
+                    debugger;
+                    var tree = $("#XIMenuStructure").jstree(true);
+
+                    var sParentID = $node.data && $node.data[1] ? $node.data[1].menuid : null;
+                    if (!sParentID) {
+                        console.error('Invalid parent node data.');
+                    }
+                    return {
+                        "Create": {
+                            "separator_before": false,
+                            "separator_after": true,
+                            "label": "Create",
+                            action: function (obj) {
+                                debugger
+                                var ID = 0;
+                                var RootName = $("#RootName").val();
+                                var iRoleID = $('#RoleID').val();
+                                var iOrgID = $('#OrgID').val();
+                                var sParentID = $node.data[1].menuid;
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("SaveMenuTreeDetails", "XiLink")',
+                                    data: { RootNode: RootName, ParentNode: $node.id, NodeTitle: 'New Menu', Type: 'create', NodeID: $node.id, SBOName: '@SBOName', iOrgID: '@OrgID', oParentID: sParentID },
+                                    cache: false,
+                                    dataType: 'json',
+                                    success: function (data) {
+                                        debugger
+                                        if (data && data.length > 0) {
+                                            ID = data;
+                                            $node = tree.create_node($node, { text: 'New Menu', type: 'default',id:ID });
+                                            tree.deselect_all();
+                                            tree.select_node($node);
+                                            var ParentID = $("#" + $node).parent().parent().attr('id');
+                                            var NodeTitle = $("#" + $node).text();
+                                            $.ajax({
+                                                type: 'POST',
+                                                url: '@Url.Action("SaveMenuTreeDetails", "XiLink")',
+                                                data: {ID:data, ParentNode: ParentID, NodeID: '', Type:'create'},
+                                                cache: false,
+                                                dataType: 'json',
+                                                success: function (result) {
+                                                    if(parseInt(result)>0){
+
+                                                    }
+                                                    else{
+                                                        alert('Error Occurred');
+                                                    }
+                                                }
+                                            });
+                                        }
+                                        else{
+                                            alert('Error Occurred');
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                        "Rename": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Rename",
+                            "action": function (obj) {
+                                tree.edit($node, null, function (node, status) {
+                                    if (node.original.text != node.text) {
+                                        RenameAndSaveToDB($node, "rename");
+                                    }
+                                });
+                            }
+                        },
+                        "Remove": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Remove",
+                            "action": function (obj) {
+                                $("#Remove").dialog({
+                                    title: "Are you sure you want to delete ? ",
+                                    buttons : {
+                                        "Yes": function () {
+                                            debugger
+                                            var CheckNode = CheckIfMain($node);
+                                            if (CheckNode == '1') {
+                                                tree.delete_node($node);
+                                                DeleteNodeDetails($node, "delete");
+                                                $(this).dialog("close");
+                                            }
+                                        },
+                                        "No" : function() {
+                                            $(this).dialog("close");
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                        "AddDetails": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Add Details",
+                            "action": function (obj) {
+                                jsondata1=$node;
+                                fncSelectTreeNode($node, tree)
+                            }
+                        }
+                    };
+                }
+            },
+        }).bind("move_node.jstree", function (e, data) {
+            DragAndDropNodes(data)
+        }).bind("loaded.jstree", function (event, data) {
+            $(this).jstree("close_all");
+        }).bind("select_node.jstree", function (NODE, REF_NODE) {
+        });
+        self.onmessage = function (event) {
+            debugger
+            console.log(event.data); // Check the data being passed
+            if (event.data && event.data.children) {
+                // Safe to access event.data.children
+            } else {
+                console.error("Children property is missing or undefined");
+            }
+        };
+    }
+
+    //Check if Main Node "Add Menu"
+    function CheckIfMain($node)
+    {
+        var NodeID = $node.id;
+        if (NodeID == "MainPrnt") {
+            return 0;
+        }
+        else {
+            return 1;
+        }
+    }
+
+    $("#RootName").change(function () {
+        $('#XIMenuStructure').empty();
+        var RootName = $("#RootName").val();
+        var iRoleID = $('#RoleID').val();
+        var iOrgID = $('#OrgID').val();
+        if(iRoleID > 0 && iOrgID > 0)
+        {
+            var tree = $("#XIMenuStructure").jstree(true);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AssignMenu", "Home")',
+                data: {RootNode:RootName, ParentNode: '#', NodeID: '', NodeTitle: 'New Menu', Type:'create',ID : 0,iRoleID:iRoleID,iOrgID:iOrgID},
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    if(data > 0)
+                    {
+                        var jsondata = [];
+                        var item = {}
+                        item["id"] = data;
+                        item["parent"] = "#";
+                        item["text"] = RootName;
+                        item["fkimenuid"] = data;
+                        jsondata.push(item);
+
+                        if (jsondata.length > 0) {
+                            var jsonString = JSON.stringify(jsondata);
+                            createMenuJSTree(JSON.parse(jsonString));
+                            $('body').unblock();
+                            $('#XIMenuStructure').show();
+                        }
+                    }
+                }
+            });
+        }
+    });
+    //delete
+    function DeleteNodeDetails($node, action) {
+        debugger
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ChildrnID = "";
+        for (var i = 0; i < ChldnID.length; i++)
+        {
+            var chldID = ChldnID[i];
+            ChildrnID = chldID + "," + ChildrnID;
+        }
+        var ChildrnIDs = ChildrnID.substring(0, ChildrnID.length - 1);
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        var iRoleID = 0;
+        //if (NodeID != "MainPrnt") {
+        $.ajax({
+            type: 'POST',
+            @*url: '@Url.Action("DeleteNodeDetails", "Home")',*@
+            url: '@Url.Action("SaveMenuTreeDetails", "XiLink")',
+            data: { RootNode: '', ParentNode: ParentID, NodeID: NodeID, NodeTitle: '', Type: 'delete', SBOName:'XI Menu', iOrgID:0, oParentID:0 },
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                //you can also remove this... as client side has the details and on load we are displaying above
+                //if (data != null) {
+                //    var jsondata = [];
+                //    item = {}
+                //    item["id"] = "MainPrnt";
+                //    item["parent"] = "#";
+                //    item["text"] = "Add Menu";
+                //    jsondata.push(item);
+
+                //    for (var i = 0; i < data.length; i++) {
+                //        var ID = data[i].MenuID;
+                //        var Parent = data[i].ParentID;
+                //        var text = data[i].Name;
+
+                //        item = {}
+                //        item["id"] = ID;
+                //        item["parent"] = Parent;
+                //        item["text"] = text;
+                //        jsondata.push(item);
+
+                //    }
+                //    var jsonString = JSON.stringify(jsondata);
+                //}
+                //else {
+                //    jsonString = [
+                //       { "id": "MainPrnt", "parent": "#", "text": "Add" }
+                //    ];
+                //}
+                //call function to recreate tree
+                //createJSTree(JSON.parse(jsonString));
+                //$('#jstree').jstree(true).settings.core.data = jsonString;
+                //$('#jstree').jstree(true).refresh();
+            }
+        });
+        // }
+        //else {
+
+        //}
+    }
+    //rename and save the details
+    function RenameAndSaveToDB($node, action) {
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        var RootName = $("#RootName").val();
+        if (NodeID != "MainPrnt") {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SaveMenuTreeDetails", "XiLink")',
+                data: { RootNode: RootName, ParentNode: ParentID, NodeID: NodeID, NodeTitle: NodeTitle, Type: action, SBOName: '@SBOName', iOrgID: '@OrgID', oParentID:0 },
+                cache: false,
+                dataType: 'json',
+                success: function (data) { }
+            });
+        }
+        else {
+
+        }
+    }
+    //Rename and save the details
+    @*function RenameNode($node, action) {
+        var RootName = $("#RootName").val();
+        var NodeID = $node.id;
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        if (NodeID != "MainPrnt") {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AssignMenu", "Home")',
+                data: {RootNode:RootName,  ParentNode: ParentID, NodeID: NodeID, NodeTitle: NodeTitle, Type: action,ID:NodeID },
+                cache: false,
+                dataType: 'json',
+                success: function (data) { }
+            });
+        }
+        else {
+
+        }
+    }*@
+
+    //Assigning Menu to Node
+    function AssignMenu($node) {
+        var oTreeObj = $("#XIMenuStructure").jstree("get_selected",true);
+        var iID = oTreeObj[0].id;
+        if (iID > 0) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetAssignedMenu", "Home")',
+                data: {ID:iID },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    if(data != null)
+                    {
+                        var iMenuID = data.FKiMenuID;
+                        $('#MenuIDs').show();
+                        var oCreatedMenus = @Html.Raw(Json.Encode(oXIMenu.FirstOrDefault().CreatedMenus));
+                        $('#AssignMenuContent').empty();
+                        for(i=0;i<oCreatedMenus.length;i++){
+                            if(iMenuID == oCreatedMenus[i].Value)
+                            {
+                                $('#AssignMenuContent').append('<option value=' + oCreatedMenus[i].Value + ' selected>' + oCreatedMenus[i].text + '</option>');
+                            }
+                            else
+                            {
+                                $('#AssignMenuContent').append('<option value=' + oCreatedMenus[i].Value + '>' + oCreatedMenus[i].text + '</option>');
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+    }
+    $('#AssignMenuContent').change(function(){
+        var iFKiMenuID = $('#AssignMenuContent option:selected').val();
+        if(iFKiMenuID > 0)
+        {
+            var oTreeObj = $("#XIMenuStructure").jstree("get_selected",true);
+            var NodeID = oTreeObj[0].id;
+            var ParentID = oTreeObj[0].parent;
+            if (NodeID != "MainPrnt") {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("AssignMenu", "Home")',
+                    data: {ParentNode: ParentID, NodeID: iFKiMenuID,Type: "Assign",ID:NodeID},
+                    cache: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        if(data!=null)
+                        {
+                        }
+                    }
+                });
+            }
+            else {
+
+            }
+        }
+    });
+
+</script>
+<style>
+    #tabs {
+        width: 100%;
+        height: 30px;
+        border-bottom: solid 1px #CCC;
+        padding-right: 2px;
+        margin-top: 30px;
+    }
+
+    a {
+        cursor: pointer;
+    }
+
+    #tabs li {
+        float: left;
+        list-style: none;
+        border-top: 1px solid #ccc;
+        border-left: 1px solid #ccc;
+        border-right: 1px solid #ccc;
+        margin-right: 5px;
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+        outline: none;
+    }
+
+        #tabs li a {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: small;
+            font-weight: bold;
+            color: #5685bc;
+            ;
+            padding-top: 5px;
+            padding-left: 7px;
+            padding-right: 7px;
+            padding-bottom: 8px;
+            display: block;
+            background: #FFF;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+            text-decoration: none;
+            outline: none;
+        }
+
+            #tabs li a.inactive {
+                padding-top: 5px;
+                padding-bottom: 8px;
+                padding-left: 8px;
+                padding-right: 8px;
+                color: #666666;
+                background: #EEE;
+                outline: none;
+                border-bottom: solid 1px #CCC;
+            }
+
+                #tabs li a:hover, #tabs li a.inactive:hover {
+                    color: #5685bc;
+                    outline: none;
+                }
+
+    .container {
+        clear: both;
+        width: 100%;
+        border-left: solid 1px #CCC;
+        border-right: solid 1px #CCC;
+        border-bottom: solid 1px #CCC;
+        text-align: left;
+        padding-top: 20px;
+    }
+
+        .container h2 {
+            margin-left: 15px;
+            margin-right: 15px;
+            margin-bottom: 10px;
+            color: #5685bc;
+        }
+
+        .container p {
+            margin-left: 15px;
+            margin-right: 15px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            line-height: 1.3;
+            font-size: small;
+        }
+
+        .container ul {
+            margin-left: 25px;
+            font-size: small;
+            line-height: 1.4;
+            list-style-type: disc;
+        }
+
+        .container li {
+            padding-bottom: 5px;
+            margin-left: 5px;
+        }
+
+    .vakata-context {
+        z-index: 10000;
+    }
+</style>

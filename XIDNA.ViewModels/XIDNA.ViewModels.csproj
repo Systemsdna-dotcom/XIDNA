@@ -1,0 +1,142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{099E075A-0736-468D-AA77-74462D803162}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>XIDNA.ViewModels</RootNamespace>
+    <AssemblyName>XIDNA.ViewModels</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="XICore">
+      <HintPath>..\XICore\bin\XICore.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BOs\BOAttributeVIewModel.cs" />
+    <Compile Include="BOs\BOTreeViewModel.cs" />
+    <Compile Include="BOs\BOViewModel.cs" />
+    <Compile Include="BOs\VMBOClassAttributes.cs" />
+    <Compile Include="BOs\VMBOProperties.cs" />
+    <Compile Include="BOs\VMCreateForm.cs" />
+    <Compile Include="BOs\VMWherePopUP.cs" />
+    <Compile Include="Common\EnumClasses.cs" />
+    <Compile Include="Common\VMCustomResponse.cs" />
+    <Compile Include="Content\Content.cs" />
+    <Compile Include="Dashboard\DashBoardGraphs.cs" />
+    <Compile Include="Dashboard\UserSettings.cs" />
+    <Compile Include="Dashboard\VMDashReports.cs" />
+    <Compile Include="Dashboard\VMForeginKeys.cs" />
+    <Compile Include="Dashboard\VMKPIResult.cs" />
+    <Compile Include="Dashboard\VMReminders.cs" />
+    <Compile Include="Dashboard\VMUserDashContents.cs" />
+    <Compile Include="Dashboard\VMUserReports.cs" />
+    <Compile Include="DropDown\VMDropDown.cs" />
+    <Compile Include="DropDown\VMDropDowns.cs" />
+    <Compile Include="Home\VMUserConfigurations.cs" />
+    <Compile Include="Inbox\VMOneClicks.cs" />
+    <Compile Include="Inbox\VMRunUserQuery.cs" />
+    <Compile Include="Leads\ViewDetails.cs" />
+    <Compile Include="Leads\VMActionTypes.cs" />
+    <Compile Include="Leads\VMFieldExpressions.cs" />
+    <Compile Include="Leads\VMImproperData.cs" />
+    <Compile Include="Leads\VMLeadActions.cs" />
+    <Compile Include="Leads\VMLeadEmail.cs" />
+    <Compile Include="Leads\VMLeadEngine.cs" />
+    <Compile Include="Leads\VMLeadMappings.cs" />
+    <Compile Include="Leads\VMLeadPopupLeft.cs" />
+    <Compile Include="Leads\VMLeadRecord.cs" />
+    <Compile Include="Leads\VMLeads.cs" />
+    <Compile Include="Leads\VMLeadsList.cs" />
+    <Compile Include="Leads\VMLeadValidation.cs" />
+    <Compile Include="Leads\VMMappedFields.cs" />
+    <Compile Include="Leads\VMNewLeads.cs" />
+    <Compile Include="Leads\VMStages.cs" />
+    <Compile Include="Leads\VMValidationDetails.cs" />
+    <Compile Include="Mails\VMAPPNotifications.cs" />
+    <Compile Include="Mails\VMMailExtractStrings.cs" />
+    <Compile Include="Organization\VMOrganization.cs" />
+    <Compile Include="Organization\VMOrganizationForms.cs" />
+    <Compile Include="Organization\VMOrganizationTeams.cs" />
+    <Compile Include="Popups\VMPopup.cs" />
+    <Compile Include="Popups\VMPopupLayout.cs" />
+    <Compile Include="Popups\VMPopupLayoutMappings.cs" />
+    <Compile Include="Popups\VMViewPopup.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueryGeneration\VMQueryActions.cs" />
+    <Compile Include="QueryGeneration\VMQueryPreview.cs" />
+    <Compile Include="QueryGeneration\VMQuickSearch.cs" />
+    <Compile Include="QueryGeneration\VMReports.cs" />
+    <Compile Include="QueryGeneration\VMResultList.cs" />
+    <Compile Include="QueryGeneration\VMXI1ClickLinks.cs" />
+    <Compile Include="QueryGeneration\VMXI1ClickParameter.cs" />
+    <Compile Include="Tabs\VMAssignReports.cs" />
+    <Compile Include="Tabs\VMBespoke.cs" />
+    <Compile Include="Tabs\VMChart.cs" />
+    <Compile Include="Tabs\VMKPICircle.cs" />
+    <Compile Include="Tabs\VMTabContent.cs" />
+    <Compile Include="Tabs\VMViewRecord.cs" />
+    <Compile Include="Users\VMAspNetRoles.cs" />
+    <Compile Include="Users\VMUsers.cs" />
+    <Compile Include="Wallet\VMMessages.cs" />
+    <Compile Include="Wallet\VMRequests.cs" />
+    <Compile Include="Wallet\VMWalletOrders.cs" />
+    <Compile Include="XiComponents\VMXiComponents.cs" />
+    <Compile Include="XICore\VM_cXIAppUserDetails.cs" />
+    <Compile Include="XiLink\VMList.cs" />
+    <Compile Include="XiLink\VMXiLinks.cs" />
+    <Compile Include="XiLink\VMXiParameters.cs" />
+    <Compile Include="XiLink\VMXiVisualisations.cs" />
+    <Compile Include="XISemantics\VMXISemantics.cs" />
+    <Compile Include="XISemantics\VMXISemanticsNavigations.cs" />
+    <Compile Include="XISemantics\VMXISemanticsSteps.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

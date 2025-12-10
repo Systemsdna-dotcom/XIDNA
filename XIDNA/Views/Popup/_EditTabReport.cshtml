@@ -1,0 +1,590 @@
+﻿@model XIDNA.Models.Tab1Clicks
+
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: '@Url.Action("GetCategoryDetails", "Popup")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            cache: false,
+            success: function (data) {
+                if (data.length > 0) {
+                    for (i = 0; i < data.length; i++) {
+                        $('#ClickCategory').append('<option value="' + data[i] + '">' + data[i] + '</option>');
+                    }
+                    $('#ClickCategory').val('@Model.Category');
+                }
+                else {
+                }
+            },
+            error: function (data) { }
+        });
+        $('#ClickCategory').prop('disabled',true);
+        $('#SectionMapping').hide();
+        $('#Section').prop('disabled',true);
+        var classid = '@Model.ClassID';
+        var tab = '@Model.TabID';
+        var id = '@Model.ID';
+        var display = '@Model.DisplayAs';
+        if ('@Model.IsBespoke' == "True") {
+            $('#LeadPopupFields').hide();
+            $('#URL').show();
+        }
+        else {
+            $('#URL').hide();
+            $('#LeadPopupFields').show();
+        }
+        $.ajax({
+            url: '@Url.Action("GetQueriesByTypeForEdit", "Popup")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            cache: false,
+            data: { Tab1ClickID: id},
+            success: function (data) {
+                if (data.length > 0) {
+                    for (i = 0; i < data.length; i++) {
+                        $('#Reports').append('<option value="' + data[i].value + '">' + data[i].text + '</option>');
+                    }
+                    $('#Reports').val('@Model.ReportID');
+                }
+            },
+            error: function (data) { }
+        });
+        $('.feature-box ul').on('click', 'li', function () {
+            var name = $(this).attr('name');
+            $('.feature-box ul').each(function (i, li) {
+                $('li').removeClass('selected');
+            })
+            $(this).toggleClass('selected');
+        });
+        $('#SectionFields').on('click', 'li', function () {
+            var name = $(this).attr('name');
+            $('#SectionFields ul').each(function (i, li) {
+                $('li').removeClass('selected');
+            })
+            $(this).toggleClass('selected');
+        });
+        $("#Arrow").on('click', 'button.LeftBtn', function () {
+            var ul = $(this).attr('name');
+            var selectedItem = $("ul[id=" + ul + "] .selected");
+            if (selectedItem.length != 0) {
+                $("#leftValues").append(selectedItem);
+            }
+            else {
+                alert('Please Select Field');
+            }
+        });
+        $("#Arrow").on('click', 'button.RightBtn', function () {
+            var ul = $(this).attr('name');
+            var selectedItem = $("#leftValues .selected");
+            if (selectedItem.length != 0) {
+                $("ul[id=" + ul + "]").append(selectedItem);
+            }
+            else {
+                alert('Please Select Field');
+            }
+        });
+        $('#DisplayAs').change(function () {
+            var classid = $('#ClassID :selected').val();
+            var displayas = $('#DisplayAs :selected').val();
+            $.ajax({
+                url: '@Url.Action("GetQueriesByType", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { TabID: tab, DisplayAs: displayas, ClassType: classid },
+                success: function (data) {
+                    if (data.length > 0) {
+                        $('#ReportError').empty();
+                        $('#Reports').html('<option value="">--Select--</option>');
+                        for (i = 0; i < data.length; i++) {
+                            $('#Reports').append('<option value="' + data[i].value + '">' + data[i].text + '</option>');
+                        }
+                    }
+                    else {
+                        $('#Reports').html('<option value="">--Select--</option>');
+                        $('#ReportError').empty();
+                        $('#ReportError').append('<span>No Reports For This Class</span>');
+                    }
+                },
+                error: function (data) { }
+            });
+        });
+        $('#SaveField').click(function () {
+            var sections = new Array();
+            var fields = new Array();
+            var listItems = $('#SectionFields ul');
+            for (i = 0; i < listItems.length; i++) {
+                var single = listItems[i].attributes;
+                for (j = 0; j < single.length; j++) {
+                    if (single[j].name == "data-id") {
+                        var sectionid = single[j].nodeValue;
+                        sections.push(sectionid);
+                    }
+                }
+                var ul = listItems[i];
+            }
+            for (i = 0; i < listItems.length; i++) {
+                var ul = listItems[i];
+                var id = ul.attributes;
+                for (j = 0; j < id.length; j++) {
+                    if (id[j].name == "id") {
+                        var names = "";
+                        var field = id[j].nodeValue;
+                        var Items = $('#' + field + ' li');
+                        for (k = 0; k < Items.length; k++) {
+                            var field = Items[k];
+                            names = names + field.textContent + ", ";
+                        }
+                        if (Items.length > 0) {
+                            names = names.slice(0, -2);
+                        }
+                        else {
+                            names = null;
+                        }
+                    }
+                }
+                fields.push(names);
+            }
+            var isview, isedit, iscreate;
+            if ($('#IsView').prop('checked') == true) {
+                isview = true
+            }
+            else {
+                isview = false;
+            }
+            if ($('#IsEdit').prop('checked') == true) {
+                isedit = true
+            }
+            else {
+                isedit = false;
+            }
+            if ($('#IsCreate').prop('checked') == true) {
+                iscreate = true
+            }
+            else {
+                iscreate = false;
+            }
+            var tabid = $('#TabID').val();
+            var tab1clickid = $('#Tab1ClickID').val();
+            var Save;
+            for (i = 0; i < fields.length; i++) {
+                if (fields[i] == null) {
+
+                }
+                else {
+                    Save = true;
+                }
+            }
+            if (Save == true) {
+                $.ajax({
+                    url: '@Url.Action("SaveSectionFields", "Popup")',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "JSON",
+                    cache: false,
+                    data: JSON.stringify({
+                        TabID: tabid,
+                        ID: tab1clickid,
+                        SectionIDs: sections,
+                        Fields: fields,
+                        IsView: isview,
+                        IsEdit: isedit,
+                        IsCreate: iscreate
+                    }),
+                    success: function (data) {
+                        $('#SectionMapping').hide();
+                        $("#EditReportDlg").html('Section Fields Assigned Successfully!');
+                        $("#EditReportDlg").dialog({
+                            title: "Sections",
+                            modal: true,
+                            buttons: [
+                               {
+                                   text: "OK",
+                                   click: function () {
+                                       $("#EditReportDlg").dialog("close");
+                                   }
+                               }
+                            ]
+                        });
+                    },
+                    error: function (data) { }
+                });
+            }
+            else {
+                $("#EditReportDlg").html('Select Section Fields!');
+                $("#EditReportDlg").dialog({
+                    title: "Sections",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "OK",
+                           click: function () {
+                               $("#EditReportDlg").dialog("close");
+                           }
+                       }
+                    ]
+                });
+            }
+
+        });
+
+    });
+</script>
+<style>
+    .reporterrormsg{
+        margin-top:30px;
+    }
+    #ReportError {
+        font-size: 10px;
+        color: red;
+    }
+
+    #NoReport {
+        margin-top: -10px;
+    }
+    .selected {
+        background-color: #367fa9;
+        color: #fff !important;
+    }
+
+    #SectionMapping ul {
+        height: 100px;
+    }
+
+    #SectionFields h4 {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .Arrows {
+        padding-top: 50px;
+        padding-bottom: 18px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Add 1-Click To Tab </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> 1-Clicks</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body col-md-5">
+                    @using (Ajax.BeginForm("SaveReportToTab", "Popup", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnComplete" }, new { @id = "ReportToTabForm", @class = "form-horizontal" }))
+                    {
+                        @Html.AntiForgeryToken();
+                        @Html.HiddenFor(m => m.ID);
+                        <div class="form-group">
+                            <div class="col-md-6">
+                                <label for="inputEmail" class="gn">Category<span class="danger"></span></label>
+                                @Html.DropDownListFor(m => m.Category, new SelectList(new List<Object>{
+                            }), new { @class = "form-control", @value = "Category", @id = "ClickCategory" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6">
+                                <label for="inputEmail" class="gn">Tab<span class="danger"></span></label>
+                                @Html.DropDownListFor(m => m.TabID, new SelectList(Model.Tabs, "value", "text"), "--Select--", new { @class = "form-control", @id = "Class", @disabled = "disabled" })
+                            </div>
+                            <div class="col-sm-3 reporterrormsg">
+                                @Html.ValidationMessageFor(m => m.TabID, null, new { @class = "red" })
+                            </div>
+                        </div>
+                        if (Model.TabSections.Count() > 1)
+                        {
+                            <div class="form-group">
+                            <div class="col-md-6">
+                                <label for="inputEmail" class="gn">Section<span class="danger"></span></label>
+                                @Html.DropDownListFor(m => m.SectionID, new SelectList(Model.TabSections, "value", "text"), "--Select--", new { @class = "form-control", @id = "Section"})
+                            </div>
+                            <div class="col-sm-3 reporterrormsg">
+                                @Html.ValidationMessageFor(m => m.SectionID, null, new { @class = "red" })
+                            </div>
+                        </div>    
+                        }
+                        <div id="LeadPopupFields">
+                        <div class="form-group">
+                            <div class="col-md-6">
+                                <label for="inputEmail" class="gn">Class<span class="danger"></span></label>
+                                @Html.DropDownListFor(m => m.ClassID, new SelectList(Model.Classes, "value", "text"), "--Select--", new { @class = "form-control", @id = "ClassID" })
+                            </div>
+                            <div class="col-sm-3 reporterrormsg">
+                                @Html.ValidationMessageFor(m => m.Classes, null, new { @class = "red" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">Display<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.DisplayAs, new SelectList(new List<Object>{
+                                   new { key= "" , value = "--Select--" },
+                       new { key= "80" , value = "View Record" },
+                       new { key= "50" , value = "Result List" },
+                       new { key= "10", value = "KPI Circle" },
+                       new { key= "20", value = "KPI Pie Chart" },
+                       new { key= "30", value = "KPI Bar Chart" },
+                       new { key= "40", value = "KPI Line Graph" },
+                            }, "key", "Value"), new { @class = "form-control", @id = "DisplayAs" })
+                                </div>
+                            <div class="col-sm-3 reporterrormsg">
+                                @Html.ValidationMessageFor(m => m.DisplayAs, null, new { @class = "red" })
+                            </div>
+                            </div>
+                        <div class="form-group">
+                            <div class="col-md-6">
+                                <label for="inputEmail" class="gn">1-Click Query<span class="danger"></span></label>
+                                @Html.DropDownListFor(model => model.ReportID, new SelectList(new List<Object> { }), "--Select--", new { @class = "form-control", @id = "Reports" })
+                            </div>
+                            <div class="col-sm-3 reporterrormsg">
+                                @Html.ValidationMessageFor(m => m.ReportID, null, new { @class = "red" })
+                            </div>
+                        </div>
+                        <div class="form-group" id="NoReport">
+                        <div class="col-md-3" id="ReportError">
+
+                        </div>
+
+                    </div>
+                            </div>
+                        <div id="URL">
+                            @if (Model.IsBespoke == true)
+                            {
+                            @Html.HiddenFor(m => m.IsBespoke, new { @Value=true})    
+                            }
+                            else
+                            {
+                                @Html.HiddenFor(m => m.IsBespoke, new { @Value=false})
+                            }
+                            
+        <div class="form-group">
+            <div class="col-md-6">
+                <label for="inputEmail" class="gn">URL<span class="danger"></span></label>
+                @Html.TextBoxFor(model => model.URL, new { @placeholder = "Enter URL", @class = "form-control", @id = "UrlText" })
+            </div>
+            <div class="col-sm-3 taberrormsg">
+                @Html.ValidationMessageFor(m => m.URL, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-6">
+                @Html.RadioButtonFor(model => model.RefreshType, "Page", new { id = "PageRefresh", @checked = "checked" })
+                @Html.Label("Page Refresh", "Page Refresh")
+                @Html.RadioButtonFor(model => model.RefreshType, "Section", new { id = "SectionRefresh" })
+                @Html.Label("Section Refresh", "Section Refresh")
+                @*<input type="radio" name="RefreshType" value="Page" /> Page Refresh
+                    <input type="radio" name="RefreshType" value="Section" /> Section Refresh*@
+            </div>
+        </div>
+    </div>
+                        <div class="form-group">
+                            <div class="col-md-6">
+                                <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <button type="submit" class="btn btn-theme" id="SaveReport">Save</button>
+                                <button type="button" class="btn btn-theme decline" id="CancelReport">Cancel</button>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+                <div class="col-md-6" id="SectionMapping">
+                    <div class="box_filters">
+                        <div class="feature-box col-md-5">
+                            <h4>Available Fields</h4>
+                            <ul class="list1 task availableTasks form-control" id="leftValues"></ul>
+                        </div>
+                        <div class="arrows_div col-md-2" id="Arrow">
+                            <div id="Arrows">
+                                <button class="" type="button" id="btnRight"> <img src="~/Content/images/arrow-slider-right.png"> </button>
+                                <br>
+                                <button class="" id="btnLeft" type="button"> <img src="~/Content/images/arrow-slider-left.png"> </button>
+                            </div>
+                        </div>
+                        <div class="feature-box col-md-5">
+                            <div id="SectionFields">
+                                <h4>Selected Fields</h4>
+                                <ul id="rightValues" class="AssignedFields list2 task form-control"></ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-3 groupname">
+                            <input type="hidden" id="TabID" name="TabID" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-3 groupname">
+                            <input type="hidden" id="Tab1ClickID" name="Tab1ClickID" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group col-sm-10">
+                        <input type="checkbox" id="IsView" name="IsView" /> IsView
+                    </div>
+                    <div class="form-group col-sm-10">
+                        <input type="checkbox" id="IsEdit" name="IsEdit" /> IsEdit
+
+                    </div>
+                    <div class="form-group col-sm-10">
+                        <input type="checkbox" id="IsCreate" name="IsCreate" /> IsCreate
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-theme" id="SaveField">Save</button>
+                            <button type="button" class="btn btn-theme decline" id="CancelField">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="TabPreview" class="col-md-7"></div>
+            </div>
+        </div>
+    </div>
+
+</section>
+<div id="EditReportDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+
+<script>
+    function OnComplete(e) {
+        opener.location.reload();
+        $('#SectionMapping').hide();
+        var ReportId = e.ReportID;
+        var ClassId = e.ClassID;
+        if (e.ReportType == "View Record") {
+            $('#TabPreview').html('');
+            $('#SectionMapping').show();
+            var Sections = e.TabSections;
+            var Fields = e.Fields;
+            var data = e;
+            if (Sections.length > 0) {
+                $('#SectionFields').empty();
+                $('#Arrow').empty();
+                for (i = 0; i < Sections.length; i++) {
+                    $('#SectionFields').append('<h4>Selected Fields For ' + Sections[i].text + ' </h4>');
+                    $('#SectionFields').append('<ul id="rightValues' + [i] + '" data-id ="' + Sections[i].Value + '"  name="' + Sections[i].text + '" class="AssignedFields list2 task form-control"></ul>');
+                    $('#Arrow').append('<div class="Arrows"><button class="RightBtn" name="rightValues' + [i] + '" type="button" id="btnRight' + [i] + '"> <img src="/XIDynaware/Content/images/arrow-slider-right.png"> </button><br><button class="LeftBtn" id="btnLeft' + [i] + '" name="rightValues' + [i] + '" type="button"> <img src="/XIDynaware/Content/images/arrow-slider-left.png"> </button><br></div>');
+                }
+            } else {
+                $('#SectionFields').empty();
+                $('#Arrow').empty();
+                $('#SectionFields').append('<h4>Selected Fields For Tab </h4>');
+                $('#Arrow').append('<div class="Arrows"><button class="RightBtn" name="rightValues1" type="button" id="btnRight1"> <img src="/XIDynaware/Content/images/arrow-slider-right.png"> </button><br><button class="LeftBtn" id="btnLeft1" name="rightValues1" type="button"> <img src="/XIDynaware/Content/images/arrow-slider-left.png"> </button><br></div>');
+                $('#SectionFields').append('<ul id="rightValues1" data-id ="Tab"  name="1" class="AssignedFields list2 task form-control"></ul>');
+
+            }
+            $('#TabID').val(e.TabID);
+            $('#Tab1ClickID').val(e.ID);
+            for (i = 0; i < Fields.length; i++) {
+                $('#leftValues').append('<li name="name' + [i] + '">' + Fields[i] + '</li>');
+            }
+            if (Sections.length > 0) {
+                var height = (100 * Sections.length) + (Sections.length * 23) + "px";
+                $('#leftValues').css('height', height);
+            }
+            else {
+                var height = "105px";
+                $('#leftValues').css('height', height);
+            }
+        }
+        else if (e.ReportType == "Result List") {
+            $.ajax({
+                url: '@Url.Action("GetQueryPreview", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { ReportID: ReportId },
+                success: function (data) {
+                    $('#TabPreview').html(data);
+                },
+                error: function (data) { }
+            });
+        }
+        else if (e.ReportType == "KPI Circle") {
+            $.ajax({
+                url: '@Url.Action("GetKPICircleResult", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { ReportID: ReportId },
+                success: function (data) {
+                    $('#TabPreview').html(data);
+                },
+                error: function (data) { }
+            });
+        }
+        else if (e.ReportType == "KPI Pie Chart") {
+            $.ajax({
+                url: '@Url.Action("GetPieChartResult", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { ReportID: ReportId },
+                success: function (data) {
+                    $('#TabPreview').html(data);
+                },
+                error: function (data) { }
+            });
+        }
+        else if (e.ReportType == "KPI Bar Chart") {
+            $.ajax({
+                url: '@Url.Action("GetBarChartResult", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { ReportID: ReportId },
+                success: function (data) {
+                    $('#TabPreview').html(data);
+                },
+                error: function (data) { }
+            });
+        }
+        else if (e.ReportType == "Bespoke") {
+            $('#TabPreview').html('<h4>No Preview For Bespoke Tabs</h4>');
+        }
+        $("#EditReportDlg").html('Report Assigned Successfully! <br/>Do You Want To See Preview?');
+        $("#EditReportDlg").dialog({
+            title: "Tabs",
+            modal: true,
+            buttons: [
+               {
+                   text: "Yes",
+                   click: function () {
+                       $("#EditReportDlg").dialog("close");
+                   }
+               },
+            {
+                text: "No",
+                click: function () {
+                    window.close();
+                }
+            }
+            ]
+        });
+    }
+    $('#CancelReport').click(function () {
+        window.close();
+    });
+    $('#CancelField').click(function () {
+        window.close();
+    });
+</script>

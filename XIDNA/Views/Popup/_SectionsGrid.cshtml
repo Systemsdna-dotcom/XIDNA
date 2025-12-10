@@ -1,0 +1,124 @@
+﻿@model IEnumerable<XIDNA.Models.Sections>
+
+<script>
+    $('#SectionsTable').on('click', 'a.SectionDelete', function () {
+        var tabid = $(this).attr('data-tabid');
+        var secid = $(this).attr('data-secid');
+        $(".DeleteSection").html('Do You Want To Delete This Section?');
+        $(".DeleteSection").dialog({
+            title: "Tabs",
+            modal: true,
+            buttons: [
+               {
+                   text: "Yes",
+                   click: function () {
+                       $(".DeleteSection").dialog("close");
+                       if (tabid > 0) {
+                           $.ajax({
+                               url: '@Url.Action("DeleteSection", "Popup")',
+                               type: 'GET',
+                               contentType: "application/json; charset=utf-8",
+                               datatype: "html",
+                               cache: false,
+                               data: { TabID: tabid, SectionID: secid },
+                               success: function (data) {
+                                   $('#SectionPreview').hide();
+                                   $.ajax({
+                                       url: '@Url.Action("GetSectionsByTab", "Popup")',
+                                       type: 'GET',
+                                       contentType: "application/json; charset=utf-8",
+                                       datatype: "JSON",
+                                       cache: false,
+                                       data: { TabID: tabid },
+                                       success: function (data) {
+                                           $('.SectionsListTable').html(data);
+                                       },
+                                       error: function (data) { }
+                                   });
+                                   $.ajax({
+                                       url: '@Url.Action("GetAllSecRanks", "Popup")',
+                                       type: 'GET',
+                                       contentType: "application/json; charset=utf-8",
+                                       datatype: "JSON",
+                                       cache: false,
+                                       data: { TabID: tabid },
+                                       success: function (data) {
+                                           if (data.length > 0) {
+                                               $('#SecRank').empty();
+                                               for (i = 0; i < data.length; i++) {
+                                                   $('#SecRank').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>')
+                                               }
+                                           }
+                                       },
+                                       error: function (data) { }
+                                   });
+                               },
+                               error: function (data) { }
+                           });
+                           //$('#AddSection').hide();
+                       }
+                   }
+               },
+            {
+                text: "No",
+                click: function () {
+                    window.close();
+                }
+            }
+            ]
+        });
+    });
+</script>
+
+<style>
+    #SectionsTable {
+        margin-bottom: 15px;
+    }
+</style>
+
+<h4>List Of Sections</h4>
+<div class="table-clean">
+    <table class="col-md-12 table table-striped custom-table dark-head dark-head2 table-condensed" border="1" id="SectionsTable">
+        <thead>
+            <tr>
+
+                <th> Name </th>
+                <th> Rank</th>
+                <th> Status </th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count() > 0)
+            {
+                foreach (var item in @Model)
+                {
+                    <tr>
+                        <td> @item.Name </td>
+                        <td> @item.Rank </td>
+                        @if (item.StatusTypeID == 10)
+                        {
+                            <td> Active </td>
+                        }
+                        else
+                        {
+                            <td> Inactive </td>
+                        }
+
+                        <td><a class="SectionDelete" data-tabid=@item.TabID data-secid=@item.ID>Delete</a></td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" style="text-align:center">No Data Available</td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+</div>
+
+
+<div class="dialog-box DeleteSection" title="Confirm Message" style="background-color:white;"></div>

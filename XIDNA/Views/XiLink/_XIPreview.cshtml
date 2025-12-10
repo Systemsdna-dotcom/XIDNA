@@ -1,0 +1,36 @@
+﻿@model XICore.XIDefinitionBase
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<style>
+    #XIPreview{
+        width: 250px;
+    }
+    .conXiLink, .conDialog, .conLayout, .conComponent, .conHTML,.conStep {
+        padding: 5px;
+        border: 1px solid #f28d48;
+        display: block;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> XI Preview </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Preview</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body padding10Tab">
+                <div class="innerborder">
+                    <div id="XIPreview">
+                        @{
+                            Html.RenderPartial("_XIPreviewContent", Model);
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

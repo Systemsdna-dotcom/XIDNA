@@ -1,0 +1,43 @@
+﻿@model List<XIDNA.ViewModels.VM_UserCacheKeyValue>
+@{
+    Layout = null;
+    var NewModel = Model;
+    int i = 1;
+}
+
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="row">
+                </div>
+                <div class="box-body">
+                    <div class="table-clean">
+                        <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="example">
+                            <thead>
+                                <tr role="row">
+                                    <th>S.No</th>
+                                    <th>GUID</th>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in NewModel)
+                                {
+                                    <tr>
+                                        <td>@i</td>
+                                        <td>@item.sGUID</td>
+                                        <td>@item.sKey</td>
+                                        <td>@item.sValue</td>
+                                    </tr>
+                                    i++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,222 @@
+﻿@model XIDNA.Models.cXIQSStages
+
+@{
+    Layout = null;
+}
+
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        if (parseInt('@Model.ID')) {
+            $('#StatusTypeID').val('@Model.StatusTypeID');
+        }
+
+        //Add More XiQSStages
+        $('#AddMore').click(function () {
+            var Divs = $('.NVPairs').first().clone();
+            if ($('.NVPairs').length > 0) {
+                $(Divs).find('input').val('');
+                $(Divs).find('select').val(0);
+                $(Divs).find('button').attr('data-deleteid', '0');
+                $('#NameValuePairs').append(Divs);
+                $('.NVPairs').last().css("display", "block");
+                fncResetIdexValues();
+            } else {
+                fncHTMLNVPairs();
+            }
+        });
+
+        function fncResetIdexValues() {
+            var Divs = $('.NVPairs');
+            $.each(Divs, function (i, item) {
+                var inputs = $(item).find('input:eq(0)').attr('name', 'SVs[' + i + '].ID');
+                var input = $(item).find('input:eq(1)').attr('name', 'SVs[' + i + '].iChildStage');
+                var DropDown = $(item).find('select').attr('name', 'SVs[' + i + '].iType');
+            });
+        }
+
+        function fncHTMLNVPairs() {
+            var HTML = '<div class="form-group NVPairs"><div class="col-md-2 hidden">';
+            HTML += '<label for="inputEmail" class="gn"> ID<span class="danger"></span></label><input type="text" name="SVs[0].ID"/></div><div class="col-md-2">';
+            HTML += '<label for="inputEmail" class="gn"> Stage No<span class="danger"></span></label><input type="text" name="SVs[0].iChildStage" placeholder="Stage Value" class="form-control iChildStage" /></div>';
+            HTML += '<div class="col-md-2"> <label for="inputEmail" class="gn">Type<span class="danger"></span></label>';
+            HTML += ' <select class="form-control" id="iType" name="SVs[0].iType"> <option value="0">--Select--</option> <option value="10">Start</option> <option value="20">End</option></select>';
+            HTML += ' </div> <br /> <div class="col-md-2"> <button type="button" class="btn btn-theme btn-xs DeleteNVPair" data-deleteid="0">Delete</button></div> </div>';
+
+            $('#NameValuePairs').append(HTML);
+
+        }
+
+        $(document.body).on('click', 'button.DeleteNVPair', function () {
+            var iNVPairID = $(this).attr('data-deleteid');
+            if (iNVPairID == 0) {
+                var SecPairsHide = $(this).closest(".NVPairs").remove();
+                fncResetIdexValues();
+            }
+            else {
+                var SecPairsHide = $(this).closest(".NVPairs");
+                $("#Remove").dialog({
+                    title: "Are you sure you want to delete ? ",
+                    buttons: {
+                        "Yes": function () {
+                            if (parseInt(iNVPairID) != 0 && typeof iNVPairID !== 'undefined') {
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("DeleteXIQSStageByID", "XISemantics")',
+                                    data: { ID: iNVPairID },
+                                    cache: false,
+                                    async: false,
+                                    dataType: 'json',
+                                    success: function (data) {
+                                        SecPairsHide.remove();
+                                        fncResetIdexValues();
+                                    }
+                                });
+                            }
+                            $(this).dialog("close");
+                        },
+                        "No": function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+
+        });
+    });
+</script>
+<br />
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    @using (Ajax.BeginForm("SaveEditXIQSStages", "XISemantics", new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "XIQSStageForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        <input type="hidden" name="FKiQSDefinitionID" id="FKiQSDefStageID" value="@Model.FKiQSDefinitionID" />
+                        <div id="clear-text">
+
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn"> Stage <span class="danger"></span></label>
+                                    @Html.TextBoxFor(m => m.iStage, new { @placeholder = "Stage Value", @class = "form-control req" })
+                                </div>
+                                <div class="col-sm-7 emperrormsg">
+                                    @Html.ValidationMessageFor(m => m.iStage, null, new { @class = "red" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div id="NameValuePairs" class="col-md-12">
+                                    @if (Model.SVs == null || Model.SVs.Count() == 0)
+                                    {
+                                        <div class="form-group NVPairs">
+                                            <div class="col-md-2">
+                                                <label for="inputEmail" class="gn"> Stage No <span class="danger"></span></label>
+                                                <input type="text" name="SVs[0].iChildStage" placeholder="Stage Value" class="form-control iChildStage" />
+                                            </div>
+
+                                            <div class="col-md-2">
+                                                <label for="inputEmail" class="gn">Type<span class="danger"></span></label>
+                                                <select class="form-control" id="iType" name="SVs[0].iType">
+                                                    <option value="0">--Select--</option>
+                                                    <option value="10">Start</option>
+                                                    <option value="20">End</option>
+                                                </select>
+                                            </div>
+
+                                            <br />
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-theme btn-xs DeleteNVPair" data-deleteid="0">Delete</button>
+                                            </div>
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+                                        for (int i = 0; i < Model.SVs.Count(); i++)
+                                        {
+                                            <div class="form-group NVPairs">
+                                                <div class="col-md-2 hidden">
+                                                    <label for="inputEmail" class="gn">ID <span class="danger"></span></label>
+                                                    @Html.TextBoxFor(m => m.SVs[i].ID)
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Stage No <span class="danger"></span></label>
+                                                    @Html.TextBoxFor(m => m.SVs[i].iChildStage, new { @placeholder = "Stage Value", @class = "form-control iChildStage" })
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Type <span class="danger"></span></label>
+                                                    @Html.DropDownListFor(m => m.SVs[i].iType, new SelectList(new List<object>
+                                                            {
+                                                   new { key="0", Value = "--Select--" },
+                                                                        new { key="10", Value = "Start" },
+                                                                        new { key="20", Value = "End" }
+                                                              }, "key", "value", Model.SVs[i].iType), new { @class = "form-control" })
+                                                </div>
+                                                <br />
+                                                <div class="col-md-2">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteNVPair" data-deleteid="@Model.SVs[i].ID">Delete</button>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <input type="button" id="AddMore" value="Add" class="btn btn-theme btn-xs">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<object>
+                                                       {
+                                                                new { key=10, Value = "Active"},
+                                                                new { key=20, Value = "Inactive" },
+                                                        }, "key", "value", Model.StatusTypeID), new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="submit" class="btn btn-theme" value="Save" />
+                                    <button type="button" class="btn btn-theme decline CancelXIQSStage">Cancel</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    $('.CancelXIQSStage').click(function () {
+        window.close();
+    });
+    function OnFormBegin() {
+        $('#XIQSStageForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+    function OnComplete(e) {
+        $('#XIQSStageForm').unblock();
+        CustomMessage(e.ResponseMessage, e.Status);
+        opener.window.location.reload();
+    }
+</script>
+
+<div id="Remove"></div>

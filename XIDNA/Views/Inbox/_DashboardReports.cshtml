@@ -1,0 +1,8 @@
+﻿@model IEnumerable<XIDNA.ViewModels.VMDashReports>
+
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+
+@{ Html.RenderPartial("_StatusReport", Model);  }

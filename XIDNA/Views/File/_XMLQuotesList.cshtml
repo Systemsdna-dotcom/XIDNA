@@ -1,0 +1,31 @@
+﻿@model List<XICore.XIIBO>
+@{
+    var data = Model;
+}
+<div class="quote-table">
+    <table class="table table-bordered table-condensed no-sort-icn" id="tbl_main">
+        <thead>
+            <tr>
+                <th>Insurer</th>
+                <th>Excess</th>
+                <th>Price</th>
+                <th>Buy</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.AttributeI("sInsurer").sValue</td>
+                    <td>
+                        <span>Compulsory Excess : @item.AttributeI("rCompulsoryExcess").sValue</span>
+                        <span>Voluntary Excess : @item.AttributeI("rVoluntaryExcess").sValue</span>
+                        <span>Total Excess : @item.AttributeI("rTotalExcess").sValue</span>
+                    </td>
+                    <td>@item.AttributeI("rFinalQuote").sValue</td>
+                    <td><a href="https://183.82.123.14/MotorHome/myaccount" target="_blank">Buy</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

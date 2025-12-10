@@ -1,0 +1,244 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Globalization;
+@{
+    XIGraphData oXIGraph = new XIGraphData();
+    List<XIIBO> values = new List<XIIBO>();
+    List<string> Keys = new List<string>();
+    List<XIVisualisationNV> oXIVisualisations = new List<XIVisualisationNV>();
+    oXIGraph = (XIGraphData)Model.oContent[XIConstant.AM4LineChartComponent];
+    var KeyPairs = new List<Dictionary<string, string>>();
+    var colours = string.Empty;
+    var Fontsize = string.Empty;
+    var BarTypes = string.Empty;
+    var BarAxis = string.Empty;
+    if (Model.oContent.ContainsKey(XIConstant.AM4LineChartComponent))
+    {
+        Dictionary<List<string>, List<XIIBO>> OneClickRes = new Dictionary<List<string>, List<XIIBO>>();
+        if (Model.oContent.Count() != 0)
+        {
+            OneClickRes = oXIGraph.ComOneClick;
+            values = OneClickRes.Select(s => s.Value).FirstOrDefault();
+            Keys = OneClickRes.Select(s => s.Key).FirstOrDefault();
+            oXIVisualisations = oXIGraph.oXIVisualisations;
+            KeyPairs = oXIGraph.KeyPairs;
+        }
+        if (oXIVisualisations != null)
+        {
+            colours = oXIVisualisations.Where(s => s.sName == "BarColours").Select(s => s.sValue).FirstOrDefault();
+            BarTypes = oXIVisualisations.Where(s => s.sName == "BarTypes").Select(s => s.sValue).FirstOrDefault();
+            BarAxis = oXIVisualisations.Where(s => s.sName == "BarAxis").Select(s => s.sValue).FirstOrDefault();
+        }
+        if (string.IsNullOrEmpty(colours))
+        {
+            colours = "yellow,blue,red";
+        }
+        if (string.IsNullOrEmpty(BarTypes))
+        {
+            BarTypes = "bar,bar,bar";
+        }
+        if (BarAxis.ToLower() == "datetime")
+        {
+            BarAxis = "timeseries";
+        }
+        else if (string.IsNullOrEmpty(BarAxis))
+        {
+            BarAxis = "category";
+        }
+    }
+}
+@* <div style="text-align: right"><label>Last Updated:-<strong>@oXIGraph.sLastUpdated</strong></label></div>
+    <p class="chart-title">@oXIGraph.QueryName</p>
+
+    <div class="main-wrapper side-menu">
+        <div class="page-content">
+            <div class="row">
+                <div class="col-sm-6 col-md-10 col-lg-10">
+                    <div id="AM4LineChart-@oXIGraph.iOneClickID" class="section">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> *@
+<div class="conStep" style="height:auto;">
+    <div class="conSection">
+        <div class="conTitle">
+            <span class="titleText">@oXIGraph.QueryName</span>
+            <div class="conOptions small text-muted">Last Updated:-<strong>@oXIGraph.sLastUpdated</strong></div>
+        </div>
+        <div class="conBody">
+            <div class="chartContainer" id="AM4LineChart-@oXIGraph.sOneClickID"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    //Am4 Multi line Graph
+    $(document).ready(function () {
+        debugger
+        var JsonData =@Html.Raw(Json.Encode(KeyPairs));
+            JsonData.OneClick='@oXIGraph.iOneClickID';
+            JsonData.RowXilinkID='@oXIGraph.RowXilinkID';
+            var Colour=@Html.Raw(Json.Encode(colours));
+            var Keys=@Html.Raw(Json.Encode(Keys));
+        
+        function am4themes_myTheme(target) {
+            if (target instanceof am4core.ColorSet) {
+                target.list = [
+                am4core.color("#eb477e")
+                ];
+            }
+        }
+        // Apply chart themes
+        am4core.useTheme(am4themes_myTheme);
+
+        // Create chart instance
+        var chart = am4core.create("AM4LineChart-@oXIGraph.sOneClickID", am4charts.XYChart);
+
+        // Create axes
+        var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+        var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+
+        for (var i = 1; i < Keys.length; i++) {
+            var val = Keys[i];
+            var Months = JsonData.map(function (item) {
+                return item.Month;
+            });
+            var Values = JsonData.map(function (item) {
+                return item[val];
+            });
+            createSeries("value" + i, val, Values);
+        }
+
+        // Create series
+        function createSeries(s, name, values) {
+            var series = chart.series.push(new am4charts.LineSeries());
+            series.dataFields.valueY = "value" + s;
+            series.dataFields.dateX = "date";
+
+            series.name = name;
+
+            var segment = series.segments.template;
+            segment.interactionsEnabled = true;
+
+            var hoverState = segment.states.create("hover");
+            hoverState.properties.strokeWidth = 3;
+
+            var dimmed = segment.states.create("dimmed");
+            dimmed.properties.stroke = am4core.color("#dadada");
+
+            segment.events.on("over", function (event) {
+                processOver(event.target.parent.parent.parent);
+            });
+
+            //segment.events.on("out", function (event) {
+            //    processOut(event.target.parent.parent.parent);
+            //});
+            var data = [];
+            for (var item  in Months) {
+                var dataItem = { date: new Date(Months[item]) };
+                dataItem["value" + s] = values[item];
+                data.push(dataItem);
+            }
+            series.data = data;
+ chart.seriesContainer.events.on("hit", function (ev) {
+                debugger
+               // var Searchtext = ev.target._dataItem.dataContext["title"]
+                var sRowXiLinkID = JsonData.RowXilinkID;
+                var oParams = [];
+                var Param = {};
+                Param["sName"] = "{XIP|sStatusName}";
+                //Param["sValue"] = listofdata;
+               // Param["sValue"] = Searchtext;
+                oParams.push(Param);
+                XILinkLoadJson(sRowXiLinkID, null, oParams, null);
+            });
+            return series;
+
+        }
+
+        chart.legend = new am4charts.Legend();
+        chart.legend.useDefaultMarker = true;
+        chart.legend.position = "bottom";
+        chart.legend.fontSize = "12px";
+        chart.legend.labels.template.maxWidth = 80;
+        chart.legend.labels.template.truncate = true;
+        chart.legend.itemContainers.template.paddingTop = 5;
+        chart.legend.itemContainers.template.paddingBottom = 0;
+
+        var markerTemplate = chart.legend.markers.template;
+        markerTemplate.width = 10;
+        markerTemplate.height = 10;
+
+        @* var marker = chart.legend.markers.template.children.getIndex(0);
+        marker.cornerRadius(12, 12, 12, 12);
+        marker.strokeWidth = 10;
+        marker.strokeOpacity = 1;
+        marker.stroke = am4core.color("#ccc"); *@
+
+        var cellSize = 20;
+        chart.events.on("datavalidated", function (ev) {
+            // Get objects of interest
+            var chart = ev.target;
+            //var categoryAxis = 1000;
+
+            // Calculate how we need to adjust chart height
+            var adjustHeight = chart.data.length * cellSize - 10;
+
+            // get current chart height
+            var targetHeight = chart.pixelHeight + adjustHeight;
+
+            // Set it on chart's container
+            chart.svgContainer.htmlElement.style.height = targetHeight + "px";
+        });
+        // setTimeout(function() {
+        //   chart.legend.markers.getIndex(0).opacity = 0.3;
+        // }, 3000)
+        chart.legend.markers.template.states.create("dimmed").properties.opacity = 0.3;
+        chart.legend.labels.template.states.create("dimmed").properties.opacity = 0.3;
+
+        chart.legend.itemContainers.template.events.on("over", function (event) {
+            processOver(event.target.dataItem.dataContext);
+        })
+
+        //chart.legend.itemContainers.template.events.on("out", function (event) {
+        //    processOut(event.target.dataItem.dataContext);
+        //})
+
+        function processOver(hoveredSeries) {
+            hoveredSeries.toFront();
+
+            hoveredSeries.segments.each(function (segment) {
+                segment.setState("hover");
+            })
+
+            hoveredSeries.legendDataItem.marker.setState("default");
+            hoveredSeries.legendDataItem.label.setState("default");
+
+            chart.series.each(function (series) {
+                if (series != hoveredSeries) {
+                    series.segments.each(function (segment) {
+                        segment.setState("dimmed");
+                    })
+                    series.bulletsContainer.setState("dimmed");
+                    series.legendDataItem.marker.setState("dimmed");
+                    series.legendDataItem.label.setState("dimmed");
+                }
+            });
+        }
+
+        //function processOut() {
+        //    chart.series.each(function (series) {
+        //        series.segments.each(function (segment) {
+        //            segment.setState("default");
+        //        })
+        //        series.bulletsContainer.setState("default");
+        //        series.legendDataItem.marker.setState("default");
+        //        series.legendDataItem.label.setState("default");
+        //    });
+        //}
+
+
+    }); // end am4core.ready()
+</script>

@@ -1,0 +1,742 @@
+﻿@model XICore.XIIQS
+@using XISystem
+@using XICore
+@{
+    //Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    bool bIsAllowed = true;
+    var sMode = Model.sMode;
+    if (!string.IsNullOrEmpty(sMode) && sMode.ToLower() == "not allowed")
+    {
+        bIsAllowed = false;
+    }
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+    string PaymentGatewayURL = System.Configuration.ConfigurationManager.AppSettings["PaymentGatewayURL"];
+    var bIsInternal = false;
+    var sGUID = string.Empty;
+    var QuestionSetID = Guid.Empty;
+    var iQSIID = 0;
+    if (bIsAllowed)
+    {
+        QuestionSetID = Model.FKiQSDefinitionIDXIGUID;
+        XIInfraCache oCache = new XIInfraCache();
+        XIDQS oQSD = new XIDQS();
+        if (Model.QSDefinition == null)
+        {
+            Model.QSDefinition = (XIDQS)oCache.GetObjectFromCache(XIConstant.CacheQuestionSet, null, Model.FKiQSDefinitionIDXIGUID.ToString());
+        }
+        iQSIID = Model.ID;
+        var CurrentStepID = Model.iCurrentStepID;
+        sGUID = ViewBag.sGUID;
+        if (Model.sQSType != null && Model.sQSType.ToLower() == "internal")
+        {
+            bIsInternal = true;
+        }
+    }
+}
+@if (bIsAllowed)
+{
+    var sQSDClasses = "one-qs one-qs-id-" + Model.FKiQSDefinitionID + " one-qs-" + Model.sQSName.ToLower().Replace(" ", "_") + "" + (Model.QSDefinition.sCssClass != null ? (Model.QSDefinition.sCssClass.Length > 0 ? (" " + Model.QSDefinition.sCssClass) : "") : "");
+    <div id="QSStep" class="@sQSDClasses" data-type="@bIsInternal" data-value="@Model.FKiQSDefinitionIDXIGUID" data-info="QuestionSet" data-def="@Model.FKiQSDefinitionIDXIGUID">
+        @{
+            Html.RenderPartial("_QuestionSet", Model);
+        }
+    </div>
+}
+else
+{
+    <h2>Sorry! To reload this Question Set please change the status of this lead to Picked Up</h2>
+    @*<h2>Sorry! Lead Invalid because status is junk</h2>*@
+}
+<div class="Confirmation" title="Confirmation" style="display:none">
+    Do you want to continue without saving the data?
+</div>
+<div class="CancelConfirmation" title="Confirmation" style="display:none">
+    Do you want to continue without saving the data?
+</div>
+<style>
+    .no-titlebar .ui-dialog-titlebar {
+        display: none;
+    }
+
+    .QSStepForm .on {
+        display: none;
+    }
+
+    .QSStepForm .off {
+        display: block;
+    }
+
+    .questionset-section .on {
+        display: none;
+    }
+
+    .questionset-section .off {
+        display: block;
+    }
+
+    .nav .on {
+        display: none;
+    }
+
+    /*.nav .off {
+            display: block;
+        }*/
+</style>
+
+<script>
+    var sGUIDN;
+    $(document).ready(function () {
+        sGUIDN = '@sGUID';
+        LabelDataURL = '@Url.Action("GetLabelData", "XiLink")';
+        AutoCompleteLarge = '@Url.Action("GetAutoCompleteData", "XiLink")';
+        $(document.body).on('click', '.QSStepForm input', function () {
+            $('.HelpText').hide();
+            $(this).closest('div').next('div').find('.HelpText').show();
+            $(this).closest('div').next('div').find('span[data-type="ErrorMesg"]').hide();
+
+            //if ($(this).hasClass('Txtbx-DATETIME')) {
+            //    $(this).datepicker({
+            //        changeMonth: true,
+            //        changeYear: true,
+            //        inline: true,
+            //        yearRange: '1920:2030',
+            //        dateFormat: 'dd-M-yy'
+            //    }).focus();
+            //}
+        });
+
+        $('.HelpText').hide();
+        //$('.Txtbx-DATETIME').datepicker({
+        //    changeMonth: true,
+        //    changeYear: true,
+        //    inline: true,
+        //    yearRange: '1920:2030',
+        //    dateFormat: 'dd-M-yy'
+        //});
+        $(".highlight--help .helptext-mobile-button").on('click',function (e) {
+            e.stopPropagation();
+            $('.highlight--help').removeClass("helptext--visible");
+            $(this).closest('.highlight--help').addClass('helptext--visible');
+        });
+        $(".helptext-content-close").on('click',function (e) {
+            $(this).closest('.highlight--help').removeClass('helptext--visible');
+        });
+        $(document.body).on('keydown', 'input.autocomplete', function(event) {
+            var srchtxt = $(this).val();
+            var keycode = (window.event) ? event.keyCode : e.keyCode;
+            if(event.which === 9) {
+                fncgridrowclick('tab', null, srchtxt)
+            }
+        });
+
+        $(document.body).on('click', 'input#QSPolicyCalBtn', function () {
+            var iInstID = $("input[name=ID]").val();
+            var pvalue = {XILinkID:166,
+                sGUID:sGUID,
+                iInstanceID: iInstID,
+                iBOID:296}
+            $.ajax({
+                url: '@Url.Action("XIScripting", "XiLink")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: JSON.stringify(pvalue),
+                success: function (data) {
+                }
+            });
+        });
+
+        $(document.body).on('click', 'button#QSBckBtn1', function () {
+            var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            fncGetPreviousStep(QuestionSetID, sGUID);
+            CurrentStepID = QuestionSet.iCurrentStepID;
+            var CurrentStepName = QuestionSet.sCurrentStepName;
+            StepDef = QuestionSet.QSDefinition.Steps[CurrentStepName];
+        });
+        $(document.body).on('click','button#FAChangeBtn', function(){
+            $(this).closest('div').prev('div').find('#FAComponent').removeAttr('disabled');
+        });
+    });
+    var QuoteID = 0;
+    var QuestionSetID = '@QuestionSetID';
+    @*var QuestionSet =  @Html.Raw(Json.Encode(Model));*@
+    @*oQSInstance=@Html.Raw(Json.Encode(Model));*@
+    QSInsDict["@Model.sGUID"] =@Html.Raw(Json.Encode(Model));
+    var oQSInstance = QSInsDict["@Model.sGUID"];
+    var ValidationType = 0;
+    debugger
+    if(oQSInstance.QSDefinition){
+        if (oQSInstance.QSDefinition.sName.toLowerCase() == "compare the market internal"){
+            ValidationType = 10;
+        }
+        else if(oQSInstance.QSDefinition.sName.toLowerCase() == "go compare motorhome"){
+            ValidationType =20;
+        }
+        else if(oQSInstance.QSDefinition.sName.toLowerCase() == "money super market motorhome"){
+            ValidationType =20;
+        }
+        var IsValid = true;
+        var FinalValid = true;
+        var CurrentStepID = oQSInstance.iCurrentStepID;
+        var CurrentStepName = oQSInstance.sCurrentStepName;
+        var StepDef = oQSInstance.QSDefinition.Steps[CurrentStepName];
+    }
+    function fncHideShowFromHTMLTree(parentName, childObj, Type) {
+        if(childObj){
+            var ActiveInstanceID = 0;
+            var testObj = childObj.parentNode;
+            var count = 1;
+            if(testObj.className != "questionset-section"){//This Codition without ParentNode
+                while (testObj.getAttribute('data-controltype') != parentName) {// This Condition With ParentNode
+                    if (testObj.parentNode.tagName != "HTML") {
+                        testObj = testObj.parentNode;
+                        count++;
+                    }
+                    else {
+                        return ActiveInstanceID
+                    }
+                }
+            }else{
+                testObj = childObj;
+            }
+
+            if(Type == "show"){
+                $(testObj).removeClass('on').addClass('off');
+            }
+            else if(Type == "hide"){
+                $(testObj).removeClass('off').addClass('on');
+            }
+        }
+    }
+    var sValidateAttr=[];
+    var bPostHideSaveandNext="no";
+
+    @*function fncRunQSStepAction(Type, $this){
+        bPostHideSaveandNext = $($this).attr("data-isPostHidden");
+        if (bPostHideSaveandNext && bPostHideSaveandNext.length > 0) {
+
+        }
+        else {
+            bPostHideSaveandNext = "no";
+        }
+        sValidateAttr=[];
+        $('#QSNxtBtn').hide();
+        $('#QSLoadingBtn').show();
+        CurrentStepID = QuestionSet.iCurrentStepID;
+
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', $this);
+        var FParent=$($this).parent();
+        var SParent=$(FParent).parent();
+        var formid = $(SParent).siblings("div.conQSStep").find('form').attr('id');
+        fncMapAndValidate(sGUID, Type,formid)
+    }
+
+    var FieldValues = [];
+    function fncMapAndValidate(sGUID, Type, formid){
+        var CurrentStepName = QuestionSet.sCurrentStepName;
+        var StepIns = QuestionSet.Steps[CurrentStepName];
+        StepDef = QuestionSet.QSDefinition.Steps[CurrentStepName];
+        FinalValid = true;
+        var formData="";
+        if(formid && StepDef.sCode=="POSTTRAN"){
+            formData = JSON.parse(JSON.stringify(jQuery('#' + formid).serializeArray()));
+        }
+        else{
+            formid = 'QSStepForm';
+            formData = JSON.parse(JSON.stringify(jQuery('.' + formid).serializeArray()));
+        }
+        var i, j, titleid = [];
+        for (var i = 0; i < formData.length; i++) {
+            if (FieldValues.find(m => m.Label == formData[i].name)) {
+                FieldValues.find(m => m.Label == formData[i].name).Data = formData[i].value;
+            }
+            else {
+                var ddlText = $('select[name="'+formData[i].name+'"] option:selected').text();
+                FieldValues.push({ Label: formData[i].name, Data: formData[i].value, sDerivedValue: ddlText });
+            }
+        }
+        var serialized = $('.' + formid).find('input[type=checkbox]').map(function () {
+            return { name: this.name, value: this.checked ? this.value : "false" };
+        });
+        var ddlserialized = $('.'+formid).find('select').map(function() {
+            return { name: this.name, value: this.value, DerivedValue: $(this).find('option:selected').text() };
+        });
+        for (var i = 0; i < serialized.length; i++) {
+            if (FieldValues.find(m => m.Label == serialized[i].name)) {
+                FieldValues.find(m => m.Label == serialized[i].name).Data = serialized[i].value;
+            }
+            else {
+                FieldValues.push({ Label: serialized[i].name, Data: serialized[i].value });
+            }
+        }
+        for (var i = 0; i < ddlserialized.length; i++) {
+            var result = FieldValues.filter(obj => {
+                if(obj.Label === ddlserialized[i].name)
+                {
+                    obj.sDerivedValue = ddlserialized[i].DerivedValue;
+                }
+                return obj.Label === ddlserialized[i].name
+            })
+            if(result.length > 0){
+
+            }
+            else{
+                FieldValues.push({ Label: ddlserialized[i].name, Data: ddlserialized[i].value, sDerivedValue: ddlserialized[i].DerivedValue });
+            }
+        }
+        if (StepDef.Sections && Object.keys(StepDef.Sections).length > 0) {
+            var SecIns;
+            for (var sdid in StepDef.Sections) {
+                if (StepDef.Sections[sdid].sIsHidden == "off") {
+                    for (var siid in StepIns.Sections) {
+                        if (sdid == siid) {
+                            SecIns = StepIns.Sections[siid];
+                            SecDef = StepDef.Sections[sdid];
+                        }
+                    }
+                    if (SecDef.iDisplayAs == 30) {
+                        for (var j = 0; j < FieldValues.length; j++) {
+                            var FieldDefID = FieldValues[j].Label;
+                            var XiValue = SecIns.XIValues[FieldDefID];
+                            if (XiValue) {
+                                XiValue.sValue = FieldValues[j].Data;
+                                XiValue.sDerivedValue = FieldValues[j].sDerivedValue;
+                                SecIns.XIValues[FieldDefID] = XiValue;
+                                var FldOrg = SecDef.FieldDefs[FieldDefID];
+                                fncGetValidationMessage(StepIns.FKiQSStepDefinitionID, FldOrg.FieldOrigin, FieldValues[j].Data)
+                            }
+                        }
+                        StepIns.Sections[SecIns.FKiStepSectionDefinitionID + "_Sec"] = SecIns;
+                    }
+                    else {
+                        if (SecDef.iDisplayAs == 40) {
+                            //SaveComponent(sGUID, SecDef.sName );
+                            if(StepDef.sCode=="POSTTRAN")
+                            { var Param={};
+                                for (var j = 0; j < FieldValues.length; j++) {
+                                    Param={};
+                                    Param["sName"]=FieldValues[j].Label;
+                                    Param["sValue"]=FieldValues[j].Data;
+                                    SecIns.FormValues.push(Param);
+                                }
+                            }
+                            else{
+                                var ComponentID = SecDef.iXIComponentID;
+                                if (ComponentID == 2 || ComponentID == 13) {
+
+                                    $('#Component-' + SecDef.ID).find('form').each(function (a, b) {
+                                        var savetype = $(this).attr('data-savetype');
+                                        var sBO = $(this).attr('data-sbo');
+                                        if (savetype == "yes")
+                                        {
+                                            if (ComponentID == 13) {
+                                                SaveEditBOURL = '@Url.Action("SaveGrid", "XiLink")';
+                                            }
+                                            var formid = $(this).attr('id');
+                                            var formData = JSON.parse(JSON.stringify(jQuery('#' + formid).serializeArray()));
+                                            var FormValues = [];
+                                            var titleid = [];
+                                            for (var i = 0; i < formData.length; i++) {
+                                                FormValues.push({ sName: formData[i].name, sValue: formData[i].value, bDirty: true });
+                                            }
+                                            var ddlserialized = $('#' + formid).find('select').map(function () {
+                                                return { name: this.name, value: this.value, DerivedValue: $(this).find('option:selected').text() };
+                                            });
+                                            for (var i = 0; i < ddlserialized.length; i++) {
+                                                var result = FormValues.filter(obj => {
+                                                    return obj.sName === ddlserialized[i].name
+                                                })
+                                                if (result.length > 0) {
+
+                                                }
+                                                else {
+                                                    FormValues.push({ sName: ddlserialized[i].name, sValue: ddlserialized[i].value, sPreviousValue: ddlserialized[i].sPreviousValue, bDirty: true });
+                                                }
+                                            }
+                                            var pvalue = {
+                                                Attributes: FormValues,
+                                                sGUID: sGUID,
+                                                sContext: null,
+                                                sBOName: sBO
+                                            }
+                                            $.ajax({
+                                                url: SaveEditBOURL,
+                                                //url: '@Url.Action("EditData", "XiLink")',
+                                                type: 'POST',
+                                                contentType: "application/json; charset=utf-8",
+                                                datatype: "json",
+                                                cache: false,
+                                                async:false,
+                                                data: JSON.stringify(pvalue),
+                                                success: function (data) {
+                                                    if (data.length > 0) {
+                                                        var sFormGuid = formid.split('_')[1];
+                                                        $(".field-errmsg").find('span').html("");
+                                                        $(".highlight--help").removeClass("msg-error");
+                                                        for (var len = 0; len < data.length; len++) {
+                                                            if (data[len].sErrorMessage != "Failure") {
+                                                                var IsSuccess = true;
+                                                                var Scripts = data[len].oScriptErrors;
+                                                                var sBoName = data[len].sBOName;
+                                                                if (Scripts != null) {
+                                                                    if (Object.keys(Scripts).length > 0) {
+                                                                        sValidateAttr = [];
+                                                                        for (var i = 0; i < Object.keys(Scripts).length; i++) {
+                                                                            $('span.' + sFormGuid + "-" + sBoName + "-" + Object.keys(Scripts)[i]).closest('.highlight--help').addClass('msg-error');
+                                                                            $('span.' + sFormGuid + "-" + sBoName + "-" + Object.keys(Scripts)[i]).html(Object.values(Scripts)[i]);
+                                                                            IsSuccess = false;
+                                                                            FinalValid = false;
+                                                                            if (sValidateAttr.length == 0) {
+                                                                                var sValidateAttrSelector = "input[name='" + Object.keys(Scripts)[i] + "']";
+                                                                                sValidateAttr.push(sValidateAttrSelector);
+                                                                                sValidateAttrSelector = "select[name='" + Object.keys(Scripts)[i] + "']";
+                                                                                sValidateAttr.push(sValidateAttrSelector);
+                                                                            }
+                                                                        }
+                                                                        $('#QSLoadingBtn').hide();
+                                                                        $('#QSNxtBtn').show();
+                                                                    }
+                                                                }
+                                                                if (IsSuccess) {
+
+                                                                }
+                                                            }
+                                                            else {
+                                                                //IsError = true;
+                                                                $('#' + formid).find(".StatusMessages").hide();
+                                                                $('#' + formid).prepend($('<div class="StatusMessages"></div>'));
+                                                                $('.StatusMessages').html('<div class="alert alert-danger">Something went wrong while saving</div>');
+                                                            }
+                                                        }
+
+                                                    }
+                                                },
+                                                error: function(){
+                                                    debugger
+                                                }
+                                            })
+                                        }
+                                    });
+
+                                    @*$.ajax({
+                                type: 'GET',
+                                url: '@Url.Action("GetComponentDetails", "XiLink")',
+                                //url: DataURL,
+                                contentType: "application/json; charset=utf-8",
+                                data: { iComponent: ComponentID, iSectionDefID: SecDef.ID, sUID: sGUID },
+                                async: true,
+                                cache: false,
+                                dataType: 'json',
+                                success: function (data) {
+                                    if (data != null && data != "" && data.length > 0) {
+                                        //var FormData = $("#" + data[0]).serialize();
+                                        //SaveData(FormData, data[1]);
+
+                                    }
+                                }
+                            })
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            if(StepIns.XIValues && Object.keys(StepIns.XIValues).length > 0){
+                for (var j = 0; j < FieldValues.length; j++) {
+                    var FieldDefID = FieldValues[j].Label;
+                    var XiValue = StepIns.XIValues[FieldDefID];
+                    if(XiValue){
+                        var FldOrg = StepDef.FieldDefs[FieldDefID];
+                        if(FldOrg.FieldOrigin.FK1ClickID > 0){
+                            var Value = $('#Field-'+StepDef.ID+'-'+FieldDef.ID).attr('data-value');
+                            XiValue.sValue = Value;
+                            StepIns.XIValues[FieldDefID] = XiValue;
+                        }
+                        else{
+                            XiValue.sValue = FieldValues[j].Data;
+                            XiValue.sDerivedValue = FieldValues[j].sDerivedValue;
+                            StepIns.XIValues[FieldDefID] = XiValue;
+                            fncGetValidationMessage(StepIns.FKiQSStepDefinitionID, FldOrg.FieldOrigin, FieldValues[j].Data)
+                        }
+                    }
+                }
+            }
+            else{
+                if(StepDef.iDisplayAs == 40){
+                    //SaveComponent(sGUID, StepDef.sName );
+                }
+            }
+        }
+        QuestionSet.Steps[CurrentStepName] = StepIns;
+
+        if (FinalValid) {
+            if(Type=="Save"){
+                fncSaveQSStep(StepIns, sGUID)
+            }
+            else if(Type=="SaveNext"){
+                fncGetNextStep(StepIns, sGUID, StepIns.bIsLastStep);
+                if(bPostHideSaveandNext.toLowerCase()=="yes")
+                {
+                    $("#QSNxtBtn").hide();
+                    $("#QSLoadingBtn").hide();
+                }
+                //fncGetNextStep(QuestionSet, sGUID, StepIns.bIsLastStep).then(function (Status) {
+                //    CurrentStepID = QuestionSet.iCurrentStepID;
+                //    var CurrentStepName = QuestionSet.sCurrentStepName;
+                //    StepDef = QuestionSet.QSDefinition.Steps[CurrentStepName];
+                //});
+            }
+        }
+        else
+        {
+            if(sValidateAttr!=undefined && sValidateAttr.length>0)
+            {
+                for (var j = 0; j < sValidateAttr.length; j++) {
+                    //$("input[name='inputControlNameHere']").focus();
+                    $(sValidateAttr[j]).focus();
+                }
+            }
+        }
+    }*@
+
+
+    window.addEventListener('message', function (event) {
+        // IMPORTANT: Check the origin of the data!
+
+        fncLogSignalrEvents("Highly Critical: Step Redirection origin: "+ event.origin);
+        if (~event.origin.indexOf('@PaymentGatewayURL')) {
+            // The data has been sent from your site
+            // The data sent with postMessage is stored in event.data
+            //console.log("origin" + event.data);
+            var iCount = 0;
+            var sStatus; var _sGUID;
+            if(event.data.indexOf(":") !=-1 ){
+                sStatus = event.data.split(":")[0];
+                _sGUID = event.data.split(":")[1];
+            }
+            else{
+                sStatus = event.data;
+            }
+            var oQSInstance;
+            if (sStatus == "Success") {
+                if(_sGUID && _sGUID.length > 0){
+                    oQSInstance = QSInsDict[_sGUID];
+                }
+                var CurrentStepName1 = oQSInstance.sCurrentStepName;
+                var StepIns1 = oQSInstance.Steps[CurrentStepName1];
+                var sGUID = oQSInstance.sGUID;
+                fncLogSignalrEvents("Critical Step Redirection QSIID: "+oQSInstance.ID+ " and sGUID: "+oQSInstance.sGUID);
+                var result = PaymentCalls.filter(function (x) { return x.QSIID === oQSInstance.ID; });
+                //var sGUID1 = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+                if(result && result.length == 0){
+                    var param1 = {};
+                    param1["QSIID"] = oQSInstance.ID;
+                    param1["sGUID"] = oQSInstance.sGUID;
+                    PaymentCalls.push(param1);
+                    if(iCount == 0){
+                        iCount ++;
+                        console.log("Step Redirection Called");
+                        fncGetNextStep(StepIns1, sGUID, StepIns1.bIsLastStep);
+                    }
+                }
+                else if(result.length > 0){
+                    fncLogSignalrEvents("Highly Critical: Step Redirection QSIID: "+oQSInstance.ID+ " and sGUID: "+oQSInstance.sGUID);
+                }
+            }
+            else {
+                //$(".rxp-container").show();
+                //$(".rxp-btn").removeAttr('disabled');
+                //$(".rxp-btn").attr('value', 'Pay Now');
+                $('#iframe_a').attr('src', '');
+                var url=event.data;
+                $('#iframe_a').attr('src', url);
+
+                //$(".QuotesPayment").trigger('click');
+            }
+        } else {
+            var origin = event.origin;
+            fncLogSignalrEvents("Highly Critical: Step Redirection origin: "+ origin);
+            fncLogSignalrEvents("Highly Critical: Step Redirection URL @PaymentGatewayURL");
+            // The data hasn't been sent from your site!
+            // Be careful! Do not use it.
+            return;
+        }
+    });
+
+
+
+
+    function fncNavigateStep(StepID,GUID,iQSIID) {
+        debugger;
+        $.ajax({
+            url: '@Url.Action("NavigateQSStep", "XiLink")',
+            type: "Post",
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            cache: false,
+            async: true,
+            data: JSON.stringify({ iStepID: StepID, sGUID: GUID, sType:"public", iQSIID:iQSIID }),
+            success: function (data) {
+                $('.LayoutCode_' + GUID).find('#QSStep').html(data);
+                //$('#QSStep_' + sGUID).focus();
+                if('@bIsInternal' == 'False'){
+                    $('html, body').animate({
+                        scrollTop: $('body').offset().top //#DIV_ID is an example. Use the id of your destination on the page
+                    }, 'slow');
+                }
+                var QTAMT = $('#QuoteAMt').attr('data-value');
+                $('#FinalAmt').html(QTAMT);
+                //resolve= true;
+            },
+            error: function (data) {
+                $('.LayoutCode_' + GUID).find('#QSStep').html('<h2>Something went wrong!! Please try again or contact admin</h2>');
+            }
+        });
+    }
+
+function fncBindUpdatedrenewalQuotes(CreateXILinkID, sGUID) {
+        var oQSInstance = QSInsDict[sGUID];
+                $.ajax({
+                    url: '@Url.Action("GetparentQSIID", "XiLink")',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    cache: false,
+                    async: false,
+                    data: JSON.stringify({ sQSIID: oQSInstance.ID, sGUID: sGUID }),
+                    success: function (data) {
+                        fncSignalR(data.sParentGUID, data.iQSIID, CreateXILinkID);
+                    }
+                });
+    }
+
+
+
+    function ReCalculate(id, sXiLink) {
+        var OverRideTypeOfCover=$("#OverRideTypeOfCover").val();
+        var OverRideVoluntaryExcess = $("#OverRideVoluntaryExcess").val();
+        var OverRideCoverStart = $("#OverRideCoverStart").val();
+        $('.Buybtn').attr("disabled", true);
+        $('.load').html('<img src="@PhysicalPath/loading.gif" style="width: 20px;" />')
+        $('.loadBuy').hide();
+        var FormValues = [];
+        FormValues.push({ sName: "sTypeofCoverUpdated", sValue: OverRideTypeOfCover });
+        FormValues.push({ sName: "VoluntaryExcess", sValue: OverRideVoluntaryExcess });
+        FormValues.push({ sName: "dCoverStart", sValue: OverRideCoverStart });
+        $.ajax({
+            url: '@Url.Action("ReCalculate", "XiLink")',
+            type: 'Post',
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            data: JSON.stringify({ XiLinkID: sXiLink, sGUID: '@ViewBag.sGUID', QsDefinitionid: '@QuestionSetID', iQSIID: '@Model.XIGUID', oNV: FormValues }),
+            async: false,
+            cache: false,
+            success: function (res) {
+                //$('#Buybtn').attr("disabled", false);
+                //fncSignalR('@ViewBag.sGUID', '@QuestionSetID',sXiLink);
+                @*XIRun(5012, 0, '@ViewBag.sGUID', null, false, 0, '@Model.QSDefinition.ID');*@
+                //$('.load').html("");
+                //fncSignalR();
+            },
+            error:function(response)
+            {
+            }
+        });
+    }
+
+
+
+
+
+    @*function fncSetParam(QuoteID, sGUID, Name,sBO) {
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SetParams", "xilink")',
+                data: JSON.stringify({ sID: QuoteID, sGUID: sGUID, sName: Name, sBO: sBO }),
+                contentType: 'application/json;',
+                dataType: 'json',
+                traditional: true,
+                success: function () {
+                    resolve(true);
+                }
+            });
+        });
+    }*@
+
+
+
+
+    var IsValidated = false;
+    var SecDef;
+    function fncValidateField($this, FieldOrigin, StepID){
+        if(!IsValidated){
+
+        }
+        var StepIns = oQSInstance.Steps[CurrentStepName];
+        var FieldValue = $($this).val();
+        var FieldDefID = $($this).attr('name');
+        if (StepDef.Sections && Object.keys(StepDef.Sections).length > 0) {
+            var SecIns;
+            for (var sdid in StepDef.Sections) {
+                for (var siid in StepIns.Sections) {
+                    if (sdid == siid) {
+                        SecIns = StepIns.Sections[siid];
+                        SecDef = StepDef.Sections[sdid];
+                    }
+                }
+                if (SecDef.iDisplayAs == 30) {
+                    if( SecIns && SecIns.XIValues)
+                    {
+                        var XiValue = SecIns.XIValues[FieldDefID];
+                        if (XiValue) {
+                            var FldOrg = SecDef.FieldDefs[FieldDefID];
+                            fncGetValidationMessage(StepIns.FKiQSStepDefinitionID, FldOrg.FieldOrigin, FieldValue);
+                            IsValidated = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function fnccheckvalidvalue(_this){
+        var value = $(_this).val();
+        var ident = $(_this).attr('list');
+        var id = "";
+        var optSelect = "";
+        if(ident){
+            ident = ident.split('-')[1];
+        }
+        var actualval = "";
+        var hiddenval = "";
+        var datalist = $(_this).next('datalist');
+        if(datalist && datalist.length > 0){
+            var options = $(_this).next('datalist')[0].options;
+            var bFound = false;
+            for(var i=0;i<options.length;i++){
+                if(options[i].value.toLowerCase() == value.toLowerCase() ){
+                    optSelect = options[i];
+                    var attrs = options[i].attributes;
+                    hiddenval = attrs['data-value'].value;
+                    actualval = options[i].value;
+                    bFound = true;
+                }
+            }
+        }
+        if(!bFound){
+            $(_this).val('');
+        }
+        else{
+            $(_this).val(actualval);
+            $('#hidautoddl-'+ident).val(hiddenval);
+        }
+        if(optSelect && optSelect.attributes && optSelect.attributes['data-shtype']){
+            fnccheckme(optSelect);
+        }
+    }
+
+</script>

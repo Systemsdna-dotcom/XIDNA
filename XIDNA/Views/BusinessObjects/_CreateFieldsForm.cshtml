@@ -1,0 +1,178 @@
+﻿@model XIDNA.Models.BOFields
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<section class="content">
+    <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    </div>
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="innerborder">
+                    <div id="BOAttributesForm">
+                        <p class="heading">Field Creation</p>
+                        @using (Ajax.BeginForm("SaveFormBOAttributes", "BusinessObjects", new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnComplete", UpdateTargetId = "AttributeForm" }, new { @id = "BOFormWithAttributes", @class = "form-horizontal" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.ValidationSummary(true)
+                            @Html.HiddenFor(m => m.ID, new { @id = "AttrID" })
+                            @Html.HiddenFor(m => m.BOID, new { @id = "BOID" })
+                            @Html.HiddenFor(m => m.CreatedByName)
+                            @Html.HiddenFor(m => m.CreatedByID)
+                            @Html.HiddenFor(m => m.MaxLength, new { @Value = Model.FieldMaxLength })
+                            <input type="hidden" id="iAttributeType" name="iAttributeType" value="20">
+                            <div id="clear-text" class="box-body">
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Name<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.Name, new { @placeholder = "Enter Name Here", @class = "form-control", @id = "AttributeName" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Datatype<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.DataType, new { @placeholder = "Enter DataType", @class = "form-control" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Label Name<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.LabelName, new { @placeholder = "Enter Label Name", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-4 taberrormsg">
+                                        @Html.ValidationMessageFor(m => m.LabelName, null, new { @class = "red" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Description<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.Description, new { @placeholder = "Enter Description", @class = "form-control" })
+                                    </div>
+                                    <div class="col-sm-7 fielderror">
+                                        @Html.ValidationMessageFor(m => m.Description, null, new { @class = "red" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Formatting<span class="danger"></span></label>
+                                        @Html.TextBoxFor(m => m.Format, new { @placeholder = "Enter Format", @class = "form-control" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Is Visible <span class="danger"></span></label>
+                                        @Html.CheckBoxFor(m => m.IsVisible)
+                                    </div>
+                                </div>
+
+                                @if (Model.IsWhere == true)
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Is Where<span class="danger"></span></label>
+                                            @Html.CheckBoxFor(m => m.IsWhere, new { @Name = Model.IsWhere, @class = "wherebox", @id = 0, @checked = "checked", @field = Model.Name, @fieldtype = "IsWhere", })
+                                            <a href="where" class="whereactive" data-type="wherecheckbox" data-fieldid="@Model.ID" id="IsWhere-@Model.Name" name="IsWhere-@Model.Name"><i class="fa fa-search" aria-hidden="true"></i></a>
+                                            <p style="display:none;" id="where" class="FieldID">@Model.ID</p>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Is Where<span class="danger"></span></label>
+                                            @Html.CheckBoxFor(m => m.IsWhere, new { @Name = Model.IsWhere, @class = "wherebox", @id = "where", @field = Model.Name, @fieldtype = "IsWhere", })
+                                            <a href="Where" id="IsWhere-@Model.Name" data-type="wherecheckbox" class="WhereCheckBox" name="IsWhere-@Model.Name" data-fieldid="@Model.ID"><i class="fa fa-search" aria-hidden="true"></i></a>
+                                            <p style="display:none;" id="Where" class="FieldID">@Model.ID</p>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (Model.DataType == "INT" || Model.DataType == "DECIMAL")
+                                {
+
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Is Total <span class="danger"></span></label>
+                                            @Html.CheckBoxFor(m => m.IsTotal, new { @Name = Model.IsTotal })
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="form-group">
+                                        <div class="col-md-3">
+                                            <label for="inputEmail" class="gn">Is Total <span class="danger"></span></label>
+                                            @Html.CheckBoxFor(m => m.IsTotal, new { @Name = Model.IsTotal, @disabled = "disabled" })
+                                        </div>
+                                    </div>
+                                }
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Is GroupBy <span class="danger"></span></label>
+                                        @Html.CheckBoxFor(m => m.IsGroupBy, new { @Name = Model.IsGroupBy })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Script<span class="danger"></span></label>
+                                        @Html.TextAreaFor(m => m.Script, new { @rows = 2, @cols = 50, @placeholder = "Script", @class = "form-control" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="ColumnDiv">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                        @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "Active" },
+                                    new { key= 20 , value = "Inactive" }
+                                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+
+                                    </div>
+                                </div>
+
+                                <div class="col-md-10">
+                                    <div class="col-md-1"></div>
+                                    <div class="col-md-3">
+                                        <div class="CreateButtons">
+                                            <input type="submit" class="sv_bt btn btn-theme BO-tab m-r-10" value="Save" id="save">
+                                            <input type="button" class="btn btn-theme reverse m-r-10 BO-tab CancelBtn" value="Cancel" id="CancelBtn">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+        //Close window
+        $("#CancelBtn").on('click', function () {
+            window.close();
+        });
+    });
+    function OnComplete(response) {
+        CustomMessage(response.ResponseMessage, response.Status);
+        $('#BOFormWithAttributes').unblock();
+    }
+
+</script>
+

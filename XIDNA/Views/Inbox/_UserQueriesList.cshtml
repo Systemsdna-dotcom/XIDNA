@@ -1,0 +1,184 @@
+﻿@model int
+@{
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+    int iRoleID = Model;
+}
+
+<script>
+    $(document).ready(function () {
+        var table = $('#XIUserQuerytbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Html.Raw(@Url.Action("UserQueriesList", "Inbox",new { RoleID = iRoleID }))",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+            { "bSortable": false },
+                            {
+                                "sName": "ID",
+                                //"visible": false
+                            },
+                             {
+                                 "sName": "RoleID",
+                                 "visible": false
+                             },
+                             {
+                                 "sName": "UserName",
+                                 //"visible": false
+                             },
+                             {
+                                 "sName": "ReportID",
+                             },
+                             //{
+                             //    "sName": "QueryID",
+                             //    "visible": false
+                             //},
+                             //{
+                             //    "sName": "Target",
+                             //},
+                             //{
+                             //    "sName": "ClassID"
+                             //},
+                             {
+                                 "sName": "Location",
+                             },
+                             {
+                                 "sName": "DisplayAs",
+                             },
+                             {
+                                 "sName": "StatusTypeID",
+                             },
+                             { "bSortable": false }
+            ],
+            "columnDefs": [
+                 {
+                     "targets": [7],
+                     "createdCell": function (td, cellData, rowData, row, col) {
+                         if (cellData == 10)
+                             $(td).replaceWith('<td>Active</td>')
+                         else
+                             $(td).replaceWith('<td>Inactive</td>')
+                     }
+                 }
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) { //
+                //$('td:eq(1)', nRow).html('<i class="' + aData[4] + '" style="padding-left:10px;" ></i>');
+
+                //$('td:eq(7)', nRow).html('  <a href="EditUserQuery?RoleID=' + aData[2] + '&QueryID=' + aData[6] +
+                //    '" data-ajax-update="#QueryDropDown" data-ajax-mode="replace" data-ajax-method="GET" data-ajax="true"><i class="fa fa-pencil-square-o EditBtn" style="padding-left:10px;" ></i></a><button id="' + aData[1] +
+                //    '" data-roleid="' + aData[2] + '" class="DeleteUserReport" data-ajax-update="#QueryDropDown" data-ajax-mode="replace" data-ajax-method="GET" data-ajax="true"><i class="fa fa-times" style="padding-left:10px;"></i></button>');
+
+                $('td:eq(7)', nRow).html('<input type="button" class="EditUserReport btn btn-theme btn-xs" id="' + aData[1] + '" data-roleid="' + aData[2] + '" value="Edit"/>' +
+               '<input type="button" class="DeleteUserReport btn btn-theme btn-xs" id="' + aData[1] +
+                     '" data-roleid="' + aData[2] + '" value="Delete"/>');
+                return nRow;
+            }
+        });
+        $('#XIUserQuerytbl').on('click', 'input.DeleteUserReport', function () {
+            var roleid = $(this).attr('data-roleid');
+            var id = parseInt($(this).attr('id'));
+            var username = $(this).attr('data-username');
+            $(".DelteUserReportDlg").html('Do You Want To Delete Report?');
+            $(".DelteUserReportDlg").dialog({
+                title: "Delete",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Yes",
+                       click: function () {
+                           $(".DelteUserReportDlg").dialog("close");
+                           $.ajax({
+                               type: 'POST',
+                               url: '@Url.Action("DeleteUserReport", "Inbox")',
+                               data: { ReportID: id },
+                               cache: false,
+                               dataType: 'json',
+                               success: function (data) {
+                                   $("#UserQueryGrid").load('@Url.Action("GetUserQueries", "Inbox")?UserID=' + roleid);
+                                   $('#Edit').empty();
+                                   $('#Edit').html(data);
+                               }
+                           });
+                       }
+                   },
+                {
+                    text: "No",
+                    click: function () {
+                        $(".DelteUserReportDlg").dialog("close");
+                    }
+                }
+                ]
+            });
+        });
+        $('#XIUserQuerytbl').on('click', 'input.EditUserReport', function () {
+            var rid = $(this).attr('data-roleid');
+            var ID = $(this).attr('id');
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("EditUserQuery", "Inbox")',
+                data: { ID: ID, RoleID: rid },
+                cache: false,
+                dataType: 'html',
+                async: true,
+                beforeSend: function (request) {
+                    $.blockUI({ message: '<h3 class="nh3"><img src="@PhysicalPath/Scripts/ckfinder/plugins/gallery/colorbox/images/loading.gif" width="50px" /> Please wait while loading...</h3>' });
+                },
+                success: function (data) {
+                    $.unblockUI();
+                    @*$("#UserQueryGrid").load('@Url.Action("GetUserQueries", "Inbox")?UserID=' + rid);*@
+                    $('#QueryDropDown').empty();
+                    $('#QueryDropDown').html(data);
+                    $('form').removeData('validator');
+                    $('form').removeData('unobtrusiveValidation');
+                    $.validator.unobtrusive.parse('form');
+                    $('html, body').animate({ scrollTop: '0px' }, 300);
+                }
+            });
+
+        });
+    })
+</script>
+<style>
+    /*.Tableblock {
+        width: 100%;
+        position: relative;
+        display: block;
+        overflow-x: auto;
+    }*/
+
+    /*.box.box-primary {
+        display: block;
+    }*/
+
+    #XIUserQuerytbl td input {
+        margin-right: 10px;
+    }
+</style>
+<div id="Edit"></div>
+<div class="Tableblock">
+    <div class="table-clean">
+        <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="XIUserQuerytbl" style="width:100%!important;">
+            <thead>
+                <tr role="row">
+                    <th>S.No</th>
+                    <th>ID</th>
+                    <th>RoleID</th>
+                    <th>User Name</th>
+                    <th>1-Click</th>
+                    @*<th>QueryID</th>*@
+                    @*<th>Class</th>*@
+                    <th>Location</th>
+                    <th>Display</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+
+        </table>
+    </div>
+</div>
+<div class="dialog-box DelteUserReportDlg" title="Confirm Message" style="background-color:white;"></div>

@@ -1,0 +1,508 @@
+﻿@model XIDNA.Models.cLayouts
+
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+
+    #LayoutPreview div {
+        /**/ height: 70px;
+        border: 1px solid #b5b5b5;
+        text-align: center;
+    }
+</style>
+<section class="content-header hedr">
+    @if (@Model.ID == 0)
+    {
+        <h1> Add Layout </h1>
+    }
+    else
+    {
+        <h1> Edit Layout</h1>
+    }
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Layout</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body padding10Tab">
+                    <div class="innerborder">
+                        <div id="PopupForm" class="col-md-6 no-padding">
+                            @using (Ajax.BeginForm("SavePopupLayout", "Popup", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnBegin = "OnBegin", OnSuccess = "OnComplete" }, new { @id = "PopupLayoutForm", @class = "form-horizontal" }))
+                            {
+                                @Html.ValidationSummary(true);
+                                @Html.HiddenFor(m => m.ID)
+                                <div id="clear-text">
+                                    @if (Model.FKiApplicationID == 0)
+                                    {
+                                        <div class="form-group" id="XIFKiApplicationDDL">
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn"> Application <span class="danger">*</span></label>
+                                                <select class="form-control" id="ApplicationID" name="FKiApplicationID">
+                                                    <option value="0">--Select--</option>
+                                                    @foreach (var items in Model.ddlApplications)
+                                                    {
+                                                        if (Model.FKiApplicationID == items.Value)
+                                                        {
+                                                        <option selected value="@items.Value">@items.text</option>
+                                                        }
+                                                        else
+                                                        {
+                                                        <option value="@items.Value">@items.text</option>
+                                                        }
+                                                    }
+                                                </select>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <input type="hidden" id="ApplicationID" name="FKiApplicationID" value="@Model.FKiApplicationID" />
+                                    }
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn"> Name<span class="danger">*</span></label>
+                                            @Html.TextBoxFor(model => model.LayoutName, new { @placeholder = "Layout name", @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessageFor(m => m.LayoutName, null, new { @class = "red" })
+                                        </div>
+                                    </div>
+                                    @if (ViewBag.OrgID > 0)
+                                    {
+                                        <div class="form-group">
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn">Level<span class="danger">*</span></label>
+                                                @Html.DropDownListFor(m => m.LayoutLevel, new SelectList(new List<Object>{
+                                               new { key= "OrganisationLevel" , value = "Organisation Level" },
+                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-4 taberrormsg">
+                                                @Html.ValidationMessageFor(m => m.LayoutLevel, null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="form-group">
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn">Level<span class="danger">*</span></label>
+                                                @Html.DropDownListFor(m => m.LayoutLevel, new SelectList(new List<Object>{
+                                       new { key= "ApplicationLevel" , value = "Application Level" },
+                                               new { key= "OrganisationLevel" , value = "Organisation Level" },
+                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-4 taberrormsg">
+                                                @Html.ValidationMessageFor(m => m.LayoutLevel, null, new { @class = "red" })
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="form-group" id="OrgLevelDiv">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Authentication<span class="danger">*</span></label>
+                                            @Html.DropDownListFor(m => m.Authentication, new SelectList(new List<Object>{
+                                       new { key= "Authenticated" , value = "Authenticated" },
+                                               new { key= "NonAuthenticated" , value = "Non Authenticated" },
+                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Type<span class="danger">*</span></label>
+                                            @Html.DropDownListFor(m => m.LayoutType, new SelectList(new List<Object>{
+                                       new { key= "Inline" , value = "Inline" },
+                                               new { key= "Popup" , value = "Popup" },
+                       new { key= "Dialog" , value = "Dialog" },
+                       new { key= "Template" , value = "Template" }
+                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessageFor(m => m.LayoutType, null, new { @class = "red" })
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">XI Parameter<span class="danger"></span></label>
+                                            <select class="form-control" id="XiParameterDDL" name="XiParameterID">
+                                                @*<option value="0">--Select--</option>*@
+                                                @foreach (var items in Model.ddlXiParameters)
+                                                {
+                                                    var NewXiParameterID = Model.XiParameterID;
+                                                    if (NewXiParameterID == items.Value)
+                                                    {
+                                                    <option value="@items.Value" selected>@items.text</option>
+                                                    }
+                                                    else
+                                                    {
+                                                    <option value="@items.Value">@items.text</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <input type="button" class="btn btn-theme btn-xs" value="Refresh" onclick="XiParameterManager('XiParameterLayout','Refresh')" />
+                                            <input type="button" class="btn btn-theme btn-xs" value="Add" onclick="XiParameterManager('XiParameterLayout','Add')" />
+                                            <input type="button" class="btn btn-theme btn-xs" value="Edit" onclick="XiParameterManager('XiParameterLayout','Edit')" />
+                                            <input type="button" class="btn btn-theme btn-xs" value="View" onclick="XiParameterManager('XiParameterLayout','View')" />
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Theme<span class="danger"></span></label>
+                                            @Html.DropDownListFor(m => m.iThemeID, new SelectList(Model.ddlXIThemes, "Value", "text"), new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            @Html.CheckBoxFor(m => m.bUseParentGUID, new { @id = "bIsUserParentGUID" })
+                                            <label for="inputEmail" class="gn">Use Parent GUID</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn"> Code<span class="danger">*</span></label>
+                                            @Html.TextAreaFor(model => model.LayoutCode, new { @placeholder = "Layout code", @class = "form-control", @rows = 20, @cols = 50 })
+                                        </div>
+                                        <div class="col-sm-4 taberrormsg">
+                                            @Html.ValidationMessageFor(m => m.LayoutCode, null, new { @class = "red" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-4">
+                                            <input type="button" value="Show Preview" id="LayoutPrvBtn" class="btn btn-xs btn-theme m-s-10" />
+                                            <input type="button" value="Help" id="Helpbutton" class="btn btn-xs btn-theme m-s-10" />
+                                        </div>
+                                    </div>
+
+                                    @*<div class="form-group">
+                                        <div class="col-md-8">
+                                            @Html.CheckBoxFor(m => m.bIsTaskBar, new { @id = "bIsTaskBar" })
+                                            <label for="inputEmail" class="gn">Is TaskBar</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group" id="BarPositionDiv">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">TaskBar Position<span class="danger"></span></label>
+                                            @Html.DropDownListFor(m => m.sTaskBarPosition, new SelectList(new List<Object>
+                                    {
+                                    new { key= "Left" , value = "Left" },
+                                    new { key= "Right" , value = "Right" },
+                                    new { key= "Top" , value = "Top" },
+                                    new { key= "Bottom" , value = "Bottom" }
+                                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                                        </div>
+                                    </div>*@
+
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">SiloAccess<span class="danger"></span></label>
+                                            @Html.ListBoxFor(m => m.arrSiloAccess, new SelectList(new List<Object>{
+                                               new { key="SiloClient" , value = "SiloClient" },
+                                               new { key= "SiloAdmin" , value = "SiloAdmin" }
+                                               }, "key", "Value"), new { @class = "form-control", style = "height: 140px; width: 250px; padding-left: 5px; padding-top: 8px; margin: 2px;" })
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">IsTaskBar</label>
+                                            @Html.CheckBoxFor(m => m.bIsTaskBar, new { @id = "bIsTaskBar" })
+                                        </div>
+                                    </div>
+
+                                    @if (Model.bIsTaskBar == true)
+                                    {
+                                        <div id="chkTaskBarPosition">
+                                            <div class="form-group">
+                                                <div class="col-md-8">
+                                                    <label for="inputEmail" class="gn">TaskBarPosition<span class="danger">*</span></label>
+                                                    @Html.DropDownListFor(m => m.sTaskBarPosition, new SelectList(new List<Object>{
+                                               new { key= "" , value = "--Select--" },
+                                               new { key= "TOP" , value = "Top" },
+                                               new { key= "DOWN" , value = "Down" },
+                                               new { key= "LEFT" , value = "Left" },
+                                               new { key= "RIGHT" , value = "Right" }
+                                               }, "key", "Value"), new { @class = "form-control" })
+                                                </div>
+                                                <div class="col-sm-4 taberrormsg">
+                                                    @Html.ValidationMessageFor(m => m.sTaskBarPosition, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div id="chkTaskBarPosition" style="display:none">
+                                            <div class="form-group">
+                                                <div class="col-md-8">
+                                                    <label for="inputEmail" class="gn">TaskBarPosition<span class="danger">*</span></label>
+                                                    @Html.DropDownListFor(m => m.sTaskBarPosition, new SelectList(new List<Object>{
+                                               new { key= "" , value = "--Select--" },
+                                               new { key= "TOP" , value = "Top" },
+                                               new { key= "DOWN" , value = "Down" },
+                                               new { key= "LEFT" , value = "Left" },
+                                               new { key= "RIGHT" , value = "Right" }
+                                               }, "key", "Value"), new { @class = "form-control TaskBarPositioncls" })
+                                                </div>
+                                                <div class="col-sm-4 taberrormsg">
+                                                    @Html.ValidationMessageFor(m => m.sTaskBarPosition, null, new { @class = "red" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    <div class="form-group">
+                                        <div class="col-md-8">
+                                            <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                            @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-10">
+                                        <input type="submit" class="btn btn-theme" value="Save" />
+                                        @if (Model.ID == 0)
+                                        {
+                                            <button type="button" class="btn btn-theme reverse ResetPopup">Reset</button>
+                                        }
+                                        <button type="button" class="btn btn-theme decline CancelPopup">Cancel</button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div id="PreviewDiv" class="col-md-6">
+                            <div id="LayoutPreview" class="col-md-12"></div>
+                            <div id="HelpPreview" class="col-md-12"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="SavePopupDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    $(document).ready(function () {
+
+        $('#bIsTaskBar').change(function(){
+            debugger
+            if($('#bIsTaskBar').is(':checked')==true){
+                $('#chkTaskBarPosition').show();
+                $('#sTaskBarPosition').val('@Model.sTaskBarPosition');
+            }
+            else
+            {
+                $('#chkTaskBarPosition').hide();
+                sTaskBarPosition.selectedIndex=0;
+            }
+        })
+
+        if(@Model.ID > 0)
+        {
+            if($('#LayoutLevel').val() == "OrganisationLevel")
+            {
+                $('#OrgLevelDiv').show();
+            }
+            else
+            {
+                $('#OrgLevelDiv').hide();
+            }
+        }
+        else
+        {
+            $('#OrgLevelDiv').hide();
+        }
+        if(@Model.ID > 0)
+        {
+            if ('@Model.bIsTaskBar' == "True") {
+                $('#BarPositionDiv').show();
+            }
+        }
+
+        $('#LayoutLevel').change(function () {
+            if ($(this).val() == "OrganisationLevel") {
+                $('#OrgLevelDiv').show();
+            }
+            else {
+                $('#OrgLevelDiv').hide();
+            }
+        });
+        $('#LayoutPrvBtn').click(function () {
+            var Code = $('#LayoutCode').val();
+            if (Code.length > 0) {
+                $('#LayoutPreview').html(Code);
+                $('#LayoutPreview td').css({ "width": "70px", "height": "70px", "border": "1px solid #fff", "text-align": "center" });
+                $("#LayoutPreview td").each(function (i, obj) {
+                    $(this).html("Placeholder" + (i + 1));
+                });
+                //$('#LayoutPreview div').css({ "width": "70px", "height": "70px", "border": "1px solid #fff", "text-align": "center" });
+            }
+        });
+        $('#Helpbutton').click(function () {
+            var url = '@Url.Action("HelpLayoutCode", "Popup")';
+            $('#HelpPreview').load(url);
+        });
+
+        $("#bIsTaskBar").change(function () {
+            if ($(this).is(":checked")) {
+                $('#BarPositionDiv').show();
+            }
+            else {
+                $('#BarPositionDiv').hide();
+            }
+        });
+
+    });
+
+    function OnBegin() {
+        var LayoutCode = $("#LayoutCode").val();
+        var regexclass = new RegExp(/class=["'](.*?)["'](.*?)/gi);
+        var Classmatches = LayoutCode.match(regexclass);
+        var classes = new Array();
+        for (j = 0; j < Classmatches.length; j++) {
+            LayoutCode = LayoutCode.replace(Classmatches[j], " ");
+            LayoutCode = LayoutCode.replace("  ", "").replace("  ", "").replace("  ", "").replace("  ", "");
+        }
+        var regex = new RegExp(/<div[^>]*id=["'](.*?)["']>(.*?)<\/div>/gi);
+        var matches = LayoutCode.match(regex);
+        var results = new Array();
+        for (i = 0; i < matches.length; i++) {
+            id = matches[i].replace("<div id=", "").replace("</div>", "").replace(">", "").replace(/['"]+/g, '').replace("  ", "").replace("  ", "").replace("  ", "").replace("  ", "").replace("<div id=", "");
+            results.push(id);
+        }
+        var specialChars = "<>!@@#$%^&*()_+[]{}?:;|'\"\\,./~`-=";
+        var checkForSpecialChar = function (string) {
+            for (i = 0; i < specialChars.length; i++) {
+                if (string.indexOf(specialChars[i]) > -1) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        for (var j = 0; j < results.length; j++) {
+            if (checkForSpecialChar(results[j])) {
+                $("#SavePopupDlg").html(' There is a Special Character in Layout Code! ');
+                $("#SavePopupDlg").dialog({
+                    title: "Warning Message",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "Ok",
+                           "class":'btn btn-theme',
+                           click: function () {
+                               $("#SavePopupDlg").dialog("close");
+                           }
+                       }
+                    ]
+                });
+                return false;
+            }
+        }
+
+        var EnteredTdIds = results;
+        var recipientsArray = EnteredTdIds.sort();
+
+        var EnteredTdIdsDuplicate = [];
+        for (var i = 0; i < recipientsArray.length - 1; i++) {
+            if (recipientsArray[i + 1] == recipientsArray[i]) {
+                EnteredTdIdsDuplicate.push(recipientsArray[i]);
+            }
+        }
+
+        if (EnteredTdIdsDuplicate.length > 0) {
+            $("#SavePopupDlg").html('id attribute should have unique value for div');
+            $("#SavePopupDlg").dialog({
+                title: "Layout",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Ok",
+                       "class":'btn btn-theme',
+                       click: function () {
+                           $("#SavePopupDlg").dialog("close");
+                       }
+                   }
+                ]
+            });
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
+    //function OnBegin() {
+    //    var LayoutCode = $("#LayoutCode").val();
+    //    var search = LayoutCode;
+    //    var regex = new RegExp(/<div[^>]*id=["'](.*?)["']>(.*?)<\/div>/gi);
+    //    var matches = search.match(regex);
+    //    var results = new Array();
+    //    for (i = 0; i < matches.length; i++) {
+    //        id = matches[i].replace("<td id=", "").replace("</td>", "").replace(">", "").replace(/['"]+/g, '');
+    //        results.push(id);
+    //    }
+    //    var EnteredTdIds = results;
+    //    var recipientsArray = EnteredTdIds.sort();
+
+    //    var EnteredTdIdsDuplicate = [];
+    //    for (var i = 0; i < recipientsArray.length - 1; i++) {
+    //        if (recipientsArray[i + 1] == recipientsArray[i]) {
+    //            EnteredTdIdsDuplicate.push(recipientsArray[i]);
+    //        }
+    //    }
+    //    if (EnteredTdIdsDuplicate.length > 0) {
+    //        $("#SavePopupDlg").html('id attribute should have unique value for td');
+    //        $("#SavePopupDlg").dialog({
+    //            title: "Layout",
+    //            modal: true,
+    //            buttons: [
+    //               {
+    //                   text: "Ok",
+    //                   click: function () {
+    //                       $("#SavePopupDlg").dialog("close");
+    //                   }
+    //               }
+    //            ]
+    //        });
+    //        return false;
+    //    }
+    //    else {
+    //        return true;
+    //    }
+
+    //}
+
+    function OnComplete(e)
+    {
+        $('#SavePopupDlg').unblock();
+        CustomMessage(e.ResponseMessage, e.Status);
+        opener.location.reload();
+    }
+
+    $('.CancelPopup').click(function () {
+        window.close();
+    });
+    $('.ResetPopup').click(function () {
+        $('#PopupLayoutForm')[0].reset();
+        $('#PopupLayoutForm .taberrormsg').find('span').html('');
+        $('#HelpPreview').html('');
+        $('#LayoutPreview').html('');
+    });
+
+</script>

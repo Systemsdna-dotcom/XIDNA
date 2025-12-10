@@ -1,0 +1,171 @@
+﻿@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+<script>
+
+    $(document).ready(function () {
+        var orgpopups = new Array();
+        var editorg = new Array();
+        var vieworg = new Array();
+        var table = $('#OrgsList').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("GetOrganizationList", "Organization")",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"l<"new-query">f><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "initComplete": function () {
+                $("div.new-query").html('<button type="button" class="savebtn btn btn-theme" id="NewOrgBtn" data-url="@Url.Action("GetOrganizationForm", "Organization")" >New Organization</button>');
+            },
+            "autoWidth": false,
+            "aoColumns": [
+            { "bSortable": false },
+                             {
+                                 "sName": "ID",
+                                 "visible": false
+                             },
+                             {
+                                 "sName": "Name",
+                             },
+                             {
+                                 "sName": "PhoneNumber",
+                             },
+                             {
+                                 "sName": "Email",
+                             },
+                             {
+                                 "sName": "StatusTypeID",
+                             },
+                             {
+                                 "sName": "Actions",
+                                 "bSortable": false
+                             },
+            ],
+            "columnDefs": [
+                  {
+                      "targets": [5],
+                      "createdCell": function (td, cellData, rowData, row, col) {
+                          if (cellData == 10)
+                              $(td).replaceWith('<td>Active</td>')
+                          else
+                              $(td).replaceWith('<td>Inactive</td>')
+                      },
+                  }
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(5)', nRow).attr('class', 'text-nowrap').html("<input class='savebtn btn btn-theme EditOrg btn-xs' value='Edit' type='button'  id='" + aData[1] + "'/>" +
+                    "<input class='savebtn btn btn-theme ViewOrg btn-xs' value='View' type='button' id='" + aData[1] + "'/>");
+                return nRow;
+            },
+        });
+
+        $('.new-query').on('click', 'button#NewOrgBtn', function () {
+            var url = $(this).attr('data-url');
+            if (orgpopups.length > 0) {
+                for (i = 0; i < orgpopups.length; i++) {
+                    orgpopups[i].close();
+                }
+            }
+            var orgwindow = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            orgpopups.push(orgwindow);
+            orgwindow.moveTo(0, 0);
+        });
+        $('#OrgsList').on('click', 'input.EditOrg', function (e) {
+            e.preventDefault();
+            var ID = $(this).attr('id');
+            if (editorg.length > 0) {
+                for (i = 0; i < editorg.length; i++) {
+                    editorg[i].close();
+                }
+            }
+            var orgeditwindow = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetOrganizationDetails", "Organization")',
+                data: { OrgID: ID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    with (orgeditwindow.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    editorg.push(orgeditwindow);
+                    orgeditwindow.moveTo(0, 0);
+                }
+            });
+        });
+        $('#OrgsList').on('click', 'input.ViewOrg', function (e) {
+            e.preventDefault();
+            var ID = $(this).attr('id');
+            if (vieworg.length > 0) {
+                for (i = 0; i < vieworg.length; i++) {
+                    vieworg[i].close();
+                }
+            }
+            var orgviewwindow = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetOrganizationDetailtoView", "Organization")',
+                data: { OrgID: ID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    with (orgviewwindow.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    vieworg.push(orgviewwindow);
+                    orgviewwindow.moveTo(0, 0);
+                }
+            });
+        });
+    });
+</script>
+<section class="content-header hedr">
+    <h1> Organization Management </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Organization Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header with-border">
+                    @*<div id="OrgButton">
+        <input class="savebtn btn btn-theme pull-right" type="button" value="Add Organization" data-url="@Url.Action("GetOrganizationForm", "Organization")" />
+    </div>*@
+                </div>
+                <div class="box-body">
+                    <div class="table-clean">
+                        <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="OrgsList">
+                            <thead>
+                                <tr role="row">
+                                    <th>S.No</th>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Phone Number</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody></tbody>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+            </div>

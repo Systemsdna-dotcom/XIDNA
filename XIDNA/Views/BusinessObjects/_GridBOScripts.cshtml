@@ -1,0 +1,167 @@
+﻿@model int
+
+@{
+    int BOID = 0;
+    bool isFromBo = false;
+    if (ViewBag.isFromBO)
+    {
+        BOID = Model;
+        isFromBo = true;
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    }
+}
+
+<script>
+    $(document).ready(function () {
+        var addpopups = new Array();
+        var editpopups = new Array();
+        var table = $('#BOScriptstbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("GetBOScriptsList", "BusinessObjects", new { BOID = @BOID})",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"l<"new-boscript">f><"datatable-scroll"t><"dtable-footer"ip>',
+            "initComplete": function () {
+                $("div.new-boscript").html('<button type="button" class="savebtn btn btn-theme" id="NewBOScrptBtn" data-url="@Url.Action("AddEditBOScript", "BusinessObjects", new { FKiBOID = @Model})" >Add</button><button type="button" class="btn btn-theme" id="RefreshBOBtn" data-url="@Url.Action("AddEditBOScript", "BusinessObjects", new { FKiBOID = @Model})" >Refresh</button>');
+            },
+            'bJQueryUI': false,
+            "autoWidth": false,
+            "fnServerParams": function (aoData) {
+                aoData.push({ "name": "bFromBO", "value": '@isFromBo' });
+            },
+            "aoColumns": [
+            {
+                "bSortable": false,
+                "bVisible": false
+            },
+                            {
+                                "sName": "ID",
+                            },
+                            {
+                                "sName": "sName"
+                            },
+                            {
+                                "sName": "sScript", "visible": false
+                            },
+                            {
+                                "sName": "sDescription"
+                            },
+                            {
+                                "sName": "sType",
+                            },
+                            {
+                                "sName": "sLanguage"
+                            },
+                            {
+                                "sName": "iStatusTypeID",
+                            },
+                            { "bSortable": false }
+            ],
+            "columnDefs": [
+                  {
+                      "targets": [7],
+                      "createdCell": function (td, cellData, rowData, row, col) {
+                          if (cellData == 10)
+                              $(td).replaceWith('<td>Active</td>')
+                          else
+                              $(td).replaceWith('<td>Inactive</td>')
+                      }
+                  }
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                var html = '<input type="button" class="EditBOBtn btn btn-theme btn2 btn-xs" id="' + aData[1] + '" value="Edit"/>';
+                if ('@isFromBo' == 'False') {
+                    html += '<input type="button" class="btn btn-theme btn2 btn-xs" onclick=fncCopyScript(' + aData[1] + ')  value="Copy"/>';
+                }
+
+                $('td:eq(6)', nRow).html(html);
+                return nRow;
+            }
+        });
+        $('.new-boscript').on('click', 'button#NewBOScrptBtn', function () {
+            var url = $(this).attr('data-url');
+            if (addpopups.length > 0) {
+                for (i = 0; i < addpopups.length; i++) {
+                    addpopups[i].close();
+                }
+            }
+            var newbo = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            addpopups.push(newbo);
+            newbo.moveTo(0, 0);
+        });
+        $('#BOScriptstbl').on('click', 'input.EditBOBtn', function () {
+            var ID = $(this).attr('id');
+            if (editpopups.length > 0) {
+                for (i = 0; i < editpopups.length; i++) {
+                    editpopups[i].close();
+                }
+            }
+            var editbo = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddEditBOScript", "BusinessObjects")',
+                data: { FKiBOID: '@Model', ID: ID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    with (editbo.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    editpopups.push(editbo);
+                    editbo.moveTo(0, 0);
+                }
+            });
+        });
+
+
+    });
+
+    function fncCopyScript(ID) {
+        if (ID != 0) {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CopyScript", "BusinessObjects")',
+                data: { ID: ID },
+                cache: false,
+                async: false,
+                dataType: 'json',
+                success: function (ReturnID) {
+                    if (ReturnID > 0) {
+                        window.location.href = '@Url.Action("BOScripts", "BusinessObjects")'
+                    }
+                }
+            });
+        }
+    }
+
+</script>
+
+<div class="box-body col-xs-12">
+    <div class="table-clean">
+        <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="BOScriptstbl">
+            <thead>
+                <tr role="row">
+                    <th>S.No</th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Script</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Language</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+
+        </table>
+    </div>
+</div>

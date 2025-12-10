@@ -1,0 +1,114 @@
+﻿@model XIDNA.ViewModels.VMLeads
+
+<script>
+    $(document).ready(function () {
+        
+    });
+</script>
+<style>
+    #ViewedData{
+        font-weight:bold;
+        margin-top:5px;
+        background-color:#000;
+        color:#fff;
+        margin-bottom:5px;
+        padding-left:5px;
+    }
+    #Recall {
+        color:red;
+        margin-left:0px;
+        margin-right:0px;
+    }
+    .recall {
+        margin-top: 10px;
+        border: 2px solid red;
+        padding: 5px 14px;
+        padding-left:5px;
+        padding-right:12px;
+        font-weight:bold;
+    }
+    #ExtraInfo {
+        background-color: indianRed;
+        font-size: 11px;
+        padding-left: 5px;
+        color: #fff;
+    }
+</style>
+<h5><i class="fa  fa-caret-right "></i><span class="FirstName">@Model.FirstName @Model.LastName</span><a href="#collapseOne" data-parent="#accordion" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseOne"></a></h5>
+<div id="ViewedData"></div>
+<div id="Recall"></div>
+<div id="ExtraInfo"></div>
+@if (Model.ConversionStatus != "")
+{
+    <h5 style="margin-top:10px;"><i class="fa fa-caret-right"></i><span id="LeadConStatus">@Model.ConversionStatus</span><a href="#collapsetwo" data-parent="#accordion" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseOne" class="fa fa-angle-down accordion-btn"></a></h5>    
+}
+else
+{
+    <h5 style="margin-top:10px;"><i class="fa fa-caret-right"></i><span id="LeadConStatus">New Lead</span><a href="#collapsetwo" data-parent="#accordion" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseOne" class="fa fa-angle-down accordion-btn"></a></h5>
+}
+
+<div class="newleadcontent collapse in" id="collapsetwo">
+    <table class="table table-striped">
+        <tbody>
+            <tr>
+                <td class="lightblue"><strong>ID</strong></td>
+                <td>:</td>
+                <td class="leftpd drkieblue"><span id="ID">@Model.ID</span></td>
+            </tr>
+            <tr>
+                <td class="lightblue"><strong>Name</strong></td>
+                <td>:</td>
+                <td class="leftpd drkieblue"><span class="FirstName">@Model.FirstName @Model.LastName</span></td>
+            </tr>
+            <tr>
+                <td class="lightblue"><strong>Conversion Status</strong></td>
+                <td>:</td>
+                @if (Model.ConversionStatus != "")
+                {
+                    var status = "";
+                    if (Model.ConversionStatus == "New Lead")
+                    {
+                        status = @Model.ConversionStatus;
+                    }
+                    else if (Model.ConversionStatus == "Quote")
+                    {
+                        status = @Model.ConversionStatus + "d";
+                    }
+                    else
+                    {
+                        status = @Model.ConversionStatus + "ed";
+                    }
+                    <td class="leftpd drkieblue" id="LeadStatus">@status</td>
+                }
+                else
+                {
+                    <td class="leftpd drkieblue" id="LeadStatus">New Lead</td>
+                }
+                
+            </tr>
+            <tr>
+                <td class="lightblue"><strong>Status</strong></td>
+                <td>:</td>
+                @if (Model.StatusTypeID == 10)
+                {
+                    <td class="leftpd drkieblue"><span id="StatusTypeID">Active</span></td>
+                }
+                else
+                {
+                    <td class="leftpd drkieblue"><span id="StatusTypeID">InActive</span></td>
+                }
+            </tr>
+
+            <tr>
+                <td class="lightblue"><strong>Category</strong></td>
+                <td>:</td>
+                <td class="leftpd drkieblue"></td>
+            </tr>
+        </tbody>
+
+        <tfoot>
+
+        </tfoot>
+    </table>
+
+</div>

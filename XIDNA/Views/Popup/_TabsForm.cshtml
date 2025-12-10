@@ -1,0 +1,321 @@
+﻿@model XIDNA.Models.Tabs
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+}
+<script>
+    $(document).ready(function () {
+        $('#Sections').hide();
+        @*if ('@Model.CreationType' != "FromTab") {
+            $('#PopupID').append('<option value="' + '@Model.PopupID' + '">' + '@Model.PopupID' + '</option>');
+            $('#PopupID').val('@Model.PopupID');
+            $('#PopupID').prop('disabled', true);
+        }*@
+        $('#SecName').change(function () {
+            var secname = $(this).val();
+            $('#SectionName').val(secname);
+        });
+        $('#PopupID').change(function () {
+            var category = $('#PopupID').val();
+            $.ajax({
+                url: '@Url.Action("GetTabsReports", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { PopupID: category },
+                success: function (data) {
+                    $('#TableReports').html(data);
+                },
+                error: function (data) { }
+            });
+            $.ajax({
+                url: '@Url.Action("GetRanksByCategory", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { Category: category },
+                success: function (data) {
+                    if (data.length > 0) {
+                        $('#Rank').empty();
+                        for (i = 0; i < data.length; i++) {
+                            $('#Rank').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>')
+                        }
+                    }
+                },
+                error: function (data) { }
+            });
+        });
+        $('.CancelTab').click(function () {
+            window.close();
+        });
+        $('#CancelSection').click(function () {
+            window.close();
+        });
+        $('#AddNewTab').hide();
+        $('#AddNewTab').click(function () {
+            $("#TabForm *").removeAttr("disabled", "disabled");
+            var category = $('#PopupID').val();
+            $.ajax({
+                url: '@Url.Action("GetRanksByCategory", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { Category: category },
+                success: function (data) {
+                    if (data.length > 0) {
+                        $('#Rank').empty();
+                        for (i = 0; i < data.length; i++) {
+                            $('#Rank').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>')
+                        }
+                    }
+                },
+                error: function (data) { }
+            });
+
+            $('#AddSection').hide();
+            $('#AddNewTab').hide();
+        });
+    });
+
+</script>
+
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+
+    #AddNewTab {
+        margin-top: -30px;
+        margin-right: 25px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Add Tab </h1>
+    <input type="button" class="btn btn-theme pull-right" value="Add New Tab" id="AddNewTab" />
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class="col-md-3 no-padding" id="TabForm">
+                    @using (Ajax.BeginForm("SaveTab", "Popup", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnComplete" }, new { @id = "TabsForm", @class = "form-horizontal" }))
+                    {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.TypeC, new { @Value = "Create" })
+                        @Html.HiddenFor(m => m.ID, new { @Value = 0 })
+                        <div class="form-group">
+                            <div class="col-md-7">
+                                <label for="inputEmail" class="gn">Category<span class="danger"></span></label>
+                                @Html.DropDownListFor(m => m.PopupID, new SelectList(Model.PopupList, "Value", "text"), "--Select--", new { @class = "form-control" })
+                            </div>
+                            <div class="col-sm-5 taberrormsg">
+                                @Html.ValidationMessageFor(m => m.PopupID, null, new { @class = "red" })
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-md-7">
+                                <label for="inputEmail" class="gn">Tab Name<span class="danger">*</span></label>
+                                @Html.TextBoxFor(model => model.Name, new { @placeholder = "Enter Tab Name", @class = "form-control", @id = "TabName" })
+                            </div>
+                            <div class="col-sm-5 taberrormsg">
+                                @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-7">
+                                <label for="inputEmail" class="gn">Rank<span class="danger">*</span></label>
+                                @Html.DropDownListFor(m => m.Rank, new SelectList(Model.Ranks, "Value", "text"), new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-7">
+                                <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <button type="submit" class="btn btn-theme" id="SaveTab">Save</button>
+                                @if (Model.ID == 0)
+                                {
+                                    <button type="reset" class="btn btn-theme reverse" id="Reset">Reset</button>
+                                }
+                                <button type="button" class="btn btn-theme decline CancelTab">Cancel</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-9" id="AddSection">
+
+
+                </div>
+                @*<div class="tab_scroll main-table">
+                    <div class="dataTables_wrapper no-footer table-responsive">
+                        <table class="table table-bordered table-striped dataTable" id="Tabtbl">
+                            <thead>
+                                <tr role="row">
+                                    <th>S.No</th>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Rank</th>
+                                    <th>Status</th>
+                                    <th>Edit</th>
+                                    <th>Delete</th>
+                                </tr>
+                            </thead>
+
+                            <tbody></tbody>
+
+                        </table>
+                    </div>
+                    </div>*@
+                <div id="TableReports">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+<div class="dialog-box AddTabDlg" title="Confirm Message" style="background-color:white;"></div>
+
+<script>
+    function OnComplete(e) {
+        $('#AddNewTab').show();
+        var Popupid = $('#PopupID').val();
+        @*if ('@Model.CreationType' == "FromTab") {
+            var Category = $('#Category :selected').val();
+        }
+        else {
+            var Category = '@Model.PopupID';
+        }*@
+        $.ajax({
+            url: '@Url.Action("GetTabsReports", "Popup")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            cache: false,
+            data: { PopupID: Popupid },
+            success: function (data) {
+                $('#TableReports').html(data);
+            },
+            error: function (data) { }
+        });
+        var tabid = parseInt(e);
+        opener.location.reload();
+        $('#TabName').val("");
+        if (e > 0) {
+            $(".AddTabDlg").html('Tab Added Successfully! <br/>Do You Want To Add Sections For This Tab?');
+            $(".AddTabDlg").dialog({
+                title: "Tabs",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Yes",
+                       click: function () {
+                           $('#AddSection').show();
+                           $(".AddTabDlg").dialog("close");
+                           if (tabid > 0) {
+                               $('#SecTabID').val(tabid);
+                               $('#SectionTabID').val(tabid);
+                               $("#TabForm *").attr("disabled", "disabled").off('click');
+                               $.ajax({
+                                   url: '@Url.Action("AddSection", "Popup")',
+                                   type: 'GET',
+                                   contentType: "application/json; charset=utf-8",
+                                   datatype: "html",
+                                   cache: false,
+                                   async: true,
+                                   data: { SectionID: 0, Type: "FormCreate", TabID: tabid },
+                                   beforeSend: function (request) {
+                                       $.blockUI({ message: '<h3 class="nh3"><img src="@PhysicalPath/Scripts/ckfinder/plugins/gallery/colorbox/images/loading.gif" width="50px" /> Please wait while loading...</h3>' });
+                                   },
+                                   success: function (data) {
+                                       $.unblockUI();
+                                       $('#AddSection').html(data);
+                                   },
+                                   error: function (data) { }
+                               });
+                           }
+                       }
+                   },
+                {
+                    text: "No",
+                    click: function () {
+                        window.close();
+                    }
+                }
+                ]
+            });
+        }
+        else {
+            $(".AddTabDlg").html('Error while adding Tab!!! <br/>Please try again');
+            $(".AddTabDlg").dialog({
+                title: "Tabs",
+                modal: true,
+                buttons: [
+                {
+                    text: "Ok",
+                    click: function () {
+                        $(".AddTabDlg").dialog("close");
+                    }
+                }
+                ]
+            });
+        }
+
+    }
+    @*function OnSectionComplete(e) {
+        var tabid = parseInt(e.TabID);
+        if ('@Model.CreationType' == "FromTab") {
+            opener.location.reload();
+        }
+        $('#SecName').val("");
+        $(".AddTabDlg").html('Section Added Successfully! <br/>Do You Want To Add More Sections?');
+        $(".AddTabDlg").dialog({
+            title: "Tabs",
+            modal: true,
+            buttons: [
+               {
+                   text: "Yes",
+                   click: function () {
+                       $(".AddTabDlg").dialog("close");
+                       $.ajax({
+                           url: '@Url.Action("GetAllSecRanks", "Popup")',
+                           type: 'GET',
+                           contentType: "application/json; charset=utf-8",
+                           datatype: "JSON",
+                           cache: false,
+                           data: { TabID: tabid },
+                           success: function (data) {
+                               if (data.length > 0) {
+                                   $('#SecRank').empty();
+                                   for (i = 0; i < data.length; i++) {
+                                       $('#SecRank').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>')
+                                   }
+                               }
+                           },
+                           error: function (data) { }
+                       });
+                   }
+               },
+            {
+                text: "No",
+                click: function () {
+                    window.close();
+                }
+            }
+            ]
+        });
+    }*@
+</script>

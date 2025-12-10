@@ -1,0 +1,177 @@
+﻿@model XIDNA.Models.EditUserViewModel
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        $('#SettingsTab').hide();
+        $('#UserSettings').click(function () {
+            $('#UserProfile').removeClass('active');
+            $('#UserSettings').addClass('active');
+            $('#ProfileTab').hide();
+            $('#SettingsTab').show();
+        });
+        $('#UserProfile').click(function () {
+            $('#UserSettings').removeClass('active');
+            $('#UserProfile').addClass('active');
+            $('#SettingsTab').hide();
+            $('#ProfileTab').show();
+        });
+    });
+</script>
+
+<style>
+    .Textvalue {
+        margin-top: 7px;
+    }
+</style>
+
+<section class="content-header hedr">
+    <h1> User Profile </h1>
+</section>
+
+
+
+<div class="content">
+    <div class="nav-tabs-custom">
+        <ul class="nav nav-tabs" id="srctabs">
+            <li id="UserProfile" class="active"><a>Profile</a></li>
+            <li id="UserSettings"><a>Settings</a></li>
+        </ul>
+    </div>
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div id="ProfileTab" class="tab-pane innerborder">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">User Name:</label>
+                            <div class="col-sm-4 Textvalue">
+                                @Html.DisplayFor(model => model.Email)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">First Name:</label>
+                            <div class="col-sm-4 Textvalue">
+                                @Html.DisplayFor(model => model.FirstName)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Last Name:</label>
+                            <div class="col-sm-4 Textvalue">
+                                @Html.DisplayFor(model => model.LastName)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="inputName" class="col-sm-2 control-label">Phone Number:</label>
+                            <div class="col-sm-4 Textvalue">
+                                @Html.DisplayFor(model => model.PhoneNumber)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <button type="button" class="btn btn-theme decline SettCancel">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="SettingsTab" class="tab-pane">
+                    <div class="innerborder">
+                        @using (Ajax.BeginForm("SaveUserSettings", "Users", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Test", OnSuccess = "SettingsComplete" }, new { @id = "SettingsForm", @class = "form-horizontal" }))
+                        {
+                            @Html.HiddenFor(m => m.Id)
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Pagination Count<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.PaginationCount, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "10" },
+                       new { key= 25 , value = "25" },
+                       new { key= 50 , value = "50" },
+                       new { key= 100 , value = "100" }
+                    }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Inbox Refresh Time(Minutes)<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.InboxRefreshTime, new { @placeholder = "Enter Inbox Refresh Time", @class = "form-control", @Value = 1 })
+                                </div>
+                                <div class="col-sm-7 emperrormsg">
+                                    @Html.ValidationMessageFor(m => m.InboxRefreshTime, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Left Menu<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.LeftMenu, new SelectList(new List<Object>{
+                                               new { key= "Open" , value = "Open" },
+                                                new { key= "Close" , value = "Close" },
+                    }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Right Menu<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.RightMenu, new SelectList(new List<Object>{
+                                               new { key= "Open" , value = "Open" },
+                                                new { key= "Close" , value = "Close" },
+                    }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <button type="submit" class="btn btn-theme" id="SubSave">Save</button>
+                                    <button type="button" class="btn btn-theme decline SettCancel">Cancel</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="dialog-box SettingsDlg" title="Confirm Message" style="background-color:white;"></div>
+
+<script>
+    $('.SettCancel').click(function () {
+        window.close();
+    });
+    function SettingsComplete(e) {
+        if (e > 0) {
+            $(".SettingsDlg").html('Settings Updated Successfully');
+            $(".SettingsDlg").dialog({
+                title: "User Settings",
+                modal: true,
+                closeOnEscape: true,
+                buttons: [
+                       {
+                           text: "Ok",
+                           click: function () {
+                               $('#SettingsForm')[0].reset();
+                               $(".SettingsDlg").dialog("close");
+                           }
+                       },
+                ]
+            });
+        }
+        else {
+            $(".SettingsDlg").html('Something went wrong while saving!!!</br> Please try again');
+            $(".SettingsDlg").dialog({
+                title: "Subscriptions",
+                modal: true,
+                closeOnEscape: true,
+                buttons: [
+                    {
+                        text: "Ok",
+                        click: function () {
+                            $(".SettingsDlg").dialog("close");
+                        }
+                    }
+                ]
+            });
+        }
+    }
+</script>

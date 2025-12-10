@@ -1,0 +1,9 @@
+﻿@model XIDNA.ViewModels.VMPopupLayout
+@{
+    Layout = "~/Views/Shared/_InternalQuestionSet.cshtml";
+}
+
+@{
+    Html.RenderAction("GetPopupContent", "XiLink", new { model = Model });
+}
+

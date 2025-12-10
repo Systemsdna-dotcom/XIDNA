@@ -1,0 +1,177 @@
+﻿@model XICore.XIMenu
+
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    var oMenus = ViewBag.Menus;
+}
+
+
+
+@*<br />
+    <div class="form-group" id="sRootName">
+        <label for="inputName" class="col-sm-1 control-label">RootName</label>
+        <div class="col-sm-3">
+            <input type="text" class="form-control" name="RootName" id="RootName" placeholder="Enter RootName">
+        </div>
+    </div>*@
+
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="form-group">
+                        <div class="col-md-3" id="RoleIDs">
+                            <label for="inputEmail" class="gn">Select the Role</label>
+                            @if (Model.Roles != null)
+            {
+                                @Html.DropDownListFor(model => model.RoleID, new SelectList(Model.Roles, "Value", "text"), new { @class = "form-control", @id = "Roles" })
+                            }
+                        </div>
+                        <div class="col-md-3" id="sRootName">
+                            <label for="inputName" class="gn">RootName</label>
+                            <input type="text" class="form-control" name="RootName" id="RootName" placeholder="Enter RootName">
+                        </div>
+
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="col-xs-3">
+                        <div id="NewMenuTree" class="tree"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var RoleID = 0;
+    var RootName = "";
+    $(document).ready(function () {
+        $('#NewMenuTree').hide();
+        var jsondata = [];
+        var Nodes = @Html.Raw(Json.Encode(oMenus));
+        if(Nodes && Nodes!=null && Nodes.length > 0){
+            var j=0;
+            for (var i = 0; i < Nodes.length; i++) {
+                item = {}
+                item["id"] = Nodes[i].ID
+                if(Nodes[i].ParentID == "#"){
+                    item["parent"] ="#";
+                }
+                else{
+                    item["parent"] =Nodes[i].ParentID;
+                }
+                item["text"] = Nodes[i].Name;
+                item["ActionType"] = Nodes[i].ActionType;
+                item["MenuController"] = Nodes[i].MenuController;
+                item["MenuAction"] = Nodes[i].MenuAction;
+                item["XiLinkID"] = Nodes[i].XiLinkID;
+                item["StatusTypeID"] = Nodes[i].StatusTypeID;
+                jsondata.push(item);
+            }
+            if(jsondata.length>0){
+                var jsonString = JSON.stringify(jsondata);
+                createJSTree(JSON.parse(jsonString));
+            }
+        }
+        $('#RoleIDs').change(function(){
+            debugger
+            RoleID = $('#Roles').val();
+            $('#RootName').val('');
+            RootName = "";
+            showHideTree();
+        });
+
+        $('#sRootName').change(function(){
+            debugger
+            RootName = $('#RootName').val();
+            showHideTree();
+        });
+
+        function showHideTree(){
+            if(RoleID > 0 && (typeof RootName !== undefined && RootName != ""))
+            {
+                $('#NewMenuTree').show();
+            }
+            else
+            {
+                $('#NewMenuTree').hide();
+            }
+        }
+    });
+
+    function createJSTree(UIjsondata) {
+        $('#NewMenuTree').jstree({
+            "core": {
+                "themes": {
+                    "variant": "large"
+                },
+                "check_callback": true,
+                'data': UIjsondata,
+            },
+            "checkbox": {
+                "keep_selected_style": false
+            },
+            "plugins": ["themes","html_data", "ui", "checkbox"],
+        })
+        $('#NewMenuTree').on('open_node.jstree', function(e, data){
+            var icon = $('#' + data.node.id).find('i.jstree-icon.jstree-themeicon').first();
+            icon.removeClass('fa-folder').addClass('fa-folder-open');
+        });
+        // bind customize icon change function in jsTree close_node event.
+        $('#NewMenuTree').on('close_node.jstree', function(e, data){
+            var icon = $('#' + data.node.id).find('i.jstree-icon.jstree-themeicon').first();
+            icon.removeClass('fa-folder-open').addClass('fa-folder');
+        });
+        $("#NewMenuTree").bind("changed.jstree",
+    function (e, data) {
+        GetReportToUsers()
+    });
+
+    }
+    function GetReportToUsers() {
+        var oMenuParams = [];
+        var selectedNode = $('#NewMenuTree').jstree(true).get_selected(true);
+        debugger
+        var FullPath = $('#NewMenuTree').jstree().get_path($('#NewMenuTree').jstree("get_selected")[0])
+        var lRootName = FullPath[0];
+        if(lRootName ==  RootName)
+        {
+            RootName = RootName;
+        }
+        else
+        {
+            oMenuParams.push({"ID": 0,"Name":RootName,"ParentID":'#',"ActionType":null,"MenuController":null,"MenuAction":null,"XiLinkID":null,"RootName":RootName,"RoleID":RoleID});
+        }
+        for (i = 0; i < selectedNode.length; i++) {
+            var ID =selectedNode[i].id;
+            Name =selectedNode[i].text;
+            var ParentID =selectedNode[i].original.parent;
+            var ActionType =selectedNode[i].original.ActionType;
+            var MenuController = selectedNode[i].original.MenuController;
+            var MenuAction =selectedNode[i].original.MenuAction;
+            var XiLinkID =selectedNode[i].original.XiLinkID;
+            oMenuParams.push({"ID": ID,"Name":Name,"ParentID":ParentID,"ActionType":ActionType,"MenuController":MenuController,"MenuAction":MenuAction,"XiLinkID":XiLinkID,"RootName":RootName,"RoleID":RoleID});
+        }
+        var model = {oMenuParams:oMenuParams};
+        $.ajax({
+            type: "POST",
+            contentType: 'application/json; charset=utf-8',
+            url: '@Url.Action("oXIMenusParams", "Home")',
+            datatype: 'json',
+            cache: false,
+            async: true,
+            data:JSON.stringify(model),
+            success: function (data) {
+            }
+        });
+    }
+</script>
+
+<style>
+    i.jstree-icon.jstree-themeicon {
+        display: none;
+    }
+</style>

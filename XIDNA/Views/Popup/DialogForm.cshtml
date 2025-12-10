@@ -1,0 +1,351 @@
+﻿@model XIDNA.Models.Dialogs
+
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+<section class="content-header hedr">
+    @if (@Model.ID == 0)
+    {
+    <h1> Add Dialog </h1>
+    }
+    else
+    {
+    <h1> Edit Dialog </h1>
+    }
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Dialogs</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body padding10Tab">
+                <div class="innerborder">
+
+                    @using (Ajax.BeginForm("CreateDialog", "Popup", new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "DialogForm", @class = "form-horizontal" }))
+                    {
+                    @Html.ValidationSummary(true);
+                    @Html.HiddenFor(m => m.ID)
+                    <div id="clear-text">
+                        @if (Model.FKiApplicationID == 0)
+                        {
+                        <div class="form-group" id="XIFKiApplicationDDL">
+                            <div class="col-md-4">
+                                <label for="inputEmail" class="gn"> Application <span class="danger">*</span></label>
+                                <select class="form-control" id="ApplicationID" name="FKiApplicationID">
+                                    <option value="0">--Select--</option>
+                                    @foreach (var items in Model.ddlApplications)
+                                    {
+                                    if (Model.FKiApplicationID == items.Value)
+                                    {
+                                    <option selected value="@items.Value">@items.text</option>
+                                    }
+                                    else
+                                    {
+                                    <option value="@items.Value">@items.text</option>
+                                    }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        }
+                        else
+                        {
+                        <input type="hidden" id="ApplicationID" name="FKiApplicationID" value="@Model.FKiApplicationID" />
+                        }
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <label for="inputEmail" class="gn"> Name<span class="danger">*</span></label>
+                                @Html.TextBoxFor(model => model.DialogName, new { @placeholder = "Enter Dialog Name", @class = "form-control" })
+                            </div>
+                            <div class="col-sm-4 taberrormsg">
+                                @Html.ValidationMessageFor(m => m.DialogName, null, new { @class = "red" })
+                            </div>
+                        </div>
+
+                        @*<div class="form-group">
+                            <div class="col-md-4">
+                                <label for="inputEmail" class="gn">Layout<span class="danger">*</span></label>
+                                @Html.DropDownListFor(m => m.LayoutID, new SelectList(Model.Layouts, "Value", "text"), "--Select--", new { @class = "form-control" })
+                            </div>
+                            <div class="col-sm-4 taberrormsg">
+                                @Html.ValidationMessageFor(m => m.LayoutID, null, new { @class = "red" })
+                            </div>
+                        </div>*@
+
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <label for="inputEmail" class="gn">Layout<span class="danger"></span></label>
+                                <select class="form-control" id="XiLayoutsDDL" name="LayoutID">
+                                    <option value="0">--Select--</option>
+                                    @foreach (var items in Model.Layouts)
+                                    {
+                                    var NewDialogID = Model.LayoutID;
+                                    if (NewDialogID == items.Value)
+                                    {
+                                    <option value="@items.Value" selected>@items.text</option>
+                                    }
+                                    else
+                                    {
+                                    <option value="@items.Value">@items.text</option>
+                                    }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="button" class="btn btn-theme btn-xs" value="Refresh" onclick="XiLayoutManager('Dialog', 'Refresh')" />
+                                <input type="button" class="btn btn-theme btn-xs" value="Add" onclick="XiLayoutManager('XiLayout', 'Add')" />
+                                <input type="button" class="btn btn-theme btn-xs" value="Edit" onclick="XiLayoutManager('XiLayout', 'Edit')" />
+                                <input type="button" class="btn btn-theme btn-xs" value="View" onclick="XiLayoutManager('XiLayout', 'View')" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-md-1">
+                                <label for="inputEmail" class="gn">Resizable<span class="danger"></span></label>
+                            </div>
+                            <div class="col-md-1">
+                                @Html.CheckBoxFor(m => m.IsResizable) Yes
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-1">
+                                <label for="inputEmail" class="gn">Close Icon<span class="danger"></span></label>
+                            </div>
+                            <div class="col-md-1">
+                                @Html.CheckBoxFor(m => m.IsCloseIcon) Yes
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-1">
+                                <label for="inputEmail" class="gn">Minimise Icon<span class="danger"></span></label>
+                            </div>
+                            <div class="col-md-1">
+                                @Html.CheckBoxFor(m => m.IsMinimiseIcon) Yes
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-1">
+                                <label for="inputEmail" class="gn">Pin Icon<span class="danger"></span></label>
+                            </div>
+                            <div class="col-md-1">
+                                @Html.CheckBoxFor(m => m.IsPinIcon) Yes
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-1">
+                                <label for="inputEmail" class="gn">Maximise Icon<span class="danger"></span></label>
+                            </div>
+                            <div class="col-md-1">
+                                @Html.CheckBoxFor(m => m.IsMaximiseIcon) Yes
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-1">
+                                <label for="inputEmail" class="gn">Grouping<span class="danger"></span></label>
+                            </div>
+                            <div class="col-md-1">
+                                @Html.CheckBoxFor(m => m.IsGrouping) Yes
+                            </div>
+                        </div>
+                        <div class="form-group" id="BarPositionDiv">
+                            <div class="col-md-4">
+                                <label for="inputEmail" class="gn">Bar Position<span class="danger"></span></label>
+                                @Html.DropDownListFor(m => m.BarPosition, new SelectList(new List<Object>
+                                    {
+                                    new { key= "Vertical Left" , value = "Vertical Left" },
+                                    new { key= "Vertical Right" , value = "Vertical Right" },
+                                    new { key= "Horizontal Top" , value = "Horizontal Top" },
+                                    new { key= "Horizontal Bottom" , value = "Horizontal Bottom" }
+                                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <label for="inputEmail" class="gn">Size<span class="danger">*</span></label>
+                                @Html.DropDownListFor(m => m.PopupSize, new SelectList(new List<Object>
+                                    {
+                                    new { key= "Default" , value = "Default" },
+                                    new { key= "Center" , value = "Center" },
+                                    new { key= "Left" , value = "Left" },
+                                    new { key= "Right" , value = "Right" },
+                                    new { key= "Top" , value = "Top" },
+                                    new { key= "Bottom" , value = "Bottom" },
+                                    new { key= "Specific" , value = "Specific" }
+                                    }, "key", "Value"), "--Select--", new { @class = "form-control" })
+                            </div>
+                            <div class="col-sm-4 taberrormsg">
+                                @Html.ValidationMessageFor(m => m.PopupSize, null, new { @class = "red" })
+                            </div>
+                        </div>
+                        <div id="DialogPositionsDiv">
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">my</label>
+                                    @Html.DropDownListFor(m => m.DialogMy1, new SelectList(new List<Object>
+                                        {
+                                        new { key= "left" , value = "Left" },
+                                        new { key= "center" , value = "Center" },
+                                        new { key= "right" , value = "Right" }
+                                        }, "key", "Value"), new { @class = "form-control" })
+                                        @Html.DropDownListFor(m => m.DialogMy2, new SelectList(new List<Object>
+                                            {
+                                            new { key= "top" , value = "Top" },
+                                            new { key= "center" , value = "Center" },
+                                            new { key= "bottom" , value = "Bottom" }
+                                            }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">at</label>
+                                    @Html.DropDownListFor(m => m.DialogAt1, new SelectList(new List<Object>
+                                        {
+                                        new { key= "left" , value = "Left" },
+                                        new { key= "center" , value = "Center" },
+                                        new { key= "right" , value = "Right" }
+                                        }, "key", "Value"), new { @class = "form-control" })
+                                        @Html.DropDownListFor(m => m.DialogAt2, new SelectList(new List<Object>
+                                            {
+                                            new { key= "top" , value = "Top" },
+                                            new { key= "center" , value = "Center" },
+                                            new { key= "bottom" , value = "Bottom" }
+                                            }, "key", "Value"), new { @class = "form-control" })
+                                </div>
+                            </div>
+                        </div>
+                        <div id="DialogSizeDiv">
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Width<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.DialogWidth, new { @placeholder = "Enter Dialog Width", @class = "form-control", @Value = Model.DialogWidth })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.DialogWidth, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Height<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.DialogHeight, new { @placeholder = "Enter Dialog Height", @class = "form-control", @Value = Model.DialogHeight })
+                                </div>
+                                <div class="col-sm-4 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.DialogHeight, null, new { @class = "red" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-3">
+                                <label for="inputEmail" class="gn">Icon<span class="danger"></span></label>
+                                <button type="button" data-original-title="Click to select icons" data-toggle="modal" data-target="#icn_select_modal" class="text-yellow">Select Icon</button>
+                                <span id="IconDisplay" style="padding-left:10px;"></span>
+                                <input id="IconName" type="hidden" name="Icon" />
+                                @{
+                                Html.RenderPartial("~/Views/Master/_UIIcons.cshtml");
+                                }
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-4" id="TransparencyValue">
+                                <label for="inputEmail" class="gn">Transparency<span class="danger">*</span></label>
+                                @Html.TextBoxFor(model => model.iTransparency, new { @placeholder = "Enter Transparency Value", @class = "form-control" })
+                            </div>
+                            <div class="col-sm-4 taberrormsg">
+                                @Html.ValidationMessageFor(m => m.iTransparency, null, new { @class = "red" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>
+                                    {
+                                    new { key= 10 , value = "Active" },
+                                    new { key= 20 , value = "Inactive" }
+                                    }, "key", "Value"), new { @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-10">
+                            <input type="submit" class="btn btn-theme" value="Save" />
+                            <button type="button" class="btn btn-theme decline CancelDialog">Cancel</button>
+                        </div>
+                    </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="SavePopupDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+
+<script>
+    $(document).ready(function () {
+        $('#DialogSizeDiv').hide();
+        $('#DialogPositionsDiv').hide();
+        $('#BarPositionDiv').hide();
+        $('div.fa-hover').click(function () {
+            var Text = $(this).text();
+            var icon1 = $(this).closest('.fa-hover').find('i');
+            var Name = $(icon1).attr('class');
+            $('#IconName').val(Name);
+            $('#IconDisplay').html('<i class="' + Name + '" aria-hidden="true"></i>' + Text);
+            $(".close").click();
+        });
+        $("#IsGrouping").change(function () {
+            if ($(this).is(":checked")) {
+                $('#BarPositionDiv').show();
+            }
+            else {
+                $('#BarPositionDiv').hide();
+            }
+        });
+        if ('@Model.ID' > 0) {
+            $('#IconDisplay').html('<i class="' + '@Model.Icon' + '" aria-hidden="true"></i>' + '@Model.Icon');
+            $('#icon').val('@Model.Icon');
+            if ('@Model.IsGrouping' == "True") {
+                $('#BarPositionDiv').show();
+            }
+            if ('@Model.PopupSize' == "Specific") {
+                $('#DialogPositionsDiv').show();
+                $('#DialogSizeDiv').show();
+            }
+        }
+        $('#PopupSize').change(function () {
+            if ($(this).val() == "Default") {
+                $('#DialogPositionsDiv').hide();
+                $('#DialogSizeDiv').hide();
+            }
+            else {
+                $('#DialogPositionsDiv').show();
+                $('#DialogSizeDiv').show();
+                if ('@Model.ID' == 0) {
+                    $('#DialogMy1')[0].selectedIndex = 0;
+                    $('#DialogMy2')[0].selectedIndex = 0;
+                    $('#DialogAt1')[0].selectedIndex = 0;
+                    $('#DialogAt2')[0].selectedIndex = 0;
+                    $('#DialogWidth').val(0);
+                    $('#DialogHeight').val(0);
+                }
+            }
+        });
+    });
+    function OnComplete(e) {
+        $("#SavePopupDlg").unblock();
+        CustomMessage(e.ResponseMessage, e.Status);
+        opener.location.reload();
+    }
+    $('.CancelDialog').click(function () {
+        window.close();
+    });
+</script>

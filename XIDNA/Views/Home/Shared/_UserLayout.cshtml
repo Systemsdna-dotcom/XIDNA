@@ -1,0 +1,721 @@
+﻿@using Microsoft.AspNet.Identity
+@using XIDNA.Models
+@using XIDNA.ViewModels
+@using XIDNA
+@{
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["ApplicationPath"];
+    var sImagePath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+    var sQSName = string.Empty;
+    var sQSPath = string.Empty;
+    if (SessionManager.QSName != null)
+    {
+        sQSName = SessionManager.QSName;
+        sQSPath = SessionManager.QSName;
+        if (sQSName == "mh_money")
+        {
+            sQSName = "Motorhome";
+        }
+        else if (sQSName == "touring_money")
+        {
+            sQSName = "Caravan";
+        }
+        else if (sQSName == "static_money")
+        {
+            sQSName = "Static Caravan";
+        }
+        else if (sQSName == "parkhome_money")
+        {
+            sQSName = "Parkhome Caravan";
+        }
+        else
+        {
+            sQSName = SessionManager.QSName.ToString();
+        }
+    }
+    else
+    {
+        sQSName = "Motorhome Insurance".ToString();
+    }
+    var sLoginURL = PhysicalPath + "account/clientlogin";
+    var sQSURL = PhysicalPath + sQSPath;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Google Tag Manager -->
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-MVBR6MJ');</script>
+    <!-- End Google Tag Manager -->
+
+    @*<script type="text/javascript">
+            try {
+                window._pfq = window._pfq || [];
+                (function () {
+
+                    var pf = document.createElement("script");
+                    pf.type = "text/javascript";
+                    pf.id = "5e1e211a731cdc611f6ddbb4";
+                    pf.dataset.name = "flopandaScript";
+                    pf.async = true;
+                    pf.src = "https://flopandascripts.s3.eu-west-2.amazonaws.com/assets/js/code-live.min.js";
+                    document.getElementsByTagName("head")[0].appendChild(pf);
+
+                })();
+        }
+                     catch (exception) {
+                     }
+            </script>*@
+
+    @*<script async src="https://www.googletagmanager.com/gtag/js?id=AW-715397890"></script>
+        <script>
+           window.dataLayer = window.dataLayer || [];
+           function gtag() { dataLayer.push(arguments); }
+           gtag('js', new Date());
+           gtag('config', 'AW-715397890');
+        </script>*@
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport1" content="width=device-width, minimum-scale=0.1">
+    <title>Motorhomeinsurance.com</title>
+    <link rel="icon" type="image/png" href="~/favicon.ico" />
+    <link href="@Url.Content("~/Content/css/plugins/jquery-ui/jquery-ui.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/css/plugins/jquery-ui/jquery-ui-custom.css")" rel="stylesheet" />
+    <!-- Bootstrap 3.3.5 -->
+    <link href="@Url.Content("~/Content/css/bootstrap.min.css")" rel="stylesheet" />
+    <!-- Font Awesome -->
+    @*<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+        <link href="~/Content/fonts/FontAwesome/css/font-awesome.min.css" rel="stylesheet" />*@
+    <link href="~/Content/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/Content/ionicons/css/ionicons.min.css" rel="stylesheet" />
+    <!-- Ionicons -->
+    @*<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">*@
+    @*<link rel="stylesheet" href="@Url.Content("~/Content/plugins/datatables/dataTables.bootstrap.css")">*@
+    @*<link href="@Url.Content("~/Content/css/main.css")" rel="stylesheet" />*@
+    @*<link href="@Url.Content("~/Content/css/user-custom2.css")" rel="stylesheet" />*@
+    <link href="@Url.Content("~/Content/css/animate.css")" rel="stylesheet" />
+    <link type="text/css" href="~/Content/css/owlCarousel.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/Content/css/@SessionManager.Theme">
+    @*<link rel="stylesheet" href="~/Content/css/skins/skyblue-theme.css">*@
+    @*<link rel="stylesheet" href="~/Content/css/skins/darkblue-theme.css">*@
+
+    <!-- DataTables -->
+    <!--<link rel="stylesheet" href="plugins/datatables/dataTables.bootstrap.css">-->
+
+
+    <script src="@Url.Content("~/Scripts/JQuery/jQuery-2.1.4.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/js/bootstrap.min.js")"></script>
+    @*<script src="@Url.Content("~/Scripts/ajaxfileupload.js")"></script>*@
+    <script src="@Url.Content("~/Scripts/CommonFunctions.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.unobtrusive-ajax.min.js")"></script>
+    @*<script src="@Url.Content("~/Content/plugins/datatables/jquery.dataTables.min.js")"></script>
+        <script src="@Url.Content("~/Content/plugins/datatables/dataTables.bootstrap.min.js")"></script>*@
+    <script src="@Url.Content("~/Scripts/jquery.validate.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")"></script>
+    <!-- jQuery UI -->
+    <script src="@Url.Content("~/Scripts/JQuery/jquery-ui.js")"></script>
+    @*<link href="~/Scripts/JSTree/themes/default/style.css" rel="stylesheet" />*@
+    <!-- JSTree -->
+    @*<link href="@Url.Content("~/Content/jsTree/themes/default/style.min.css")" rel="stylesheet" />
+        <script src="@Url.Content("~/Scripts/treeview/jstree.min.js")"></script>*@
+    <!-- Loading Js -->
+    <script src="@Url.Content("~/Scripts/jquery.blockUI.js")"></script>
+    <!-- AdminLTE App -->
+    @*<script src="@Url.Content("~/Scripts/app.min.js")"></script>*@
+    <!-- ChartJS-->
+    @*<script src="@Url.Content("~/Scripts/js/plugins/chartJs/Chart.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/js/plugins/easypiechart/jquery.easypiechart.js")"></script>
+        <script src="@Url.Content("~/Scripts/C3/d3.v3.min.js")"></script>
+        <script src="@Url.Content("~/Scripts/C3/c3.min.js")"></script>
+        <link href="@Url.Content("~/Scripts/C3/c3.css")" rel="stylesheet" />*@
+    @*<link href="@Url.Content("~/Content/plugins/tabScroll/jquery.scrolling-tabs.css")" rel="stylesheet" />*@
+    @*<script src="@Url.Content("~/Content/plugins/mCustomScrollbar/jquery.mCustomScrollbar.concat.min.js")"></script>
+        <link href="@Url.Content("~/Content/plugins/mCustomScrollbar/jquery.mCustomScrollbar.min.css")" rel="stylesheet" />*@
+
+    <script src="@Url.Content("~/Content/plugins/timepicker/bootstrap-datetimepicker.js")"></script>
+    <link href="@Url.Content("~/Content/plugins/timepicker/bootstrap-datetimepicker.min.css")" rel="stylesheet" />
+    <script src="~/Content/plugins/git-quote/modernizr.js"></script> <!-- Modernizr -->
+    <script src="~/Content/plugins/git-quote/owl-carousel.js"></script>
+    @*<script src="@Url.Content("~/Scripts/bluebird.min.js")"></script>*@
+    <script>
+        $(document).ready(function () {
+            LabelDataURL = '@Url.Action("GetLabelData", "XiLink")';
+            UpdateXIParamsURL = '@Url.Action("UpdateXIParams", "XIComponents")';
+            ParentGUIDURL = '@Url.Action("GetParentGUID", "XiLink")';
+            UpdateInstanceIDURL = '@Url.Action("UpdateInstanceID", "XiLink")';
+            CallQSEventURL = '@Url.Action("CallQSEvent", "XIComponents")';
+            ComponentParmsByStepURL = '@Url.Action("GetComponentParmsByStep", "XIComponents")';
+            MakeaChangeURL = '@Url.Action("MakeaChange", "XiLink")';
+            LoadStepURL = '@Url.Action("TriggerStep", "XiLink")';
+            XILinkDefinitionURL = '@Url.Action("GetXILinkDefinition", "XiLink")';
+            PopupDefinitionURL = '@Url.Action("GetPopupDefinition", "XiLink")';
+            OpenInPopupURL = '@Url.Action("OpenInPopup", "XiLink")';
+            SetParamUrl = '@Url.Action("SetParams", "XiLink")';
+            AutoCompleteLarge = '@Url.Action("GetAutoCompleteData", "XiLink")';
+            AutoCompleteMedium = '@Url.Action("GetAutoCompleteList", "BusinessObjects")';
+            NextStepURL = '@Url.Action("GetNextStep", "XiLink")';
+            PrevStepURL = '@Url.Action("GetPreviousStep", "XiLink")';
+            SaveQSStepURL = '@Url.Action("SaveQSStep", "XiLink")';
+            LogSignalRURL = '@Url.Action("LogSignalR", "XiLink")';
+            AmendDetailsURL = '@Url.Action("AmendDetails", "XiLink")';
+            UpdateQuoteURL = '@Url.Action("UpdateQuotePrice", "XiLink")';
+            PaymentURL = '@Url.Action("Payment", "Payment")';
+            SaveGridURL = '@Url.Action("SaveGrid", "XiLink")';
+            RemoveSectionURL = '@Url.Action("RemoveSectionInstance", "XiLink")';
+            sImagePath = '@sImagePath';
+            ExecuteXIScriptURL = '@Url.Action("ExecuteXIScript", "XiLink")';
+            SecureKeyURL = '@Url.Action("CheckSecureKey", "Account")';
+            GetQSDefinitionURL = '@Url.Action("GetQSDefinitionByInstanceID", "XiLink")';
+            GetTemplateDefinitionURL = '@Url.Action("GetTemplateIDByClass", "XiLink")';
+            RemoveStepXIIValuesURL = '@Url.Action("RemoveStepXIIValues", "XiLink")';
+            XIPreviewURL = '@Url.Action("XIPreviewXiLink", "XiLink")';
+            UpdateQuoteRankURL = '@Url.Action("UpdateQuoteRank", "XiLink")';
+            GetNextHTMLRowsURL = '@Url.Action("GetNextHTMLRows", "XiLink")';
+	    LoadLayoutURL = '@Url.Action("LoadLayout", "XiLink")';
+        });
+
+    </script>
+    <script type="text/javascript">
+        /*****************************************/
+        $("#sectionInsurer").owlCarousel({
+            loop: true,
+            //margin:10,
+            nav: false,
+            dots: true,
+            autoplay: true,
+            autoplayTimeout: 10000,
+            responsive: {
+                0: {
+                    items: 1,
+                    dots: false,
+                },
+                600: {
+                    items: 3,
+                    dots: false,
+                },
+                1000: {
+                    items: 5,
+                    nav: true,
+                    navText: ["<i class='fa ion-ios-arrow-back'></i>","<i class='fa ion-ios-arrow-forward'></i>"]
+                }
+            }
+        });
+    </script>
+</head>
+@*<body class="@SessionManager.Theme.ToString().Replace(".css","") sidebar-mini">*@
+<body class="sidebar-mini">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+        <iframe src="https://www.googleta3:13 PM 11/18/2019gmanager.com/ns.html?id=GTM-MVBR6MJ"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="wrapper">
+        <header class="main-header zeeheader">
+            <!-- Logo -->
+            @*<a href="#" class="logo">*@
+            <!-- mini logo for sidebar mini 50x50 pixels -->
+            @*<span class="logo-mini"><b>CN</b>R</span>*@
+            <!-- logo for regular state and mobile devices -->
+            @*<span class="logo-lg"><img src="~/Content/images/ICON10.png" width="30" /> <b> CONVERTER</b></span>*@
+            @*<span class="logo-lg"><img src="~/Content/images/ICON10.png" width="30" /><b> XIDynaware</b> </span>*@
+            @*@if (User.Identity.GetGroupName().Contains(EnumRoles.SuperAdmin.ToString()))
+                {
+                    <span class="logo-lg"><img src="~/Content/images/ICON10.png" width="30" /><b> XIDynaware</b> </span>
+                }
+                else
+                {
+                    <span class="logo-lg"> @User.Identity.GetFirstName().ToUpper() </span>
+                }*@
+            </a>
+            <!-- Header Navbar -->
+            @*<nav class="navbar navbar-static-top" role="navigation">
+                <div class="navbar-custom-menu">
+                    <ul class="nav navbar-nav">
+
+                        <!-- Messages: style can be found in dropdown.less-->
+                        <li class="dropdown messages-menu">
+                            <!-- Menu toggle button -->
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <i class="fa fa-envelope-o"></i> <span class="label label-success ReminderCount">0</span> </a>
+                            <ul class="dropdown-menu">
+                                <li class="header">You have <span class="ReminderCount">0</span> messages</li>
+                                <li>
+                                    <!-- inner menu: contains the messages -->
+                                    <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 200px;">
+                                        <ul class="menu" id="ReminderMessage" style="overflow: hidden; width: 100%; height: 200px;">
+                                            @*<li>
+                                                    <!-- start message -->
+                                                    <a href="#">
+                                                        <div class="pull-left">
+                                                            <!-- User Image -->
+                                                            <img src="~/Content/images/human.png" class="img-circle" alt="User Image">
+                                                        </div>
+                                                        <!-- Message title and timestamp -->
+                                                        <h4> Support Team <small><i class="fa fa-clock-o"></i> 5 mins</small> </h4>
+                                                        <!-- The message -->
+                                                        <p id="ReminderMessage"></p>
+                                                    </a>
+                                                </li>
+                                            <!-- end message -->
+                                        </ul><div class="slimScrollBar" style="width: 3px; position: absolute; top: 0px; opacity: 0.4; display: block; border-radius: 7px; z-index: 99; right: 1px; background: rgb(0, 0, 0);"></div><div class="slimScrollRail" style="width: 3px; height: 100%; position: absolute; top: 0px; display: none; border-radius: 7px; opacity: 0.2; z-index: 90; right: 1px; background: rgb(51, 51, 51);"></div>
+                                    </div>
+                                    <!-- /.menu -->
+                                </li>
+                                <li class="footer MoreMessages"><a>See All Messages</a></li>
+                            </ul>
+                        </li>
+                        <!-- /.messages-menu -->
+                        <!-- Notifications Menu -->
+                        <li class="dropdown notifications-menu">
+                            <!-- Menu toggle button -->
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <i class="fa fa-bell-o"></i> <span class="label label-warning ReminderCount">0</span> </a>
+                            <ul class="dropdown-menu">
+                                <li class="header">You have <span class="ReminderCount">0</span> notifications</li>
+                                <li>
+                                    <!-- Inner Menu: contains the notifications -->
+                                    <div class="slimScrollDiv" style="position: relative; overflow: hidden; width: auto; height: 200px;">
+                                        <ul class="menu" id="NotificationMessages" style="overflow: hidden; width: 100%; height: 200px;">
+                                            @*<li>*@
+            <!-- start notification -->
+            @*<a href="#"> <i class="fa fa-users text-aqua"></i> <span class="ReminderCount"></span> new members joined today </a>*@
+            @*</li>
+                                                <!-- end notification -->
+                                            </ul><div class="slimScrollBar" style="width: 3px; position: absolute; top: 0px; opacity: 0.4; display: block; border-radius: 7px; z-index: 99; right: 1px; background: rgb(0, 0, 0);"></div><div class="slimScrollRail" style="width: 3px; height: 100%; position: absolute; top: 0px; display: none; border-radius: 7px; opacity: 0.2; z-index: 90; right: 1px; background: rgb(51, 51, 51);"></div>
+                                        </div>
+                                    </li>
+                                    <li class="footer MoreMessages"><a>View all</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="dropdown user user-menu">
+                                <!-- Menu Toggle Button -->
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    <!-- The user image in the navbar-->
+                                    <img src="~/Content/images/human.png" class="user-image" alt="User Image">
+                                    <!-- hidden-xs hides the username on small devices so only the image appears. -->
+                                    @*<span class="hidden-xs">@Session["UserName"].ToString()</span>
+                                    <span class="hidden-xs">@User.Identity.GetUserName()</span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <!-- The user image in the menu -->
+                                    <li class="user-header">
+                                        <img src="~/Content/images/human.png" class="img-circle" alt="User Image">
+                                        @*<p> @User.Identity.GetFirstName()<small>@User.Identity.GetGroupName()</small> </p>
+                                    </li>
+                                    <!-- Menu Body -->
+                                    <!-- Menu Footer-->
+                                    <li class="user-footer">
+                                        <div class="pull-left"> <a id="UserProfile" class="btn  btn-theme">Profile</a> </div>
+                                        <div class="pull-right">
+                                            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <a href="javascript:document.getElementById('logoutForm').submit()" class="btn  btn-warning">Sign out</a>
+                                            }
+                                        </div>
+                                    </li>
+                                </ul>
+                            </li>
+
+                        </ul>
+                    </div>
+                </nav>*@
+            <nav class="navbar">
+                <div class="container">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                            <span class="sr-only">Toggle navigation</span>
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <div class="newquotebtnxs">
+                            <a href="@sLoginURL" class="login-btn">LOGIN</a>
+                        </div>
+                        <a class="navbar-brand" href="#">
+                            <img src="Content/images/MotorHome.png">
+                        </a>
+                    </div>
+                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="@sQSURL" target="_blank" class="getquote-btn">GET A QUOTE</a></li>
+                            <li class="newquotebtn"><a href="@sLoginURL" class="login-btn">LOGIN</a></li>
+                        </ul>
+                        <ul class="nav navbar-nav nav-main sub-menuMain">
+                            <li class="active">
+                                <a class="" href="https://www.motorhomeinsurance.com/">Home</a>
+                            </li>
+                            <li>
+                                <a class="">Information<span class="sub-arrow"><i class="fa fa-caret-down"></i></span></a>
+                                <ul class="sub-menuOne">
+                                    <li class="sub-menuOneli">
+                                        <a href="#" class="sub-aOneli">Types of Motorhome<span class="sub-arrow"><i class="fa fa-caret-right"></i></span></a>
+                                        <ul class="sub-menuTwo">
+                                            <li class="sub-menuTwoli"><a href="https://www.motorhomeinsurance.com/information/types-of-motorhome/low-profile-coach-built-motorhomes/" class="sub-aTwoli">Low-profile Coach-built Motorhomes</a></li>
+                                            <li class="sub-menuTwoli"><a href="https://www.motorhomeinsurance.com/information/types-of-motorhome/over-cab-bed-motorhomes/" class="sub-aTwoli">Over Cab Bed Motorhomes</a></li>
+                                            <li class="sub-menuTwoli"><a href="https://www.motorhomeinsurance.com/information/types-of-motorhome/a-class-motorhomes/" class="sub-aTwoli">A-class Motorhomes</a></li>
+                                            <li class="sub-menuTwoli"><a href="https://www.motorhomeinsurance.com/information/types-of-motorhome/fixed-roof-campervans/" class="sub-aTwoli">Fixed Roof Campervans</a></li>
+                                            <li class="sub-menuTwoli"><a href="https://www.motorhomeinsurance.com/information/types-of-motorhome/high-top-campervans/" class="sub-aTwoli">High-top Campervans</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="sub-menuOneli"><a href="https://www.motorhomeinsurance.com/information/add-ons/" class="sub-aOneli">Add-On Products</a></li>
+                                    <li class="sub-menuOneli"><a href="https://www.motorhomeinsurance.com/information/how-to-report-a-claim/" class="sub-aOneli">How to Report a Claim</a></li>
+                                    <li class="sub-menuOneli"><a href="https://www.motorhomeinsurance.com/information/faqs/" class="sub-aOneli">FAQs</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a class="" href="https://www.motorhomeinsurance.com/news/">News</a>
+                            </li>
+                            <li>
+                                <a class="" href="https://www.motorhomeinsurance.com/about/">About us</a>
+                            </li>
+                            <li>
+                                <a class="" href="https://www.motorhomeinsurance.com/contact/">Contact</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <header class="main-header GITHeader" id="headerSection">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <img src="~/Content/images/GIT/images/logo.png" />
+                </a>
+                <div class="menuNav menu">
+                    <div class="logInfo hidden">
+                        @using (Html.BeginForm("ClientLogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <a href="javascript:document.getElementById('logoutForm').submit()" class="signout-btn">Sign out</a>
+                        }
+                    </div>
+                    <ul class="">
+                        <li class="active">
+                            <a class="" href="#">Home</a>
+                        </li>
+                        <li>
+                            <a class="" href="#">Information <i class="fa fa-caret-down"></i></a>
+                            <ul>
+                                <li><a href="#">link</a></li>
+                                <li><a href="#">link</a></li>
+                                <li><a href="#">link</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a class="" href="#">News</a>
+                        </li>
+                        <li>
+                            <a class="" href="#">About us</a>
+                        </li>
+                        <li>
+                            <a class="" href="#">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+        <header class="main-header moneyheader">
+            <div class="moneylogosec">
+                <div class="container">
+                    <div class="moneylogo">
+                        <a href="#" class="nav_sprite"><!--<img src="~/Content/images/nav_sprite.png" alt="MoneyCo">--></a>
+                    </div>
+                    <div class="QuotePhn">
+                        <p class="txtQ">Quote over the phone </p>
+                        <p class="txtP">01227 774050</p>
+                    </div>
+                </div>
+            </div>
+            <div class="breadcrumbWrapper">
+                <!--<ol class="breadol">
+                    <li class="breadli"><a href="#" class="nav_sprite bread-home-icn"></a></li>
+                    <li class="breadli">Motorhome Insurance</li>
+                </ol>-->
+                <div class="container">
+                    <ol>
+                        <li class="home"><a href="#">Home</a></li>
+                        <li class="current"><span></span>@sQSName Insurance</li>
+                    </ol>
+                </div>
+            </div>
+            @*<section class="banner banner--tiles banner--optimised-header">
+                    <div class="banner__background-img banner__background-img--col banner__background-img--full">
+                        <div class="banner__content-wrapper">
+                            <div class="bannerhead">
+                                <h1 class="banner__title banner__title--large">@SessionManager.QSName insurance quotes</h1>
+                                <p class="banner__text banner__text--large">The following quotes, in price order from lowest to highest, are for</p>
+                                <p class="banner__text banner__text--large">MR David Thomson (policy holder)</p>
+                                <p class="banner__text banner__text--large">Key details shown to the right</p>
+                            </div>
+                            <div class="bannerbox">
+                                <h4 class="box-title">Your Summary</h4>
+                                <p class="box-txt">The following is for a:<br/> Roller Team Auto-Roller 746, with Market Value cover</p>
+                                <button class="amendDet">Amend details</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <div class="banner__subnav">
+                    <div class="container">
+                        <!--<img src="~/Content/images/dropdown.png" alt="Dropdown" style="width:100%;margin:20px 0px 15px;">-->
+                        <div class="dropdownsnip">
+                            <label class="droplabel gn form-label">
+                                <span class="pull-left">Cover required</span>
+                            </label>
+                            <div class="select-wrapper">
+                                <select class="form-control">
+                                    <option value="0" selected="selected">Dropdown text</option>
+                                    <option value="10">£0 voluntary excess</option>
+                                    <option value="50">£50 voluntary excess</option>
+                                    <option value="100">£100 voluntary excess</option>
+                                    <option value="150">£150 voluntary excess</option>
+                                    <option value="200">£200 voluntary excess</option>
+                                    <option value="250">£250 voluntary excess</option>
+                                    <option value="300">£300 voluntary excess</option>
+                                    <option value="350">£350 voluntary excess</option>
+                                    <option value="400">£400 voluntary excess</option>
+                                    <option value="450">£450 voluntary excess</option>
+                                    <option value="500">£500 voluntary excess</option>
+                                    <option value="700">£700 voluntary excess</option>
+                                    <option value="1000">£1000 voluntary excess</option>
+                                </select>
+                                <span class="select_wrapper_caret glyphicon glyphicon-chevron-down"></span>
+                            </div>
+                        </div>
+                        <div class="dropdownsnip">
+                            <label class="droplabel gn form-label">
+                                <span class="pull-left">Voluntary excess</span>
+                            </label>
+                            <div class="select-wrapper">
+                                <select class="form-control">
+                                    <option value="0" selected="selected">Dropdown text</option>
+                                    <option value="10">£0 voluntary excess</option>
+                                    <option value="50">£50 voluntary excess</option>
+                                    <option value="100">£100 voluntary excess</option>
+                                    <option value="150">£150 voluntary excess</option>
+                                    <option value="200">£200 voluntary excess</option>
+                                    <option value="250">£250 voluntary excess</option>
+                                    <option value="300">£300 voluntary excess</option>
+                                    <option value="350">£350 voluntary excess</option>
+                                    <option value="400">£400 voluntary excess</option>
+                                    <option value="450">£450 voluntary excess</option>
+                                    <option value="500">£500 voluntary excess</option>
+                                    <option value="700">£700 voluntary excess</option>
+                                    <option value="1000">£1000 voluntary excess</option>
+                                </select>
+                                <span class="select_wrapper_caret glyphicon glyphicon-chevron-down"></span>
+                            </div>
+                        </div>
+                        <div class="dropdownsnip">
+                            <label class="droplabel gn form-label">
+                                <span class="pull-left">Market value of caravan</span>
+                            </label>
+                            <div class="select-wrapper">
+                                <select class="form-control">
+                                    <option value="0" selected="selected">Dropdown text</option>
+                                    <option value="10">£0 voluntary excess</option>
+                                    <option value="50">£50 voluntary excess</option>
+                                    <option value="100">£100 voluntary excess</option>
+                                    <option value="150">£150 voluntary excess</option>
+                                    <option value="200">£200 voluntary excess</option>
+                                    <option value="250">£250 voluntary excess</option>
+                                    <option value="300">£300 voluntary excess</option>
+                                    <option value="350">£350 voluntary excess</option>
+                                    <option value="400">£400 voluntary excess</option>
+                                    <option value="450">£450 voluntary excess</option>
+                                    <option value="500">£500 voluntary excess</option>
+                                    <option value="700">£700 voluntary excess</option>
+                                    <option value="1000">£1000 voluntary excess</option>
+                                </select>
+                                <span class="select_wrapper_caret glyphicon glyphicon-chevron-down"></span>
+                            </div>
+                        </div>
+                        <div class="dropdownsnip">
+                            <label class="droplabel gn form-label">
+                                <span class="pull-left">Cover start date</span>
+                            </label>
+                            <div class="select-wrapper">
+                                <select class="form-control">
+                                    <option value="0" selected="selected">Dropdown text</option>
+                                    <option value="10">£0 voluntary excess</option>
+                                    <option value="50">£50 voluntary excess</option>
+                                    <option value="100">£100 voluntary excess</option>
+                                    <option value="150">£150 voluntary excess</option>
+                                    <option value="200">£200 voluntary excess</option>
+                                    <option value="250">£250 voluntary excess</option>
+                                    <option value="300">£300 voluntary excess</option>
+                                    <option value="350">£350 voluntary excess</option>
+                                    <option value="400">£400 voluntary excess</option>
+                                    <option value="450">£450 voluntary excess</option>
+                                    <option value="500">£500 voluntary excess</option>
+                                    <option value="700">£700 voluntary excess</option>
+                                    <option value="1000">£1000 voluntary excess</option>
+                                </select>
+                                <span class="select_wrapper_caret glyphicon glyphicon-chevron-down"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>*@
+            <div class="MIQtitle">
+                <div class="container">
+                    <h2 class="insurancetitle">@sQSName Insurance Quote</h2>
+                </div>
+            </div>
+        </header>
+        <header id="headerSection" class="Goodsheader">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <img src="Content/images/GIT/images/logo.png" />
+                </a>
+                <div class="menuNav menu">
+                    <div class="logInfo">
+                        <a href="@sLoginURL" target="_blank" class="signin-btn">Log in</a>
+                    </div>
+                    <ul class="">
+                        <li class="active">
+                            <a class="" href="#">Home</a>
+                        </li>
+                        <!-- <li>
+                            <a class="" href="#">Information <i class="fa fa-caret-down"></i></a>
+                            <ul>
+                                <li><a href="#">link</a></li>
+                                <li><a href="#">link</a></li>
+                                <li><a href="#">link</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a class="" href="#">News</a>
+                        </li> -->
+                        <li>
+                            <a class="" href="#">About us</a>
+                        </li>
+                        <li>
+                            <a class="" href="#" onclick="contactUs()">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+        <div class="">
+            @RenderBody()
+        </div>
+    </div>
+    <div class="col-md-12 bottomstrip">
+        <p class="no-margin">Motorhome Insurance Services is a trading name of Quotemetoday.co.uk Ltd.</p>
+        <p class="no-margin">Quotemetoday.co.uk Ltd is authorised and regulated by the Financial Conduct Authority FCA Number 786619</p>
+    </div>
+    <script>
+        $(document).ready(function () {
+            /*$('.helptext-mobile-button').popover({
+                html : true,
+                content: function() {
+                return $('.popover_content').html();
+                }
+            }).click(function(e) {
+                $(this).popover('toggle');
+                e.stopPropagation();
+            });
+
+            $('.helptext-mobile-button').on('click', function (e) {
+                $('.helptext-mobile-button').not(this).popover('hide')
+            });*/
+            //$(".highlight--help .helptext-mobile-button").on('click',function (e) {
+            //    e.stopPropagation();
+            //    $('.highlight--help').removeClass("helptext--visible");
+            //	$(this).closest('.highlight--help').addClass('helptext--visible');
+
+            //});
+            //$(document).on("click", function (e) {
+            //    if ($(e.target).is(".helptext--visible") === false) {
+            //        $(".helptext--visible").removeClass("helptext--visible");
+            //    }
+            //});
+
+            //$(".helptext-content-close").on('click',function (e) {
+            //	$(this).closest('.highlight--help').removeClass('helptext--visible');
+            //});
+
+
+            //$(".form-input .form-control").focus(function () {
+            //    $(this).closest('.highlight--help').addClass("helptext--visible");
+
+            //}).blur(function () {
+            //    $(this).closest('.highlight--help').removeClass("helptext--visible");
+            //})
+
+        });
+
+    </script>
+    <div id="Dialogs"></div>
+    <div id="DialogGroups" class="no-padding" style="display:none;">
+        <div id="VerticalLeftBar" class="col-xs-1 btn-popover gutter6"></div>
+        <div id="HorizontalTopBar" class="col-xs-12 btn-popover bottom"></div>
+        <div id="DialogContent">
+        </div>
+        <div id="VerticalRightBar" class="col-xs-1 btn-popover left gutter6 pull-right"></div>
+        <div id="HorizontalBottonBar" class="col-xs-12 btn-popover top"></div>
+    </div>
+    <footer class="footer page-footer sectionPadded p-b-none Goodsfooter">
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-6 col-sm-3">
+                    <img src="~/Content/images/GIT/images/logo.png" alt="" title="" class="footerLogo">
+                </div>
+                <div class="col-xs-12 col-sm-9">
+                    <div class="row footMenu">
+                        <!-- <div class="col-xs-6 col-sm-4">
+                            <h4 class="col-header">Main Menu</h4>
+                            <ul class="links">
+                                <li><a href="#">Home</a></li>
+                                <li><a href="#">Buy My Insurance</a></li>
+                                <li><a href="#">Touring Caravan Insurance</a></li>
+                                <li><a href="#">Static Caravan Insurance</a></li>
+                                <li><a href="#">Park Home Insurance</a></li>
+                            </ul>
+                        </div> -->
+                        <div class="col-xs-6 col-sm-3">
+                            <h4 class="col-header">Information</h4>
+                            <ul class="links">
+                                <li><a href="#">About Us</a></li>
+                                <li><a href="#">Contact</a></li>
+                                <!-- <li><a href="#">News</a></li> -->
+                            </ul>
+                        </div>
+                        <!-- <div class="col-xs-6 col-sm-3">
+                            <h4 class="col-header">Let's Chat</h4>
+                            <ul class="links">
+                                <li><a href="#">Get a Quote</a></li>
+                                <li><a href="#">Contact Us</a></li>
+                            </ul>
+                        </div> -->
+                        <div class="col-xs-6 col-sm-2">
+                            <h4 class="col-header">Account</h4>
+                            <ul class="list-inline">
+                                <li><a href="#">Login</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="footerInfoline"><span class="sbold">Goods In Transit Quote</span> is a trading name of Quotemetoday.co.uk Limited of Office 2A, First Floor, 3 Jubilee Way, Whitstable Road, Faversham, Kent, ME13 8GD, registered in the United Kingdom under company number 04668665. Quotemetoday.co.uk Limited is directly authorised and regulated by the Financial Conduct Authority (FCA) under Firm Reference No. 786619. Details of this registration are available on the FCA’s website www.fca.org.uk/register or on 0800 111 6768.</p>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="copyright">&copy; 2020 goodsintransitquote.co.uk</div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="shortlink">
+                        <a href="#">Accessibility</a> | <a href="#">Privacy Policy</a> | <a href="#">Terms and Conditions</a>
+                    </div>
+                </div>
+            </div>
+            <p class="cookieLink hidden">This site uses cookies: <span class="fc-white">More Info</span></p>
+        </div>
+    </footer>
+</body>
+</html>

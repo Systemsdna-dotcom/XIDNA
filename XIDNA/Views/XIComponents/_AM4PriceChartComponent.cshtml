@@ -1,0 +1,96 @@
+﻿
+@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using System.Globalization;
+@{
+
+    XIGraphData oXIGraph = new XIGraphData();
+    Dictionary<string, string> values = new Dictionary<string, string>();
+    if (Model.oContent.ContainsKey(XIConstant.AM4PriceChartComponent))
+    {
+        oXIGraph = (XIGraphData)Model.oContent[XIConstant.AM4PriceChartComponent];
+
+        
+        values = oXIGraph.OneClickRes;
+
+    }
+    var sTabGUID = Guid.NewGuid().ToString();
+}
+
+@if (Model.oContent.ContainsKey(XIConstant.AM4PriceChartComponent))
+{
+    @*<div style="text-align: center"><label>Last Updated:-<strong>@oXIGraph.sLastUpdated</strong></label></div>*@
+    <!-- <div id="dashboardchart"> -->
+    <div class="snippet-box" id="dashboard-@oXIGraph.OnClickResultID">
+        <div class="snippet-content" id="OnClickResult-@sTabGUID" onclick="OnClickResult(@oXIGraph.RowXilinkID)">
+            @if (values != null && values.Count() != 0){
+                <div class="m-3">
+                    <div class="card">
+                        <div class="card-header" id="value-@oXIGraph.OnClickResultID">
+                            <h4>@values.Select(s => s.Value).FirstOrDefault()</h4>
+                        </div>
+                        <div class="value" id="key-@oXIGraph.OnClickResultID">
+                            <div class="small-chart" id="smallChart-@values.Select(s => s.Key).FirstOrDefault()"></div>
+                            <span class="text-value">@values.Select(s => s.Key).FirstOrDefault()</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <!-- </div> -->
+}
+<style>
+    .small-chart {
+        width: 100%;
+        height: 100px;
+        position: relative;
+    }
+    .value{position: relative;}
+    .text-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+</style>
+<script>
+    function OnClickResult(RowXilinkID) {
+        //debugger;
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+        XILinkLoadJson(RowXilinkID, sGUID, null);
+    }
+
+    am4core.ready(function() {
+        am4core.useTheme(am4themes_animated);
+
+        var createSmallChart = function(chartId, value, total) {
+            var percentage = (value / total) * 100;
+
+            var chart = am4core.create(chartId, am4charts.PieChart);
+            chart.data = [
+                { "category": "Filled", "value": percentage },
+                { "category": "Empty", "value": 100 - percentage }
+            ];
+
+            var pieSeries = chart.series.push(new am4charts.PieSeries());
+            pieSeries.dataFields.value = "value";
+            pieSeries.dataFields.category = "category";
+            pieSeries.labels.template.disabled = true;
+            pieSeries.ticks.template.disabled = true;
+            pieSeries.slices.template.tooltipText = "";
+
+            pieSeries.colors.list = [
+                am4core.color("#4CAF50"),
+                am4core.color("#F5F5F5")
+            ];
+            chart.innerRadius = am4core.percent(70);
+            chart.logo.disabled = true;
+        };           
+
+        createSmallChart("smallChart-@values.Select(s => s.Key).FirstOrDefault()", @values.Select(s => s.Key).FirstOrDefault(), 10);
+    });
+</script>

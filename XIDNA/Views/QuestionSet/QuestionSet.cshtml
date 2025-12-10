@@ -1,0 +1,9 @@
+﻿@model XICore.XIDLayout
+@{
+    Layout = "~/Views/Shared/_UserLayout.cshtml";
+}
+
+@{
+    Html.RenderAction("GetLayoutData", "XiLink", new { model = Model });
+}
+

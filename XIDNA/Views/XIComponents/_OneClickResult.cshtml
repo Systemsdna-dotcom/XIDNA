@@ -1,0 +1,782 @@
+﻿@model XICore.XID1Click
+@using Microsoft.AspNet.Identity
+@using XIDNA.Models
+@using XIDNA.ViewModels
+@{
+    int ReportID = Model.ID;
+    var sBOName = string.Empty;
+    if (Model.BOD != null)
+    {
+        sBOName = Model.BOD.Name;
+    }
+    if (Model.IsFilterSearch)
+    {
+        Model.SearchType = "FilterSearch";
+    }
+}
+<link href="~/Content/theme.default.css" rel="stylesheet" />
+<script src="~/Scripts/jquery.tablesorter.js"></script>
+<script src="~/Scripts/jquery.tablesorter.widgets.js"></script>
+<script>
+
+    $(document).ready(function()
+    {
+        if('@Model.Query' != null && '@Model.oOneClickParameters.Count()'> 0)
+        {
+            $("#XICParams").dialog({
+                modal: true,
+                width: 600
+            });
+        }
+    })
+
+    var dtable;
+    var Fields = "";
+    var Optrs = "";
+    var Values = "";
+    var Type="";
+    var SearchText="";
+    var SubmitClick = 0;
+    var NVPairs = [];
+    if('@Model.IsNaturalSearch'=="True"){
+        Type="NaturalSearch";
+    } else if('@Model.IsFilterSearch'=="True"){
+        Type="FilterSearch";
+    }
+    var SelectedFields=new Array();
+    var FieldGroup = @Html.Raw(Json.Encode(Model.FilterGroup));
+    function GetDataTable(Fields,Optrs,Values,Type,NVPairs){
+        if('@Model.ResultListDisplayType'==1){
+            var SortColumns = @Html.Raw(Json.Encode(Model.TableColumns));
+            var expColumns = new Array();
+            for (var i = 0; i < SortColumns.length; i++) {
+                var obj = new Object();
+                obj.sName = SortColumns[i];
+                obj.bSortable = true
+                expColumns.push(obj);
+            }
+            dtable = $('#OneClickResult-@ReportID').dataTable({
+                "destroy": true,
+                "paging": true,
+                "bProcessing": true,
+                "bServerSide": true,
+                "pageLength": 100,
+                "lengthMenu": [5, 10, 20, 50, 75, 100],
+                @*"pageLength": parseInt('@Value'),*@
+                "aoColumns": expColumns,
+                @*"sAjaxSource": "@Html.Raw(Url.Action("GetReportResult", "XiLink", new { ReportID = Model.ID, SearchText = Model.SearchText, SearchType = Model.SearchType, sGUID = Model.sGUID }))",*@
+                "sAjaxSource": "@Html.Raw(Url.Action("GetOneClickResult", "XiLink", new { i1ClickID = Model.ID, sGUID = Model.sGUID }))",
+                "aaSorting": [[0, 'desc']],
+                //"sDom": '<"dtable-header"><"datatable-scroll"><"dtable-footer">', 'bJQueryUI': false,
+                "sDom": 'r<"dtable-header"l<"new-query">><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+                "initComplete": function () {
+                    if('@Model.IsCreate')
+                    {
+                        if ('@Model.sAddLabel' != null && '@Model.sAddLabel' != "")
+                        {
+                            $("div.new-query").html('<button type="button" class="savebtn btn btn-theme" id="GridAddBtn" data-bo="@sBOName" data-group="@Model.sCreateGroup">@Model.sAddLabel</button>');
+                        }
+                        else
+                        {
+                            $("div.new-query").html('<button type="button" class="savebtn btn btn-theme" id="GridAddBtn" data-bo="@sBOName" data-group="@Model.sCreateGroup">Add</button>');
+                        }
+                    }
+                    @*$("div.new-query").html('<button type="button" class="savebtn btn btn-theme" id="GridAddBtn" data-bo="@sBOName" data-group="@Model.sCreateGroup">Add</button>');*@
+                },
+                "autoWidth": false,
+                "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                },
+                "fnServerParams": function (aoData) {
+                    aoData.push({ "name": "Fields", "value": Fields });
+                    aoData.push({ "name": "Optrs", "value": Optrs });
+                    aoData.push({ "name": "Values", "value": Values });
+                    aoData.push({ "name": "Type", "value": Type });
+                    aoData.push({ "name": "SearchText", "value": SearchText });
+                    if(NVPairs.length != 0)
+                    {
+                        aoData.push({ "name": "NVPairs", "value": JSON.stringify(NVPairs) });
+                    }
+                },
+            });
+        }
+        else{
+            $("#OneClickResult-@ReportID").tablesorter();
+        }
+    }
+    //function fncScript(Scr, Lead){
+    //    var code = Scr;
+    //    var d = eval(code);
+    //    return d;
+    //}
+    $(document).ready(function () {
+        $(document.body).unbind('click').on('click', 'button#GridAddBtn', function(){
+            var GUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+            var BODID = $(this).attr('data-boid');
+            var sBO = $(this).attr('data-bo');
+            XIRun(null,'@Model.iCreateXILinkID', 0, GUID, sBO, false, BODID);
+            @*$.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetLayoutDetails", "XiLink")',
+                data: {iLayoutID: parseInt('@Model.iLayoutID'), sParentGUID: GUID, sSection: Section},
+                contentType: 'application/json;',
+                dataType: 'html',
+                traditional: true,
+                success: function (data) {
+                    $('#GridAddFormDlg').html(data);
+                    $("#GridAddFormDlg").dialog({
+                        width: 700,
+                        close: function (event, ui) {
+                            $('#GridAddFormDlg').dialog('close');
+                            //$('#my_dialog').parent().hide();
+                            //$(this).dialog('destroy').remove();
+                        }
+                    });
+                }
+            });*@
+        });
+        $('.popcontainer').hide();
+        $('body').popover({
+            trigger: 'hover',
+            //placement: 'right',
+            html: true,
+            selector: '#OneClickResult-@ReportID td',
+            content: function () {
+                var MouseOver = $('#OneClickResult-@ReportID th').eq($(this).index()).attr('data-mover');
+                var ColumnName = $('#OneClickResult-@ReportID th').eq($(this).index()).text();
+                if ((MouseOver && MouseOver.length>0) || ColumnName=="ID") {
+                    var ID = $(this).text();
+                    var BOID = "@Model.BOID";
+                    var BOName = MouseOver;
+                    var LeadID = $(this).text();
+                    var pvalue = {
+                        BOID: BOID,
+                        ID: parseInt(ID),
+                        BOName:BOName,
+                        ColumnName: ColumnName
+                    }
+                    $.ajax({
+                        url: '@Url.Action("ListHover", "XiLink")',
+                        type: 'POST',
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        cache: false,
+                        async: false,
+                        data: JSON.stringify(pvalue),
+                        success: function (data) {
+                            if(data){
+                                var rowvalues = "";
+                                rowvalues = rowvalues + '<div class="popover-time">';
+                                rowvalues = rowvalues + '<table class="table m-b-none">';
+                                rowvalues = rowvalues + '<tbody>';
+                                rowvalues = rowvalues + '<thead>';
+                                rowvalues = rowvalues + '</tr>';
+                                if (data) {
+                                    for (i = 0; i < data.NVPairs.length; i++) {
+                                        //data[i].sValue = 'http://192.168.7.7/Converter/Content/images/lead-logo.png';
+                                        rowvalues = rowvalues + '<tr>';
+                                        //rowvalues = rowvalues + '<td class="fc-sky">' + data[i].sName + '</td>';
+                                        //rowvalues = rowvalues + '<td>|</td>';
+
+                                        var IsImage = false;
+                                        var BOFields = data.Definition.BOFields;
+                                        for(j=0;j<BOFields.length;j++){
+                                            if(data.NVPairs[i].sName == BOFields[j].Name){
+                                                var FileType = BOFields[j].FKiFileTypeID;
+                                                if(FileType>0){
+                                                    IsImage = true;
+                                                }
+                                            }
+                                        }
+                                        if(IsImage){
+                                            rowvalues = rowvalues + '<td><img src="' + data.NVPairs[i].sValue + '"></td>';
+                                        }
+                                        else{
+                                            rowvalues = rowvalues + '<td>' + data.NVPairs[i].sValue + '</td>';
+                                        }
+                                        //rowvalues = rowvalues + '<td><img src="/Content/Files/png/2018/3/16/images_1_168_137.png"></td>';
+                                        rowvalues = rowvalues + '</tr>';
+                                    }
+                                }
+                                //else {
+                                //    rowvalues = rowvalues + '<tr>';
+                                //    rowvalues = rowvalues + '<td> No foregin key group </td>';
+                                //    rowvalues = rowvalues + '</tr>';
+                                //}
+                                rowvalues = rowvalues + '</thead>';
+                                rowvalues = rowvalues + '</tbody>';
+                                rowvalues = rowvalues + '</table>';
+                                rowvalues = rowvalues + '</div>';
+                                $(".popcontainer").empty();
+                                $(".popcontainer").append(rowvalues);
+                            }
+                            else{
+                                $(".popcontainer").empty();
+                            }
+                        },
+                        error: function (data) {
+                            $(".popcontainer").empty();
+                        }
+                    });
+                    var rowdata = $('.popcontainer').html();
+                    return $(rowdata).html();
+                }
+            },
+            container: 'body',
+            placement: 'auto top'
+        });
+
+        var poppopups = new Array();
+        var respopups = new Array();
+        var SearchString="";
+
+        var availableTags;
+        if(FieldGroup){
+            availableTags = Object.keys(FieldGroup)
+        }
+
+        //$( "#QuickSearchTBox" ).autocomplete({
+        //    source: availableTags,
+        //    select: function (event, ui) { GetSearchResults() }
+        //});
+        function split( val ) {
+            return val.split(" ");
+        }
+        function extractLast( term ) {
+            return split( term ).pop();
+        }
+
+        $( "#QuickSearchTBox" )
+          // don't navigate away from the field on tab when selecting an item
+          .on( "keydown", function( event ) {
+              if ( event.keyCode === $.ui.keyCode.TAB &&
+                  $( this ).autocomplete( "instance" ).menu.active ) {
+                  event.preventDefault();
+              }
+          })
+          .autocomplete({
+              minLength: 0,
+              source: function( request, response ) {
+                  // delegate back to autocomplete, but extract the last term
+                  response( $.ui.autocomplete.filter(
+                    availableTags, extractLast( request.term ) ) );
+              },
+              focus: function() {
+                  // prevent value inserted on focus
+                  return false;
+              },
+              select: function( event, ui ) {
+                  var terms = split( this.value );
+                  // remove the current input
+                  terms.pop();
+                  // add the selected item
+                  terms.push( ui.item.value );
+                  // add placeholder to get the comma-and-space at the end
+                  terms.push( "" );
+                  this.value = terms.join( " " );
+                  SelectedFields.push(ui.item.value);
+                  return false;
+              }
+          });
+        var changeTimer = false;
+        $('#QuickSearchTBox').on("keyup", function () {
+            if(changeTimer !== false) clearTimeout(changeTimer);
+            changeTimer = setTimeout(function(){
+                GetSearchResults();
+                changeTimer = false;
+            },300);
+        });
+        function GetSearchResults(){
+            SearchText = $('#QuickSearchTBox').val();
+            if(SearchText.length==0){
+                SelectedFields=[];
+            }
+            for(i=0;i<SelectedFields.length;i++){
+                var SearchField = FieldGroup[SelectedFields[i]];
+                if(SearchField){
+                    SearchText = SearchText.replace(SelectedFields[i]+" ",SearchField+" ");
+                }
+            }
+            if ('@Model.ResultListDisplayType' == 0){
+                SubmitClick = 1;
+                GetRecords(Fields,Optrs,Values, Type, SearchText);
+            }
+            else{
+                GetDataTable(Fields,Optrs,Values, Type, SearchText,"");
+            }
+        }
+        var popups = new Array();
+        //GetDataTable(Fields,Optrs,Values,null);
+
+        if('@Model.Query' != null && '@Model.oOneClickParameters.Count()'>0)
+        {
+            $('#XIOneClickParamsBtn').click(function(){
+                $("#XICParams").dialog('close');
+                $('.NVPairs').each(function () {
+                    var Name; var Value;
+                    $(this).find('label').each(function (i, obj) {
+                        Name = $(this).attr('data-sName');
+
+                    });
+                    $(this).find('input').each(function (i, obj) {
+                        var Nname = obj.name;
+                        if (Nname == "Names") {
+                            Value = $(this).val();
+                        }
+                    });
+                    if ((Name && Name.length > 0) || (Value && Value.length > 0)) {
+                        NVPairs.push(Name + "-" + Value);
+                    }
+                });
+                GetDataTable(Fields,Optrs,Values,null,NVPairs);
+            });
+        }
+        else
+        {
+            GetDataTable(Fields,Optrs,Values,null,"");
+        }
+
+        $('#DFSubmit').click(function(){
+            SubmitClick = 1;
+            pageIndex = 1;
+            Fields = "";
+            Optrs = "";
+            Values = "";
+            DValue ="";
+            var j= 0;
+            var SrchFlds = '@Model.SearchFields';
+            if(SrchFlds && SrchFlds!=null){
+                j = SrchFlds.split(", ").length;
+            }
+            for(i=0;i<j;i++){
+                var Value = $('#'+i+'-Value').val();
+                if(Value.length>0){
+                    var Field = $('#'+i+'-FieldName').val();
+                    var Optr = $('#'+i+'-Operator').val();
+                    var DValue = $('#'+i+'-Value2').val();
+                    if(Optr=="Between"){
+                        Values = Values + Value+"_"+DValue+",";
+                    }
+                    else{
+                        Values = Values + Value+",";
+                    }
+                    Fields = Fields + Field+",";
+                    Optrs = Optrs + Optr+",";
+                }
+            }
+            Fields = Fields.substring(0, Fields.length-1);
+            Optrs = Optrs.substring(0, Optrs.length-1);
+            Values = Values.substring(0, Values.length-1);
+            if ('@Model.ResultListDisplayType' == 0){
+                GetRecords(Fields,Optrs,Values,Type);
+            }
+            else{
+                GetDataTable(Fields,Optrs,Values,Type,NVPairs);
+            }
+        });
+        $('#DFReset').click(function(){
+            $('#DynamicForm input[type="text"]').val('');
+            $('#DynamicForm select').val('=');
+            $('#DynamicQueryForm').find('select').each(function (i, val) {
+                $(this).prop('selectedIndex',0);
+            });
+            $('.BetweenDate').hide();
+            if ('@Model.ResultListDisplayType' == 0){
+                SubmitClick = 1;
+                Fields = "";
+                Optrs = "";
+                Values = "";
+                GetRecords("","","",Type);
+            }
+            else{
+                GetDataTable("","","", Type,"");
+            }
+        });
+        $('#OneClickResult-@ReportID tbody').on('click', 'tr', function () {
+            var QSInfo = fncQSInfoFromHTMLTree(this);
+            var Headings =@Html.Raw(Json.Encode(Model.Headings));
+            var RowData;
+            if('@Model.ResultListDisplayType'==1)
+            {
+                var tr = $(this).closest('tr');
+                var tddata = [];
+                $(tr).children('td').each(function(ii, vv){
+                    tddata[ii] = $(this).text();
+                });
+                RowData = tddata;
+            }
+            else{
+                RowData = $(this).children("td").map(function() {
+                    return $(this).text();
+                }).get();
+            }
+            var id;
+            if(RowData){
+                for (var i = 0; i < Headings.length; i++) {
+                    if (Headings[i].toLowerCase() == "ID".toLowerCase()) {
+                        id = RowData[i];
+                    }
+                }
+                var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+                var iInstanceID = parseInt(id);
+                if(iInstanceID>0){
+                    if('@Model.IsRowClick'=="True" && '@Model.RowXiLinkID' > 0){
+                        XIRun(null,'@Model.RowXiLinkID', parseInt(iInstanceID), sGUID, '@sBOName', false,parseInt('@Model.BOID'),0);
+                    }
+                    else{
+                        var InputParams = [];
+                        var QSEvents = "";
+                        var ComponentName = fncGetComponentNameFromHTMLTree('Component', this);
+                        var WrapperParms = {};
+                        var CurrentGUID = sCurrentGUID;
+                        var StepID = ComponentName.split('-')[1];
+                        fncGetComponentParamsByStep(StepID).then(function (ConfigParams) {
+                            for(var i=0;i<ConfigParams.length;i++){
+                                if(ConfigParams[i].sName.toLowerCase() == "listClickparamname".toLowerCase()){
+                                    WrapperParms["sName"] = ConfigParams[i].sValue;
+                                    WrapperParms["sValue"] = "XIC|null";
+                                    var param1 = {};
+                                    param1["sName"] = '{XIP|ActiveBO}';
+                                    param1["sValue"] = '@sBOName';
+                                    InputParams.push(param1);
+                                    var param2 = {};
+                                    param2["sName"] = 'iBOIID';
+                                    param2["sValue"] = iInstanceID;
+                                    InputParams.push(param2);
+                                    WrapperParms["nSubParams"] = InputParams;
+                                }
+                                else if(ConfigParams[i].sName.toLowerCase().indexOf('listclick') >= 0 && ConfigParams[i].sName.toLowerCase() != "listClickparamname".toLowerCase()){
+                                    if(ConfigParams[i].sValue && ConfigParams[i].sValue.length > 0){
+                                        QSEvents = QSEvents+ConfigParams[i].sValue+",";
+                                    }
+                                }
+                            }
+                            if(QSEvents.length>0){
+                                QSEvents = QSEvents.substring(0, QSEvents.length - 1);
+                                funCallQSEvent(QSInfo, QSEvents).then(function (nXILinks) {
+                                    var QSDefID = 0;
+                                    for(m=0;m<QSInfo.length;m++){
+                                        if(QSInfo[m].sName=="iQSDID"){
+                                            QSDefID = QSInfo[m].sValue;
+                                        }
+                                    }
+                                    for(var k=0;k<nXILinks.length;k++){
+                                        XIRun(null,nXILinks[k], 0, sGUID, 0, false, 0, QSDefID);
+                                    }
+                                });
+                            }
+                            var NewParams = [];
+                            NewParams.push(WrapperParms);
+                            fncUpdateXIParams(ComponentName, sGUID, CurrentGUID, NewParams);
+                        });
+                    }
+
+                    @*$.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("UpdateOneClickDetails", "XIComponents")',
+                        data: JSON.stringify({ BOIID: iInstanceID, sGUID: sGUID}),
+                        contentType: 'application/json;',
+                        dataType: 'json',
+                        traditional: true,
+                        success: function (oParams) {
+                            var sInsName;
+                            var sInsID;
+                            var sBOName;
+                            var BODID;
+                            for(i=0;i<oParams.length;i++){
+                                if(oParams[i].sName == "sInsName"){
+                                    sInsName = oParams[i].sValue;
+                                }
+                                else if(oParams[i].sName == "sInsID"){
+                                    sInsID = oParams[i].sValue;
+                                }
+                                else if(oParams[i].sName == "BO"){
+                                    sBOName = oParams[i].sValue;
+                                }else if(oParams[i].sName == "BODID"){
+                                    BODID = oParams[i].sValue;
+                                }
+                            }
+                            var node = $('#TreeStructure').jstree().get_selected(true);
+                            for(i=0;i<node.length;i++){
+                                if(i==0){
+                                    var nodeid =node[i].id;
+                                    var NodeName = node[i].text;
+                                    var n = NodeName.indexOf('(');
+                                    NodeName = NodeName.substring(0, n != -1 ? n : NodeName.length);
+                                    $("#TreeStructure").jstree('rename_node', node , NodeName +"("+sInsName+")" );
+                                    $('#TreeStructure').jstree(true).get_node(nodeid).data.sInsName = sInsName;
+                                    $('#TreeStructure').jstree(true).get_node(nodeid).data.BODID = BODID;
+                                    $('#TreeStructure').jstree(true).get_node(nodeid).data.sInsID = sInsID;
+                                    $('#TreeStructure').jstree(true).get_node(nodeid).data.BO = sBOName;
+                                }
+                            }
+
+                            fncUpdateXIParams(ComponentName, sGUID, InputParams);
+                        }
+                    });*@
+                }
+            }
+        });
+        var prepopups = new Array();
+        $('#OneClickResult-@ReportID').on('click', 'th', function () {
+            var ReportID=$(this).attr('id');
+            var codes = "";
+            if (ReportID > 0 ) {
+                var url = '@Url.Action("InnerReportResult", "Inbox")?ReportID=' + ReportID + '&ParentID=' + 0 + '&IsParent=' + false + '&PageIndex=1' + '&ReportColumns=' + codes+"&BaseID="+0;
+                if (prepopups.length > 0) {
+                    for (j = 0; j < prepopups.length; j++) {
+                        prepopups[j].close();
+                    }
+                }
+                var preview = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+                prepopups.push(preview);
+            }
+        });
+    });
+    var pageIndex = 1;
+    var PageCount = 40;
+    $(window).scroll(function () {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            SubmitClick = 0;
+            GetRecords(Fields,Optrs,Values,Type,SearchText);
+        }
+    });
+    function GetRecords(Fields,Optrs,Values,Type,SearchText) {
+        if('@Model.ResultListDisplayType'==0){
+            pageIndex++;
+            var sTable = "";
+            var QueryID='@Model.ID';
+            if(SubmitClick==1){
+                pageIndex=1;
+            }
+            var QValues = {
+                ReportID: QueryID,
+                PageIndex: pageIndex,
+                Fields:Fields,
+                Optrs:Optrs,
+                Values:Values,
+                SearchType:Type,
+                SearchText:SearchText,
+                BO:'@sBOName'
+            }
+            $.ajax({
+                url: '@Url.Action("RunUserQuery", "Inbox")',
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                async: false,
+                //data: { PageIndex: pageIndex,QueryID:QueryID },
+                data: JSON.stringify(QValues),
+                success: function (data) {
+                    for(i=0;i<data.length;i++)
+                    {
+                        sTable = sTable + "<tr role='row'>";
+                        for(j=0;j<data[i].length;j++)
+                        {
+                            @*if('@Model.IDExists'=="True")
+                            {
+                                sTable = sTable +"<td>" + data[i][j]+ "</td>";
+                            }
+                            else
+                            {
+                                if(j==0)
+                                {
+                                    sTable = sTable +"<tdstyle='display:none'>" + data[i][j]+ "</td>";
+                                }
+                                else{
+                                    sTable = sTable +"<td>" + data[i][j]+ "</td>";
+                                }
+                            }*@
+                            sTable = sTable +"<td>" + data[i][j]+ "</td>";
+                        }
+                        sTable = sTable + "</tr>";
+                    }
+                    if(SubmitClick==1){
+                        $("#OneClickResult-@ReportID tbody").html(sTable);
+                    }
+                    else{
+                        $("#OneClickResult-@ReportID").append(sTable);
+                    }
+                    $("#OneClickResult-@ReportID").trigger("updateAll");
+                }
+            });
+        }
+    }
+</script>
+
+<style>
+    .r-c-b {
+        width: 12px;
+        height: 12px;
+        color: red;
+        display: block;
+        background: #a02020;
+    }
+
+    .subnav {
+        margin-bottom: 10px;
+    }
+
+    .targetredcolor {
+        background: #9a1919;
+        width: 75px;
+        height: 12px;
+        display: inline-block;
+        margin-left: 10px;
+    }
+
+    .targetgreencolor {
+        background: #4b752b;
+        width: 75px;
+        height: 12px;
+        display: inline-block;
+        margin-left: 10px;
+    }
+
+    #QuickSearchTBox {
+        width: 500px;
+    }
+
+    .ui-autocomplete {
+        background: black;
+        color: white;
+    }
+
+    .popover {
+        background-color: #333740;
+        border-radius: 2px;
+        border: 1px solid #5e5e5e;
+        font-size: 11px;
+    }
+
+    .popover-content {
+        padding: 0px 2px;
+    }
+
+    .popover.top > .arrow:after {
+        border-top-color: #333740;
+        border-width: 8px;
+        bottom: -6px;
+    }
+
+    .popover-content .table > tbody > tr > td, .popover-content .table > tbody > tr > th, .popover-content .table > tfoot > tr > td, .popover-content .table > tfoot > tr > th, .popover-content .table > thead > tr > td, .popover-content .table > thead > tr > th {
+        padding: 3px;
+    }
+</style>
+@*<section class="content-header hedr">
+        @if (Model.QueryIcon != null && Model.QueryIcon.Length > 0)
+        {
+            <h1 class="pull-left m-b-10"><i class="@Model.QueryIcon" aria-hidden="true"></i> - @Model.QueryName</h1>
+        }
+        else
+        {
+            <h1 class="pull-left m-b-10">@Model.QueryName</h1>
+        }
+        @if (Model.SearchType == "NaturalSearch" || Model.IsNaturalSearch)
+        {
+            <input type="text" class="form-control input-xlarge" name="QuickSearch" id="QuickSearchTBox" placeholder="Search Here" style="margin:0 auto" />
+        }
+        <ol class="breadcrumb">
+            @if (Model.IsExport)
+            {
+                @Html.ActionLink("Export", "ToDataTable", "Inbox", new { ReportID = Model.ReportID, Name = Model.QueryName, Type = "Export" }, new { @class = "savebtn btn btn-primary btn-xs" })
+            }
+        </ol>
+    </section>*@
+
+@*<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box-primary">*@
+
+
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div id="DynamicForm">
+                        @if (Model.SearchType == "FilterSearch" || Model.IsFilterSearch)
+                        {
+                            Html.RenderAction("QueryDynamicForm", "Inbox", new { OneClickID = Model.ID, BOID = Model.BOID });
+                        }
+                    </div>
+                    <div class="table-clean">
+                        <table class="table table-striped custom-table dark-head dark-head2 table-condensed table-hover tablesorter" id="OneClickResult-@ReportID">
+                            <thead>
+                                <tr>
+                                    @if (Model.Headings != null)
+                                    {
+                                        for (int k = 0; k < Model.Headings.Count(); k++)
+                                        {
+                                            <th>@Model.Headings[k]</th>
+                                        }
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.ResultListDisplayType == 0)
+                                {
+                                    if (Model.Rows != null)
+                                    {
+                                        foreach (var item in Model.Rows)
+                                        {
+                                            <tr>
+                                                @foreach (var value in item)
+                                                {
+                                                    <td>@Html.Raw(value)</td>
+                                                }
+                                            </tr>
+                                        }
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="popcontainer popover-time">
+</div>
+
+<div id="GridAddFormDlg-@Model.BOID"></div>
+<div id="GridComponentDlg"></div>
+
+@if (Model.oOneClickParameters.Count() > 0)
+{
+    <div id="XICParams" class="content">
+        <form id="XiFieldsForm">
+            <div class="row">
+                <div class="box box-primary">
+                    <div class="box-body">
+                        <div id="XIComponentParams">
+                            <input type="hidden" id="IsValueSet" value="@ViewBag.IsValueSet" />
+                            @if (Model.oOneClickParameters.Count() > 0)
+                            {
+                                foreach (var items in Model.oOneClickParameters)
+                                {
+                                    <div class="form-group col-md-12 NVPairs">
+                                        <div class="col-md-4">
+                                            <label for="inputEmail" class="gn" data-sname="@items.sName"> @items.sName <span class="danger"></span></label>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <input type="text" name="Names" id="valid-@items.sName" placeholder="Value" class="form-control" value="" />
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            <div class="form-group">
+                                <div class="col-md-2">
+                                    <input type="button" value="Run" class="btn btn-theme" id="XIOneClickParamsBtn" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+}

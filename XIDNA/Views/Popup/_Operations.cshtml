@@ -1,0 +1,171 @@
+﻿@model XIDNA.Models.Stages
+
+<script>
+    $(document).ready(function () {
+        $('#SMSTemplate').hide();
+        $('#EmailTemplate').hide();
+        $('#PopupsDiv').hide();
+        var EmailTemp = '@Model.EmailTemplate';
+        var SMSTemp = '@Model.SMSTemplate';
+        if (EmailTemp) {
+            $('#EmailTemplate').show();
+        }
+        if (SMSTemp) {
+            $('#SMSTemplate').show();
+        }
+        $('#CancelSection').click(function () {
+            window.close();
+        });
+        $('#IsPopup').change(function () {
+            if ($(this).is(":checked")) {
+                $('#PopupsDiv').show();
+            }
+            else {
+                $('#PopupsDiv').hide();
+            }
+        });
+        $('#IsSMS').change(function () {
+            if ($(this).is(":checked")) {
+                $('#SMSTemplate').show();
+            }
+            else {
+                $('#SMSTemplate').hide();
+            }
+        });
+        $('#IsEmail').change(function () {
+            if ($(this).is(":checked")) {
+                $('#EmailTemplate').show();
+            }
+            else {
+                $('#EmailTemplate').hide();
+            }
+        });
+    });
+</script>
+<div id="AddOperations" class="col-md-6">
+
+    @using (Ajax.BeginForm("AddOperations", "Popup", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnSuccess" }, new { @id = "Operations", @class = "form-horizontal" }))
+    {
+
+        @Html.ValidationSummary(true);
+        @Html.HiddenFor(s => s.ID);
+        <div class="form-group">
+            <div class="col-md-7">
+                <h4>Operations</h4>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-7">
+                @Html.CheckBoxFor(m => m.IsPopup, new { @id = "IsPopup" })
+                @Html.Label("Is Popup", "Is Popup")
+            </div>
+        </div>
+        <div class="form-group" id="PopupsDiv">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn"> Popup<span class="danger">*</span></label>
+                @Html.DropDownListFor(m => m.PopupID, new SelectList(@Model.PopupList, "Value", "text"), new { @class = "form-control"})
+            </div>
+            @*<div class="col-md-5 taberrormsg">
+                @Html.ValidationMessageFor(m => m.SMSTemplate, null, new { @class = "red" })
+            </div>*@
+        </div>
+        <div class="form-group">
+            <div class="col-md-7">
+                @Html.CheckBoxFor(m => m.IsSMS, new { @id = "IsSMS" })
+                @Html.Label("Is SMS", "Is SMS")
+            </div>
+        </div>
+        <div class="form-group" id="SMSTemplate">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn"> SMS Template Name<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.SMSTemplate, new { @placeholder = "Template name", @class = "form-control", @id = "StageName" })
+            </div>
+            <div class="col-md-5 taberrormsg">
+                @Html.ValidationMessageFor(m => m.SMSTemplate, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-7">
+                @Html.CheckBoxFor(m => m.IsEmail, new { @id = "IsEmail" })
+                @Html.Label("Is Email", "Is Email")
+            </div>
+        </div>
+        <div class="form-group" id="EmailTemplate">
+            <div class="col-md-5">
+                <label for="inputEmail" class="gn"> Email Template Name<span class="danger">*</span></label>
+                @Html.TextBoxFor(model => model.EmailTemplate, new { @placeholder = "Template name", @class = "form-control", @id = "StageName" })
+            </div>
+            <div class="col-md-5 taberrormsg">
+                @Html.ValidationMessageFor(m => m.EmailTemplate, null, new { @class = "red" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-7">
+                @Html.CheckBoxFor(m => m.IsSQLJob, new { @id = "IsSQLJob" })
+                @Html.Label("Is SQL Job", "Is SQL Job")
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-7">
+                @Html.CheckBoxFor(m => m.IsReminders, new { @id = "IsReminders" })
+                @Html.Label("Is Reminders", "Is Reminders")
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-7">
+                @Html.CheckBoxFor(m => m.IsDashboardRefresh, new { @id = "IsDashBoardRefresh" })
+                @Html.Label("Is DashBoard Refresh", "Is DashBoard Refresh")
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-7">
+                @Html.CheckBoxFor(m => m.IsAlerts, new { @id = "IsAlerts" })
+                @Html.Label("Is Alerts", "Is Alerts")
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-10">
+                <button type="submit" class="btn btn-theme" id="SaveSection">Save</button>
+                <button type="submit" class="btn btn-theme decline" id="CancelSection">Cancel</button>
+            </div>
+        </div>
+        <div class="dialog-box SaveOperDlg" title="Confirm Message" style="background-color:white;"></div>
+    }
+</div>
+
+<script>
+    function OnSuccess() {
+        opener.location.reload();
+        $('#Operations').val("");
+        if ('@Model.Type' == "Create") {
+            $(".SaveOperDlg").html('Operations Added Successfully!<br/>Do You Want To Add More Stages');
+        }
+        else {
+            $(".SaveOperDlg").html('Operations Updated Successfully!<br/>Do You Want To Update More Stages');
+
+        }
+        $(".SaveOperDlg").dialog({
+            title: "Operations",
+            modal: true,
+            buttons: [
+               {
+                   text: "Yes",
+                   click: function () {
+                       $(".SaveOperDlg").dialog("close");
+                       $('#Operations').empty();
+                       $('#StageName').val("");
+                   }
+               },
+               {
+                   text: "No",
+                   click: function () {
+                       $(".SaveOperDlg").dialog("close");
+                       window.close();
+                   }
+               }
+            ]
+        });
+        $("#StagesForm *").removeAttr("disabled");
+    }
+</script>

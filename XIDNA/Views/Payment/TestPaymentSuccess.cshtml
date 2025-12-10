@@ -1,0 +1,50 @@
+﻿
+@{
+    var sGUID = ViewBag.sGUID;
+    var sStatus = ViewBag.Status;
+    var sLayoutGUID = ViewBag.sLayoutGUID;
+}
+<div class="paymentbox">
+    <div class="circle">
+        <i class="fa fa-check"></i>
+    </div>
+    <h1>Success</h1>
+    <p>Your Payment Processed sucessfully!. With the amount of £@ViewBag.amount</p>
+</div>
+<style>
+    .paymentbox {
+        position: relative;
+        max-width: 218px;
+        margin: 100px auto 0px;
+        background: #f8f8f8;
+        padding: 20px 17px;
+        text-align: center;
+        border-radius: 3%;
+        box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.5);
+        -webkit-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.5);
+        -moz-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.5);
+    }
+
+        .paymentbox h1 {
+            color: #fff;
+            background-color: #35b34b;
+            border-radius: 6px;
+            width: 140px;
+            margin: 0 auto;
+            font-family: 'RobotoCond',Arial,Sans-Serif;
+        }
+
+        .paymentbox p {
+            font-family: 'RobotoCond',Arial,Sans-Serif;
+        }
+</style>
+<script>
+    $(document).ready(function () {
+        var iCount = 0;
+        if (iCount == 0 && '@sStatus' == "Success") {
+            iCount++;
+            console.log("Payment Redirection Called");
+            parent.postMessage('Success:@sLayoutGUID', "*");
+        }
+     });
+</script>

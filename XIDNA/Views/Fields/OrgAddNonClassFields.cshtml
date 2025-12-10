@@ -1,0 +1,153 @@
+﻿@model string
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+
+<style>
+    #ClassButtons {
+        padding-top: 7px;
+    }
+    /*input[type=radio] {
+            padding-right: 15px;
+        }*/
+</style>
+<script>
+    $(document).ready(function () {
+        var NClfpopups = new Array();
+        var editpopups = new Array();
+        var table = $('#Fielstable').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("GetOrgNonClassFieldsList", "Fields", new {Type=@Model })",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"l<"new-query">f><"datatable-scroll"t><"dtable-footer"ip>',
+            "initComplete": function () {
+                $("div.new-query").html('<button type="button" class="savebtn btn btn-theme" id="NewNClFBtn" data-url="@Url.Action("AddOrgNonClassSpecificField", "Fields")" >Add</button>');
+            },
+            'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+            { "bSortable": false },
+                            {
+                                "sName": "ID",
+                                "bVisible": false
+                            },
+                            {
+                                "sName": "FieldName",
+                            },
+                            {
+                                "sName": "FieldType",
+                            },
+                            {
+                                "sName": "Length",
+                            },
+                            { "bSortable": false }
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(4)', nRow).html('<input type="button" class="EditFieldBtn btn btn-theme btn-xs" id="' + aData[1] + '" value="Edit">');
+                return nRow;
+            }
+        });
+        $('#Fielstable').on('click', 'input.EditFieldBtn', function () {
+            var ID = $(this).attr('id');
+            if (editpopups.length > 0) {
+                for (i = 0; i < editpopups.length; i++) {
+                    editpopups[i].close();
+                }
+            }
+            var editnonfieldwindow = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("EditOrgField", "Fields")',
+                data: { ColumnID: ID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    with (editnonfieldwindow.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    editpopups.push(editnonfieldwindow);
+                    editnonfieldwindow.moveTo(0, 0);
+                }
+            });
+        })
+        $('.new-query').on('click', 'button#NewNClFBtn', function () {
+            var url = $(this).attr('data-url');
+            if (NClfpopups.length > 0) {
+                for (i = 0; i < NClfpopups.length; i++) {
+                    NClfpopups[i].close();
+                }
+            }
+            var newnclf = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            NClfpopups.push(newnclf);
+            newnclf.moveTo(0, 0);
+        });
+    });
+</script>
+<section class="content-header hedr">
+    <h1> Non Class Specific Fields </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Fields Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div id="FieldsGrid">
+                        <div id="box-body">
+                            <div class="table-clean">
+                                <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="Fielstable">
+                                    <thead>
+                                        <tr role="row">
+                                            <th>S.No</th>
+                                            <th>ID</th>
+                                            <th>Field Name</th>
+                                            <th>Field Type</th>
+                                            <th>Length</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody></tbody>
+
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+        var form = $('#FieldsForm');
+        $.validator.unobtrusive.parse(form);
+        function OnComplete() {
+            var classspecific = $('#ClassButtons input[type=radio]:checked').val();
+            var classname = $('#Class').val();
+            $('#FieldsForm')[0].reset();
+            $('#Class').val(classname);
+            if (classspecific == "True") {
+                $('input#Yes').prop('checked', true);
+                $('#Length').prop("disabled", false);
+            }
+            else {
+                $('input#No').prop('checked', true);
+                $('#Class').prop("disabled", true);
+                $('#Length').prop("disabled", false);
+            }
+            $("#FieldsGrid").load('@Url.Action("GetOrgFields", "AddFields", new { Type = "ClassNonSpecific" })');
+        }
+        $('#FieldReset').click(function () {
+            $('#FieldsForm')[0].reset();
+            $('#Class').prop("disabled", false);
+            $('#Length').prop("disabled", false);
+        });
+</script>

@@ -1,0 +1,68 @@
+﻿@model int
+
+<script>
+    $(document).ready(function () {
+        var popups = new Array();
+        var table = $('#Fielstbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Html.Raw(Url.Action("GetOrgClassFields", "Fields", new { Type = "ClassSpecific", ClassID=@Model}))",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+            {},
+                            {
+                                "sName": "ID",
+                                "bVisible": false
+                            },
+                            {
+                                "sName": "FieldName",
+                            },
+                            {
+                                "sName": "Class",
+                            },
+                            {}
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(3)', nRow).html('<a class="EditFieldBtn" data-url="@Url.Action("EditField", "Fields")?ColumnID=' + aData[1] + '" data-ajax-update="#QueryPreview"  data-ajax-method="GET" data-ajax="true"><i class="fa fa-pencil-square-o" ></i></a>');
+                return nRow;
+
+            }
+        });
+        $('#Fielstbl').css('width', '100%');
+        $('#OrgFieldButton').on('click', 'input', function () {
+            var url = $(this).attr('data-url');
+            if (popups.length > 0) {
+                for (i = 0; i < popups.length; i++) {
+                    popups[i].close();
+                }
+            }
+            var editfieldwindow = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            popups.push(editfieldwindow);
+            editfieldwindow.moveTo(0, 0);
+        })
+    });
+
+</script>
+
+
+<div id="box-body" class="col-xs-12">
+    <div class="table-clean">
+        <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="Fielstbl">
+            <thead>
+                <tr role="row">
+                    <th>S.No</th>
+                    <th>ID</th>
+                    <th>Field Name</th>
+                    <th>Class</th>
+                    <th>Edit</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+
+        </table>
+    </div>
+</div>

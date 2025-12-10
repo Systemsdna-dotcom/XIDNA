@@ -1,0 +1,180 @@
+﻿@model XIDNA.ViewModels.VMPopupLayout
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script>
+    var Error = -1;
+    $(document).ready(function () {
+        //var i = 1;
+        //$('#LayoutPreview div').each(function (j, obj) {
+        //    $(this).append("Placeholder" + (j + 1));
+        //    var IDs = $(this).attr('id');
+        //    $(this).attr('id', IDs);
+        //    //i++;
+        //});
+        var Assigned = @Html.Raw(Json.Encode(Model.Details));
+        $('#PHMappingForm').hide();
+        $('#LayoutPreview div').click(function () {
+            var id = $(this).attr('id');
+            var sclass = $(this).attr('class');
+            if(id && id.length>0){
+                $('.StatusMessages').hide();
+                $('#PlaceHolderID').val('');
+                $('#PlaceholderName').val('');
+                $('#UniqueName').val('');
+                //var id = $(this).attr('id');
+                var tdid ='div' + id;
+                for(i=0;i<Assigned.length;i++){
+                    if(Assigned[i].PlaceholderArea==tdid){
+                        $('#PlaceholderName').val(Assigned[i].PlaceholderName);
+                        $('#UniqueName').val(Assigned[i].PlaceholderUniqueName);
+                        $('#PlaceHolderID').val(Assigned[i].PlaceHolderID);
+                    }
+                }
+                $('#PHMappingForm .PHID').html(id);
+                $('#tdNumber').val('div' + id);
+                $('#tdclass').val(sclass);
+                $('#PHMappingForm').show();
+            }
+        });
+        $('#PHMapSave').click(function () {
+            var TdID = $('#tdNumber').val();
+            var TdClass = $('#tdclass').val();
+            var PlaceholderName = $('#PlaceholderName').val();
+            var UniqueName = $('#UniqueName').val();
+            if (TdID.length > 0 && PlaceholderName.length>0 && UniqueName.length>0) { //&& Error ==0
+                var Details = { PlaceHolderID : $('#PlaceHolderID').val(), PlaceholderArea: TdID, LayoutID:'@Model.LayoutID', PlaceholderName:PlaceholderName, PlaceholderUniqueName:UniqueName, TDClass:TdClass };
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SaveLayoutDetails", "Popup")',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(Details),
+                    cache: false,
+                    async: false,
+                    dataType: 'json',
+                    success: function (data) {
+                        Assigned.push( { PlaceHolderID : $('#PlaceHolderID').val(), PlaceholderArea: TdID, LayoutID:'@Model.LayoutID', PlaceholderName:PlaceholderName, PlaceholderUniqueName:UniqueName } );
+                        //$('#PlaceholderName').val('');
+                        //$('#UniqueName').val('');
+                        CustomMessage(data.ResponseMessage, data.Status);
+                    }
+                });
+            }
+            else{
+                CustomMessage("Please fill * marked fields", false);
+            }
+        });
+        $('.ResetPopup').click(function () {
+            $('#PlaceholderName').val('');
+            $('#UniqueName').val('');
+        });
+        $('.CancelMapping').click(function(){
+            window.close();
+        });
+    });
+    function blockSpecialChar(e){
+        var k;
+        document.all ? k = e.keyCode : k = e.which;
+        if (e.which == 32)
+            return false;
+        else
+            return ((k > 64 && k < 91) || (k > 96 && k < 123) || k == 8 || k == 32 || (k >= 48 && k <= 57));
+    }
+    function fncheckuniqueness(){
+        var Name= $('#UniqueName').val();
+        var LayoutID = '@Model.LayoutID';
+        if(Name.length>0){
+            var Details = {UniqueName:Name,LayoutID: LayoutID};
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CheckUniqueness", "Popup")',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(Details),
+                cache: false,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    if(parseInt(data)>0){
+                        Error = 1;
+                        $('.UniqueNameError').html('Name already taken. Please enter another name');
+                    }
+                    else{
+                        Error = 0;
+                        $('.UniqueNameError').html('');
+                    }
+                }
+            });
+        }
+    }
+</script>
+
+<style>
+    #LayoutPreview div {
+        min-height: 50px;
+        border: 1px solid #b5b5b5;
+        text-align: center;
+    }
+
+    #LayoutPreview div.row {
+        min-height: 50px;
+        border: none;
+        text-align: center;
+    }
+
+    /*#LayoutPreview {
+        height:150px;
+    }*/
+</style>
+
+<section class="content-header hedr">
+    <h1> Add Details For @Model.LayoutName</h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Popup Layout</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body padding10Tab">
+                <div class="innerborder">
+                    <div class="row col-md-12">
+                        <div id="LayoutPreview" class="col-md-4">
+                            @Html.Raw(Model.LayoutCode)
+                        </div>
+                    </div>                    
+                    <div id="PHMappingForm" class="row col-md-12">
+                        <form class="form-horizontal">
+                            <h4>Placeholder<span class="PHID"></span></h4>
+                            <input id="PlaceHolderID" type="hidden" />
+                            <input type="hidden" id="tdNumber" />
+                            <input type="hidden" id="tdclass" />
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                    <input type="text" name="AreaName" id="PlaceholderName" class="form-control" placeholder="Name of Placeholder" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-4">
+                                    <label for="inputEmail" class="gn">Unique Name to Placeholder<span class="danger">*</span></label>
+                                    <input type="text" name="UniqueName" id="UniqueName" class="form-control" placeholder="Name of Placeholder" oncopy="return false" ondrag="return false" ondrop="return false" onpaste="return false" maxlength="32" onkeypress="return blockSpecialChar(event)" onchange="fncheckuniqueness()" />
+                                    <span class="UniqueNameError danger"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <input type="button" class="btn btn-theme" id="PHMapSave" value="Save" />
+                                    <button type="button" class="btn btn-theme reverse ResetPopup">Reset</button>
+                                    <button type="button" class="btn btn-theme decline CancelMapping">Cancel</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="MappingGrid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

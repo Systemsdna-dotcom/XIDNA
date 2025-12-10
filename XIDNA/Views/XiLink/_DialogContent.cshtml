@@ -1,0 +1,41 @@
+﻿@model XICore.XIDLayout
+@{
+    var oParams = ViewBag.oParams;
+    var XILinkID = ViewBag.XILinkID;
+    var XILinkName = ViewBag.XILinkName;
+    var XILinkXIGUID = ViewBag.XILinkXIGUID;
+    var NavGUID = ViewBag.NavGUID;
+    var LinkName = string.Empty;
+    if (XILinkName != null)
+    {
+        LinkName = (string)XILinkName;
+        LinkName = LinkName.ToLower().Replace(" ", "_");
+    }
+}
+<script>
+    $(document).ready(function () {
+
+        var iID = '@Model.sNewGUID';
+        var NavGUID = '@NavGUID';
+        var oNVParams = @Html.Raw(Json.Encode(@ViewBag.oParams));
+        var Details = @Html.Raw(Json.Encode(Model));
+        ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+        DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+        PopupURL = '@Url.Action("GetPopupDetails", "XiLink")';
+        PopupORDialogURL = '@Url.Action("GetPopupORDialog", "XiLink")';
+        DialogURL = '@Url.Action("GetDialog", "XiLink")';
+        SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+        SemanticURL = '@Url.Action("GetSemanticDetails", "XiLink")';
+        ComponentURL = '@Url.Action("LoadComponentByID", "XIComponents")';
+        StepURL = '@Url.Action("GetStepContent", "XiLink")';
+        DeleteBOURL = '@Url.Action("DeleteBO", "XiLink")';
+        ShowContentInDialogOrPopup(Details, iID, oNVParams, NavGUID);
+    });
+</script>
+@*<div class="one-link one-link-id-@XILinkID one-link-@LinkName" data-def="@XILinkXIGUID">
+
+</div>*@
+@{ var sLayoutClass = "one-layout one-layout-id-" + Model.ID + " one-layout-" + Model.LayoutName.ToLower().Replace(" ", "_") + (Model.sCssClass != null ? (Model.sCssClass.Length > 0 ? (" " + Model.sCssClass) : "") : "");}
+<div class="LayoutCode_@Model.sNewGUID @sLayoutClass" data-name="LayoutGUID" data-guid="@Model.sNewGUID" data-context="@Model.sContext" data-def="@Model.XIGUID">
+    @Html.Raw(Model.LayoutCode)
+</div>

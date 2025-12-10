@@ -1,0 +1,255 @@
+﻿@{
+   Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+<style>
+    .ShowBOBtn {
+        background: none;
+        font-weight: bold;
+        border: none;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        var newpopups = new Array();
+        var editpopups = new Array();
+        var addpopups = new Array();
+        var Tablepopups = new Array();
+        var Copypopups = new Array();
+        var table = $('#Bostbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("GetBusinessObjects", "BusinessObjects")",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"l<"new-query">f><"datatable-scroll"t><"dtable-footer"ip>',
+            "initComplete": function () {
+                $("div.new-query").html('<button type="button" class="savebtn btn btn-theme" id="NewBOBtn" data-url="@Url.Action("AddEditBO", "BusinessObjects")" >Add</button><button type="button" class="savebtn btn btn-theme" id="NewBOBtn" data-url="@Url.Action("AddEditExtratBO", "BusinessObjects")" >Extract</button><button type="button" class="savebtn btn btn-theme" id="ImportBOBtn" data-url="@Url.Action("ImportBODetails", "BusinessObjects")" >Import</button>');
+            },
+            'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+            { "bSortable": false },
+                            {
+                                "sName": "BOID",
+                            },
+                            {
+                                "sName": "Name"
+                            },
+                             {
+                                 "sName": "TableName",
+                             },
+                            {
+                                "sName": "Description",
+                            },
+                            {
+                                "sName": "TypeID",
+                            },
+                            {
+                                "sName": "AssignedFields",
+                                "bSortable": false
+                            },
+                            {
+                                "sName": "StatusTypeID",
+                            },
+                            { "bSortable": false }
+            ],
+            "columnDefs": [
+                  {
+                      "targets": [5],
+                      "createdCell": function (td, cellData, rowData, row, col) {
+                          if (cellData == 10)
+                              $(td).replaceWith('<td>Table</td>')
+                          else
+                              $(td).replaceWith('<td>View</td>')
+                      },
+                  },
+                  {
+                      "targets": [7],
+                      "createdCell": function (td, cellData, rowData, row, col) {
+                          if (cellData == 10)
+                              $(td).replaceWith('<td>Active</td>')
+                          else
+                              $(td).replaceWith('<td>Inactive</td>')
+                      }
+                  }
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(2)', nRow).html(' <input type="button" class="ShowBOBtn" value="' + aData[2] + '" id="' + aData[1] + '" data-boname="'+aData[2]+'"> ');
+                $('td:eq(8)', nRow).html('<input type="button" class="EditBOBtn btn btn-theme btn-xs" id="' + aData[1] + '" value="Edit"/>&nbsp;<input type="button" class="CopyBOBtn btn btn-theme btn-xs" id="' + aData[1] + '" value="Copy"/>');
+                // $('td:eq()', nRow).html('<input type="button" class="CopyBOBtn btn btn-theme btn-xs" id="' + aData[1] + '" value="Copy"/>');
+                return nRow;
+            }
+        })       
+        $('#Bostbl').on('click', 'input.ShowBOBtn', function () {
+            var ID = $(this).attr('id');
+            var BOName = $(this).attr('data-boname');
+            if (newpopups.length > 0) {
+                for (i = 0; i < newpopups.length; i++) {
+                    newpopups[i].close();
+                }
+            }
+            var bowindow = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AssignBOAttributesFromGrid", "BusinessObjects")',
+                data: { BOID: ID, BOName: BOName },
+                cache: false,
+                async: true,
+                dataType: 'html',
+                success: function (data) {
+                    with (bowindow.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    newpopups.push(bowindow);
+                    bowindow.moveTo(0, 0);
+                }
+            });
+        })
+        $('#Bostbl').on('click', 'input.EditBOBtn', function () {
+            var ID = $(this).attr('id');
+            if (editpopups.length > 0) {
+                for (i = 0; i < editpopups.length; i++) {
+                    editpopups[i].close();
+                }
+            }
+            var editbo = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddEditBO", "BusinessObjects")',
+                data: { ID: ID },
+                cache: false,
+                async: true,
+                dataType: 'html',
+                success: function (data) {
+                    with (editbo.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    editpopups.push(editbo);
+                    editbo.moveTo(0, 0);
+                }
+            });
+        })
+
+        //Copy the BO with edit options
+        $('#Bostbl').on('click', 'input.CopyBOBtn', function () {
+            var ID = $(this).attr('id');
+            if (Copypopups.length > 0) {
+                for (i = 0; i < Copypopups.length; i++) {
+                    Copypopups[i].close();
+                }
+            }
+            var Copybo = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("CopyBO", "BusinessObjects")',
+                data: { ID: ID },
+                cache: false,
+                async: true,
+                dataType: 'html',
+                success: function (data) {
+                    with (Copybo.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    Copypopups.push(Copybo);
+                    Copybo.moveTo(0, 0);
+                }
+            });
+        })
+        $('.new-query').on('click', 'button#NewBOBtn', function () {
+            var url = $(this).attr('data-url');
+            if (addpopups.length > 0) {
+                for (i = 0; i < addpopups.length; i++) {
+                    addpopups[i].close();
+                }
+            }
+            var newbo = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            addpopups.push(newbo);
+            newbo.moveTo(0, 0);
+        });
+
+        $('.new-query').on('click', 'button#ImportBOBtn', function () {
+            var url = $(this).attr('data-url');
+            if (addpopups.length > 0) {
+                for (i = 0; i < addpopups.length; i++) {
+                    addpopups[i].close();
+                }
+            }
+            var newbo = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            addpopups.push(newbo);
+            newbo.moveTo(0, 0);
+        });
+
+
+        //Poovanna
+        $('.new-query').on('click', 'button#NewTable', function () {
+            var url = $(this).attr('data-url');
+            if (Tablepopups.length > 0) {
+                for (i = 0; i < Tablepopups.length; i++) {
+                    Tablepopups[i].close();
+                }
+            }
+            var newbo = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            Tablepopups.push(newbo);
+            newbo.moveTo(0, 0);
+        });
+    });
+</script>
+
+<section class="content-header hedr">
+    <h1> Business Object Management </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> BO</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="row">
+                    <div class="col-xs-12">
+                    </div>
+                </div>
+                <div id="BOAttributes"></div>
+                <div id="AttributesFromGrid"></div>
+                <div id="BoAttributeGrouping"></div>
+                <div id="BOGrid">
+                    <div class="box-body">
+                        <div class="table-clean">
+                            <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="Bostbl">
+                                <thead>
+                                    <tr role="row">
+                                        <th>S.No</th>
+                                        <th>ID</th>
+                                        <th>BO</th>
+                                        <th>Table Name</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Assigned Fields</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(".treebtn").click(function () {
+        $(".treetoggle").toggleClass("treeleft");
+        $(".treebtn").toggleClass("rotate");
+    });
+</script>

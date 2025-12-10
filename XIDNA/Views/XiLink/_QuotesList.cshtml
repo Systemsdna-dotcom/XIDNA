@@ -1,0 +1,371 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+                XIDBO oBOD = new XIDBO();
+                XID1Click o1ClickD = new XID1Click();
+                if (Model.oContent.ContainsKey(XIConstant.ListComponent))
+                {
+                    o1ClickD = (XID1Click)Model.oContent[XIConstant.ListComponent];
+                    if (o1ClickD == null)
+                    {
+                        o1ClickD = new XID1Click();
+                    }
+                    XIInfraCache oCache = new XIInfraCache();
+                    oBOD = (XIDBO)oCache.GetObjectFromCache(XIConstant.CacheBO_All, null, o1ClickD.BOID.ToString());
+                }
+                string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+                var ReportID = o1ClickD.ID;
+                var sBOName = o1ClickD.sBOName;
+                string sRoleName = ViewBag.RoleName;
+                if (!string.IsNullOrEmpty(sRoleName))
+                {
+                    sRoleName = sRoleName.ToLower();
+                }
+}
+
+<style>
+    tr {
+        background-color: none !important;
+    }
+</style>
+
+<script>
+    var Section;
+    $(document).ready(function () {
+        var Fields = "";
+        var Optrs = "";
+        var Values = "";
+        @*var nParams = @Html.Raw(Json.Encode(Model.nParams));
+        for(i=0;i<nParams.length;i++){
+            if(nParams[i].sName == "Section"){
+                Section = nParams[i].sValue;
+            }
+            else{
+                Fields = Fields + nParams[i].sName+",";
+                Optrs = Optrs +"=,";
+                Values = Values +nParams[i].sValue+",";
+            }
+        }
+        if(Fields.length>0){
+            Fields = Fields.substring(0, Fields.length-1);
+            Optrs = Optrs.substring(0, Optrs.length-1);
+            Values = Values.substring(0, Values.length-1);
+        }*@
+        var poppopups = new Array();
+        var respopups = new Array();
+        var table = $('#tbl_main-' + @ReportID).dataTable({
+            //"paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            //"aoColumns": expColumns,
+            "sAjaxSource": "@Html.Raw(Url.Action("GetReportResult", "XiLink", new { ReportID = o1ClickD.ID, sGUID= o1ClickD.sGUID }))",
+            //"aaSorting": [[1, 'desc']],
+            "sDom": '<"dtable-header"<"new-query">><"datatable-scroll"><"dtable-footer">', 'bJQueryUI': false,
+            @*"initComplete": function () {
+                $("div.new-query").html('<button type="button" class="savebtn btn btn-theme" id="GridAddBtn" data-bo="@Model.BO" data-group="@Model.sCreateGroup">Add</button>');
+            },*@
+            "autoWidth": false,
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(0)', nRow).html('<img src="@PhysicalPath/'+aData[2]+'.png" style="width:80px;height:40px" />');
+                $('td:eq(3)', nRow).addClass('relative').html('<input type="button" class="MoreDetails btn btn-success btn-sm" id="' + aData[0] + '" value="+ More Details"/><input type="button" class="CloseDetails btn btn-sm" id="' + aData[0] + '" value="x Close Details" style="display:none"/>');
+                var amount = aData[1].slice(1);
+                if (parseFloat(amount) != 0)
+                {
+                    $('td:eq(4)', nRow).html('<input type="button" class="BuyNow btn btn-success btn-sm" onclick="BuyQuoteBtn(&quot;' + aData[1] + '&quot;,&quot;' + aData[0] + '&quot;, this)" data-amt="' + aData[1] + '" data-ID="' + aData[0] + '" value="Buy Now" />');
+                }
+                else
+                {
+                    $('td:eq(4)', nRow).html('');
+                }
+          if ('@sRoleName' == "admin") {
+              $('td:eq(5)', nRow).html('<input type="button" class="RiskFactors btn btn-success btn-sm" value="Risk Factors" onclick="XIRun(null,2954, &quot;' + aData[0] + '&quot;, &quot;@Model.sGUID&quot;, &quot;RiskFactors&quot;, false, 0, 0)"/>');
+                }
+                return nRow;
+            },
+            @*"columnDefs": [{
+                "targets": [2, 3, 4, 5],
+                "createdCell": function (td, cellData, rowData, row, col) {
+                    if (cellData == "False")
+                        $(td).replaceWith('<td>- <br/> Not Covered</td>')
+                    else
+                        $(td).replaceWith('<td><img src="@PhysicalPath/input-success.png" width="20" height="20" /> 123466789</td>')
+                },
+                "createdCell": function (td, cellData, rowData, row, col) {
+                    if (cellData == "False")
+                        $(td).replaceWith('<td>- <br/> Not Covered</td>')
+                    else
+                        $(td).replaceWith('<td><img src="@PhysicalPath/input-success.png" width="20" height="20" /></td>')
+                },
+                "createdCell": function (td, cellData, rowData, row, col) {
+                    if (cellData == "False")
+                        $(td).replaceWith('<td>- <br/> Not Covered</td>')
+                    else
+                        $(td).replaceWith('<td><img src="@PhysicalPath/input-success.png" width="20" height="20" /></td>')
+                },
+                "createdCell": function (td, cellData, rowData, row, col) {
+                    if (cellData == "False")
+                        $(td).replaceWith('<td>- <br/> Not Covered</td>')
+                    else
+                        $(td).replaceWith('<td><img src="@PhysicalPath/input-success.png" width="20" height="20" /></td>')
+                }
+            }],*@
+            "fnServerParams": function (aoData) {
+                aoData.push({ "name": "Fields", "value": Fields });
+                aoData.push({ "name": "Optrs", "value": Optrs });
+                aoData.push({ "name": "Values", "value": Values });
+            },
+        });
+        $(document.body).on('click', 'input.MoreDetails', function(){
+            var id =$(this).attr('id');
+            var RowIndex = $(this).closest('td').parent()[0].sectionRowIndex;
+            var QS = {sInsurer:id};
+            $.ajax({
+                url: '@Url.Action("GetAboutInsurer", "XiLink")',
+                type: "Post",
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                async: false,
+                data: JSON.stringify(QS),
+                success: function (data) {
+                    $(this).attr('style','display:none');
+                    $(this).next('input.CloseDetails').css("display", "block");
+                    //$('#tbl_main-' + @ReportID +'> tbody > tr').eq(RowIndex+1).html('');
+                    $('#tbl_main-' + @ReportID +'> tbody > tr').eq(RowIndex).after(data);
+                }
+            });
+            $(this).hide().next().show();
+        });
+
+        $(document.body).on('click', 'input.CloseDetails', function(){
+            //$('#tbl_main-' + @ReportID +'> tbody > tr').eq(RowIndex).after('');
+            //$(this).hide();
+            //$(this).closest('input.MoreDetails').show();
+
+            $(this).closest('tr').next().remove();
+            $(this).hide().prev().show();
+        });
+
+        @*$(document.body).on('click', 'input.BuyNow', function () {
+            var vlaue = $(this).attr('data-amt');
+            var sGuid='@Model.sGUID';
+            vlaue = vlaue.slice(1);
+            var ID = $(this).attr('data-ID');
+            QuoteID = ID;
+            //window.location.href = '@Url.Action("Payment", "Payment")?ID=' + ID + '&Amount=' + vlaue ;
+      //window.location.href = '@Url.Action("test", "Payment")?ID=' + ID;
+            $('#QuoteAMt').attr('data-value',vlaue);
+            fncRunQSStepAction('SaveNext', this);
+            //$('#QSNxtBtn').click();
+            $('#FinalAmt').html(vlaue);
+
+        });*@
+
+        $(document.body).on('click', 'input.BuyNowold', function () {
+            var _this = this;
+            var vlaue = $(this).attr('data-amt');
+            var sGuid='@Model.sGUID';
+            vlaue = vlaue.slice(1);
+            var ID = $(this).attr('data-ID');
+            QuoteID = ID;
+            //window.location.href = '@Url.Action("Payment", "Payment")?ID=' + ID + '&Amount=' + vlaue ;
+            //window.location.href = '@Url.Action("test", "Payment")?ID=' + ID;
+            $('#QuoteAMt').attr('data-value',vlaue);
+            //fncRunQSStepAction('SaveNext', this);
+            //$('#FinalAmt').html(vlaue);
+
+            var notifyState = function(state, callback) {
+                fncRunQSStepAction('SaveNext', _this);
+    setTimeout(function() {
+        $('#FinalAmt').html(vlaue);
+
+                    /* Do something */
+                    if (callback) {
+                        callback();
+                    }
+                }, 20000);
+            }
+
+            notifyState('State 1', function() {
+
+
+            });
+            //$('#QSNxtBtn').click();
+
+        });
+    });
+
+        function BuyQuoteBtn(Amount, sID, $this) {
+        var _this = $this;
+        var vlaue = Amount;
+        var sGuid='@Model.sGUID';
+        vlaue = vlaue.slice(1);
+        var ID = sID;
+            QuoteID = ID;
+        //fncSetParam(QuoteID, sGuid, "{XIP|Aggregations.id}", "");
+        //window.location.href = '@Url.Action("Payment", "Payment")?ID=' + ID + '&Amount=' + vlaue ;
+        //window.location.href = '@Url.Action("test", "Payment")?ID=' + ID;
+        $('#QuoteAMt').attr('data-value',vlaue);
+        //fncRunQSStepAction('SaveNext', this);
+        //$('#FinalAmt').html(vlaue);
+        fncSetParam(QuoteID, sGuid, "{XIP|sQuoteGUID}","Aggregations").then(function (state, callback) {
+            fncRunQSStepAction('SaveNext', _this);
+            setTimeout(function () {
+                $('#FinalAmt').html(vlaue);
+
+                /* Do something */
+                if (callback) {
+                    callback();
+                }
+            }, 10000);
+        });
+
+        //notifyState('State 1', function() {
+
+        //});
+    }
+        function fncSetParam(QuoteID, sGUID, Name,sBO) {
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("SetParams", "xilink")',
+                    data: JSON.stringify({ sID: QuoteID, sGUID: sGUID, sName: Name, sBO: sBO }),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    success: function () {
+                        resolve(true);
+                    }
+                });
+            });
+    }
+</script>
+<span id="QuoteAMt"></span>
+<div class="quote-table">
+    <table class="table table-bordered table-condensed no-sort-icn" id="tbl_main-@ReportID">
+        <thead>
+            <tr>
+                @for (int i = 0; i < o1ClickD.Headings.Count; i++)
+    {
+            <th>@o1ClickD.Headings[i]</th>
+}
+                <th>Next Step</th>
+                <th>Buy</th>
+                @if (sRoleName != null && sRoleName.ToLower() == "admin")
+    {
+            <th>Risk Factors</th>
+}
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+
+
+
+@*<div class="quote-table">
+        <table class="table table-bordered table-condensed">
+            <thead>
+                <tr>
+                    <th>Insurar</th>
+                    <th>Price</th>
+                    <th>Property Owners Liability Limit</th>
+                    <th>Employer Liability Limit</th>
+                    <th>Loss of Metered Water</th>
+                    <th>Legal Expenses Cover</th>
+                    <th>Next Step</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center">
+                        <img src="../images/insurar.png" />
+                    </td>
+                    <td>
+                        Pay Annually:<br />
+                        £123.23<br />
+                        Pay Monthly:<br />
+                        10x £123.23<br />
+                        Total £123.23
+                    </td>
+                    <td class="text-center">
+                        <img src="../../Content/images/input-success.png"><br />
+                        £123.23
+                    </td>
+                    <td class="text-center">
+                        -
+                    </td>
+                    <td class="text-center">
+                        <img src="../../Content/images/input-success.png"><br />
+                        £123.23
+                    </td>
+                    <td class="text-center">
+                        -
+                    </td>
+                    <td class="text-center">
+                        <a href="#" class="btn btn-success"><i class="fa fa-plus"></i> More Details</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-center">
+                        <img src="../images/insurar.png" />
+                    </td>
+                    <td>
+                        Pay Annually:<br />
+                        £123.23<br />
+                        Pay Monthly:<br />
+                        10x £123.23<br />
+                        Total £123.23
+                    </td>
+                    <td class="text-center">
+                        <img src="../../Content/images/input-success.png"><br />
+                        £123.23
+                    </td>
+                    <td class="text-center">
+                        -
+                    </td>
+                    <td class="text-center">
+                        <img src="../../Content/images/input-success.png"><br />
+                        £123.23
+                    </td>
+                    <td class="text-center">
+                        -
+                    </td>
+                    <td class="text-center">
+                        <a href="#" class="btn btn-success"><i class="fa fa-plus"></i> More Details</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-center">
+                        <img src="../images/insurar.png" />
+                    </td>
+                    <td>
+                        Pay Annually:<br />
+                        £123.23<br />
+                        Pay Monthly:<br />
+                        10x £123.23<br />
+                        Total £123.23
+                    </td>
+                    <td class="text-center">
+                        <img src="../../Content/images/input-success.png"><br />
+                        £123.23
+                    </td>
+                    <td class="text-center">
+                        -
+                    </td>
+                    <td class="text-center">
+                        <img src="../../Content/images/input-success.png"><br />
+                        £123.23
+                    </td>
+                    <td class="text-center">
+                        -
+                    </td>
+                    <td class="text-center">
+                        <a href="#" class="btn btn-success"><i class="fa fa-plus"></i> More Details</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>*@

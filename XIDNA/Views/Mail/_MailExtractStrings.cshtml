@@ -1,0 +1,169 @@
+﻿@model int
+@{
+    Layout = "~/Views/Shared/_ConverterLayout.cshtml";
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var strpopups = new Array();
+        var EditOrgDetails = new Array();
+        var table = $('#Spesubtbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("MailExtractStringsGrid", "Mail", new { OrgID = @Model })",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"l<"new-query">f><"datatable-scroll"t><"dtable-footer"ip>',
+            "initComplete": function () {
+                $("div.new-query").html('<button type="button" class="savebtn btn btn-primary btn-xs" id="NewMailBtn" data-url="@Url.Action("AddEditMailExtractStrings", "Mail")?ID=0" >Add</button>');
+            },
+            'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+            { "bSortable": false },
+                             {
+                                 "sName": "ID",
+                                 "visible": false
+                             },
+                             {
+                                 "sName": "SubscriptionID"
+                             },
+                            {
+                                "sName": "SubscriptionID"
+                            },
+                            {
+                                "sName": "OrganizationID",
+                                "visible": false
+                            },
+                            {
+                                "sName": "sStartString",
+                            },
+                            {
+                                "sName": "sEndString"
+                            },
+                            { "sName": "StatusTypeID" },
+                            { "bSortable": false },
+
+            ],
+            "columnDefs": [
+                  {
+                      "targets": [7],
+                      "createdCell": function (td, cellData, rowData, row, col) {
+                          if (cellData == 10)
+                              $(td).replaceWith('<td>Active</td>')
+                          else
+                              $(td).replaceWith('<td>Inactive</td>')
+                      }
+                  }
+            ],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(6)', nRow).html('<input type="button" class="EditOrgDwindow btn btn-xs btn-primary" id="' + aData[1] + '" value="Edit"/>');
+                return nRow;
+            }
+        });
+
+        $('#Spesubtbl').on('click', 'input.EditOrgDwindow', function (e) {
+            e.preventDefault();
+            var ID = $(this).attr('id');
+            if (EditOrgDetails.length > 0) {
+                for (i = 0; i < EditOrgDetails.length; i++) {
+                    EditOrgDetails[i].close();
+                }
+            }
+            var edit = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("AddEditMailExtractStrings", "Mail")',
+                data: { ID: ID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    with (edit.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    EditOrgDetails.push(edit);
+                    edit.moveTo(0, 0);
+                }
+            });
+        })
+        $('.new-query').on('click', 'button#NewMailBtn', function () {
+            var url = $(this).attr('data-url');
+            if (strpopups.length > 0) {
+                for (i = 0; i < strpopups.length; i++) {
+                    strpopups[i].close();
+                }
+            }
+            var newstr = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            strpopups.push(newstr);
+            newstr.moveTo(0, 0);
+        });
+    });
+</script>
+
+<section class="content-header hedr">
+    <h1> Mail Extract Strings </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Extract Strings</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12 content">
+            <div class="box box-primary">
+                <div id="MailextractStringsGrid">
+                    <div class="box-body">
+                        <div class="table-clean">
+                            <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="Spesubtbl">
+                                <thead>
+                                    <tr role="row">
+                                        <th>S.No</th>
+                                        <th style="display:none;">ID</th>
+                                        <th>Subscription ID</th>
+                                        <th>Subscription Name</th>
+                                        <th>OrganizationID</th>
+                                        <th>Start String</th>
+                                        <th>End String</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@*<div id="SubscriptionGrid">
+        <div id="box-body">
+            <div class="tab_scroll main-table">
+                <div class="dataTables_wrapper no-footer">
+                    <table class="table table-bordered table-striped dataTable" id="Spesubtbl">
+                        <thead>
+                            <tr role="row">
+                                <th>S.No</th>
+                                <th style="display:none;">ID</th>
+                                <th>Subscription ID</th>
+                                <th>Start String</th>
+                                <th>End String</th>
+                                <th>Edit</th>
+
+                            </tr>
+                        </thead>
+
+                        <tbody></tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>*@

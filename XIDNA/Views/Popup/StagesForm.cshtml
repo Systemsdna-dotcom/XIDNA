@@ -1,0 +1,205 @@
+﻿@model XIDNA.Models.Stages
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+
+        var stageid = '@Model.ID';
+        var stagestatus = '@Model.StatusTypeID';
+        if (stageid > 0 && stagestatus == 10) {
+            $('#Operations').show();
+        }
+        else {
+            $('#Operations').hide();
+        }
+        @*if ('@Model.ID' > 0) {
+            $.ajax({
+                url: '@Url.Action("Operations", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                data: { StageID: stageid },
+                success: function (data) {
+                    $('#Operations').html(data);
+                },
+                error: function (data) { }
+            });
+        }*@
+        $('#Cancel').click(function () {
+            window.close();
+        });
+    });
+</script>
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+<section class="content-header hedr">
+    @if (Model.ID > 0)
+    {
+        <h1> Edit Stage </h1>
+    }
+    else
+    {
+        <h1> Add Stage </h1>
+    }
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Stage</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+                <div class=" innerborder">
+                    <div class="col-md-5 no-padding">
+                        @using (Ajax.BeginForm("CreateStage", "Popup", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnComplete" }, new { @id = "StagesForm", @class = "form-horizontal" }))
+                        {
+                        @Html.ValidationSummary(true);
+                        @Html.HiddenFor(m => m.ID)
+                        <div id="clear-text">
+                            <div class="form-group">
+                                <div class="col-md-5">
+                                    <label for="inputEmail" class="gn"> Stage Name<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(model => model.Name, new { @placeholder = "Enter Stage name", @class = "form-control", @id = "StageName" })
+                                </div>
+                                <div class="col-md-5 taberrormsg">
+                                    @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-5">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                                               new { key= 20 , value = "Inactive" }
+                                               }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-10">
+                                <input type="submit" class="btn btn-theme" value="Save" />
+                                <button type="submit" class="btn btn-theme decline" id="Cancel">Cancel</button>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    <div class="col-md-7 no-padding" id="Operations">
+                        @{
+                            if (Model.ID > 0)
+                            {
+                                Html.RenderAction("Operations", "Popup", new { StageID = Model.ID, Type = "Edit" });
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="dialog-box SaveStageDlg" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    function OnComplete(e) {
+        if (e > 0) { //e>0
+            if ('@Model.ID' == 0) { //Add
+                var statusval = $("#Status").val();
+                var stageid = e;
+                $.ajax({
+                    url: '@Url.Action("Operations", "Popup")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    data: { StageID: stageid, Type: "Create", },
+                    success: function (data) {
+                        $('#Operations').html(data);
+                    },
+                    error: function (data) { }
+                });
+
+                $("#StagesForm *").attr("disabled", "disabled").off('click');//Disabling ADDFORM
+
+                //Start....dialogbox for ADDFORM
+                opener.location.reload();
+                if (statusval == 10) //checking StatusType=Active
+                {
+                    $(".SaveStageDlg").html('Stage Added Successfully!</br> Please Add Operations');
+                    $('#Operations').show();
+                }
+                else //checking StatusType=Inactive
+                    $(".SaveStageDlg").html('Stage Added Successfully');
+                $(".SaveStageDlg").dialog({
+                    title: "Stage",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "OK",
+                           click: function () {
+                               $(".SaveStageDlg").dialog("close");
+                           }
+                       },
+
+                    ]
+                });
+                //End....dialogbox for ADDFORM
+            }
+            else { //Edit
+                var statusval = $("#Status").val();
+
+                if (statusval == 10) //checking StatusType=Active
+                {
+                    $('#Operations').show();
+                    $(".SaveStageDlg").html('Stage Updated Successfully!</br> Please Update Operations');
+
+                }
+                else //checking StatusType=Inactive
+                {
+                    $('#Operations').hide();
+                    $(".SaveStageDlg").html('Stage Updated Successfully');
+                }
+                $("#StagesForm *").attr("disabled", "disabled").off('click');//Disabling ADDFORM
+
+                //Start....dialogbox for EDITFORM
+                opener.location.reload();
+                $(".SaveStageDlg").dialog({
+                    title: "Stage",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "OK",
+                           click: function () {
+                               $(".SaveStageDlg").dialog("close");
+                           }
+                       },
+
+                    ]
+                });
+                //End....dialogbox for EDITFORM
+            }
+
+        }
+        else { //e=0
+            $(".SaveStageDlg").html('Error while adding stage!!!</br> Please try again');
+            $(".SaveStageDlg").dialog({
+                title: "Stage",
+                modal: true,
+                buttons: [
+                   {
+                       text: "OK",
+                       click: function () {
+                           $(".SaveStageDlg").dialog("close");
+                       }
+                   },
+
+                ]
+            });
+        }
+    }
+</script>
+

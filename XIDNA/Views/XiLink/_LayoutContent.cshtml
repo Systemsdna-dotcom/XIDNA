@@ -1,0 +1,74 @@
+﻿@model XICore.XIDLayout
+@using Newtonsoft.Json;
+<script>
+    $(document).ready(function () {
+        var iID = '@Model.sGUID';
+        var Details = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model, Formatting.Indented));
+        @*var Details = @Html.Raw(Json.Encode(Model));*@
+        ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+        DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+        PopupURL = '@Url.Action("GetPopupDetails", "XiLink")';
+        PopupORDialogURL = '@Url.Action("GetPopupORDialog", "XiLink")';
+        DialogURL = '@Url.Action("GetDialog", "XiLink")';
+        SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+        SemanticURL = '@Url.Action("GetSemanticDetails", "XiLink")';
+        ComponentURL = '@Url.Action("LoadComponentByID", "XIComponents")';
+        StepURL = '@Url.Action("GetStepContent", "XiLink")';
+        StepContentURL = '@Url.Action("GetStepContent", "XiLink")';
+        StepDataURL = '@Url.Action("GetStepData", "XiLink")';
+        ComponentParmsByStepURL = '@Url.Action("GetComponentParmsByStep", "XIComponents")';
+        XIContentURL = '@Url.Action("XIContent", "XiLink")';
+        ShowContentInDialogOrPopup(Details, iID);
+        DeleteBOURL = '@Url.Action("DeleteBO", "XiLink")';
+    });
+</script>
+@*<script src="~/Scripts/CommonFunctions.js"></script>*@
+
+@*<script>
+        $(document).ready(function () {
+            var Data = @Html.Raw(Json.Encode(Model));
+            var Details = Data.Details;
+            var LayoutID = Data.LayoutID;
+            $('#LayoutCode_'+LayoutID+' div').each(function (j, obj) {
+                var id = $(this).attr('id');
+                if(id && id.length>0){
+                    var PlaceholderArea= "div"+id;
+                    for(k=0;k<Details.length;k++){
+                        if(Details[k].PlaceholderArea==PlaceholderArea){
+                            $(this).attr('data-name', Details[k].PlaceholderName);
+                            $(this).attr('id', Details[k].PlaceholderUniqueName);
+                        }
+                    }
+                }
+            });
+            var XiLinks = @Html.Raw(Json.Encode(Model));
+            fncgetpopupcontent(XiLinks);
+        });
+        function fncgetpopupcontent(XiLinks){
+            for(i=0;i<XiLinks.Mappings.length;i++){
+                if(XiLinks.Mappings[i].XiLinkID>0){
+                    $.ajax({
+                        url: '@Url.Action("GetXiLinkContent", "XiLink")',
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "HTML",
+                        cache: false,
+                        async: false,
+                        data: { XiLinkID:XiLinks.Mappings[i].XiLinkID },
+                        success: function (data) {
+                            var PlaceHolderID = XiLinks.Mappings[i].PlaceHolderID;
+                            for(j=0;j<XiLinks.Details.length;j++){
+                                if(XiLinks.Details[j].PlaceHolderID==PlaceHolderID){
+                                    $('#'+XiLinks.Details[j].PlaceholderUniqueName).html(data);
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    </script>*@
+
+<div class="LayoutCode_@Model.sGUID sys-layout" data-guid="@Model.sGUID" data-name="LayoutGUID" data-def="@Model.XIGUID">
+    @Html.Raw(Model.LayoutCode)
+</div>

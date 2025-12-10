@@ -1,0 +1,357 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using XIDNA
+
+@{
+    List<XIDStructure> Nodes = new List<XIDStructure>();
+    List<List<XIIBO>> TreeData = new List<List<XIIBO>>();
+    var sParentID = string.Empty;
+    var iBODID = 0;
+    var sSearchText = string.Empty;
+    var sLoadType = string.Empty;
+    var sMode = string.Empty;
+    string sCode = string.Empty;
+    //string sFolderName = string.Empty;
+    long BuildingID = 0;
+    string sFilterType = string.Empty;
+    var sBOName = "";
+    if (Model.oContent.ContainsKey(XIConstant.DynamicTreeComponent))
+    {
+        Nodes = (List<XIDStructure>)Model.oContent[XIConstant.DynamicTreeComponent];
+        if (Nodes == null)
+        {
+            Nodes = new List<XIDStructure>();
+        }
+        if (Nodes.Count() > 0)
+        {
+            //TreeData = Nodes.ToList();
+            sParentID = Nodes.FirstOrDefault().FKiParentID;
+            //sFolderName = Nodes.FirstOrDefault().sName;
+            iBODID = Nodes.FirstOrDefault().BOID;
+            sSearchText = Nodes.FirstOrDefault().sSearchText;
+            BuildingID = Nodes.FirstOrDefault().ID;
+            sLoadType = Nodes.FirstOrDefault().sType;
+            sFilterType = Nodes.FirstOrDefault().sLinkingType;
+            sBOName = Nodes.FirstOrDefault().sBO;
+        }
+        else
+        {
+            sMode = Nodes.FirstOrDefault().sContext;
+            sLoadType = Nodes.FirstOrDefault().sType;
+            iBODID = Nodes.FirstOrDefault().BOID;
+            sCode = Nodes.FirstOrDefault().sCode;
+            sBOName = Nodes.FirstOrDefault().sBO;
+        }
+    }
+    var sTreeGuid = Guid.NewGuid();
+}
+<script>
+    $(document).ready(function () {
+        var jsondata = [];
+        var Nodes = @Html.Raw(Json.Encode(Nodes));
+        var Nodes;
+        if(Nodes && Nodes!=null && Nodes.length > 0){
+            Mode = Nodes[0].sContext;
+            Output = Nodes[0].sOutputArea;
+            var j=0;
+            for (var i = 0; i < Nodes.length; i++) {
+                item = {}
+                item["id"] = Nodes[i].ID
+                if(Nodes[i].FKiParentID == "#"){
+                    item["parent"] ="#";
+                }
+                else{
+                    item["parent"] =Nodes[i].FKiParentID;
+                }
+                item["text"] = Nodes[i].sName;
+                var nodedata = [];
+                nodedata.push({sInsName:Nodes[i].sInsName, sInsID:Nodes[i].sInsID,iBODID:Nodes[i].BOID, sBO:Nodes[i].sBO, i1ClickID:Nodes[i].i1ClickID, sType: Nodes[i].sType, sMode: Nodes[i].sMode, sParentFK:Nodes[i].sParentFKColumn, iStepID:Nodes[i].FKiStepDefinitionID, sOutputArea:Nodes[i].sOutputArea, sNameAttribute:Nodes[i].sNameAttribute, FKiVisualisationID:Nodes[i].FKiVisualisationID, sSearchText:Nodes[i].sSearchText});
+                item["data"] = nodedata;
+                jsondata.push(item);
+            }
+            if(jsondata.length>0){
+                var jsonString = JSON.stringify(jsondata);
+                createJSTreeScripts(JSON.parse(jsonString));
+            }
+        }
+    });
+    function createJSTreeScripts(UIjsondata) {
+        debugger
+        $('#TreeStrctr-@sTreeGuid').empty();
+        $('#TreeStrctr-@sTreeGuid').removeAttr('class');
+        $('#TreeStrctr-@sTreeGuid').jstree({
+            "core": {
+                "themes": {
+                    "variant": "large"
+                },
+                "check_callback": true,
+                'data': UIjsondata,
+            },
+            "types": {
+                "#": {
+                    "valid_children": ["default"]
+                },
+                //les dossiers
+                "default": {
+                    "valid_children": ["default", "presentation"],
+                    //"icon": "img/icons/etablissement.png"
+                    "icon": "fa fa-folder fc-theme"
+                },
+                "demo": {
+                    "icon": "fa fa-folder-open"
+                }
+            },
+            "plugins": ["types", "contextmenu", "dnd"],
+            "dnd": {},
+            "contextmenu": {
+                "items": function ($node) {
+                    var tree = $('#TreeStrctr-@sTreeGuid').jstree(true);
+                    return {
+                        "Create": {
+                            "separator_before": false,
+                            "separator_after": true,
+                            "label": "Create",
+                            action: function (obj) {
+                                //$node = tree.create_node($node, { text: 'Add Script Item', type: 'default' });
+                                //FolderTree="";
+                                debugger
+                                var sFolderName="New Node";
+                                var NodeValues=[];
+                                var param1 = {};
+                                param1["sName"] = 'sName';
+                                param1["sValue"] = sFolderName;
+                                param1["bDirty"]=true;
+                                NodeValues.push(param1);
+                                param1 = {};
+                                param1["sName"] = 'iParentID';
+                                param1["sValue"] = $node.id;
+                                param1["bDirty"]=true;
+                                NodeValues.push(param1);
+                                var pvalue = {
+                                    Attributes: NodeValues,
+                                    sGUID: '@sTreeGuid',
+                                    sContext: '',
+                                    sBOName: '@sBOName',
+                                    sSaveType: ''
+                                }
+                                $.ajax({
+                                    type: 'POST',
+                                    url: SaveEditBOURL,
+                                    contentType: "application/json; charset=utf-8",
+                                    data: JSON.stringify(pvalue),
+                                    cache: false,
+                                    dataType: 'json',
+                                    success: function (data) {
+                                        debugger
+                                        if(parseInt(data[0].iInstanceID)>0){
+                                            ID = parseInt(data[0].iInstanceID);
+                                            var nodedata = [];
+                                            nodedata.push({sType:10});
+                                            item["data"] = nodedata;
+                                            $node = tree.create_node($node, { text: 'New node', type: 'default',id:ID, data:nodedata });
+                                            tree.deselect_all();
+                                            //tree.select_node($node);
+                                            $("#TreeStrctr-@sTreeGuid").jstree("open_all");
+                                            var ParentID = $("#" + $node).parent().parent().attr('id');
+                                            var NodeTitle = $(null + $node).text();
+                                            ChangeDocIcon();
+                                            fncSelectDynamicTreeNode($("#" + $node)[0], $("#TreeStrctr-@sTreeGuid")[0]);
+                                        }
+                                        else{
+                                            alert('Error Occurred');
+                                        }
+                                    }
+                                });
+                                //$node = tree.create_node($node, { text: 'Add Script Item', type: 'default' });
+                            }
+                        },
+                        //"Rename": {
+                        //    "separator_before": false,
+                        //    "separator_after": false,
+                        //    "label": "Rename",
+                        //    "action": function (obj) {
+                        //        tree.edit($node, null, function (node, status) {
+                        //            if (node.original.text != node.text) {
+                        //                RenameAndSaveToDB($node, "rename");
+                        //            }
+                        //        });
+                        //    }
+                        //},
+                        "Remove": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Remove",
+                            "action": function (obj) {
+                                $("#Remove").dialog({
+                                    title: "are you sure you want to delete ? ",
+                                    buttons: {
+                                        "yes": function () {
+                                            tree.delete_node($node);
+                                            fncDeleteNodeDetails($node, "delete");
+                                            $(this).dialog("close");
+
+                                        },
+                                        "no": function () {
+                                            $(this).dialog("close");
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                        //"AddDetails": {
+                        //    "separator_before": false,
+                        //    "separator_after": false,
+                        //    "label": "Add Details",
+                        //    "action": function (obj) {
+                        //        jsondata1=$node;
+                        //        fncSelectNode($node, tree)
+                        //    }
+                        //}
+                    };
+                }
+            },
+        }).bind("move_node.jstree", function (e, data) {
+            DragAndDropNodes(data)
+        }).bind("loaded.jstree", function (event, data) {
+            $(this).jstree("open_all");
+        }).bind("select_node.jstree", function (NODE, REF_NODE) {
+        }).on("changed.jstree", function (event, data) {
+            var evt = window.event || event;
+            var button = evt.which || evt.button;
+            if (button != 1 && (typeof button != "undefined")) return false;
+            if (data.selected.length == 1) {
+                var sdfd = Mode;
+                fncSelectDynamicTreeNode(data.node, this);
+            }
+            else {
+                for (i = 0; i < data.selected.length; i++) {
+                    if (i != 0) {
+                        data.instance.deselect_node(data.node)
+                    }
+                }
+            }
+        }).on('hover_node.jstree', function (e, data) {
+            var $node = $("#" + data.node.id);
+            if (data.node.data != null && data.node.data.length > 0) {
+                fncGetBOAttributeValue(data.node.data[0].iBODID, data.node.data[0].sInsID).then(function (result) {
+                    // var SelectedText = data.node.data[0].sBO;
+                    $("a#" + data.node.a_attr.id).prop('title', result);
+                });
+            }
+        });
+        // bind customize icon change function in jsTree open_node event.
+        $('#TreeStrctr-@sTreeGuid').on('open_node.jstree', function (e, data) {
+            var icon = $('#' + data.node.id).find('i.jstree-icon.jstree-themeicon').first();
+            icon.removeClass('fa-folder').addClass('fa-folder-open');
+        });
+
+        // bind customize icon change function in jsTree close_node event.
+        $('#TreeStrctr-@sTreeGuid').on('close_node.jstree', function (e, data) {
+            var icon = $('#' + data.node.id).find('i.jstree-icon.jstree-themeicon').first();
+            icon.removeClass('fa-folder-open').addClass('fa-folder');
+        });
+    }
+    function fncDeleteNodeDetails($node, action) {
+        debugger
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ChildrnID = "";
+        for (var i = 0; i < ChldnID.length; i++) {
+            var chldID = ChldnID[i];
+            ChildrnID = chldID + "," + ChildrnID;
+        }
+        var ChildrnIDs = ChildrnID.substring(0, ChildrnID.length - 1);
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        if (NodeID != "1" && ParentID != "#") {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("DeleteDynamicTreeNode", "XiLink")',
+                data: { iInstanceID: NodeID, iParentID: ParentID, sBOName: '@sBOName' },
+                cache: false,
+                dataType: 'json',
+                success: function (data) {
+                    //you can also remove this... as client side has the details and on load we are displaying above
+
+                },
+                error:{
+
+}
+            });
+        }
+        else {
+
+        }
+
+    }
+    function fncSelectDynamicTreeNode(_node, _this, ParamClear){
+        debugger
+        var Output = 'LeftTreeOutput';
+        var _uidialog = fncgetDialogFromHTMLTree('dialog', _this);
+        if (Output && Output.length > 0) {
+            $(_uidialog).find('#' + Output).html('<div class="loader"></div>');
+        }
+        sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+        var sLayoutType = "Dialog";
+        var Parent = _node.parent;
+        var ComponentName = fncGetComponentNameFromHTMLTree('Component', _this);
+        if (_uidialog == null || (_uidialog && _uidialog.length == 0)) {
+            sLayoutType = "inline-layout";
+            _uidialog = fncgetInlineLayoutFromHTMLTree('inline-layout', _this);
+        }
+        var CurrentGUID = sCurrentGUID;
+        var NewParams = [];
+        //var StepID = ComponentName.split('-')[1];
+        //if(QSInfo[2].sValue && QSInfo[2].sValue > 0){
+        //var iQSDID = QSInfo[0].sValue;
+        var jCompDef = '@Html.Raw(Json.Encode(Model.oDefintion))';
+        var ConfigParams = JSON.parse(jCompDef).Params;
+        if(ConfigParams && ConfigParams.length > 0) {
+            var InputParams = [];
+            var id = _node.id;
+            var parent = _node.parent;
+            var WrapperParms = {};
+            for(var i=0;i<ConfigParams.length;i++){
+                if (ConfigParams[i].sName.toLowerCase() == "NodeClickparamname".toLowerCase()) {
+                    WrapperParms["sName"] = ConfigParams[i].sValue;
+                    WrapperParms["sValue"] = "XIC|null";
+                    // if(Mode.length > 0 ){
+                    var param1 = {};
+                    param1["sName"] = '{XIP|ParentNode}';
+                    param1["sValue"] = parent;
+                    InputParams.push(param1);
+                    var param2 = {};
+                    param2["sName"] = 'iInstanceID';
+                    param2["sValue"] = id;
+                    InputParams.push(param2);
+
+                }
+                else if(ConfigParams[i].sName.toLowerCase() == "BO".toLowerCase())
+                {
+                    var param2 = {};
+                    param2["sName"] = 'BO';
+                    param2["sValue"] = ConfigParams[i].sValue;
+                    InputParams.push(param2);
+                }
+            }
+            WrapperParms["nSubParams"] = InputParams;
+            NewParams.push(WrapperParms);
+            fncUpdateXIParams('', sGUID, sGUID, NewParams).then(function (data) {
+                //FTMainContent for Funnel config
+                $('#MainContent').empty();
+                $('.tabbtn').attr('data-load', 'false');
+                TriggerComponent(sGUID, ComponentName, data, 'MainContent',_uidialog).then(function (ID) {
+                    //LoadSubnodeStep(sGUID, 'Step7 with BO Component', QSInfo[0].sValue, ID);
+                });
+
+
+            })
+        }
+    }
+</script>
+<div class="">
+    <div id="TreeStrctr-@sTreeGuid" class="scroll_vh_100 tree-guid">
+    </div>
+    <div id="Remove" class="col-md-12"></div>
+</div>

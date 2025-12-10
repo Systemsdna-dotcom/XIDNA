@@ -1,0 +1,283 @@
+﻿@model IEnumerable<XIDNA.ViewModels.VMQueryPreview>
+@using XIDNA.ViewModels
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        @*var type = '@Model.FirstOrDefault().PreviewType';
+            var data = @Html.Raw(Json.Encode(Model));
+            var tabid, sectionid;
+            for(i=0;i<data.length;i++){
+                tabid = data[i].SectionsData[0].TabID;
+                sectionid = data[i].SectionsData[0].SectionID;
+                $('.EditRecordForm-'+sectionid+tabid).hide();
+                $('.CreateRecordForm-'+sectionid+tabid).hide();
+            }*@
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        var tabid = '@Model.FirstOrDefault().TabID';
+        $('#SectionTabs-' + tabid).tabs();
+        //Create Record Form
+        var Tabdata = @Html.Raw(Json.Encode(Model));
+        if(Tabdata[0].PreviewType && Tabdata[0].PreviewType!="@EnumDisplayTypes.ViewRecord.ToString()"){
+            $('#SectionTabs-'+Tabdata[0].TabID).on('click', 'button.CreateRecordFromRow', function () {                
+                var TabName = Tabdata[0].TabName;
+                if (TabName == "Policies") {
+                    var url = "@Url.Action("AddWalletPolicies", "Wallet")?LeadID=" +Tabdata[0].LeadID;
+                    window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+                }
+                else{
+                    var clickid = parseInt($(this).attr('data-clickid'));
+                    var boid = parseInt($(this).attr('data-boid'));
+                    var values = {
+                        Tab1ClickID: clickid,
+                        BOID: boid,
+                        LeadID: Tabdata[0].LeadID
+                    }
+                    $.ajax({
+                        url: '@Url.Action("GetCreateRowDetails", "Lead")',
+                        type: 'POST',
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        cache: false,
+                        data: JSON.stringify(values),
+                        success: function (data) {
+                            $('#Edit-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).hide();
+                            $('.ResultListGrid-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).hide();
+                            var result = $($.parseHTML(data)).filter(".CreateRecordFormDiv");
+                            $('.CreateRecordDiv-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).html(result.html());
+                            $('.CreateRecordDiv-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).show();
+                            $('.CreateRecordDiv-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID+' input').val('');
+                        },
+                        error: function (data) {
+                        }
+                    });
+                }
+            });
+            //Back Button in Create
+            $('.CreateRecordDiv-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).on('click', 'button.CreateBack', function () {
+                $('.CreateRecordDiv-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).hide();
+                $('.ResultListGrid-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).show();
+            });
+            //Input Change in Create Form
+            $('.CreateRecordDiv-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).on('click', 'input', function () {
+                var type = $(this).attr('type');
+                if (type == "DATETIME") {
+                    $(this).datepicker({
+                        changeMonth: true,
+                        changeYear: true,
+                        //inline: true,
+                        //minDate: 'now',
+                        yearRange: '-90:+20'
+                    }).focus();
+                }
+            });
+            $('.CreateRecordDiv-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).on('change', 'input', function () {
+                //error = 0;
+                var name = $(this).attr('name');
+                var value = $(this).val();
+                var length = $(this).attr('length');
+                var type = $(this).attr('type');
+                if (type == "VARCHAR") {
+                    if (value.length == 0) {
+                        $('span[class*="' + name + '"]').html('Value Cannot Be Empty');
+                        error = 1;
+                    }
+                    else if (value.length > length) {
+                        if (length != -1) {
+                            $('span[class*="' + name + '"]').html('Cannot Take More Than ' + length + ' Characters');
+                            error = 1;
+                        }
+                        else {
+                            $('span[class*="' + name + '"]').html('');
+                        }
+                    }
+                    else {
+                        $('span[class*="' + name + '"]').html('');
+                        if(error==0)
+                            error = 0;
+                    }
+                } else {
+                    if (value.length == 0) {
+                        $('span[class*="' + name + '"]').html('Value Cannot Be Empty');
+                        error = 1;
+                    }
+                    else {
+                        $('span[class*="' + name + '"]').html('');
+                    }
+                }
+            });
+            //Save Record From Create
+            $('.CreateRecordDiv-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).on('click', 'button.Save', function () {
+                var formid = $('.CreateRecordDiv-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).find('form').attr('class');
+                var formData = JSON.parse(JSON.stringify(jQuery('.' + formid).serializeArray()))
+                for (i = 0; i < formData.length; i++) {
+                    if (!(formData[i].value)) {
+                        var name = formData[i].name;
+                        $('span[class*="' + name + '"]').html('Value Cannot Be Empty');
+                        error = 1;
+                    }
+                    //else {
+                    //    var name = formData[i].name;
+                    //    $('span[class*="' + name + '"]').html('');
+                    //}
+                }
+
+                if (error == 0) {
+                    var Data = JSON.parse(JSON.stringify(jQuery('.' + formid).serializeArray()))
+                    var Popup = [];
+                    var i, j, titleid = [];
+                    for (i = 0, j = Data.length; i < j; i++) {
+                        Popup.push({ Label: Data[i].name, Value: Data[i].value });
+                    }
+                    var pvalue = {
+                        FormValues: Popup,
+                        Tab1ClickID: Tabdata[0].Tab1ClickID,
+                        LeadID: Tabdata[0].LeadID,
+                        EditType: "FromGrid",
+                        BOID: Tabdata[0].BOID
+                    }
+                    $.ajax({
+                        url: '@Url.Action("CreateRowFromGrid", "Lead")',
+                        type: 'POST',
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "html",
+                        cache: false,
+                        data: JSON.stringify(pvalue),
+                        success: function (data) {
+                            $('.ResultListGrid-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).html(data);
+                            $('.CreateRecordDiv-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).hide();
+                            $('.ResultListGrid-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID).show();
+                            $('.1List-'+Tabdata[0].SectionName.replace(" ","")+Tabdata[0].TabID+' tbody td').popover({
+                                trigger: "hover",
+                                html: true,
+                                content: function () {
+                                    var MouseOver = $(this).attr('data-mover');
+                                    if (MouseOver == "True") {
+                                        var Data = $(this).attr('data-hoverdata');
+                                        $(".container").empty();
+                                        $(".container").append(Data);
+                                        var rowdata = $('.container').html();
+                                        return rowdata;
+                                    }
+                                },
+                                container: 'body',
+                                placement: 'auto right'
+                            });
+                        },
+                        error: function (data) {
+                        }
+                    });
+                }
+            });
+        }
+    });
+</script>
+<style>
+    .leftpd {
+        padding-left: 10px !important;
+    }
+
+    #FieldError {
+        color: red;
+        font-size: 11px;
+        padding: 0px 5px;
+    }
+
+    .field-validation-valid {
+        /*color: red;*/
+    }
+</style>
+
+<div id="SectionTabs-@Model.FirstOrDefault().TabID">
+    <div class="box-header bg-grey-darker no-padding">
+        <ul class="sidebar-menu">
+            @foreach (var items in Model.OrderBy(m => m.Rank))
+            {
+                if (items.PreviewType == EnumDisplayTypes.ViewRecord.ToString())
+                {
+                    <li><a href="#tabs-@items.SectionsData.FirstOrDefault().SectionID">@items.SectionsData.FirstOrDefault().SectionName</a></li>
+                }
+                else
+                {
+                    <li><a href="#tabs-@items.SectionID">@items.SectionName</a></li>
+                    if (items.IsCreate)
+                    {
+                        <button data-clickid="@items.Tab1ClickID" data-boid="@items.BOID" class="btn btn-primary btn2 btn-xs pull-right CreateRecordFromRow">Create</button>
+                    }
+                }
+            }
+        </ul>
+    </div>
+    @foreach (var items in Model.OrderBy(m => m.Rank))
+    {
+        if (items.PreviewType == EnumDisplayTypes.ViewRecord.ToString())
+        {
+            <div>
+                @{
+            if ((items.SectionsData[0].ViewFieldsData != null && items.SectionsData[0].ViewFieldsData.Count() > 0) || (items.SectionsData[0].EditFieldsData != null && items.SectionsData[0].EditFieldsData.Count() > 0))
+            {
+                items.SectionsData.FirstOrDefault().PopType = items.PopType;
+                items.SectionsData.FirstOrDefault().StageID = items.StageID;
+                Html.RenderPartial("_TabViewForm", items.SectionsData);
+            }
+                }
+            </div>
+        }
+        else if (items.PreviewType == EnumDisplayTypes.KPICircle.ToString())
+        {
+            Html.RenderPartial("_TabKPICircles", items.KpiCircle);
+        }
+        else if (items.PreviewType == EnumDisplayTypes.PieChart.ToString())
+        {
+            List<VMKPIResult> KpiResult = new List<VMKPIResult>();
+            GraphData models = new GraphData();
+            models.Type = "Tabs";
+            models.TabID = Model.FirstOrDefault().popup.TabID;
+            models.DDLClassValue = Model.FirstOrDefault().popup.ClassID;
+            models.SectionName = items.SectionName;
+            models.ReportID = items.ReportID;
+            models.PieData = items.PieData;
+            models.QueryName = items.QueryName;
+            Html.RenderPartial("_TabKPIPieChart", models);
+        }
+        else if (items.PreviewType == EnumDisplayTypes.BarChart.ToString())
+        {
+            LineGraph BarData = new LineGraph();
+            BarData = items.BarData;
+            BarData.ReportID = items.ReportID;
+            BarData.TabID = Model.FirstOrDefault().popup.TabID;
+            BarData.SectionName = items.SectionName;
+            BarData.QueryName = items.QueryName;
+            BarData.Type = "Tabs";
+            Html.RenderPartial("_TabKPIBarChart", BarData);
+        }
+        else if (items.PreviewType == EnumDisplayTypes.Bespoke.ToString())
+        {
+            Html.RenderPartial("_Bespoke", items.SectionsData);
+        }
+        else if (items.PreviewType == EnumDisplayTypes.LineChart.ToString())
+        {
+            LineGraph BarData = new LineGraph();
+            BarData = items.LineGraph;
+            BarData.ReportID = items.ReportID;
+            BarData.TabID = Model.FirstOrDefault().popup.TabID;
+            BarData.SectionName = items.SectionName;
+            BarData.QueryName = items.QueryName;
+            BarData.Type = "Tabs";
+            Html.RenderPartial("_TabLineGraph", items.LineGraph);
+        }
+        else if (items.PreviewType == EnumDisplayTypes.ResultList.ToString())
+        {
+            items.LeadID = Model.FirstOrDefault().LeadID;
+            Html.RenderPartial("_TabsGrid", items);
+        }
+    }
+</div>
+<div id="LeadEditDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script type="text/javascript">
+    $('#leadcancel').click(function () {
+        window.close();
+    });
+</script>

@@ -1,0 +1,302 @@
+﻿@model IEnumerable<XIDNA.ViewModels.VMReports>
+    @using Microsoft.AspNet.Identity
+    @using XIDNA.Models
+    @using XIDNA.ViewModels
+    @{
+    var Reports = Model.Where(m => m.Location == "Reports").ToList();
+    }
+
+    <aside class="control-sidebar control-sidebar-dark sidebar control-sidebar-open" style="border-left: 1px solid rgba(40, 58, 70, 0.34);">
+        <!-- Sidebar Menu -->
+        <ul class="sidebar-menu">
+            @if (User.Identity.GetGroupName().Contains(EnumRoles.SuperAdmin.ToString()))
+            {                        <!-- Optionally, you can add icons to the links -->
+            <li class="active"><a><img src="~/Content/images/dashboard-xxl.png" alt="User Image"><span>3Dashboard</span></a></li>
+            <li><a href='@Url.Action("Index", "BusinessObjects")'><img src="~/Content/images/entity.png" alt="User Image"><span>BO Management</span></a></li>
+            <li><a href='@Url.Action("Index", "QueryGeneration")'><img src="~/Content/images/master.png" alt="User Image"><span>Query Management</span></a></li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/entity.png" alt="User Image"><span>Organization Management</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li>
+                        <a href='@Url.Action("Index", "Organization")'><span>Organization</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("OrganizationLocations", "Organization")'><span>Organization Locations</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("OrganizationSources", "Organization")'><span>Organization Sources</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("OrganizationSubscriptions", "Organization")'><span>Organization Subscriptions</span></a>
+                    </li>
+                </ul>
+            </li>
+            <li class="treeview">
+                <a href='@Url.Action("Index", "Master")'><img src="~/Content/images/settings.png" alt="User Image"><span>Master</span></a>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/settings.png" alt="User Image"><span>Fields</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li>
+                        <a href='@Url.Action("AddClassFields", "Fields")'><span>Class Specific Fields</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("AddNonClassFields", "Fields")'><span>Non Class Specific Fields</span></a>
+                    </li>
+                </ul>
+            </li>
+            <li class="treeview">
+                <a href='@Url.Action("FieldsMapping", "Fields")'><img src="~/Content/images/master.png" alt="User Image"><span>Fields Mapping</span></a>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/cm.png" alt="User Image"><span>Reports</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu" id="Reports"></ul>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/Bell.png" alt="User Image"><span>Search</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu" id="Search"></ul>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/settings.png" alt="User Image"><span>Popup Settings</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li>
+                        <a href='@Url.Action("PopupLayouts", "Popup")'><span>Popup Layouts</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("Popups", "Popup")'><span>Popups</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("Index", "Popup")'><span>Popup Tabs</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("LeadActionTypes", "Lead")'><span>Actions</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("AllStages", "Popup")'><span>Stages</span></a>
+                    </li>
+                    <li class="active">
+                        <a href='@Url.Action("StagesFlow", "Popup")'><span>Stages Flow</span></a>
+                    </li>
+                </ul>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/master.png" alt="User Image"><span>Server Details</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li>
+                        <a href='@Url.Action("ServerDetails", "IOServerDetails")'><span>Email Server Details</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("SMSServerDetails", "IOServerDetails")'><span>SMS Server Details</span></a>
+                    </li>
+                </ul>
+            </li>
+            <li class="treeview">
+                <a href='@Url.Action("LeadConfigurations", "Lead")'><img src="~/Content/images/entity.png" alt="User Image"><span>Lead Configurations</span></a>
+            </li>
+            <li class="treeview">
+                <a href='@Url.Action("ImportRulesDetails", "Lead")'><img src="~/Content/images/entity.png" alt="User Image"><span>Import Rules</span></a>
+            </li>
+            }
+            else if (User.Identity.GetGroupName().Contains(EnumRoles.Admin.ToString()))
+            {
+            <li class="active"><a href='@Url.Action("DashboardResult", "Inbox")'><img src="~/Content/images/dashboard-xxl.png" alt="User Image"><span>1Dashboard</span></a></li>
+            <li><a href='@Url.Action("Index", "Reports")'><img src="~/Content/images/dashboard-xxl.png" alt="User Image"><span>Dashboard Reports</span></a></li>
+            <li><a href='@Url.Action("Index", "QueryGeneration")'><img src="~/Content/images/master.png" alt="User Image"><span>Query Management</span></a></li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/entity.png" alt="User Image"><span>Organization Management</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li>
+                        <a href='@Url.Action("OrganizationLocations", "Organization")'><span>Organization Locations</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("OrganizationSources", "Organization")'><span>Organization Sources</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("OrganizationSubscriptions", "Organization")'><span>Organization Subscriptions</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("OrgImages", "Organization")'><span>Organization Images</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("OrgTeams", "Organization")'><span>Organization Teams</span></a>
+                    </li>
+                </ul>
+            </li>
+            <li class="treeview">
+                <a href='@Url.Action("Index", "Users")'><img src="~/Content/images/master.png" alt="User Image"><span>Employee Management</span></a>
+            </li>
+            <li class="treeview">
+                <a href='@Url.Action("AddRole", "Users")'><img src="~/Content/images/entity.png" alt="User Image"><span>Roles</span></a>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/settings.png" alt="User Image"><span>Fields</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li>
+                        <a href='@Url.Action("OrgnizationClassFields", "Fields")'><span>Class Specific Fields</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("OrgAddNonClassFields", "Fields")'><span>Non Class Specific Fields</span></a>
+                    </li>
+                </ul>
+            </li>
+            <li class="treeview">
+                <a href='@Url.Action("OrganizationMapping", "Fields")'><img src="~/Content/images/master.png" alt="User Image"><span>Fields Mapping</span></a>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/master.png" alt="User Image"><span>Wallet Management</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li>
+                        <a href='@Url.Action("Index", "Wallet")'><span>Products</span></a>
+                    </li>
+                </ul>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/cm.png" alt="User Image"><span>Reports</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu" id="Reports">
+                    <li><a id="ViewMyReports" class="ViewMyReport" href="@Url.Action("GetMyReports", "Inbox")">View My Reports</a></li>
+                    @foreach (var items in Reports)
+                    {
+                    <li><a data-resultin="@items.ResultIn" id="@items.ID">@items.ShowAs</a></li>
+                    }
+                </ul>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/Bell.png" alt="User Image"><span>Search</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu" id="Search"></ul>
+            </li>
+            <li class="treeview">
+                <a href='@Url.Action("Index", "Inbox")'><img src="~/Content/images/master.png" alt="User Image"><span>Assign 1-Clicks</span></a>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/entity.png" alt="User Image"><span>Popup Settings</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li>
+                        <a href='@Url.Action("PopupLayouts", "Popup")'><span>Popup Layouts</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("Popups", "Popup")'><span>Popups</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("Index", "Popup")'><span>Popup Tabs</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("AllStages", "Popup")'><span>Stages</span></a>
+                    </li>
+                    <li class="active">
+                        <a href='@Url.Action("StagesFlow", "Popup")'><span>Stages Flow</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("LeadActionTypes", "Lead")'><span>Action Types</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("LeadActionMenu", "Lead")'><span>Action Menu</span></a>
+                    </li>
+                </ul>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/settings.png" alt="User Image"><span>Leads Management</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    @*<li>
+                        <a href='@Url.Action("CreateData", "Data")'><span>Create Lead</span></a>
+                    </li>*@
+                    <li>
+                        <a href='@Url.Action("LeadsList", "Data")'><span>Assign Leads</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("LeadConfigurations", "Lead")'><span>Lead Configurations</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("HTMLColorCoding", "Lead")'><span>HTML Attributes</span></a>
+                    </li>
+                    <li class="active"><a href='@Url.Action("Index", "Lead")'><span>Import Leads</span></a></li>
+                    <li class="active"><a href='@Url.Action("ImportHistory", "Lead")'><span>Import History</span></a></li>
+                </ul>
+            </li>
+            @*<li class="active"><a href='@Url.Action("CreateData", "Data")'><img src="~/Content/images/cm.png" alt="User Image"><span>Data</span></a></li>*@
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/123.png" alt="User Image"><span>Mail Management</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li>
+                        <a href='@Url.Action("GetContentList", "Content")'><span>Templates</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("Index", "Mail")'><span>Mails</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("MailExtractStrings", "Mail")'><span>Mail Settings</span></a>
+                    </li>
+                </ul>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/settings.png" alt="User Image"><span>Server Details</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li>
+                        <a href='@Url.Action("ServerDetails", "IOServerDetails")'><span>Email Server Details</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("SMSServerDetails", "IOServerDetails")'><span>SMS Server Details</span></a>
+                    </li>
+                </ul>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/settings.png" alt="User Image"><span>Schedule Management</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    @*<li>
+                        <a href='@Url.Action("RunScheduler", "Reports")'><span>Run Scheduler</span></a>
+                    </li>*@
+                    <li>
+                        <a href='@Url.Action("SchedulingLog", "Reports")'><span>Schedulers Log</span></a>
+                    </li>
+                </ul>
+            </li>
+            <li class="treeview">
+                <a href='@Url.Action("AppNotifications", "Mail")'><img src="~/Content/images/master.png" alt="User Image"><span>APP Notifications</span></a>
+            </li>
+            <li class="treeview">
+                <a href='@Url.Action("Index", "XiLink")'><img src="~/Content/images/master.png" alt="User Image"><span>XiLinks</span></a>
+            </li>
+            <li class="treeview">
+                <a href='@Url.Action("GetXiLinkContent", "XiLink", new { XiLinkID = 6 })'><img src="~/Content/images/master.png" alt="User Image"><span>New Leads</span></a>
+            </li>
+            }
+            else
+            {
+            <li class="active"><a href='@Url.Action("DashboardResult","Inbox")'><img src="~/Content/images/dashboard-xxl.png" alt="User Image"><span>2Dashboard</span></a></li>
+            <li><a href='@Url.Action("Index", "Reports")'><img src="~/Content/images/dashboard-xxl.png" alt="User Image"><span>Dashboard Reports</span></a></li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/cm.png" alt="User Image"><span>Reports</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu" id="Reports"></ul>
+            </li>
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/Bell.png" alt="User Image"><span>Search</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu" id="Search"></ul>
+            </li>
+            @*<li class="treeview">
+                <a href="#"><img src="~/Content/images/123.png" alt="User Image"><span>Inbox</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu" id="Inbox"></ul>
+            </li>*@
+            <li class="treeview">
+                <a href="#"><img src="~/Content/images/master.png" alt="User Image"><span>Wallet Management</span> <i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                    <li>
+                        <a href='@Url.Action("Index", "Wallet")'><span>Products</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("Policies", "Wallet")'><span>Policies</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("Quotes", "Wallet")'><span>Quotes</span></a>
+                    </li>
+                    <li>
+                        <a href='@Url.Action("Orders", "Wallet")'><span>Orders</span></a>
+                    </li>
+                </ul>
+            </li>
+            @*<li><a href='@Url.Action("Index", "Wallet")'><img src="~/Content/images/master.png" alt="User Image"><span>Wallet Management</span></a></li>*@
+            @*<li class="active"><a href='@Url.Action("CreateData", "Data")'><img src="~/Content/images/cm.png" alt="User Image"><span>Data</span></a></li>*@
+            @*<li class="active"><a href='@Url.Action("Index", "Lead")'><img src="~/Content/images/entity.png" alt="User Image"><span>Import Leads</span></a></li>*@
+            }
+
+        </ul>
+        <!-- /.sidebar-menu -->
+    </aside>

@@ -1,0 +1,234 @@
+﻿@model  XIDNA.ViewModels.VMCreateForm
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+  
+}
+<style>
+    #sValue select{        
+       background: transparent !important;
+    border: 1px solid #999; 
+     }
+    /*#Save_Button
+    {
+    background-color: #e5c453 !important;
+    border-color: #d8b747 !important;
+    color: #000;
+    }*/
+</style>
+@*<div class="content">
+    <div class="box box-primary">
+        <div class="innerborder">*@
+            <div id="DynamicForm">
+                <div class="alert alert-danger" id="BootstrpError" style="display:none;">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+                </div>
+                <div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+                </div>
+                @*<h4 class="heading">@Model.UserName</h4>*@
+                <h4 class="heading">@Model.FormName:</h4>
+                <div class="EditRecordFormDiv">
+                    <form class="CreateForm">                      
+                        <table class="DetailsTable table table-condensed autowidth">
+                            <tbody>                              
+                                @foreach (var items in @Model.sBOAttrDetails)
+                                {
+                                    var index = new List<int>();
+                                    <tr>
+                                        @if (items[0].Contains("FK"))
+                                        {
+                                            for (var i = 0; i < Model.sBOAttrDetails.Count(); i++)
+                                            {
+                                                var sVal = items[0].ToString();
+                                                var sColNme = Model.sBOAttrDetails[i][0].ToString();
+                                                if (sColNme == sVal)
+                                                {
+                                                    index.Add(i);
+                                                }
+                                            }
+                                            if (Model.sFKDropdwn != null && Model.sFKDropdwn.Count > 0)
+                                            {
+                                                for (var i = 0; i < index.Count(); i++)
+                                                {
+                                                    <td>@items[1]</td>
+                                                    <td class="no-padding" style="vertical-align: middle;">
+                                                        @Html.DropDownListFor(m => Model.sValue, new SelectList(Model.sFKDropdwn[index[i]], "Value", "text"), new { @class = "input", @style = "padding:1px 5px;", @Name = @items[0] })
+                                                    </td>
+                                                }
+                                            }
+                                        }
+                                        else if (items[0].Contains("_OP"))
+                                        {
+                                            if (Model.sOptionsDropdwn != null && Model.sOptionsDropdwn.Count > 0)
+                                            {
+                                                for (var i = 0; i < Model.sBOAttrDetails.Count(); i++)
+                                                {
+                                                    var sVal = items[0].Replace("_OP", "").ToString();
+                                                    var sColNme = Model.sBOAttrDetails[i][0].Replace("_OP", "").ToString();
+                                                    if (sColNme == sVal)
+                                                    {
+                                                        index.Add(i);
+                                                    }
+                                                }
+                                                for (var i = 0; i < index.Count(); i++)
+                                                {
+
+                                                    <td>@items[1].Replace("_OP", "")</td>
+                                                    <td class="no-padding" style="vertical-align: middle;">
+                                                        @Html.DropDownListFor(m => Model.sValue, new SelectList(Model.sOptionsDropdwn[index[i]], "Expression", "text"), new { @class = "input OptionVal", @style = "padding:1px 5px;", @Name = @items[0].Replace("_OP", ""), @id = "OptionVal_" + @items[0].Replace("_OP", "") })
+                                                    </td>
+                                                }
+                                            }
+                                        }
+                                        else if (items[2].Contains("DATETIME"))
+                                        {
+                                            <td>@items[1]</td>
+                                            <td class="no-padding" style="vertical-align: middle;">@Html.TextBoxFor(m => Model.sValue, new { @class = "input", @Name = @items[0], @type = @items[2], @length = @items[3], @id = "Txtbx-DATETIME" })@Html.ValidationMessageFor(m => Model.sValue, null, new { @class = @items[0], @id = "FieldLengthError" })</td>
+                                        }
+                                        else if (items[0] == "ID" || items[0] == "id" || items[0] == "iD" || items[0] == "Id")
+                                        {
+                                            //<td>@items[0]</td>
+                                            //<td class="no-padding" style="vertical-align: middle;">@Html.TextBoxFor(m => Model.sValue, new { @readonly = "readonly", @class = "input", @Name = @items[0], @type = @items[2], @length = @items[3]})@Html.ValidationMessageFor(m => Model.sValue, null, new { @class = @items[0], @id = "FieldLengthError" })</td>
+                                        }
+                                        else if (items[0].Contains("CM"))
+                                        {
+
+                                        }
+
+                                        else
+                                        {
+                                            <td>@items[1]</td>
+                                            <td class="no-padding" style="vertical-align: middle;">@Html.TextBoxFor(m => Model.sValue, new { @class = "input", @Name = @items[0], @type = @items[2], @length = @items[3] })@Html.ValidationMessageFor(m => Model.sValue, null, new { @class = @items[0], @id = "FieldLengthError" })</td>
+                                        }
+                                    </tr>
+
+                                }
+                                <tr>
+                                    <td class="col-md-1"></td>
+                                    <td class="col-md-3">
+                                        <div class="CreateButtons">
+                                            <button type="button" class="btn btn-theme btn-xs Save" id="Save_Button">Save</button>
+                                            <button type="button" class="btn btn-theme reverse btn-xs Reset" id="ResetBtn">Reset</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </form>
+                  </div>
+               </div>
+            @*</div>
+        </div>
+    </div>*@
+
+<style>
+    #FieldLengthError {
+        color: red;
+        font-size: 11px;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        var sBOName = "@Model.sBOName.ToString()";
+        var iIDs = $("select.OptionVal").map(function () {
+            return this.id;
+        }).get();
+        var sNames = [];
+        var sAttributes = "";
+        for (var i = 0; i < iIDs.length ; i++)
+        {
+            var sAttrNames = iIDs[i].split('_');
+            var sAttrName = sAttrNames[1];
+            sNames.push(sAttrName);
+          sAttributes = sNames.join(",");
+            //var sDefaultVal = $('.' + iIDs[i]).val();
+            //$("#" + iIDs[i]).val(sDefaultVal);
+        }
+        var pvalue = {
+            sAttrNames: sAttributes,
+            BOName: sBOName
+        }
+        $.ajax({
+            url: '@Url.Action("GetDefaultValues", "BusinessObjects")',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            cache: false,
+            data: JSON.stringify(pvalue),
+            success: function (data) {
+                for(var i=0;i<data.length;i++)
+                {
+                    var sValues = data[i].split("_");
+                    var AttrNme = sValues[1];
+                    var defltval = sValues[0];
+                   // $("#OptionVal_" + AttrNme).val(defltval); //OptionVal_sName
+                 //   $(".OptionVal").val(defltval);
+                    $("#OptionVal_" + AttrNme + " > [value=" + defltval + "]").attr("selected", "true");
+                }
+            },
+            error: function (data) {
+            }
+        });
+
+        $("#Save_Button").on('click', function () {
+            var formid = $(this).closest('.EditRecordFormDiv').find('form').attr('class');
+            var formData = JSON.parse(JSON.stringify(jQuery('.'+formid).serializeArray()));
+            var sBOName="@Model.sBOName.ToString()";
+
+            var aFormDet=[];
+             var i, j, titleid = [];
+                for (i = 0, j = formData.length; i < j; i++) {
+                    aFormDet.push({ Label: formData[i].name, Value: formData[i].value });
+                }
+                var pvalue = {
+                    FormValues: aFormDet,
+                    BOName:sBOName
+                   }
+                $.ajax({
+                    url: '@Url.Action("SaveFormData", "BusinessObjects")',
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache:false,
+                    data:JSON.stringify(pvalue),
+                    success: function (data) {
+                        if (data == 1) {
+                            $("#BootstrpAlertSuccess").show();
+                            $("#BootstrpAlertSuccess").html("<strong>Success!</strong> The option list have been added successfully.");
+                            $(function () {
+                                setTimeout(function () {
+                                    $("#BootstrpAlertSuccess").hide('blind', {}, 500)
+                                }, 5000);
+                            });
+                        }
+                        else {
+                            $("#BootstrpError").show();
+                            $("#BootstrpError").html("<strong>Failure!</strong> OOPS looks like there is some error.");
+                            $(function () {
+                                setTimeout(function () {
+                                    $("#BootstrpError").hide('blind', {}, 500)
+                                }, 5000);
+                            });
+                        }
+                        },
+                    error: function (data) {
+                    }
+                });
+        });
+
+        $('#ResetBtn').click(function () {
+            $('.input').val('');
+            $('select option:selected').removeAttr('selected');
+        });
+
+        $('#Txtbx-DATETIME').on('click', function () {
+            $(this).datepicker({
+                changeMonth: true,
+                changeYear: true,
+                inline: true,
+                //minDate: '1-01-1950'
+                yearRange: '1940:2000'
+            }).focus();
+        });
+    });
+</script>

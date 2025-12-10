@@ -1,0 +1,87 @@
+﻿@model XIDNA.ViewModels.VMReports
+
+<div class="content">
+    <div class="row">
+        <div class="box padding10Tab">
+            <div class="innerborder">
+                <div class="box-body col-md-3" id="test2">
+                    <h5>Available Roles</h5>
+                    <div id="UserMainTreeClick" class="tree">
+                        @{
+                            Html.RenderAction("GroupTree", "Users", new { treedata = ViewBag.Group });
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var LastSelectedParentID = 0;
+    var checked_ids = [];
+    var Ids = "";
+    var IDs = "";
+    var NVPairs = [];
+    $("#UserMainTreeClick").jstree({
+        "checkbox": {
+            "three_state": false,
+            real_checkboxes: true,
+            real_checkboxes_names: function (n) {
+                function submitMe() {
+                    $("#UserMainTreeClick").jstree("get_checked", null, true).each
+                        (function () {
+                            if ($(this).prop('checked') == true) {
+                                var id = $(this).attr('data-id');
+                                Ids = Ids + id + ",";
+                            }
+                            else {
+                                var id = $(this).attr('data-id') + ",";
+                                Ids = Ids.replace(id);
+                                if (Ids == 'undefined') {
+                                    Ids = "";
+                                }
+                            }
+                            checked_ids.push(Ids);
+                        });
+                    doStuff(checked_ids);
+                }
+            },
+
+        },
+        "plugins": ["themes", "html_data", "ui", "checkbox"]
+    }).bind("select_node.jstree", function (NODE, REF_NODE) {
+        GetReportToUsers();
+        //try { OnSelectGrouptree(LastSelectedParentID); } catch (ex) { }
+    }).bind("deselect_node.jstree", function (NODE, REF_NODE) {
+        GetReportToUsers();
+    }).bind("ready.jstree", function (event, data) {
+        $(this).jstree("open_all");
+    });
+    function GetReportToUsers() {
+        var i1ClickID = 2301;
+        IDs = "";
+        var selectedNode = $('#UserMainTreeClick').jstree(true).get_selected(true);
+        for (i = 0; i < selectedNode.length; i++) {
+            IDs = IDs + selectedNode[i].id + ",";
+        }
+        if (IDs.length > 0) {
+            IDs = IDs.substring(0, IDs.length - 1);
+            NVPairs = IDs.split(',');
+        }
+    }
+    $(".toggleft").click(function () {
+        $("#test2").toggleClass("leftzerozero");
+    });
+
+    var ModelGroups = @Html.Raw(Json.Encode(Model.GroupIDs));
+    if(ModelGroups != null)
+    {
+        for(j=0;j<ModelGroups.length;j++)
+        {
+            var GroupID = ModelGroups[j];
+            $('#UserMainTreeClick').jstree('select_node', GroupID)
+        }
+    }
+
+</script>

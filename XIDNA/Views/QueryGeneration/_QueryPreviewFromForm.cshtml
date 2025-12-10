@@ -1,0 +1,73 @@
+﻿@model XIDNA.ViewModels.VMQueryPreview
+
+<script>
+    $(document).ready(function () {
+        var param = param;
+        $('#DebugDiv').hide();
+        $('#DebugBtn').change(function () {
+            if ($("#DebugBtn").is(':checked')) {
+                $("#DebugDiv").show();
+            }
+            else {
+                $("#DebugDiv").hide();  // unchecked
+            }
+        });
+        if ('@Model.Headings.Count()' > 0) {
+            var table = $('#Preview').dataTable({
+                "destroy": true,
+                "paging": true,
+                "bProcessing": true,
+                "bServerSide": true,
+                "sServerMethod": "POST",
+                "sAjaxSource": "@Html.Raw(Url.Action("GetPreviewResult", "QueryGeneration", new { ReportID = Model.XIGUID, Query = Model.VisibleQuery, Fields = Model.Select, BOID = Model.BOID }))",
+                "aaSorting": [[0, 'desc']],
+                "sDom": 'r<"dtable-header"l><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+                "autoWidth": false,
+            });
+        }
+    });
+</script>
+<div class="box">
+    <div class="box-header with-border">
+        @if (Model.PreviewType !="Run")
+        {            
+            <input type="checkbox" id="DebugBtn" /> <label for="inputEmail" class="gn">Debug</label>
+            <div id="DebugDiv">
+                <textarea id="DebugQuery" spellcheck="false" class="form-control" rows="4">@Model.Query</textarea>
+            </div>            
+        }
+        <h3 class="box-title">@Model.ShowAs</h3>
+    </div>
+
+    @if (Model.Headings.Count() > 0)
+    {
+        <div class="box-body">
+            <div class="table-clean">
+                <table id="Preview" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+                    <thead>
+                        <tr>
+                            @foreach (var items in @Model.Headings)
+                            {
+                                <th>@items</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @*@if(@Model.Rows.Count()>0){*@
+                        @*@foreach (var item in @Model.Rows)
+                        {
+                            <tr>
+                                @foreach (var value in item)
+                                {
+                                    <td>@value</td>
+                                }
+                            </tr>
+                        }*@
+
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    }
+</div>

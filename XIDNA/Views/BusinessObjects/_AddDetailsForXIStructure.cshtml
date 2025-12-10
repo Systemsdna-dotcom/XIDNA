@@ -1,0 +1,281 @@
+﻿
+@model XIDNA.Models.cXIStructure
+@*@{
+       Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    }*@
+
+<script type="text/javascript">
+    @*$(document).ready(function () {
+        $("#HideControllerAction").hide();
+        $("#HideXIlink").hide();
+        var ActionType=@Model.ActionType;
+        if(ActionType=='10')
+        {
+            $("#HideControllerAction").show();
+        $("#HideXIlink").hide();
+        }
+        else if(ActionType=='20')
+        {
+            $("#HideControllerAction").hide();
+            $("#HideXIlink").show();
+        }
+        else{
+            $("#HideControllerAction").hide();
+            $("#HideXIlink").hide();
+        }
+
+        $("#ActionType").change(function () {
+            var selectedText = $(this).find("option:selected").text();
+            var selectedValue = $(this).val();
+            if (selectedValue == '10') {
+                $("#HideControllerAction").show();
+                $("#HideXIlink").hide();
+            }
+            else if (selectedValue =='20') {
+                $("#HideControllerAction").hide();
+                $("#HideXIlink").show();
+            }
+            else {
+                $("#HideControllerAction").hide();
+                $("#HideXIlink").hide();
+            }
+        });
+    });*@
+</script>
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+<section class="content-header hedr no-padding">
+    @*@if(Model.ActionType==0)
+        {*@
+    <h1 class="sbold"> Create Structure Details </h1>
+    @*}*@
+    @*else{
+        <h1> Edit Menu Details </h1>
+        }*@
+
+    @*<ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-dashboard"></i> Menu Details Management</a></li>
+            <li class="active">Home</li>
+        </ol>*@
+</section><br />
+@*<div class="content">*@
+<section>
+    @*<div class="row">
+        <div class="box box-primar col-xs-12">
+            <div class="box-body">*@
+    <div id="SourceForm" @*class="tab-pane innerborder"*@>
+        @using (Ajax.BeginForm("SaveAddedDetails", "Inbox", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnComplete" }, new { @id = "PropertyForm", @class = "form-horizontal" }))
+        {
+            @Html.ValidationSummary(true);
+            @*@Html.HiddenFor(m => m.ID);*@
+            @*@Html.HiddenFor(m => m.MenuID);
+            @Html.HiddenFor(m => m.OrgID)*@
+
+            <div id="clear-text">
+                <div class="form-group">
+                    <div class="col-md-8">
+                        <label for="inputEmail" class="gn">Node ID<span class="danger">*</span></label>
+                        @Html.TextBoxFor(model => model.ID, new { @readonly = "readonly", @placeholder = "Enter Parent ID", @class = "form-control", @id = "PropertyName" })
+                    </div>                   
+                </div>
+                <div class="form-group">
+                    <div class="col-md-8">
+                        <label for="inputEmail" class="gn"> ParentID<span class="danger">*</span></label>
+                        @Html.TextBoxFor(model => model.FKiParentID, new { @readonly = "readonly", @placeholder = "Enter Parent ID", @class = "form-control", @id = "PropertyName" })
+                    </div>                  
+                </div>
+                <div class="form-group">
+                    <div class="col-md-8">
+                        <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                        @Html.TextBoxFor(model => model.sName, new { @placeholder = "Enter the name", @class = "form-control", @id = "MenuName" })
+                    </div>
+                    @*<div class="col-md-5 taberrormsg">
+                            @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+                        </div>*@
+                </div>
+                <div class="form-group">
+                    <div class="col-md-8">
+                        <label for="inputEmail" class="gn">BO Name<span class="danger">*</span></label>
+                        @Html.TextBoxFor(model => model.sBO, new { @placeholder = "Enter the name", @class = "form-control", @id = "MenuName" })
+                    </div>
+                    @*<div class="col-md-5 taberrormsg">
+                @Html.ValidationMessageFor(m => m.Name, null, new { @class = "red" })
+            </div>*@
+                </div>
+                              
+                @*<div class="form-group">
+                    <div class="col-md-8">
+                        <label for="inputEmail" class="gn">Action Type<span class="danger"></span></label>
+                        @Html.DropDownListFor(m => m.ActionType, new SelectList(new List<Object>{
+                                               new {key=0,value="---------Select---------"},
+                                               new { key= 10 , value = "Controller/Action" },
+                                               new { key= 20 , value = "XiLink" }
+                                               }, "key", "Value"), new { @class = "form-control", @id = "ActionType" })
+                    </div>
+                </div>*@
+                @*<div id="HideControllerAction" style="display:none">*@
+                   
+                    <div class="form-group">
+                        <div class="col-md-8">
+                            <label for="inputEmail" class="gn"> 1-ClickID Name<span class="danger">*</span></label>
+                            @Html.TextBoxFor(model => model.FKi1ClickID, new { @placeholder = "Enter Action Name", @class = "form-control", @id = "PropertyName" })
+                        </div>
+                        @*<div class="col-md-5 taberrormsg">
+                                @Html.ValidationMessageFor(m => m.MenuAction, null, new { @class = "red" })
+                            </div>*@
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-8">
+                            <label for="inputEmail" class="gn"> XIApplicationID<span class="danger">*</span></label>
+                            @Html.TextBoxFor(model => model.FKiXIApplicationID, new { @placeholder = "Enter Action Name", @class = "form-control", @id = "PropertyName" })
+                        </div>
+                        @*<div class="col-md-5 taberrormsg">
+                @Html.ValidationMessageFor(m => m.MenuAction, null, new { @class = "red" })
+            </div>*@
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-8">
+                            @Html.CheckBoxFor(m => m.bMasterEntity)
+                            <label for="inputEmail" class="gn">MasterEntity<span class="danger"></span></label>
+                        </div>
+                    </div>
+                </div>
+
+                @*<div class="form-group" id="HideXIlink" style="display:none">
+                    <div class="col-md-8">
+                        <label for="inputEmail" class="gn">XiLink<span class="danger">*</span></label>
+                        @if (Model.VMXILink != null)
+                {
+                            @Html.DropDownListFor(model => model.XiLinkID, new SelectList(Model.VMXILink
+                                                                         , "Value", "text"), "--Select--", new { @class = "form-control", @id = "XiLink" })
+                        }
+                    </div>
+                    <div class="col-sm-7 errormsg">
+                        @Html.ValidationMessageFor(model => model.XiLinkID, null, new { @class = "red" })
+                    </div>
+                </div>*@
+
+                <div class="form-group">
+                    <div class="col-md-8">
+                        <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                        @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                                                new { key= 20 , value = "Inactive" }
+                                                 }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                    </div>
+                </div>
+         
+
+                                    <div class="form-group">
+                                        <div class="col-sm-8">
+                                            <input type="submit" class="btn btn-theme" value="Save" />
+                                            <button type="button" class="btn btn-theme decline" id="PropertyCancel">Cancel</button>
+
+                                        </div>
+                                    </div>
+        }
+    </div>
+    <div class="col-md-8" id="Operations"></div>
+    @*</div>
+        </div>*@
+    @*</div>*@
+</section>
+@*</div>*@
+<div class="dialog-box SaveBOPrptyDlg" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    function OnComplete(e) {
+        $(".SaveBOPrptyDlg").unblock();
+        CustomMessage(e.ResponseMessage, e.Status);
+        $(function () {
+            setTimeout(function () {
+                $(".StatusMessages").hide('blind', {}, 500)
+            }, 2000);
+        });
+        $('#AddDetails').empty();
+        //opener.location.reload();
+
+        //$(".SaveBOPrptyDlg").html('Details saved successfully');
+        //$(".SaveBOPrptyDlg").dialog({
+        //    title: "Menu",
+        //    modal: true,
+        //    buttons: [
+        //       {
+        //           text: "Ok",
+        //           click: function () {
+        //               $('#AddDetails').empty();
+        //               $(".SaveBOPrptyDlg").dialog("close");
+        //               window.opener.location.reload();
+        //           }
+        //       }
+        //    ]
+        //});
+
+
+        @*$.ajax({
+            type: 'POST',
+            url: '@Url.Action("MenuWithTree", "Home")',
+            data: {},
+            cache: false,
+            async: false,
+            dataType: 'html',
+            success: function (data) {
+            }
+        });*@
+        //window.location = '/Home/MenuWithTree?json=' + JSON.stringify(payments);
+    }
+    @*if ('@Model.ID' == 0) {
+            $('#PropertyForm')[0].reset();
+            opener.location.reload();
+            $(".SaveBOPrptyDlg").html('Property Added Successfully!</br> Do You Want To Add More?');
+            $(".SaveBOPrptyDlg").dialog({
+                title: "BO Property",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Yes",
+                       click: function () {
+                           $(".SaveBOPrptyDlg").dialog("close");
+                       }
+                   },
+                   {
+                       text: "No",
+                       click: function () {
+                           $(".SaveBOPrptyDlg").dialog("close");
+                           window.close();
+                       }
+                   }
+                ]
+            });
+        }
+        else {
+            $('#PropertyForm')[0].reset();
+            opener.location.reload();
+            $(".SaveBOPrptyDlg").html('Property Edited Successfully!');
+            $(".SaveBOPrptyDlg").dialog({
+                title: "BO Property",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Ok",
+                       click: function () {
+                           $(".SaveBOPrptyDlg").dialog("close");
+                           window.close();
+                       }
+                   }
+                ]
+            });
+        }*@
+    //}
+    $('#PropertyCancel').click(function () {
+        window.close();
+    });
+
+    @*$('#MappMenus').click(function () {
+        var details =
+           window.open("@Url.Action("MapMenus", "Home")", '_blank', "scrollbars=1,resizable=1,width=1200, height=500,left=200,top=100");
+    })*@
+</script>
+<div class="alert alert-success" id="BootstrpAlertSuccess" style="display:none;"></div>

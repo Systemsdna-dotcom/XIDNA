@@ -1,0 +1,13 @@
+﻿.nano1{
+    height:70px;
+}
+
+.nano1 table{
+    float:left;
+    display:block;
+}
+
+.nano1 td{
+    border:1px solid;
+    color:#00adef;
+}

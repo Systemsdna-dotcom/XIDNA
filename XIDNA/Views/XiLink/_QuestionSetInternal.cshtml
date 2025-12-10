@@ -1,0 +1,775 @@
+﻿@using XIDNA.ViewModels
+@using XICore
+@using XISystem
+@model XICore.XIIQS
+@{
+    var bInternal = ViewBag.bInternal;
+    if (bInternal == null)
+    {
+        bInternal = false;
+    }
+    var Visulistations = new XIVisualisation();
+    var FieldVisualistions = new List<XIQSVisualisation>();
+    if (Model.QSDefinition != null)
+    {
+        Visulistations = Model.QSDefinition.Visualisation;
+
+        if (Model.QSDefinition.QSVisualisations != null)
+        {
+            FieldVisualistions = Model.QSDefinition.QSVisualisations;
+        }
+    }
+    var FormClass = string.Empty;
+    if (Visulistations != null)
+    {
+        if (Visulistations.XiVisualisationNVs != null)
+        {
+            FormClass = Visulistations.XiVisualisationNVs.Where(m => m.sName.ToLower() == "FormClass".ToLower()).Select(m => m.sValue).FirstOrDefault();
+        }
+    }
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+}
+
+@if (!bInternal)
+{
+    if (Model.QSDefinition != null && Model.QSDefinition.sName != null && Model.QSDefinition.sName.ToLower() == "compare the market")
+    {
+        <div class="questionset-header-section">
+            <div class="container questionset-header-content" style="max-width:905px;">
+
+                <div class="info-contentBox">
+                    It is important that the information provided throughout the quote is accurate. Failure to disclose correct and complete information may result in increased premiums, refusal of a claim or it not being fully paid, your policy being cancelled or being made null & void and treated as if it never existed.
+                </div>
+                <div class="row header-details">
+                    <div class="col-sm-6 header-logo">
+                        <img src="~/Content/images/logo.png" style="width:391px;height:63px;" />
+                    </div>
+                    <div class="col-sm-6 header-text">
+                        <p><span class="ProductContactText">If you would like assistance now call YOUR Insurance on</span></p>
+                        <h3>
+                            <span class="CampaignNumber">0800 123 4567</span>
+                        </h3>
+                        <p>
+                            <span class="BusinessHours">
+                                Mon -  Thur: 8.30am - 9pm<br>Fri: 8.30am - 5.30pm<br>Sat: 9am - 5pm<br>Closed Sunday/Bank Holidays
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <ul class="nav nav-pills nav-justified que-process">
+                    @{ int i = 0;}
+                    @foreach (var items in Model.QSDefinition.Steps.OrderBy(m => m.Value.iOrder))
+                    {
+                        if (items.Value.sIsHidden == "on")
+                        {
+                            <li role="presentation" class="que-process-step @items.Value.sIsHidden" name="@items.Value.sCode"><a href="#">@items.Value.sName</a></li>
+                        }
+                        else
+                        {
+                            var CurrentOrder = Model.QSDefinition.Steps.Where(m => m.Value.ID == Model.iCurrentStepID).Select(m => m.Value.iOrder).FirstOrDefault();
+                            if (Model.iCurrentStepID == 0 || Model.iCurrentStepID == items.Value.ID || items.Value.iOrder < CurrentOrder)
+                            {
+                                <li role="presentation" class="active que-process-step" name="@items.Value.sCode"><a href="#">@items.Value.sName</a></li>
+                            }
+                            else
+                            {
+                                <li role="presentation" class="que-process-step" name="@items.Value.sCode"><a href="#">@items.Value.sName</a></li>
+                            }
+
+                        }
+
+                        i++;
+                    }
+                </ul>
+            </div>
+        </div>
+                        }
+                        else if (Model.QSDefinition != null && Model.QSDefinition.sName != null && Model.QSDefinition.sName.ToLower() == "go compare motorhome")
+                        {
+                            <div class="questionset-header-section">
+                                <div class="container questionset-header-content" style="max-width:905px;">
+                                    <div class="row header-details">
+                                        <div class="col-sm-6 header-logo">
+                                            <img src="~/Content/images/logo-goco.png" style="width:295px;height:49px;" />
+                                            <span class="insurance-type">Motorhome Insurance</span>
+                                            <span class="provided-by">Provided by Simply Business</span>
+                                        </div>
+                                        <div class="helpbox">
+                                            <div class="helpbox-content">
+                                                <h3>Need help?</h3>
+                                                Call Simply Business
+                                                <a class="helpbox_button" href="#">
+                                                    <span class="qa-phone_number"><span class="tel qa-customer-service-number">0300 303 4818</span></span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <ul class="nav nav-pills nav-justified que-process">
+                                        @{ int i = 1;}
+                                        @foreach (var items in Model.QSDefinition.Steps)
+                                        {
+                                            <li role="presentation" class="active que-process-step">
+                                                <a href="#">Your Details</a>
+                                                <span class="process-item">
+                                                    <span>@i</span>
+                                                </span>
+                                            </li>
+                                            i++;
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                                            }
+                                            else if (Model.QSDefinition != null && Model.QSDefinition.sName != null && Model.QSDefinition.sName.ToLower() == "money super market motorhome")
+                                            {
+                                                var CurrentStepID = Model.iCurrentStepID;
+                                                var TotalSteps = Model.QSDefinition.Steps.Where(m => m.Value.sIsHidden == "off").Count();
+                                                int index = 0;
+                                                if (CurrentStepID > 0)
+                                                {
+                                                    index = Model.Steps.Values.ToList().FindIndex(a => a.FKiQSStepDefinitionID == CurrentStepID);
+                                                    if (index == 0)
+                                                    {
+                                                        index = 1;
+                                                    }
+                                                    else
+                                                    {
+                                                        index = index + 1;
+                                                    }
+                                                }
+                                                <div class="questionset-header-section MoneySuperMarket">
+                                                    <a href="#" class="header_logo-link">
+                                                        <img class="header_logo-responsive" src="~/content/images/msm.png" alt="MoneySuperMarket">
+                                                    </a>
+                                                    <div class="hidden-xs enquiry-banner-wrapper page-banner">
+                                                        <div class="row">
+                                                            <h3 class="msm-title title-lg-left title-md-left title-xs-center hidden-xs slide">
+                                                                <span class=""> Motorhome insurance</span>
+                                                            </h3>
+                                                        </div>
+                                                    </div>
+                                                    <div class="container questionset-header-content">
+                                                        <div class="header-details infobox-left">
+                                                            <p class="bold" style="margin: 20px 0;color: #00aeef;"><span class="question-step">Step @index of @TotalSteps</span></p>
+                                                            <h2 style="color: #542b71;font-size: 33px;">You’re on your way to saving money!</h2>
+                                                            @*<p style="padding-left: 20px; padding-right: 20px; padding-bottom: 20px;">Please answer all questions accurately and in full. Your policy will be sold to you on the basis of the information you provide, and if your answers are incorrect or incomplete, your policy could be cancelled, or you might have a claim rejected or not paid in full.</p>*@
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                }
+                                            }
+
+<div class="container body-container">
+    <div class="clerfix container-width">
+        <div class="infobox-left">
+            <div class="infobox-left__wrapper">
+                <div class="questionset-section">
+                    @{ var Step = Model.Steps.Where(m => m.Value.bIsCurrentStep == true).FirstOrDefault().Value;
+                        var StepDef = Model.QSDefinition.Steps.Where(m => m.Value.ID == Step.FKiQSStepDefinitionID).FirstOrDefault().Value;}
+                    @if (!string.IsNullOrEmpty(StepDef.sDisplayName))
+                    {
+                        <h3 class="questionset-header">@StepDef.sDisplayName</h3>
+                    }
+                    @if (Step.Sections != null && Step.Sections.Count() > 0)
+                    {
+                        var Sections = Step.Sections.ToList();
+                        if (Sections != null && Sections.Count() > 0)
+                        {
+                            foreach (var items in Sections)
+                            {
+                                var SecDef = StepDef.Sections.Where(m => m.Value.ID == items.Value.FKiStepSectionDefinitionID).FirstOrDefault().Value;
+                                <div class="sec-controlbox @SecDef.sIsHidden" name="@SecDef.sCode" data-controltype="section">
+                                    @if (!string.IsNullOrEmpty(SecDef.sName))
+                                    {
+                                        <h3 class="questionset-header">@SecDef.sName</h3>
+                                    }
+                                    @if (((EnumSemanticsDisplayAs)SecDef.iDisplayAs).ToString() == EnumSemanticsDisplayAs.Fields.ToString())
+                                    {
+                                        if (SecDef.bIsGroup)
+                                        {
+                                            <form class="QSStepForm @FormClass wrap-fullwidth">
+                                                @*@FormClass*@
+                                                <div class="form-group  highlight--help">
+                                                    <div class="wrap-width clearfix control-block">
+                                                        @if (!string.IsNullOrEmpty(SecDef.sGroupLabel))
+                                                        {
+                                                            @*<i class="fa fa-question-circle que-icn"></i>*@
+                                                        }
+                                                        <label for="inputEmail" class="gn form-label">@SecDef.sGroupLabel</label>
+                                                        <div class="form-input">
+
+                                                            @foreach (var Field in items.Value.XIValues)
+                                                            {
+                                                                var ClassName = string.Empty;
+                                                                var FieldOrigin = SecDef.FieldDefs.Where(m => m.Value.ID == Field.Value.FKiFieldDefinitionID).FirstOrDefault().Value.FieldOrigin;
+                                                                var FieldVis = FieldVisualistions.Where(m => m.FKiQSStepDefinitionID == StepDef.ID && m.FKiFieldOriginID == FieldOrigin.ID).FirstOrDefault();
+                                                                if (FieldVis != null)
+                                                                {
+                                                                    var Options = FieldVis.sVisualisation.Split(';').ToList();
+                                                                    if (Options[0].Contains("field"))
+                                                                    {
+                                                                        var Vals = Options[1].Split('=').ToList();
+                                                                        var Prop = Vals[1].Replace("'", "");
+                                                                        var Attrs = Prop.Split(':').ToList();
+                                                                        if (Attrs[0].ToLower() == "class")
+                                                                        {
+                                                                            ClassName = Attrs[1];
+                                                                        }
+                                                                    }
+                                                                }
+                                                                <div class="field-errmsg-@Step.FKiQSStepDefinitionID-@FieldOrigin.ID"></div>
+                                                                @*<input type="checkbox" id="@FieldOrigin.ID" name="@FieldOrigin.sName" /> @FieldOrigin.sDisplayName <br/>*@
+                                                                <label class="label-wrapper @ClassName">
+                                                                    @if (Field.Value.sValue == "on")
+                                                                    {
+                                                                        <input type="checkbox" id="@FieldOrigin.ID" name="@FieldOrigin.sName" checked="checked" />
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <input type="checkbox" id="@FieldOrigin.ID" name="@FieldOrigin.sName" />
+                                                                    }
+
+                                                                    <span class="check"></span>
+                                                                    @FieldOrigin.sDisplayName
+                                                                </label>
+                                                            }
+                                                        </div>
+                                                        @if (!string.IsNullOrEmpty(SecDef.sGroupDescription))
+                                                        {
+                                                            <p>@SecDef.sGroupDescription</p>
+                                                        }
+                                                    </div>
+                                                    @*<button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs">
+                                                            <i class="fa fa-info"></i>
+                                                        </button>*@
+                                                    <div class=""></div>
+                                                </div>
+                                            </form>
+                                        }
+                                        else if (items.Value.XIValues != null && items.Value.XIValues.Count() > 0)
+                                        {
+                                            <form class="QSStepForm @FormClass wrap-fullwidth">
+                                                @*@FormClass*@
+                                                @foreach (var Field in items.Value.XIValues)
+                                                {
+                                                    var FieldOrigin = SecDef.FieldDefs.Where(m => m.Value.ID == Field.Value.FKiFieldDefinitionID).FirstOrDefault().Value.FieldOrigin;
+
+                                                    <div class="form-group highlight--help @FieldOrigin.sIsHidden" data-controltype="qsfield" data-fieldname="@FieldOrigin.sName">
+                                                        <div class="wrap-width clearfix control-block">
+                                                            @*<i class="fa fa-question-circle que-icn"></i>*@
+                                                            <span class="HelpIcon"></span>
+                                                            @if (!string.IsNullOrEmpty(FieldOrigin.sDisplayHelp))
+                                                            {
+                                                                <div class="helptext">
+                                                                    <div class="helptext--desktop">
+                                                                        <div class="helptext__content">
+                                                                            <a class="helptext-content-close"><i class="fa fa-close"></i></a>
+                                                                            @*<p><strong>Lorem Ipsum</strong></p>*@
+                                                                            <p class="" id="HelpText-@StepDef.ID-@FieldOrigin.ID">@FieldOrigin.sDisplayHelp</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                            <label for="inputEmail" class="gn form-label">@FieldOrigin.sDisplayName</label>
+                                                            @if (!(string.IsNullOrEmpty(FieldOrigin.sAdditionalText)))
+                                                            {
+                                                                <p for="inputEmail" class="gn">@FieldOrigin.sAdditionalText</p>
+                                                            }
+                                                            <div class="form-input">
+                                                                <div class="field-errmsg-@Step.FKiQSStepDefinitionID-@FieldOrigin.ID"></div>
+                                                                @if (!string.IsNullOrEmpty(FieldOrigin.sFieldDefaultValue))
+                                                                {
+                                                                    @FieldOrigin.sFieldDefaultValue
+                                                                }
+                                                                else if (FieldOrigin.bIsOptionList || FieldOrigin.iMasterDataID > 0 || FieldOrigin.FK1ClickID > 0)
+                                                                {
+                                                                    if (FieldOrigin.FK1ClickID > 0)
+                                                                    {
+                                                                        if (FieldOrigin.bIsLargeBO)
+                                                                        {
+                                                                            if (!string.IsNullOrEmpty(Field.Value.sValue))
+                                                                            {
+                                                                                <input type="text" class="form-control autocomplete" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" id="Field-@StepDef.ID-@FieldOrigin.ID" data-value="0" onkeyup="fncgetautocomplete('@FieldOrigin.FK1ClickID', this, event)" />
+                                                                                <script>fncgetlabeldata(0, '@Field.Value.sValue', 'Field-@StepDef.ID-@FieldOrigin.ID', '@FieldOrigin.FK1ClickID')</script>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <input type="text" class="form-control autocomplete" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" id="Field-@StepDef.ID-@FieldOrigin.ID" data-value="0" onkeyup="fncgetautocomplete('@FieldOrigin.FK1ClickID', this, event)" />
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        if (FieldOrigin.FieldOptionList != null && FieldOrigin.FieldOptionList.Count() > 0)
+                                                                        {
+                                                                            var IsIcon = false;
+                                                                            var IsHorizontal = false;
+                                                                            var IsOptList = false;
+                                                                            var FieldVis = FieldVisualistions.Where(m => m.FKiQSStepDefinitionID == StepDef.ID && m.FKiFieldOriginID == FieldOrigin.ID).FirstOrDefault();
+                                                                            if (FieldVis != null)
+                                                                            {
+                                                                                var Options = FieldVis.sVisualisation.Split(';').ToList();
+                                                                                if (Options[0].Contains("optionlist"))
+                                                                                {
+                                                                                    IsOptList = true;
+                                                                                    var Vals = Options[1].Split('=').ToList();
+                                                                                    var Icons = Vals[1].Replace("'", "");
+                                                                                    var Imgs = Icons.Split('|').ToList();
+                                                                                    if (Imgs[0] == "icon")
+                                                                                    {
+                                                                                        IsIcon = true;
+                                                                                        if (Imgs[1].Contains(','))
+                                                                                        {
+                                                                                            var Img = Imgs[1].Split(',').ToList();
+                                                                                            Dictionary<string, string> OptIcons = new Dictionary<string, string>();
+                                                                                            foreach (var ig in Img)
+                                                                                            {
+                                                                                                var Names = ig.Split(':').ToList();
+                                                                                                OptIcons[Names[0]] = Names[1];
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    else if (Imgs[0] == "horizontal")
+                                                                                    {
+                                                                                        IsHorizontal = true;
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            if (IsOptList && IsIcon)
+                                                                            {
+                                                                                foreach (var opt in FieldOrigin.FieldOptionList)
+                                                                                {
+                                                                                    if (opt.sOptionName.ToLower() == "male")
+                                                                                    {
+                                                                                        <label class="label-wrapper gender">
+                                                                                            @if (opt.sOptionValue == Field.Value.sValue)
+                                                                                            {
+                                                                                                <input type="radio" id="IDname" name="@FieldOrigin.sName" value="@opt.sOptionValue" checked="checked" />
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <input type="radio" id="IDname" name="@FieldOrigin.sName" value="@opt.sOptionValue" />
+                                                                                            }
+                                                                                            <span class="male"></span> @opt.sOptionName
+                                                                                        </label>
+                                                                                    }
+                                                                                    else if (opt.sOptionName.ToLower() == "female")
+                                                                                    {
+                                                                                        <label class="label-wrapper gender">
+                                                                                            @if (opt.sOptionValue == Field.Value.sValue)
+                                                                                            {
+                                                                                                <input type="radio" id="IDname" name="@FieldOrigin.sName" value="@opt.sOptionValue" checked="checked" />
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <input type="radio" id="IDname" name="@FieldOrigin.sName" value="@opt.sOptionValue" />
+                                                                                            }
+                                                                                            <span class="female"></span> @opt.sOptionName
+                                                                                        </label>
+                                                                                    }
+                                                                                    else if (opt.sOptionName.ToLower() == "Single Axle".ToLower())
+                                                                                    {
+                                                                                        <label class="label-wrapper axle">
+                                                                                            @if (opt.sOptionValue == Field.Value.sValue)
+                                                                                            {
+                                                                                                <input type="radio" id="IDname" name="@FieldOrigin.sName" value="@opt.sOptionValue" checked="checked" />
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <input type="radio" id="IDname" name="@FieldOrigin.sName" value="@opt.sOptionValue" />
+                                                                                            }
+                                                                                            <span class="single"></span> @opt.sOptionName
+                                                                                        </label>
+                                                                                    }
+                                                                                    else if (opt.sOptionName.ToLower() == "Twin Axle".ToLower())
+                                                                                    {
+                                                                                        <label class="label-wrapper axle">
+                                                                                            @if (opt.sOptionValue == Field.Value.sValue)
+                                                                                            {
+                                                                                                <input type="radio" id="IDname" name="@FieldOrigin.sName" value="@opt.sOptionValue" checked="checked" />
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <input type="radio" id="IDname" name="@FieldOrigin.sName" value="@opt.sOptionValue" />
+                                                                                            }
+                                                                                            <span class="double"></span> @opt.sOptionName
+                                                                                        </label>
+                                                                                    }
+
+                                                                                }
+                                                                            }
+                                                                            else if (IsOptList && IsHorizontal)
+                                                                            {
+                                                                                <div class="">
+                                                                                    @foreach (var opt in FieldOrigin.FieldOptionList)
+                                                                                    {
+                                                                                        <label class="label-wrapper half">
+                                                                                            @if (opt.sOptionValue == Field.Value.sValue)
+                                                                                            {
+                                                                                                <input type="radio" name="@FieldOrigin.sName" value="@opt.sOptionValue" checked="checked" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField" onchange="fnccheckme(this)">
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <input type="radio" name="@FieldOrigin.sName" value="@opt.sOptionValue" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField" onchange="fnccheckme(this)">
+                                                                                            }
+                                                                                            <span class="radBox">
+                                                                                                <span>@opt.sOptionName</span>
+                                                                                            </span>
+                                                                                        </label>
+                                                                                    }
+                                                                                </div>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <div class="select-wrapper">
+                                                                                    <select class="form-control" name="@FieldOrigin.sName" onchange="fnccheckme(this)">
+                                                                                        @if (FieldOrigin.FieldOptionList != null && FieldOrigin.FieldOptionList.Count() > 0)
+                                                                                        {
+                                                                                            foreach (var opt in FieldOrigin.FieldOptionList)
+                                                                                            {
+                                                                                                if (!string.IsNullOrEmpty(FieldOrigin.sDefaultValue))
+                                                                                                {
+                                                                                                    if (opt.sOptionValue == FieldOrigin.sDefaultValue)
+                                                                                                    {
+                                                                                                        <option value="@opt.sOptionValue" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                                    }
+                                                                                                    else
+                                                                                                    {
+                                                                                                        <option value="@opt.sOptionValue" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                                    }
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    if (opt.sOptionValue == Field.Value.sValue)
+                                                                                                    {
+                                                                                                        <option value="@opt.sOptionValue" selected data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                                    }
+                                                                                                    else
+                                                                                                    {
+                                                                                                        <option value="@opt.sOptionValue" data-shtype="@opt.iType" data-show="@opt.sShowField" data-hide="@opt.sHideField">@opt.sOptionName</option>
+                                                                                                    }
+
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    </select>
+                                                                                    <span class="select_wrapper_caret glyphicon glyphicon-chevron-down"></span>
+                                                                                </div>
+                                                                            }
+
+                                                                        }
+                                                                    }
+                                                                }
+                                                                else if (FieldOrigin.DataType.sName.ToLower() == "string" || FieldOrigin.DataType.sName.ToLower() == "email" || FieldOrigin.DataType.sName.ToLower() == "PostCode".ToLower() || FieldOrigin.DataType.sName.ToLower() == "MobileNumber".ToLower())
+                                                                {
+                                                                    if (FieldOrigin.iValidationType == 10)
+                                                                    {
+                                                                        <input type="text" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" class="form-control" value="@Field.Value.sValue" onkeyup="fncValidateField(this, '@FieldOrigin.ID', '@Field.Value.FKiFieldDefinitionID', '@items.Value.FKiStepSectionDefinitionID')" />
+                                                                    }
+                                                                    else if (FieldOrigin.iValidationType == 20)
+                                                                    {
+                                                                        <input type="text" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" class="form-control" value="@Field.Value.sValue" onchange="fncValidateField(this, '@FieldOrigin.ID', '@Field.Value.FKiFieldDefinitionID', '@items.Value.FKiStepSectionDefinitionID')" />
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <input type="text" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" class="form-control" value="@Field.Value.sValue" />
+                                                                    }
+                                                                }
+                                                                else if (FieldOrigin.DataType.sName.ToLower() == "date")
+                                                                {
+                                                                    <input type="text" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" class="form-control Txtbx-DATETIME" value="@Field.Value.sValue" />
+                                                                }
+                                                                else
+                                                                {
+                                                                    <input type="text" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" class="form-control @FieldOrigin.sName" value="@Field.Value.sValue" data-id="Calculate-@FieldOrigin.sName" />
+                                                                }
+
+                                                            </div>
+                                                        </div>
+                                                        <div class="input-success-error">
+                                                            <span data-type="ErrorMesg" class="ErrorMsg-@StepDef.ID-@FieldOrigin.ID danger text-error"></span>
+                                                        </div>
+                                                        <button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs">
+                                                            <i class="fa fa-info"></i>
+                                                        </button>
+                                                    </div>
+                                                }
+                                            </form>
+
+                                        }
+                                    }
+                                    else if (((EnumSemanticsDisplayAs)SecDef.iDisplayAs).ToString() == EnumSemanticsDisplayAs.Html.ToString())
+                                    {
+                                        <div class="form-group m-b-none">
+                                            <div class="info-contentBox">
+                                                @Html.Raw(SecDef.HTMLContent)
+                                            </div>
+                                        </div>
+                                    }
+                                    else if (((EnumSemanticsDisplayAs)SecDef.iDisplayAs).ToString() == EnumSemanticsDisplayAs.XIComponent.ToString())
+                                    {
+                                        <div id="Component-@SecDef.ID" data-type="Component" data-name="Component-@SecDef.ID">
+
+                                            @{ Html.RenderAction("LoadComponentByID", "XIComponents", new { iXIComponentID = SecDef.iXIComponentID, sGUID = ViewBag.sGUID, nParams = new List<CNV>(), sName = string.Empty, sType = "QSStepSection", ID = SecDef.XIGUID, iInstanceID = items.Value.XIGUID, sContext = string.Empty, iQSIID = Model.ID }); }<cNameValuePairs><cNameValuePairs><cNameValuePairs><cNameValuePairs>
+
+                                        </div>
+                                                }
+                                </div>
+                                                if (SecDef.QSLinks != null)
+                                                {
+                                                    foreach (var qslink in SecDef.QSLinks)
+                                                    {
+                                                        <button type="button" class="btn btn-theme" onclick="XIRun(this, '@qslink.Value.XiLink.Values.FirstOrDefault().XiLink', 0, '@ViewBag.sGUID', null, false, 0, '@Model.QSDefinition.ID')">@qslink.Value.XiLink.Values.FirstOrDefault().sName</button>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (((EnumSemanticsDisplayAs)StepDef.iDisplayAs).ToString() == EnumSemanticsDisplayAs.Fields.ToString())
+                                                    {
+                                                        if (Step.XIValues != null && Step.XIValues.Count() > 0)
+                                                        {
+                                                            <form class="QSStepForm @FormClass wrap-fullwidth">
+                                                                @*@FormClass*@
+                                                                @foreach (var Field in Step.XIValues)
+                                                                {
+                                                                    <div class="form-group highlight--help">
+                                                                        @{
+                                                                            var FieldOrigin = StepDef.FieldDefs.Values.Where(m => m.ID == Field.Value.FKiFieldDefinitionID).FirstOrDefault().FieldOrigin;
+                                                                        }
+                                                                        <div class="wrap-width clearfix control-block">
+                                                                            <i class="fa fa-question-circle que-icn"></i>
+                                                                            <label for="inputEmail" class="gn form-label">@FieldOrigin.sDisplayName</label>
+                                                                            @if (!(string.IsNullOrEmpty(FieldOrigin.sAdditionalText)))
+                                                                            {
+                                                                                <label for="inputEmail" class="gn form-label">@FieldOrigin.sAdditionalText</label>
+                                                                            }
+                                                                            <div class="form-input">
+                                                                                <div class="field-errmsg-@Step.FKiQSStepDefinitionID-@FieldOrigin.ID"></div>
+                                                                                @if (!string.IsNullOrEmpty(FieldOrigin.sFieldDefaultValue))
+                                                                                {
+                                                                                    @FieldOrigin.sFieldDefaultValue
+                                                                                }
+                                                                                else if (FieldOrigin.bIsOptionList || FieldOrigin.iMasterDataID > 0 || FieldOrigin.FK1ClickID > 0)
+                                                                                {
+                                                                                    if (FieldOrigin.FK1ClickID > 0)
+                                                                                    {
+                                                                                        if (FieldOrigin.bIsLargeBO)
+                                                                                        {
+                                                                                            if (!string.IsNullOrEmpty(Field.Value.sValue))
+                                                                                            {
+                                                                                                <input type="text" class="form-control autocomplete" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" id="Field-@StepDef.ID-@FieldOrigin.ID" data-value="0" onkeyup="fncgetautocomplete('@FieldOrigin.FK1ClickID', this, event)" />
+                                                                                                <script>fncgetlabeldata(0, '@Field.Value.sValue', 'Field-@StepDef.ID-@FieldOrigin.ID', '@FieldOrigin.FK1ClickID')</script>
+                                                                                            }
+                                                                                            else
+                                                                                            {
+                                                                                                <input type="text" class="form-control autocomplete" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" id="Field-@StepDef.ID-@FieldOrigin.ID" data-value="0" onkeyup="fncgetautocomplete('@FieldOrigin.FK1ClickID', this, event)" />
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        if (FieldOrigin.FieldOptionList != null && FieldOrigin.FieldOptionList.Count() > 0)
+                                                                                        {
+                                                                                            <select class="form-control" name="@FieldOrigin.sName">
+                                                                                                @foreach (var opt in FieldOrigin.FieldOptionList)
+                                                                                                {
+                                                                                                    if (!string.IsNullOrEmpty(FieldOrigin.sDefaultValue))
+                                                                                                    {
+                                                                                                        if (opt.sOptionValue == FieldOrigin.sDefaultValue)
+                                                                                                        {
+                                                                                                            <option value="@opt.sOptionValue" selected>@opt.sOptionName</option>
+                                                                                                        }
+                                                                                                        else
+                                                                                                        {
+                                                                                                            <option value="@opt.sOptionValue">@opt.sOptionName</option>
+                                                                                                        }
+                                                                                                    }
+                                                                                                    else
+                                                                                                    {
+                                                                                                        <option value="@opt.sOptionValue">@opt.sOptionName</option>
+                                                                                                    }
+                                                                                                }
+                                                                                            </select>
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                                else if (FieldOrigin.DataType.sName.ToLower() == "string")
+                                                                                {
+                                                                                    if (FieldOrigin.iValidationType == 10)
+                                                                                    {
+                                                                                        <input type="text" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" class="form-control" value="@Field.Value.sValue" onkeyup="fncValidateField(this, '@FieldOrigin.ID', '@Field.Value.FKiFieldDefinitionID', 0)" />
+                                                                                    }
+                                                                                    else if (FieldOrigin.iValidationType == 20)
+                                                                                    {
+                                                                                        <input type="text" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" class="form-control" value="@Field.Value.sValue" onchange="fncValidateField(this, '@FieldOrigin.ID', '@Field.Value.FKiFieldDefinitionID', 0)" />
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <input type="text" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" class="form-control" value="@Field.Value.sValue" />
+                                                                                    }
+                                                                                }
+                                                                                else if (FieldOrigin.DataType.sName.ToLower() == "date")
+                                                                                {
+                                                                                    <input type="text" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" class="form-control Txtbx-DATETIME" value="@Field.Value.sValue" />
+                                                                                }
+
+                                                                                else
+                                                                                {
+                                                                                    <input type="text" name="@FieldOrigin.sName" placeholder="@FieldOrigin.sPlaceHolder" class="form-control" value="@Field.Value.sValue" />
+                                                                                }
+                                                                                <div class="form-popover">
+                                                                                    @*<span class="HelpText" id="HelpText-@Step.FKiQSStepDefinitionID-@FieldOrigin.ID" style="display:none;">@FieldOrigin.sDisplayHelp</span>*@<span class="HelpText" id="HelpText-@Step.FKiQSStepDefinitionID-@FieldOrigin.ID" style="display:none;"></span><span class="HelpText" id="HelpText-@Step.FKiQSStepDefinitionID-@FieldOrigin.ID" style="display:none;"></span><span class="HelpText" id="HelpText-@Step.FKiQSStepDefinitionID-@FieldOrigin.ID" style="display:none;"></span><span class="HelpText" id="HelpText-@Step.FKiQSStepDefinitionID-@FieldOrigin.ID" style="display:none;"></span>
+                                                                                    <span data-type="ErrorMesg" class="ErrorMsg-@Step.FKiQSStepDefinitionID-@FieldOrigin.ID danger text-error"></span>
+                                                                                </div>
+                                                                                @*<button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs"><i class="fa fa-info"></i></button>*@<button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs"><i class="fa fa-info"></i></button><button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs"><i class="fa fa-info"></i></button><button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs"><i class="fa fa-info"></i></button><button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs"><i class="fa fa-info"></i></button>
+                                                                                <div class="helptext">
+                                                                                    <div class="helptext--desktop">
+                                                                                        <div class="helptext__content">
+                                                                                            <a class="helptext-content-close"><i class="fa fa-close"></i></a>
+                                                                                            <p id="HelpText-@Step.FKiQSStepDefinitionID-@FieldOrigin.ID">@FieldOrigin.sDisplayHelp</p>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <button type="button" tabindex="-1" class="helptext-mobile-button btn btn-theme bc-theme fc-white btn-xs">
+                                                                            <i class="fa fa-info"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                            }
+                                                            </form>
+
+                                                                                }
+                                                                            }
+                                                                            else if (((EnumSemanticsDisplayAs)StepDef.iDisplayAs).ToString() == EnumSemanticsDisplayAs.Html.ToString())
+                                                                            {
+                                                                                <div class="form-group">
+                                                                                    <div class="col-md-12">
+                                                                                        @Html.Raw(StepDef.HTMLContent)
+                                                                                    </div>
+                                                                                </div>
+                                                                                }
+                                                                                else if (((EnumSemanticsDisplayAs)StepDef.iDisplayAs).ToString() == EnumSemanticsDisplayAs.XIComponent.ToString())
+                                                                                {
+                                                                                    { Html.RenderAction("LoadComponentByID", "XIComponents", new { iXIComponentID = StepDef.iXIComponentID, sGUID = ViewBag.sGUID, nParams = new List<CNV>(), sName = string.Empty, sType = "QSStep", ID = StepDef.XIGUID, iInstanceID = Step.XIGUID, sContext = string.Empty, iQSIID = Model.ID }); }
+                                                                                }
+                                                                            }
+                    @*@if (Step.nFieldInstances.Count() > 0 || Step.nSectionInstances.Count() > 0)
+                        {*@
+                    <div class="form-group">
+                        @if (StepDef.bIsBack)
+                        {
+                            <div class="form-btn">
+                                <button type="button" class="btn btn-back" onclick="fncGetPreviousStep(this)" accesskey="b">Back</button>
+                            </div>
+                        }
+
+                        @if (StepDef.bIsSaveNext)
+                        {
+                            <div class="form-btn move-right">
+                                <button type="button" class="btn btn-success" id="QSNxtBtn" accesskey="s" onclick="fncRunQSStepAction('SaveNext', this)">Save & Next</button>
+                                <button type="button" class="btn btn-default" id="QSLoadingBtn" style="padding-left:10px;padding-right:10px;display:none"><img src="~/Content/images/loading.gif" style="width: 20px;" /> Please wait</button>
+                            </div>
+                        }
+                        @if (StepDef.bIsSave)
+                        {
+                            <div class="form-btn">
+                                <button type="button" class="btn btn-success" accesskey="s" onclick="fncRunQSStepAction('Save', this)">Save</button>
+                            </div>
+                        }
+                        @if (StepDef.bIsSaveClose)
+                        {
+                            <div class="form-btn">
+                            <button type="button" class="btn btn-success" accesskey="s" onclick="fncRunQSStepAction('SaveClose', this)">SaveClose</button>
+                            </div>
+                        }
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="my_dialog"></div>
+<script>
+    $(document).ready(function () {
+        $(document.body).on('click', 'input.QuotesBuyNow', function () {
+            var FinalBuyAmount = $('#FinalAmt').text();
+            var BuyPrice = FinalBuyAmount;
+
+            @*window.location.href = '@Url.Action("BuildPolicyObject", "Payment")?ID=' + QuoteID+'_'+sGUIDN+'&Amount=' + BuyPrice ;*@
+            var url = '@Url.Action("Payment", "Payment")?ID=' + QuoteID + '_' + sGUIDN + '&Amount=' + BuyPrice;
+            $('#iframe_a').attr('src', url)
+            @*var url = '@Url.Action("Payment", "Payment")?ID=' + QuoteID + '_' + sGUIDN + '&Amount=' + BuyPrice;
+          $('#iframe_a').attr('src', url)*@
+            //window.location.href = '@Url.Action("Payment", "Payment")?ID=' + QuoteID+'_'+sGUIDN+'&Amount=' + BuyPrice ;
+            //window.location.href = '@Url.Action("test", "Payment")?ID=' + QuoteID;
+        });
+        $(document.body).on('click', 'a.ConvetBtn', function () {
+            var Type = $(this).attr('data-type');
+            var SubAmt = parseFloat($(this).attr('data-value'));
+            var QuoteAMt =  parseFloat($('#FinalAmt').html());
+            //QuoteAMt = QuoteAMt.slice(1);
+            if(Type == "notselected"){
+                QuoteAMt = parseFloat(QuoteAMt + SubAmt).toFixed(2);
+                $(this).attr('data-type','selected');
+                $(this).removeClass('btn-success');
+                $(this).addClass('btn-danger');
+                $(this).html('Remove');
+            }
+            else{
+                QuoteAMt = parseFloat(parseFloat(QuoteAMt).toFixed(2) - parseFloat(SubAmt).toFixed(2)).toFixed(2);
+                $(this).attr('data-type','notselected');
+                $(this).removeClass('btn-danger');
+                $(this).addClass('btn-success');
+                $(this).html('Add');
+            }
+            $('#FinalAmt').html(QuoteAMt);
+        });
+        QuestionSet = @Html.Raw(Json.Encode(Model));
+        $(".questionset-section input[type=radio]:checked").each(function() {
+            var sShowField = $(this).attr('data-show');
+            var sHideField = $(this).attr('data-hide');
+            var parentName = 'qsfield';
+            if(sShowField && sShowField.length>0){
+                var childObj1 = $('[name="'+sShowField+'"]');
+                fncHideShowFromHTMLTree(parentName, childObj1[0], 'show');
+            }
+            if(sHideField && sHideField.length>0){
+                var childObj2 = $('[name="'+sHideField+'"]');
+                fncHideShowFromHTMLTree(parentName, childObj2[0], 'hide');
+            }
+        });
+
+        //Hide and Show Dependency Fields
+        $(".questionset-section select").each(function() {
+            var sShowField = $(this).find(':selected').attr('data-show');
+            var sHideField = $(this).find(':selected').attr('data-hide');
+            var parentName = 'qsfield';
+            if(sShowField && sShowField.length>0){
+                var childObj1 = $('[name="'+sShowField+'"]');
+                fncHideShowFromHTMLTree(parentName, childObj1[0], 'show');
+            }
+            if(sHideField && sHideField.length>0){
+                var childObj2 = $('[name="'+sHideField+'"]');
+                fncHideShowFromHTMLTree(parentName, childObj2[0], 'hide');
+            }
+        });
+
+    });
+
+    $(document.body).on('change', "input.iAddintionalAmount", function () {
+        var iAdditionalAmount = $(this).val();
+        var AttrName = $(this).attr('data-id');
+        var iStandardAmount = 1000;
+        var iTotalContentInsured = parseFloat(iStandardAmount) + parseFloat(iAdditionalAmount);
+        if(parseFloat(iAdditionalAmount) > 0)
+        {
+            $(".iTotalContentsInsured").val(iTotalContentInsured);
+        }
+    });
+</script>

@@ -1,0 +1,152 @@
+﻿@model  XICore.XID1Click
+@using Microsoft.AspNet.Identity
+@using XIDNA.Models
+@using XIDNA.ViewModels
+@using XICore
+@using XISystem
+@{
+    // Layout = "~/Views/Shared/_PopupLayout.cshtml";
+    var sBOName = Model.BOD.Name;
+    var sBODisplayDetails = Model.XIBODisplay;
+    int BOID = 0;
+    //var AddNewInstance = new XIBODisplay();
+    List<CNV> lNVs = new List<CNV>();
+    if (sBODisplayDetails != null && sBODisplayDetails.Count() > 0)
+    {
+        BOID = sBODisplayDetails[0].BOInstance.BOD.BOID;
+        //AddNewInstance = sBODisplayDetails[0];
+    }
+    var XIComponentID = Model.RepeaterComponentID;
+    //var XIComponentD = Model.XIComponent;
+    var sGroupName = Model.XIComponent.nParams.Where(m => m.sName == "Group").Select(m => m.sValue).FirstOrDefault();
+    var sLockGroup = Model.XIComponent.nParams.Where(m => m.sName == "LockGroup").Select(m => m.sValue).FirstOrDefault();
+    var sDisplayMode = Model.XIComponent.nParams.Where(m => m.sName == "DisplayMode").Select(m => m.sValue).FirstOrDefault();
+    lNVs.Add(new CNV { sName = "Group", sValue = sGroupName });
+    lNVs.Add(new CNV { sName = "BO", sValue = sBOName });
+    lNVs.Add(new CNV { sName = "LockGroup", sValue = sLockGroup });
+    lNVs.Add(new CNV { sName = "DisplayMode", sValue = sDisplayMode });
+    int iCount = Model.XIBODisplay.Count();
+}
+
+<div class="box-body">
+    <input type="button" id="AddRows" class="btn btn-theme btn-xs" value="Add" onclick="AddNewForm('@sGroupName','@sBOName','@sLockGroup','@sDisplayMode',@iCount)" />
+    <div id="VerticalForms">
+        @if (Model.XIComponent.sName == "Grid Component")
+        {
+            Html.RenderAction("GetRepeaterGridView", "XIComponents", new { BODisplay = sBODisplayDetails, XIComponentID = XIComponentID, iOneClickID = Model.ID });
+        }
+        else
+        {
+            foreach (var sBODisplay in sBODisplayDetails)
+            {
+                Html.RenderAction("GetRepeaterView", "XIComponents", new { BODisplay = sBODisplay, XIComponentID = XIComponentID, iOneClickID = Model.ID });
+            }
+        }
+
+    </div>
+
+</div>
+<div style="display:none" id="RepeaterGridForms"></div>
+
+<script type="text/javascript">
+    var iRowCount = 0;
+    function AddNewForm(sGroup, sBO, sLockGroup, sDisplayMode, iCount) {
+        if (iRowCount>0)
+        {
+            iCount= iRowCount;
+        }
+    else{
+            iRowCount = iCount;
+    }
+        
+        var Nvs = new Array();
+        var obj = new Object();
+        obj.sName = "Group";
+        obj.sValue = sGroup;
+        Nvs.push(obj);
+        obj = new Object();
+        obj.sName = "BO";
+        obj.sValue = sBO;
+        Nvs.push(obj);
+        obj = new Object();
+        obj.sName = "LockGroup";
+        obj.sValue = sLockGroup;
+        Nvs.push(obj);
+        obj = new Object();
+        obj.sName = "DisplayMode";
+        obj.sValue = sDisplayMode;
+        Nvs.push(obj);
+        obj = new Object();
+        obj.sName = "iCount";
+        obj.sValue = iCount;
+        Nvs.push(obj);
+
+        @*var sInstance = @Html.Raw(Json.Encode(AddNewInstance));*@
+        @*var IXDComponent= @Html.Raw(Json.Encode(XIComponentD));*@
+        @*var sParams =@Html.Raw(Json.Encode(lNVs));*@
+        var XIComponentID = "@XIComponentID";
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("LoadComponentByID", "XIComponents")',
+            data: JSON.stringify({ iXIComponentID: XIComponentID, sGUID: "", nParams: Nvs, sType: "", ID: 0 }),
+            contentType: 'application/json;',
+            dataType: 'html',
+            traditional: true,
+            success: function (data) {                
+                if (data != "") {                    
+                    $("#RepeaterGridForms").append(data);
+                    var sContent = $("#RepeaterGridForms").find('table').find('tbody').find('tr');
+                    //$("#VerticalForms").empty();
+                    if (iCount > 0 || iRowCount>0) {
+                        $("#VerticalForms").find('form').find('table').find('tbody').append(sContent);
+                        iCount++;
+                        iRowCount++;
+                        $("#RepeaterGridForms").empty();
+                    }
+                    else {
+                        $("#VerticalForms").append(data);
+                        $("#RepeaterGridForms").empty();
+                        iCount++;
+                        iRowCount++;
+                    }
+
+
+                    //$("#VerticalForms").append(data);
+                }
+                //alert(data);
+
+            },
+            error: function () {
+                //alert("error occured");
+            }
+        });
+    }
+
+    $(document).on('click', '.delete_Inst', function () {
+        var sGetID = $(this).closest('form').attr("id");
+        var sIDSplit = sGetID.split('_');
+        var ID = sIDSplit[1];
+        var BOID = "@BOID";
+        var RValues = {
+            InstanceID: ID,
+            BOID: BOID
+        }
+        $.ajax({
+            url: '@Url.Action("GridDeleteTableRow", "Inbox")',
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            cache: false,
+            async: false,
+            data: JSON.stringify(RValues),
+            success: function (data) {
+                if (data == 1) {
+                    $("#Create_" + ID).remove();
+                }
+            }
+        });
+    });
+
+
+
+</script>

@@ -1,0 +1,147 @@
+﻿@model IEnumerable<XIDNA.Models.BOs>
+
+@{
+
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        var tree = $('#BOAttributesGroupTree').jstree({
+            "core": {
+                "check_callback": function (op, node, par, pos, more) {
+                    if (op === "delete_node") {
+                        return confirm("Are you sure you want to delete?");
+                    }
+                }
+            },
+            "plugins": [
+                "themes", "html_data", "ui", "state",
+            ],
+        }).on('open_node.jstree', function (e, data) {
+            $(data.instance.get_node(data.node.id, true)).siblings('.jstree-open').each(function () {
+                data.instance.close_node(this);
+            });
+        });
+        $('#BOAttributesGroupTree').on('state_ready.jstree', function () {
+            var listItems = $("#BOAttributesGroupTree a");
+            listItems.each(function (idx, li) {
+                var product = $(li).removeClass('jstree-clicked');
+            });
+            $('#BOAttributesGroupTree').jstree('select_node', '@ViewBag.BOID');
+            $('#BOAttributesGroupTree li#@ViewBag.BOID a').addClass('jstree-clicked');
+        });
+        //$('#BOAttributesGroupTree').jstree('select_node', '@ViewBag.BOID');
+    });
+
+</script>
+<style>
+    .treegroup {
+        width: 230px;
+        margin-top: 22px;
+        margin-bottom: 30px;
+        float: left;
+    }
+
+    .condata {
+        margin-left: 240px;
+    }
+</style>
+
+    <div id="FormWithGrid">
+        <div class="box-body treetoggle" id="test2">
+            <div class="tree">
+
+
+                @helper TreeViewList(IEnumerable<XIDNA.Models.BOGroupFields> items)
+{
+    foreach (var item in items)
+    {
+        <li id="@item.BOID-@item.ID">
+
+            @Ajax.ActionLink(item.GroupName.ToString(),
+                                           "", "BusinessObjects",
+                               new { BOID = item.ID },
+                                new AjaxOptions
+                                {
+
+                                    UpdateTargetId = "BusinessObjects",
+                                    InsertionMode = InsertionMode.Replace,
+                                    HttpMethod = "GET",
+                                    LoadingElementId = "ajax-loader",
+                                }
+                                )
+
+
+
+        </li>
+    }
+}
+
+                @helper TreeView(IEnumerable<XIDNA.Models.BOs> nodes)
+{
+    foreach (var node in nodes)
+    {
+        <li id="@node.BOID">
+            @if (node.BOGroupFields.Count() == 0)
+            {
+                @Ajax.ActionLink(node.Name.ToString(),
+                                      "AddBOAttributeGroup", "BusinessObjects",
+                                  new { BOID = node.BOID, Name = node.Name },
+                                new AjaxOptions
+                                {
+
+                                    UpdateTargetId = "AttributegroupForm",
+                                    InsertionMode = InsertionMode.Replace,
+                                    HttpMethod = "GET",
+                                    LoadingElementId = "ajax-loader",
+                                }
+                                )
+            }
+            else
+            {
+                @Ajax.ActionLink(node.Name.ToString(),
+                                       "AddBOAttributeGroup", "BusinessObjects",
+                                       new { BOID = node.BOID, Name = node.Name },
+                                new AjaxOptions
+                                {
+
+                                    UpdateTargetId = "AttributegroupForm",
+                                    InsertionMode = InsertionMode.Replace,
+                                    HttpMethod = "GET",
+                                    LoadingElementId = "ajax-loader",
+                                }
+                                )
+                <ul>
+                    @*@TreeViewList(node.BOGroupFields)*@
+                </ul>
+            }
+
+        </li>
+    }
+}
+
+
+                <div id="BOAttributesGroupTree">
+                    <ul>
+                        @TreeView(Model)
+                    </ul>
+                </div>
+
+
+            </div>
+        </div>
+        <div class="box-body" id="addClass">
+            <button class="btn visible-xs treebtn"><i class="fa fa-caret-square-o-right"></i></button>
+            <div id="AttributegroupForm" class="condata">
+                @{
+                    Html.RenderAction("AddBOAttributeGroup", "BusinessObjects", new { BOID = @ViewBag.BOID, Name = @ViewBag.BOName });
+                }
+            </div>
+        </div>
+    </div>
+
+<script>
+    $(".treebtn").click(function () {
+        $(".treetoggle").toggleClass("treeleft");
+        $(".treebtn").toggleClass("rotate");
+    });
+</script>

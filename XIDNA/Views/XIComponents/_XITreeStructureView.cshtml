@@ -1,0 +1,3023 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using XIDNA
+
+@{
+    var Role = SessionManager.sRoleName;
+    List<XIDStructure> Nodes = new List<XIDStructure>();
+    var sTreeType = "Structure";
+    var sParentID = string.Empty;
+    var iBODID = 0;
+    Guid BOIDXIGUID = Guid.Empty;
+    var sSearchText = string.Empty;
+    var sLoadType = string.Empty;
+    var sMode = string.Empty;
+    string sCode = string.Empty;
+    string sFolderName = string.Empty;
+    long BuildingID = 0;
+    string sFilterType = string.Empty;
+    List<List<XIIBO>> TreeData = new List<List<XIIBO>>();
+    string sErrorMessage = string.Empty;
+    if (Model.oContent.ContainsKey(XIConstant.XITreeStructure))
+    {
+        Nodes = (List<XIDStructure>)Model.oContent[XIConstant.XITreeStructure];
+        if (Nodes == null)
+        {
+            Nodes = new List<XIDStructure>();
+        }
+        if (Nodes.Count() > 0)
+        {
+            sTreeType = Nodes.FirstOrDefault().sContext;
+            if (!string.IsNullOrEmpty(sTreeType) && (sTreeType.ToLower() == "instancetree" || sTreeType.ToLower() == "instancetreefilter" || sTreeType.ToLower() == "folder"))
+            {
+                if (sTreeType.ToLower() != "instancetree")
+                {
+                    TreeData = Nodes.FirstOrDefault().oStructureInstance.Values.ToList();
+                }
+                sParentID = Nodes.FirstOrDefault().FKiParentID;
+                sFolderName = Nodes.FirstOrDefault().sName;
+                iBODID = Nodes.FirstOrDefault().BOID;
+                BOIDXIGUID = Nodes.FirstOrDefault().BOIDXIGUID;
+                sSearchText = Nodes.FirstOrDefault().sSearchText;
+                BuildingID = Nodes.FirstOrDefault().ID;
+                sLoadType = Nodes.FirstOrDefault().sType;
+                sFilterType = Nodes.FirstOrDefault().sLinkingType;
+                //if (!string.IsNullOrEmpty(sSearchText))
+                //{
+                //    List<List<XIIBO>> Data = new List<List<XIIBO>>();
+                //    Data.Add(TreeData.FirstOrDefault().FirstOrDefault().FilteredData);
+                //    TreeData = Data;
+                //}
+            }
+            else if (!string.IsNullOrEmpty(sTreeType) && (sTreeType.ToLower() == "datatree"))
+            {
+                sMode = Nodes.FirstOrDefault().sContext;
+                sLoadType = Nodes.FirstOrDefault().sType;
+                sTreeType = Nodes.FirstOrDefault().sContext;
+                iBODID = Nodes.FirstOrDefault().BOID;
+                BOIDXIGUID = Nodes.FirstOrDefault().BOIDXIGUID;
+                sCode = Nodes.FirstOrDefault().sCode;
+            }
+            else
+            {
+                sMode = Nodes.FirstOrDefault().sContext;
+                sLoadType = Nodes.FirstOrDefault().sType;
+                sTreeType = Nodes.FirstOrDefault().sContext;
+                iBODID = Nodes.FirstOrDefault().BOID;
+                BOIDXIGUID = Nodes.FirstOrDefault().BOIDXIGUID;
+                sCode = Nodes.FirstOrDefault().sCode;
+            }
+            sErrorMessage = Nodes.FirstOrDefault().sErrorMessage;
+        }
+    }
+    var sTreeGuid = Guid.NewGuid();
+    bool bBackBtn = false;
+    var DivClass = "";
+}
+
+
+
+<script src="@Url.Content("~/Scripts/treeview/jstree.min.js")"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.7/js/select2.min.js"></script>
+
+<script>
+    var Folderdata =[];
+    function fncGetRecursiveFolders(Nodes){
+                return new Promise(function (resolve, reject) {
+            for (var i = 0; i < Nodes.length; i++) {
+                    item = {}
+                    var nodedata = [];
+                    var sType=""; var brestrict =""; var bproject=""; var vbatchid="";
+                for (var key in Nodes[i].Attributes) {
+                        // check if the property/key is defined in the object itself, not in parent
+                        if (Nodes[i].Attributes.hasOwnProperty(key)) {
+                            if(key == 'id'){
+                                item["id"] = Nodes[i].Attributes[key].sValue;
+                            }
+                            else if(key == 'sparentid'){
+                                item["parent"] = Nodes[i].Attributes[key].sValue;
+                            }
+                            else if(key == 'sname'){
+                                item["text"] = Nodes[i].Attributes[key].sValue;
+                            }
+                            else if(key == 'stype'){
+                                sType = Nodes[i].Attributes[key].sValue;
+                            }
+                            else if(key == 'brestrict'){
+                                brestrict = Nodes[i].Attributes[key].sValue;
+                            }
+                            else if(key == 'bproject'){
+                                bproject = Nodes[i].Attributes[key].sValue;
+                            }
+                            else if(key == 'iversionbatchid'){
+                                vbatchid = Nodes[i].Attributes[key].sValue;
+                            }
+                        }
+
+                    }
+                    nodedata.push({sType:sType, brestrict:brestrict, bproject:bproject, bHasChilds:Nodes[i].bHasChilds, vbatchid:vbatchid});
+                item["data"] = nodedata;
+                Folderdata.push(item);
+                if(Nodes[i].SubChildI && Nodes[i].SubChildI != null){
+                    var values = Object.keys(Nodes[i].SubChildI).map(function(subkey){
+                        return Nodes[i].SubChildI[subkey];
+                    });
+                    //var Sub = Nodes[i].SubChildI.values;
+                    if(values && values.length > 0){
+
+                        fncGetRecursiveFolders(values[0]);
+                    }
+                }
+            }
+            resolve(Folderdata);
+        });
+    }
+
+    function fncGetTree() {
+        debugger
+        var jsondata = [];
+        $.ajax({
+        type: 'POST',
+            data:{iBODID:'@BOIDXIGUID', sCode:'@sCode', sMode:'@sMode'},
+            url: '@Url.Action("GetTree", "BusinessObjects")',
+            cache: false,
+            dataType: 'json',
+            success: function (Nodes) {
+                if (Nodes && Nodes != null && Nodes.length > 0) {
+                    debugger
+                    //Mode = Nodes[0].sContext;
+                    Output = Nodes[0].sOutputArea;
+                    var j=0;
+                    for (var i = 0; i < Nodes.length; i++) {
+                        item = {}
+                        item["id"] = Nodes[i].XIGUID
+                        if (Nodes[i].FKiParentIDXIGUID == null || Nodes[i].FKiParentIDXIGUID == '00000000-0000-0000-0000-000000000000') {
+                            item["parent"] ="#";
+                        }
+                        else{
+                            item["parent"] = Nodes[i].FKiParentIDXIGUID;
+                        }
+                        item["text"] = Nodes[i].sName;
+                        var nodedata = [];
+                        nodedata.push({ sInsName: Nodes[i].sInsName, sInsID: Nodes[i].sInsID, iBODID: Nodes[i].BOID, sBO: Nodes[i].sBO, i1ClickID: Nodes[i].i1ClickID, s1ClickID: Nodes[i].s1ClickID, sType: Nodes[i].sType, sMode: Nodes[i].sMode, sParentFK: Nodes[i].sParentFKColumn, iStepID: Nodes[i].FKiStepDefinitionID, iStepIDXIGUID: Nodes[i].FKiStepDefinitionIDXIGUID, sOutputArea: Nodes[i].sOutputArea, sNameAttribute: Nodes[i].sNameAttribute, FKiVisualisationID: Nodes[i].FKiVisualisationID, FKiVisualisationIDXIGUID: Nodes[i].FKiVisualisationIDXIGUID, sSearchText:Nodes[i].sSearchText});
+    item["data"] = nodedata;
+    jsondata.push(item);
+                    }
+                    if(jsondata.length>0){
+        var jsonString = JSON.stringify(jsondata);
+        if('@sTreeType' == "script" ){
+            createFolderJSTree(JSON.parse(jsonString));
+        }
+        else{
+            createJSTree(JSON.parse(jsonString));
+        }
+    }
+                }
+            },
+            error:function (data) {}
+        });
+    }
+    var Mode;
+    var Output;
+    $(document).ready(function () {
+        debugger
+        if ('@sTreeType' == "Structure" || '@sTreeType' == "IDE" || '@sTreeType' == "Popup" || '@sTreeType' == "script" || '@sTreeType' == "datatree") {
+            if ('@sLoadType' == "onload") {
+                Mode = '@sMode';
+                fncGetTree();
+            }
+            else if ('@sTreeType' == "datatree") {
+                debugger
+                var jsondata = [];
+                var Nodes = @Html.Raw(Json.Encode(Nodes));
+                if (Nodes && Nodes != null && Nodes.length > 0) {
+                    debugger
+                    Mode = Nodes[0].sContext;
+                    Output = Nodes[0].sOutputArea;
+                    var j = 0;
+                    for (var i = 0; i < Nodes.length; i++) {
+                        item = {}
+                        item["id"] = Nodes[i].sInsID
+                        if (Nodes[i].FKiParentIDXIGUID == null || Nodes[i].FKiParentIDXIGUID == '00000000-0000-0000-0000-000000000000') {
+                            item["parent"] = "#";
+                        }
+                        else {
+                            item["parent"] = Nodes[i].FKiParentIDXIGUID;
+                        }
+                        item["text"] = Nodes[i].sName;
+                        var nodedata = [];
+                        nodedata.push({ ID: Nodes[i].ID, sInsName: Nodes[i].sInsName, sInsID: Nodes[i].sInsID, iBODID: Nodes[i].BOID, sBO: Nodes[i].sBO, i1ClickID: Nodes[i].i1ClickID, s1ClickID: Nodes[i].s1ClickID, sType: Nodes[i].sType, sMode: Nodes[i].sMode, sParentFK: Nodes[i].sParentFKColumn, iStepID: Nodes[i].FKiStepDefinitionID, iStepIDXIGUID: Nodes[i].FKiStepDefinitionIDXIGUID, sOutputArea: Nodes[i].sOutputArea, sNameAttribute: Nodes[i].sNameAttribute, FKiVisualisationID: Nodes[i].FKiVisualisationID, FKiVisualisationIDXIGUID: Nodes[i].FKiVisualisationIDXIGUID, sSearchText: Nodes[i].sSearchText, XIGUID: Nodes[i].XIGUID, sCSS: Nodes[i].sCSS });
+                        item["data"] = nodedata;
+                        jsondata.push(item);
+                    }
+                    if (jsondata.length > 0) {
+                        var jsonString = JSON.stringify(jsondata);
+                        createJSTree(JSON.parse(jsonString));
+                    }
+                }
+            }
+            else{
+                var jsondata = [];
+                var Nodes = @Html.Raw(Json.Encode(Nodes));
+                var Nodes;
+                if(Nodes && Nodes!=null && Nodes.length > 0){
+                    Mode = Nodes[0].sContext;
+                    Output = Nodes[0].sOutputArea;
+                    var j=0;
+                    for (var i = 0; i < Nodes.length; i++) {
+                        item = {}
+                        item["id"] = Nodes[i].ID
+                        if(Nodes[i].FKiParentID == "#"){
+                            item["parent"] ="#";
+                        }
+                        else{
+                            item["parent"] =Nodes[i].FKiParentID;
+                        }
+                        item["text"] = Nodes[i].sName;
+                        var nodedata = [];
+                        nodedata.push({ sInsName: Nodes[i].sInsName, sInsID: Nodes[i].sInsID, iBODID: Nodes[i].BOID, sBO: Nodes[i].sBO, i1ClickID: Nodes[i].i1ClickID, s1ClickID: Nodes[i].s1ClickID, sType: Nodes[i].sType, sMode: Nodes[i].sMode, sParentFK: Nodes[i].sParentFKColumn, iStepID: Nodes[i].FKiStepDefinitionID, iStepIDXIGUID: Nodes[i].FKiStepDefinitionIDXIGUID, sOutputArea: Nodes[i].sOutputArea, sNameAttribute: Nodes[i].sNameAttribute, FKiVisualisationID: Nodes[i].FKiVisualisationID, FKiVisualisationIDXIGUID: Nodes[i].FKiVisualisationIDXIGUID, sSearchText:Nodes[i].sSearchText});
+                    item["data"] = nodedata;
+                    jsondata.push(item);
+                }
+                if(jsondata.length>0){
+                    var jsonString = JSON.stringify(jsondata);
+                    if('@sTreeType' == "script" ){
+                        createJSTreeScripts(JSON.parse(jsonString));
+                    }
+                    else{
+                        createJSTree(JSON.parse(jsonString));
+                    }
+                }
+            }
+        }
+    }
+        else if( '@sTreeType' == "instancetree"){
+        if('@sLoadType' == "onload"){
+            fncGetChildData('@sParentID', '@sFolderName', '@BuildingID', '@sLoadType', '','','', '@sFilterType')
+            }
+    }
+    else if('@sTreeType' == "folder"){
+        //var Folderdata = [];
+        //item = {}
+        //item["id"] = "0";
+        //item["parent"] ="#";
+        //item["text"] = "Client1";
+        //Folderdata.push(item);
+        var Tree = @Html.Raw(Json.Encode(TreeData));
+        if(Tree && Tree!=null && Tree.length > 0){
+            var Nodes = Tree[0];
+            fncGetRecursiveFolders(Nodes).then(function (data) {
+
+                if(Folderdata.length>0){
+                    var jsonString = JSON.stringify(Folderdata);
+                    createFolderJSTree(JSON.parse(jsonString));
+                }
+            });
+        }
+    }
+
+    });
+    function createFolderJSTree(UIjsondata) {
+        debugger
+        $("#TreeStrctr-@sTreeGuid").jstree("open_all");
+        $('#TreeStrctr-@sTreeGuid').jstree({
+            "core": {
+        "themes": {
+            "variant": "large"
+                },
+                "check_callback": true,
+                'data': UIjsondata,
+            },
+            "state" : { "key" : "TreeStrctr-@sTreeGuid" },
+            "types": {
+        "#": {
+            "valid_children": ["default"]
+                },
+                //les dossiers
+                "default": {
+            "valid_children": ["default", "presentation"],
+                    //"icon": "img/icons/etablissement.png"
+                    "icon" : "fa fa-folder fc-theme"
+                },
+                "demo" : {
+            "icon" : "fa fa-folder-open"
+                }
+    },
+            "contextmenu":{
+        "items": function($node) {
+            var tree = $("#TreeStrctr-@sTreeGuid").jstree(true);
+            return {
+                "Create": {
+                    "separator_before": false,
+                            "separator_after": false,
+                            "label": "Create",
+                            "action": function (obj) {
+                        FolderTree="";
+                        GetParentFolderTree($node).then(function (data) {
+                            var sFolderName=data+"New folder";
+                            if(FolderBuildingID == ""){
+                                FolderBuildingID = 0;
+                            }
+                                    $.ajax({
+                            type: 'POST',
+                                        url: '@Url.Action("FolderOperations", "File")',
+                                        data: {sParentID: $node.id, sFolderName: sFolderName, sType:'create', iBuildingID:FolderBuildingID},
+                                        cache: false,
+                                        dataType: 'json',
+                                        success: function (data) {
+                                    if(parseInt(data)>0){
+                                        ID = parseInt(data);
+                                        var nodedata = [];
+                                        nodedata.push({sType:10});
+                                        item["data"] = nodedata;
+                                                $node = tree.create_node($node, { text: 'New folder', type: 'default',id:ID, data:nodedata });
+                                        tree.deselect_all();
+                                                //tree.select_node($node);
+                                                $("#TreeStrctr-@sTreeGuid").jstree("open_all");
+                                        var ParentID = $("#" + $node).parent().parent().attr('id');
+                                        var NodeTitle = $(null + $node).text();
+                                        ChangeDocIcon();
+                                    }
+                                    else{
+                                        //alert('Error Occurred');
+                                        $('#TempDataMsg').html('Error Occurred');
+                                        $('#TempDataMsg').html('Error Occurred');
+                                    }
+                                }
+                            });
+
+                        });
+
+                    }
+                },
+                        "Rename": {
+                    "separator_before": false,
+                            "separator_after": false,
+                            "label": "Rename",
+                            "action": function (obj) {
+                        if($node.parent != '#' && $node.data[0].brestrict != 'True'){
+                            tree.edit($node, null, function (node, status) {
+                                FolderTree="";
+                                var PNode = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node($node.parent);
+                                GetParentFolderTree(PNode).then(function (data) {
+                                    if(FolderBuildingID == ""){
+                                        FolderBuildingID = 0;
+                                    }
+                                    var NewName = node.text.replace("&amp;","&");
+                                    var sFolderName=data + NewName;
+                                    if (node.original.text != NewName) {
+                                                $.ajax({
+                                        type: 'POST',
+                                                    url: '@Url.Action("FolderOperations", "File")',
+                                                    data: { sParentID: '', sFolderName: sFolderName, sType:'rename', sOldFolder:data + node.original.text, ID: node.id, iBuildingID: FolderBuildingID},
+                                                    cache: false,
+                                                    dataType: 'json',
+                                                    success: function (data) {
+                                                if(parseInt(data)>0){
+                                                    node.original.text=NewName;
+                                                }
+                                                else{
+                                                    //alert('Error Occurred');
+                                                    $('#TempDataMsg').html('Error Occurred');
+                                                            $("#TreeStrctr-@sTreeGuid").jstree('rename_node', $node , node.original.text );
+                                                    //$node.text = node.original.text;
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                        }
+                                else{
+                                    $("#DeleteFolder").dialog({
+                            model: true,
+                                        title: "Access Denied",
+                                        buttons : {
+                                    "Ok" : function() {
+                                                $(this).dialog("close");
+                                    }
+                                }
+                            });
+                        }
+                    }
+                },
+                        "Upload": {
+                    "separator_before": false,
+                            "separator_after": false,
+                            "label": "Upload",
+                            "action": function (obj) {
+                        if($node.parent != '#' && $node.data[0].sType== "10" && $node.data[0].brestrict != 'True'){
+                            FolderTree="";
+                            var PNode = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node($node.parent);
+                            GetParentFolderTree(PNode).then(function (data) {
+                                var Folder = data + $node.text;
+                                var Nd = $("#TreeStrctr-@sTreeGuid").find('#'+$node.id);
+                                Nd.attr('data-parentid', $node.id);
+                                Nd.attr('data-buildingid', FolderBuildingID);
+                                Nd.attr('data-foldername',Folder);
+                                fncUpLoadDocument(Nd[0], 'Admin');
+                            })
+                                }
+                                else{
+                                    $("#DeleteFolder").dialog({
+                            model: true,
+                                        title: "Access Denied",
+                                        buttons : {
+                                    "Ok" : function() {
+                                                $(this).dialog("close");
+                                    }
+                                }
+                            });
+                        }
+                    }
+                },
+                        "Add Level": {
+                    "separator_before": false,
+                            "separator_after": false,
+                            "label": "Add Level",
+                            "action": function (obj) {
+                        FolderTree="";
+                        GetParentFolderTree($node).then(function (data) {
+                            if(FolderBuildingID == ""){
+                                FolderBuildingID = 0;
+                            }
+                            var sFolderName=data+"New folder";
+                                    $.ajax({
+                            type: 'POST',
+                                        url: '@Url.Action("FolderOperations", "File")',
+                                        data: {sParentID: $node.id, sFolderName: sFolderName, sType:'add level', iBuildingID: FolderBuildingID},
+                                        cache: false,
+                                        dataType: 'json',
+                                        success: function (data) {
+                                    if(parseInt(data)>0){
+                                        ID = parseInt(data);
+                                        var nodedata = [];
+                                        nodedata.push({sType:10});
+                                        tree.create_node($node, { text: 'New folder', type: 'default',id:ID, data:nodedata });
+                                        tree.open_all();
+                                        var ChildNodes = $node.children;
+                                        var Childs = ChildNodes;
+                                        if(Childs && Childs.length > 0){
+                                            for(var p=0;p<Childs.length;p){
+                                                if(Childs[0] != ID){
+                                                    var src = '#'+Childs[0];
+                                                            $("#TreeStrctr-@sTreeGuid").jstree("move_node", src, "#"+ID, 0);
+                                                    var Node = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node(Childs[p]);
+                                                }
+                                                else{
+                                                    p++;
+                                                }
+                                            }
+                                        }
+                                                $("#TreeStrctr-@sTreeGuid").jstree("open_all");
+                                        ChangeDocIcon();
+                                    }
+                                    else{
+                                        //alert('Error Occurred');
+                                        $('#TempDataMsg').html('Error Occurred');
+                                    }
+                                }
+                            });
+                        });
+                    }
+                },
+                        "Remove Level": {
+                    "separator_before": false,
+                            "separator_after": false,
+                            "label": "Remove Level",
+                            "action": function (obj) {
+                        if($node.parent != '#'  && $node.data[0].brestrict != 'True'){
+                                    $("#DeleteFolder").dialog({
+                            title: "Are you sure you want to delete?",
+                                        buttons : {
+                                    "Yes" : function() {
+                                        FolderTree="";
+                                        var PNode = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node($node.parent);
+                                        var sFileType = $node.data[0].sType;
+                                        GetParentFolderTree(PNode).then(function (data) {
+                                            var sFolderName=data+$node.text;
+                                                    $.ajax({
+                                            type: 'POST',
+                                                        url: '@Url.Action("FolderOperations", "File")',
+                                                        data: { sParentID: $node.parent, sFolderName: sFolderName, sType:'remove level', sOldFolder:'', ID: $node.id, sFileType:sFileType},
+                                                        cache: false,
+                                                        dataType: 'json',
+                                                        success: function (data) {
+                                                    if(parseInt(data)>0){
+                                                        var Parent =$node.parent;
+                                                        var ChildNodes = $node.children;
+                                                        var Childs = ChildNodes;
+                                                        if(Childs && Childs.length > 0){
+                                                            for(var p=0;p<Childs.length;p){
+                                                                if(Childs[0] != data){
+                                                                    var src = '#'+Childs[0];
+                                                                            $("#TreeStrctr-@sTreeGuid").jstree("move_node", src, "#"+Parent, 0);
+                                                                    var Node = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node(Childs[p]);
+                                                                }
+                                                                else{
+                                                                    p++;
+                                                                }
+                                                            }
+                                                        }
+                                                        tree.delete_node($node);
+                                                    }
+                                                    else{
+                                                        // alert('Error Occurred');
+                                                        $('#TempDataMsg').html('Error Occurred');
+                                                    }
+                                                    ChangeDocIcon();
+                                                },
+                                                        error: function (data) {
+                                                }
+                                            });
+                                        });
+                                                $(this).dialog("close");
+                                    },
+                                            "No" : function() {
+                                                $(this).dialog("close");
+                                    }
+                                }
+                            });
+
+                        }
+                                else{
+                                    $("#DeleteFolder").dialog({
+                            model: true,
+                                        title: "Access Denied",
+                                        buttons : {
+                                    "Ok" : function() {
+                                                $(this).dialog("close");
+                                    }
+                                }
+                            });
+                        }
+                    }
+                },
+                        "Delete": {
+                    "separator_before": false,
+                            "separator_after": false,
+                            "label": "Delete",
+                            "action": function (obj) {
+                        if($node.parent != '#' && $node.data[0].brestrict != 'True'){
+                                    $("#DeleteFolder").dialog({
+                            title: "Are you sure you want to delete?",
+                                        buttons : {
+                                    "Yes" : function() {
+                                        FolderTree="";
+                                        var PNode = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node($node.parent);
+                                        var sFileType = $node.data[0].sType;
+                                        GetParentFolderTree(PNode).then(function (data) {
+                                            var sFolderName=data+$node.text;
+                                                    $.ajax({
+                                            type: 'POST',
+                                                        url: '@Url.Action("FolderOperations", "File")',
+                                                        data: { sParentID: '', sFolderName: sFolderName, sType:'delete', sOldFolder:'', ID: $node.id, sFileType:sFileType},
+                                                        cache: false,
+                                                        dataType: 'json',
+                                                        success: function (data) {
+                                                    if(parseInt(data)>0){
+                                                        tree.delete_node($node);
+                                                    }
+                                                    else{
+                                                        //alert('Error Occurred');
+                                                        $('#TempDataMsg').html('Error Occurred');
+                                                    }
+                                                },
+                                                        error: function (data) {
+                                                }
+                                            });
+                                        });
+                                                $(this).dialog("close");
+                                    },
+                                            "No" : function() {
+                                                $(this).dialog("close");
+                                    }
+                                }
+                            });
+
+                        }
+                                else{
+                                    $("#DeleteFolder").dialog({
+                            model: true,
+                                        title: "Access Denied",
+                                        buttons : {
+                                    "Ok" : function() {
+                                                $(this).dialog("close");
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            };
+        }
+    },
+            //"plugins": ["contextmenu", "types", "dnd", "state"],
+            "plugins": ["types", "contextmenu"],
+            "dnd": {},
+            //}).bind("move_node.jstree", function (e, data) {
+            //    DragAndDropNodes(data)
+        }).bind("loaded.jstree", function (event, data) {
+            $(this).jstree("open_all");
+        ChangeDocIcon();
+    }).on("changed.jstree", function (event, data) {
+        var evt =  window.event || event;
+        var button = evt.which || evt.button;
+
+        if( button != 1 && ( typeof button != "undefined")) return false;
+        if(data.selected.length == 1){
+            var nid = data.node.id;
+            if(data.node.data[0].sType == "10" && data.node.data[0].bHasChilds){
+                    $.ajax({
+                type: 'POST',
+                        contentType: 'application/json; charset=utf-8',
+                        url: '@Url.Action("GetChildData", "File")',
+                        datatype: 'json',
+                        cache: false,
+                        async: true,
+                        data: JSON.stringify({ nodeID: nid, nodeName:data.node.text, iBuildingID: "0", sLoadType:"folder"}),
+                        success: function (Nodes) {
+                        Folderdata =[];
+                        var tree = $("#TreeStrctr-@sTreeGuid").jstree(true);
+                        fncGetRecursiveFolders(Nodes).then(function (fdata) {
+                            if(fdata.length>0){
+                                for(var x=0;x<fdata.length;x++){
+                                    var _node = tree.get_node(fdata[x].parent);
+                                    var isNodeExists = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node(fdata[x].id);
+                                    if(isNodeExists){
+
+                                    }
+                                    else{
+                                        tree.create_node(_node, { text: fdata[x].text, type: 'default',id:fdata[x].id, data:fdata[x].data });
+                                if(fdata[x].sType=="10" && fdata[x].bHasChilds == true){
+                                                $("#TreeStrctr-@sTreeGuid").find('#'+fdata[x].id).find('i.jstree-themeicon').first().removeClass('fa-folder').addClass('fa-folder-open');
+                                }
+                            }
+                        }
+                    }
+                                $("#TreeStrctr-@sTreeGuid").find('#'+nid).find('i.jstree-themeicon').first().removeClass('fa-folder').addClass('fa-folder-open');
+                                $("#TreeStrctr-@sTreeGuid").jstree(true).get_node(nid).data[0].bHasChilds = false;
+                    tree.open_all();
+                    ChangeDocIcon();
+                })
+                            FolderTree="";
+                GetParentFolderTree(data.node).then(function (result) {
+                                $('.slctpro').attr('data-parentid', nid);
+                                $('.slctpro').attr('data-bid', FolderBuildingID);
+                                $('.slctpro').attr('data-foldername', result);
+                })
+                        }
+        })
+                }
+                else if(data.node.data[0].sType == "10"){
+        FolderTree="";
+        GetParentFolderTree(data.node).then(function (result) {
+                        $('.slctpro').attr('data-parentid', nid);
+                        $('.slctpro').attr('data-bid', FolderBuildingID);
+                        $('.slctpro').attr('data-foldername', result);
+        })
+                }
+    else if(data.node.data[0].sType == "20"){
+        FolderTree="";
+        var _this = this;
+        GetParentFolderTree(data.node).then(function (result) {
+            var PNode = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node(data.node.parent);
+                        $('.slctpro').attr('data-parentid', PNode.id);
+                        $('.slctpro').attr('data-bid', FolderBuildingID);
+                        $('.slctpro').attr('data-vbatchid', data.node.data[0].vbatchid);
+            result = result.substr(0, result.length-2);
+            var LstFolder =result.lastIndexOf("//");
+            result = result.substr(0, LstFolder);
+                        $('.slctpro').attr('data-foldername', result);
+            fncLoadPDFPreview(_this, nid);
+        })
+                    //PID = $('.slctpro').attr('data-parentid'); //$(_this).attr('data-parentid');
+                    //BID = $('.slctpro').attr('data-bid'); //$(_this).attr('data-buildingid');
+                    //FolderPath = $('.slctpro').attr('data-foldername');
+
+                }
+
+                //fncSelectNode(data.node, this);
+            }
+            else{
+        for(i=0;i<data.selected.length;i++){
+            if(i!=0){
+                data.instance.deselect_node(data.node)
+                    }
+        }
+    }
+        });;
+        // bind customize icon change function in jsTree open_node event.
+        $('#TreeStrctr-@sTreeGuid').on('open_node.jstree', function(e, data){
+        var icon = $('#' + data.node.id).find('i.jstree-icon').first();
+        icon.removeClass('fa-folder').addClass('fa-folder-open');
+        ChangeDocIcon();
+    });
+
+        // bind customize icon change function in jsTree close_node event.
+        $('#TreeStrctr-@sTreeGuid').on('close_node.jstree', function(e, data){
+        var icon = $('#' + data.node.id).find('i.jstree-icon').first();
+        icon.removeClass('fa-folder-open').addClass('fa-folder');
+        ChangeDocIcon();
+    });
+    }
+
+    function ChangeDocIcon(){
+        $("#TreeStrctr-@sTreeGuid").find('.jstree-leaf').each(function () {
+            var id = $(this).attr('id');
+            var PNodeType = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node(id).data[0].sType;
+            var bHasChilds = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node(id).data[0].bHasChilds;
+            if (PNodeType == "20") {
+                $(this).find('i.jstree-themeicon').removeClass('fa-folder').addClass('fa-file-pdf-o');
+            }
+            if(bHasChilds){
+                $(this).find('i.jstree-icon').addClass('importantRule');//.css("background-position","-96px 0");
+            }
+        });
+    }
+
+    var FolderTree="";
+    var FolderBuildingID= "";
+    function GetParentFolderTree(node){
+        return new Promise(function (resolve, reject) {
+            var ParentNode= node.parent;
+        if(node.data && node.data[0].bproject== 'True'){
+            FolderBuildingID = node.id;
+        }
+        if(ParentNode == '#'){
+            FolderTree =  node.text+'//' + FolderTree;
+            resolve(FolderTree);
+        }
+        else{
+            var PNode = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node(ParentNode);
+            if(PNode.data && PNode.data[0].bproject == 'True' && FolderBuildingID == ""){
+                FolderBuildingID = PNode.id;
+            }
+            FolderTree =  node.text+'//' + FolderTree;
+            GetParentFolderTree(PNode);
+        }
+        resolve(FolderTree);
+    });
+
+    }
+    function SaveAlg(){
+        debugger
+        $('#AlgSave').attr('disabled','disabled');
+        var test="";
+        var endSring="";
+        var ifornot="";
+        var tree = $('#TreeStrctr-@sTreeGuid').jstree(true);
+        var jsondata = [];
+        var str;
+        var index=0;
+        var currentNode = $(".jstree-node")[index].id;
+        var childrens=$("#" + currentNode).find('.jstree-children')[0];
+        var value1=$("#"+currentNode+"_anchor").text()
+        var value=$("#"+childrens.childNodes[0].id+"_anchor").text()
+        test=test+value1+"_"
+        var scripts = function (childrens) {
+            if (childrens != undefined && childrens != null)
+            {
+                for (var i=0;i<childrens.childNodes.length;i++)
+                {
+                    if(childrens.childNodes[i].classList.contains('jstree-open'))
+                    {
+                        currentNode=childrens.childNodes[i].id
+                        var children=$("#" + currentNode).find('.jstree-children')[0];
+                        value1=$("#"+currentNode+"_anchor").text()
+                        value=$("#"+childrens.childNodes[i].id+"_anchor").text();
+                        if(value1.toLowerCase()=="a"||value1.toLowerCase()=="e"||value1.toLowerCase()=="r"||value1.toLowerCase()=="s"||value1.toLowerCase()=="i"||value1.toLowerCase()=="x"||value1=="-")
+                        {
+                            if(currentNode!=childrens.childNodes[i].id && value1=="-" && value=="-"){
+                                test=test+value1;
+                            }else{
+                                test=test+value1+":";
+                            }
+                        }
+                        else if(value1.toLowerCase()=="xi.a"||value1.toLowerCase()== "xi.a.f"||value1.toLowerCase()== "xi.a.fk"||value1.toLowerCase()== "xi.a.fk.f"||value1.toLowerCase()== "xi.d"||value1.toLowerCase()=="xi.a.d"||value1.toLowerCase()== "xi.p"||value1.toLowerCase()== "xi.r"||value1.toLowerCase()== "xi.api"||value1.toLowerCase()== "xi.qsxivalue"||value1.toLowerCase()== "xi.qsstepxivalue"||value1.toLowerCase()=="xi.m"||value1.toLowerCase()=="xi.s"){
+                            if(value1.toLowerCase()=="xi.a"||value1.toLowerCase()=="xi.p"||value1.toLowerCase()=="xi.qsxivalue"||value1.toLowerCase()=="xi.r"||value1.toLowerCase()=="xi.m"){
+                                test=test+"{"+value1+"|";
+                            }else{
+                                test=test+value1+"|"
+                            }
+                        }
+                        else if(value1.toLowerCase()=="add"||value1=="+"||value1.toLowerCase()=="sub"||value1=="-"||value1.toLowerCase()=="mul"||value1=="*"||value1.toLowerCase()=="div"||value1=="\/"||value1.toLowerCase()=="increment"||value1.toLowerCase()=="decrement"){
+                            test=test+"{"+value1+"|";
+                        }
+                        else if(value1.toLowerCase()=="eq"||value1=="="||value1.toLowerCase()=="gt"||value1==">"||value1.toLowerCase()=="lt"||value1=="<"||value1.toLowerCase()=="ne"||value1=="<>"||value1.toLowerCase()=="gteq"||value1==">="||value1.toLowerCase()=="lteq"||value1=="<="||value1.toLowerCase()=="if"||value1.toLowerCase()=="concat"||value1.toLowerCase()=="c"){
+                            test=test+"{"+value1+"|";
+                        }
+                        else{
+                            if(value1.toLowerCase()=="xim"||value1.toLowerCase()=="xip")
+                                test=test+"{"+value1+"|";
+                            else
+                                test=test+value1+"_";
+                        }
+                        scripts(children);
+                    }
+                    else{
+                        if(!childrens.childNodes[i].classList.contains('jstree-leaf')){
+                            currentNode=childrens.childNodes[i].id
+                        }
+                        value1=$("#"+currentNode+"_anchor").text()
+                        value=$("#"+childrens.childNodes[i].id+"_anchor").text()
+                        if(value1.toLowerCase()=="eq"||value1=="="||value1.toLowerCase()=="gt"||value1==">"||value1.toLowerCase()=="lt"||value1=="<"||value1.toLowerCase()=="ne"||value1=="<>"||value1.toLowerCase()=="gteq"||value1==">="||value1.toLowerCase()=="lteq"||value1=="<="||value1.toLowerCase()=="if"||value1.toLowerCase()=="concat"||value1.toLowerCase()=="c"){
+                            if(childrens.childNodes.length==i+1){
+                                if($("#" + currentNode)[0].classList.contains('jstree-last')&&$("#" + currentNode)[0].classList.contains('jstree-leaf'))
+                                {
+        var LI = test.lastIndexOf(',');
+        test=test.slice(0, LI) + test.slice(LI).replace(',','},');
+    }else{
+        test=test+value+"},"
+                                }
+                            }
+                            else{
+        test=test+value+","
+                            }
+                        }
+                        else{
+        if(childrens.childNodes.length==i+1){
+            if(test.indexOf('{')>0){
+                if($("#" + currentNode)[0].classList.contains('jstree-last')&&$("#" + currentNode)[0].classList.contains('jstree-open'))
+                                    {
+                    if(test.lastIndexOf(',')>0){
+                        var LI = test.lastIndexOf(',');
+                        test=test.slice(0, LI) + test.slice(LI).replace(',','},');
+                    }
+                    else if(test.lastIndexOf('|')>0){
+                        if(value.startsWith('m.')||value.startsWith('xim.')||value.startsWith('xis.')||value.startsWith('p.'))
+                        {
+                            if(value.startsWith('p.')){
+                                var LI = test.lastIndexOf('|');
+                                test=test.slice(0, LI) + test.slice(LI).replace('|',',')
+                                                    test=test+value;
+                            }else{var LI = test.lastIndexOf('|');
+                                test=test.slice(0, LI) + test.slice(LI).replace('|',',')
+                                                    test=test+value+"},";
+                            }
+                        }else{
+                            test=test+value+"},";
+                        }
+                    }
+                }else{
+                    test=test+value+"},"
+                                    }
+            }
+            else{
+                if(test.startsWith('Method')||test.startsWith('XIScript')){
+                    if(value1.toLowerCase()!="a"&&value1.toLowerCase()!="e"&&value1.toLowerCase()!="r"&&value1.toLowerCase()!="s"&&value1.toLowerCase()!="i"&&value1.toLowerCase()!="x"&&value1=="-")
+                    {
+                        var LI = test.lastIndexOf('|');
+                        test=test.slice(0, LI) + test.slice(LI).replace('|',',[')
+                                            test=test+value+']'
+                                        }
+                    else{
+                        if(value.startsWith('m.')||value.startsWith('xim.')||value.startsWith('xis.')||value.startsWith('p.'))
+                        {
+                            if(value.startsWith('p.')){
+                                var LI = test.lastIndexOf('|');
+                                test=test.slice(0, LI) + test.slice(LI).replace('|',',')
+                                                    test=test+value;
+                            }else{
+                                test=test+value;
+                            }
+                        }
+                        else{
+                            var LI = test.lastIndexOf('|');
+                            test=test.slice(0, LI) + test.slice(LI).replace('|',',[')
+                                                test=test+value+']'
+                                            }
+                    }
+                }else{
+                    test=test+value;
+                }
+            }
+        }
+        else if(value=="-"){
+            test=test+value
+                            }else{
+            if(value.startsWith('-')||value.startsWith('a')||value.startsWith('c')||value.startsWith('x')){
+                test=test+value+"|"
+                                }else{
+                test=test+value+","
+                                }
+        }
+    }
+                    }
+                }
+            }
+        }
+        scripts(childrens);
+    var n = test.lastIndexOf(',');
+    var StartCount=(test.match(/{/g) || []).length;
+    var EndCount=(test.match(/}/g) || []).length;
+    if(StartCount>EndCount){
+        var diff=StartCount-EndCount;
+        for(var i=0;i<diff;i++)
+            test=test+'}'
+        }
+    test=test.slice(0, n) + test.slice(n).replace(',', '');
+    if(test.startsWith('Method'))
+    {
+        test=test.replace('Method','xi.m')
+        }else if(test.startsWith('Algorithm')){
+        test=test.replace('Algorithm','xi.ag')
+        }
+    else
+    {
+        test=test.replace('XIScript','xi.s')
+        }
+    var RowID="0";
+    if($(this)[0].hasOwnProperty("RowData")){
+        RowID = $(this)[0].RowData[0];
+    }
+    var formid = $('.DetailsTable .CreateForm').attr('id');
+    var formData = JSON.parse(JSON.stringify(jQuery('#'+formid).serializeArray()));
+    formData = processFormData(formData, formid);
+    var Param = {};var oParams=[];
+    for (var i = 0; i < formData.length; i++) {
+        Param = {};
+        Param["sName"] = formData[i].name;
+        Param["sValue"] = formData[i].value;
+        oParams.push(Param);
+    }
+    var oNVParams;
+    var Params = {
+            Script: test,
+            RowID:RowID,
+            sBOName:"XIAlgorithmLines_T",
+            oNVParams:oParams
+        }
+        $.ajax({
+    url: '/XIComponents/ValidateSaveScript',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            cache: false,
+            async: false,
+            data: JSON.stringify(Params),
+            success: function (data) {
+                $("#data").text(data)
+            },
+            error: function(err){
+        }
+    });
+    }
+    function TreeSave(){
+        $('#TreeSave').attr('disabled','disabled');
+        $('#lblID').val($(this)[0].RowData[0]);
+        var test="";
+        var endSring="";
+        var ifornot="";
+        var tree = $('#TreeStrctr-@sTreeGuid').jstree(true);
+        var jsondata = [];
+        var str;
+        var index=0;
+        var currentNode = $(".jstree-node")[index].id;
+        var childrens=$("#" + currentNode).find('.jstree-children')[0];
+        var scripts = function(childrens) {
+            if(childrens!=undefined && childrens!=null)
+            {
+                for (var i=0;i<childrens.childNodes.length;i++)
+                {
+                    if(childrens.childNodes[i].classList.contains('jstree-open'))
+                    {
+                        currentNode=childrens.childNodes[i].id
+                        var children=$("#" + currentNode).find('.jstree-children')[0];
+                        var value1=$("#"+currentNode+"_anchor").text()
+                        var value=$("#"+children.childNodes[0].id+"_anchor").text()
+                        test=test+"{"+value1+"|"
+                        scripts(children);
+                    }else{
+                        if(!childrens.childNodes[i].classList.contains('jstree-leaf')){
+                            currentNode=childrens.childNodes[i].id
+                        }
+                        var value1=$("#"+currentNode+"_anchor").text()
+                        var value=$("#"+childrens.childNodes[i].id+"_anchor").text()
+                        if(value.toLowerCase()=="'true'"||value.toLowerCase()=="'false'"||value.toLowerCase()=="'yes'"||value.toLowerCase()=="'no'")
+                        {
+                            if(childrens.childNodes.length==i+1){
+                                test=test+value+"},"
+                            }
+                            else
+                            {
+                                test=test+value+","
+                            }
+                        }
+                        else
+                        {
+                            if(value1.indexOf('.')>0&value.indexOf('.')>0){
+                                if(value.startsWith("'")&&childrens.childNodes.length==i+1){
+                                    test=test+value+"},"}
+                                else if(childrens.childNodes.length==i+1||i==0){
+                                    var n = test.lastIndexOf('|');
+                                    if(n==-1){
+                                        test=test+'|{'+value+'|';
+                                    }else{
+                                        test=test.slice(0, n) + test.slice(n).replace('|', '{'+value+'|');
+                                    }
+                                }
+                                else{
+                                    var n = test.lastIndexOf('|');
+                                    test=test.slice(0, n) + test.slice(n).replace('|', '|{'+value+'|');
+                                }
+                            }
+                            else if(value1.indexOf('.')>0&&value.indexOf('.')==-1){
+                                if(childrens.childNodes.length==i+1&&childrens.childNodes.length<2){
+                                    var n = test.lastIndexOf('|');
+                                    if($("#" + currentNode)[0].classList.contains('jstree-last')&&$("#" + currentNode)[0].classList.contains('jstree-open')){
+                                        test=test.slice(0, n) + test.slice(n).replace('|','|'+ value+'}},');
+                                        if($("#" + currentNode).parent().parent()[0].classList.contains('jstree-last')&&$("#" + currentNode).parent().parent()[0].classList.contains('jstree-open'))
+                                        {
+                                            var LI = test.lastIndexOf(',');
+                                            test=test.slice(0, LI) + test.slice(LI).replace(',','},');
+                                        }
+                                    }else{
+                                        test=test.slice(0, n) + test.slice(n).replace('|','|'+ value+'},');
+                                    }
+                                }
+                                else if(childrens.childNodes.length==i+1){
+                                    test=test+value+'},'
+                                }
+                                else
+                                {
+                                    test=test+value+','
+                                }
+                            }
+                            else if(value=="if"||value.indexOf('.')>0){
+                                if(test.indexOf(value1)>0&&value.indexOf('.')>0){
+                                    test=test.replace(value1,value1+"|{"+value+"|")
+                                }
+                                else if(value1.indexOf('.')>0&&(value1=="xi.r"||value1=="xi.p")){
+                                    test=test+'|'+value+'},'
+                                }
+                                else {
+                                    test=test+"|{"+value
+                                }
+                            }
+                            else
+                            {
+                                if(childrens.childNodes.length==i+1){
+                                    var n = test.lastIndexOf('|');
+                                    if(value1.indexOf('.')>0&&(value1=="xi.r"||value1=="xi.p")){
+                                        test=test.slice(0, n) + test.slice(n).replace('|', '{'+value1+'|'+value+'},');}
+                                    else{
+                                        if(value1=="concat"|| value1=="contains"){
+                                            test=test+value+'},';
+                                        }
+                                        else{
+                                            test=test.slice(0, n) + test.slice(n).replace('|', '|'+value+'},');
+                                        }
+                                    }
+                                }
+                                else{
+                                    test=test+value+","
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        };
+        scripts(childrens);
+
+        var n = test.lastIndexOf(',');
+        var StartCount=(test.match(/{/g) || []).length;
+        var EndCount=(test.match(/}/g) || []).length;
+        if(StartCount>EndCount){
+            var diff=StartCount-EndCount;
+            for(var i=0;i<diff;i++)
+                test=test+'}'
+        }
+        test='xi.s|'+test.slice(0, n) + test.slice(n).replace(',', '');
+        $("#sScript").text(test);
+        //$("#dialog").show();
+    }
+    $('#sType').on('change',function(){
+        var Value=$(this).val();
+        if(Value.toLowerCase()=="script"){
+            var Script=$("#sScript").text();
+            var count = (Script.match(/\[(.*?)]/g) || []).length;
+            var Values=Script.match(/\[(.*?)]/g);
+            if(count>0){
+                $("#dialogbox").dialog({
+                    autoOpen:true,
+                    modal:true,
+                    title: "Please rename Dynamic Parameters.",
+                    width:400,
+                    open: function() {
+                        $("#dynamicFields").html("");
+                        for(i=0; i<Values.length; i++) {
+                            var num=i+1;
+                            var value=Values[i].substring(1,Values[i].length-1);
+                            if(value.indexOf('|')>0){
+                                $('<p>'+value.split('|')[0]+'</p>\t <input type="text" id="Param'+i+'" value="'+value.split('|')[1]+'"/>').appendTo("#dynamicFields");
+                            }else{
+                                $('<p>'+value+'</p>\t <input type="text" id="Param'+i+'" value=""/>').appendTo("#dynamicFields");
+                            }
+                        }
+                    },
+                    buttons : {
+                        "Ok" : function() {
+                            for(i=0; i<Values.length; i++) {
+                                var sValue=$("#Param"+i).val();
+                                Script=Script.replace(Values[i],sValue);
+                            }
+                            $("#sScript").text(Script);
+                            $(this).dialog("close");
+                        }
+                    }
+                })
+            }
+        }
+    })
+    $('#SaveBtn').click(function(){
+        var Name=$('#sName').val();
+        var Description=$('#sDescription').val();
+        var Script=$('#sScript').html();
+    var Type=$('#sType').val();
+        var Param = {};var oParams=[];
+        Param = {};
+        Param["sName"] = "sName";
+        Param["sValue"] = Name;
+        oParams.push(Param);
+        Param = {};
+        Param["sName"] = "sDescription";
+        Param["sValue"] = Description;
+        oParams.push(Param);
+    Param = {};
+        Param["sName"] = "sType";
+        Param["sValue"] = Type;
+        oParams.push(Param);
+        var RowID="0";
+        if($(this)[0].hasOwnProperty("RowData")){
+            RowID = $(this)[0].RowData[0];
+        }
+    else {
+            RowID=$('#lblID').val();
+        }
+        var oNVParams;
+        var Params = {
+            Script: Script,
+            RowID:RowID,
+            sBOName:"xiboscripts",
+            oNVParams:oParams
+        }
+        $.ajax({
+            url: '@Url.Action("ValidateSaveScript", "XIComponents")',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            cache: false,
+            async: false,
+            data: JSON.stringify(Params),
+            success: function (data) {
+                $("#data").text(data)
+            },
+            error: function(err){
+            }
+        });
+    })
+    var _selectedNodeId;
+    var ConfigParams;
+    var NodeTitle="";
+    var i=0;
+    function createJSTreeScripts(UIjsondata) {
+        debugger
+        $('#TreeStrctr-@sTreeGuid').empty();
+        $('#TreeStrctr-@sTreeGuid').removeAttr('class');
+        $('#TreeStrctr-@sTreeGuid').jstree({
+            "core": {
+                "themes": {
+                    "variant": "large"
+                },
+                "check_callback": true,
+                'data': UIjsondata,
+            },
+    "types": {
+                "#": {
+                    "valid_children": ["default"]
+                },
+                //les dossiers
+                "default": {
+                    "valid_children": ["default", "presentation"],
+                    //"icon": "img/icons/etablissement.png"
+                    "icon" : "fa fa-folder fc-theme"
+                },
+                "demo" : {
+                    "icon" : "fa fa-folder-open"
+                }
+            },
+                                           "plugins": ["types", "contextmenu", "dnd"],
+            "dnd": {},
+            "contextmenu": {
+                "items": function ($node) {
+                    var tree = $('#TreeStrctr-@sTreeGuid').jstree(true);
+                    return {
+                        "Create": {
+                            "separator_before": false,
+                            "separator_after": true,
+                            "label": "Create",
+                            action: function (obj) {
+                                $node = tree.create_node($node, { text: 'Add Script Item', type: 'default' });
+                                //   var ID = 0create_node
+                                //var RootName = $("#RootName").val();
+                                //var iRoleID = $('#RoleID').val();
+                                //var iOrgID = $('#OrgID').val();
+                                @*$.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("SaveMenuTreeDetails", "XiLink")',
+                                    data: {RootNode:RootName, NodeTitle: 'New Menu', Type:'create',NodeID:$node.id},
+                                    cache: false,
+                                    dataType: 'json',
+                                    success: function (data) {
+                                        if(parseInt(data)>0){
+                                            ID = parseInt(data);
+                                            $node = tree.create_node($node, { text: 'New Menu', type: 'default',id:ID });
+                                            tree.deselect_all();
+                                            tree.select_node($node);
+                                            var ParentID = $("#" + $node).parent().parent().attr('id');
+                                            var NodeTitle = $("#" + $node).text();
+                                            $.ajax({
+                                                type: 'POST',
+                                                url: '@Url.Action("SaveMenuTreeDetails", "XiLink")',
+                                                data: {ID:parseInt(data), ParentNode: ParentID, NodeID: '', Type:'create'},
+                                                cache: false,
+                                                dataType: 'json',
+                                                success: function (result) {
+                                                    if(parseInt(result)>0){
+
+                                                    }
+                                                    else{
+                                                        alert('Error Occurred');
+                                                    }
+                                                }
+                                            });
+                                        }
+                                        else{
+                                            alert('Error Occurred');
+                                        }
+                                    }
+                                });*@
+                            }
+                        },
+                        "Rename": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Rename",
+                            "action": function (obj) {
+                                tree.edit($node, null, function (node, status) {
+                                    if (node.original.text != node.text) {
+                                        RenameAndSaveToDB($node, "rename");
+
+                                        @*if(NodeTitle=="if")
+                                        {
+                                            for (i = 0; i < 4; i++) {
+                                                @*"contextmenu": {
+                                                    "items": function ($node) {
+                                                        var tree = $('#TreeStrctr-@sTreeGuid').jstree(true);
+                                                        return {
+                                                            "Create": {
+                                                                "separator_before": false,
+                                                                "separator_after": true,
+                                                                "label":"Create",
+                                                                action: function (obj) {
+                                                                    $node = tree.create_node($node, { text: 'New Menu', type: 'default' });
+                                                                },
+                                                            }
+                                                        };
+                                                //    }
+                                                //}
+                                            }
+                                }*@
+                                    }
+                                });
+                            }
+                        },
+                        "Remove": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Remove",
+                            "action": function (obj) {
+                                $("#Remove").dialog({
+                                    title: "Are you sure you want to delete ? ",
+                                    buttons : {
+                                        "Yes" : function() {
+
+                                            tree.delete_node($node);
+                                            //   DeleteNodeDetails($node, "delete");
+                                            $(this).dialog("close");
+
+                                        },
+                                        "No" : function() {
+                                            $(this).dialog("close");
+                                        }
+                                    }
+                                });
+                            }
+                        },
+                        "Library": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Library",
+                            'submenu': {
+                                'if': {
+                                    "separator_before": false,
+                                    "separator_after": false,
+                                    'label' : 'if',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Operator = tree.create_node($node, { text: '{Operator}', type: 'default' });
+                                        var value = tree.create_node($node, { text: '{Value 1}', type: 'default' });
+                                        value = tree.create_node($node, { text: '{Value 2}', type: 'default' });
+                                        //value = tree.create_node(Operator, { text: '{Result 1}', type: 'default' });
+                                        //value = tree.create_node(Operator, { text: '{Result 2}', type: 'default' });
+                                           tree.jstree("open_all");
+                                    }
+                                },
+                                'translate': {
+                                    'label' : 'translate',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{Paramter}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Value}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Result}', type: 'default' });
+                                    }
+                                },
+                                'xi.a': {
+                                    'label' : 'xi.a',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{BO Definition}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Instance ID}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Attribute Name}', type: 'default' });
+                                    }
+                                },
+                                'xi.a.f': {
+                                    'label' : 'xi.a.f',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{BO Definition}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Instance ID}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Attribute Name}', type: 'default' });
+                                    }
+                                },
+                                'xi.a.fk': {
+                                    'label' : 'xi.a.fk',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{BO Definition}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Instance ID}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{FK Attribute Name}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Attribute Name}', type: 'default' });
+                                    }
+                                },
+                                'xi.a.fk.f': {
+                                    'label' : 'xi.a.fk.f',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                    }
+                                },
+                                'xi.d': {
+                                    'label' : 'xi.d',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                    }
+                                },
+                                'xi.a.d': {
+                                    'label' : 'xi.a.d',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                    }
+                                },
+                                'xi.p': {
+                                    'label' : 'xi.p',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        $node = tree.create_node($node, { text: '{Parameter Name}', type: 'default' });
+                                    }
+                                },
+                                'xi.r': {
+                                    'label' : 'xi.r',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        $node = tree.create_node($node, { text: '{Reserved Word}', type: 'default' });
+                                    }
+                                },
+                                'xi.api': {
+                                    'label' : 'xi.api',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        $node = tree.create_node($node, { text: '{Concat Request}', type: 'default' });
+                                    }
+                                },
+                                'xi.qsxivalue': {
+                                    'label' : 'xi.qsxivalue',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{BO Definition}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Instance ID}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Attribute Name}', type: 'default' });
+                                    }
+                                },
+                                'xi.qsstepxivalue': {
+                                    'label' : 'xi.qsstepxivalue',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{Step Name}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Paramter Name}', type: 'default' });
+                                    }
+                                },
+                                'xi.user': {
+                                    'label' : 'xi.user',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{Attribute Name}', type: 'default' });
+                                    }
+                                },
+                                'xi.userrole': {
+                                    'label' : 'xi.userrole',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{Role Name}', type: 'default' });
+                                    }
+                                },
+                                'xi.qs': {
+                                    'label' : 'xi.qs',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{Step ID}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Field ID}', type: 'default' });
+                                    }
+                                },
+                                'add': {
+                                    'label' : 'add',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{Value 1}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Value 2}', type: 'default' });
+                                    }
+                                },
+                                'sub': {
+                                    'label' : 'sub',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{Value 1}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Value 2}', type: 'default' });
+                                    }
+                                },
+                                'mul': {
+                                    'label' : 'mul',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{Value 1}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Value 2}', type: 'default' });
+                                    }
+                                },
+                                'div': {
+                                    'label' : 'div',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{Value 1}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Value 2}', type: 'default' });
+                                    }
+                                },
+                                'eq': {
+                                    'label' : 'eq',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+    var Parameter = tree.create_node($node, { text: '{Value 1}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Value 2}', type: 'default' });
+                                    }
+                                },
+                                'gt': {
+                                    'label' : 'gt',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                    }
+                                },
+                                'lt': {
+                                    'label' : 'lt',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                    }
+                                },
+                                'ne': {
+                                    'label' : 'ne',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                    }
+                                },
+                                'gteq': {
+                                    'label' : 'gteq',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                    }
+                                },
+                                'lteq': {
+                                    'label' : 'lteq',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                    }
+                                },
+                                'or': {
+                                    'label' : 'or',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                    }
+                                },
+                                'Contains': {
+                                    'label' : 'Contains',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{Value 1}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Value 2}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Value 3}', type: 'default' });
+                                    }
+                                },
+                                'Concat': {
+                                    'label' : 'Concat',
+                                    "action": function (obj) {
+                                        $node.text=obj.item.label;
+                                        tree.edit($node);
+                                        var Parameter = tree.create_node($node, { text: '{Value 1}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Value 2}', type: 'default' });
+                                        Parameter = tree.create_node($node, { text: '{Value 3}', type: 'default' });
+                                    }
+                                },
+    'Dynamic Parameter': {
+                                    'label' : 'Dynamic Parameter',
+                                    "action": function (obj) {
+                                        i=i+1;
+                                        $node.text='[Param '+i+']';
+                                        tree.edit($node);
+                                        //var Parameter = tree.create_node($node, { text: '[Param]', type: 'default' });
+                                    }
+                                }
+                            }
+                        }
+                        //"AddDetails": {
+                        //    "separator_before": false,
+                        //    "separator_after": false,
+                        //    "label": "Add Details",
+                        //    "action": function (obj) {
+                        //        jsondata1=$node;
+                        //        fncSelectNode($node, tree)
+                        //    }
+                        //}
+                    };
+                }
+            },
+        }).bind("move_node.jstree", function (e, data) {
+            DragAndDropNodes(data)
+        }).bind("loaded.jstree", function (event, data) {
+            $(this).jstree("open_all");
+        }).bind("select_node.jstree", function (NODE, REF_NODE) {
+        }).on("changed.jstree", function (event, data) {
+            var evt = window.event || event;
+            var button = evt.which || evt.button;
+            if (button != 1 && (typeof button != "undefined")) return false;
+            if (data.selected.length == 1) {
+                var sdfd = Mode;
+                fncSelectNode(data.node, this);
+            }
+            else {
+                for (i = 0; i < data.selected.length; i++) {
+                    if (i != 0) {
+                        data.instance.deselect_node(data.node)
+                    }
+                }
+            }
+        }).on('hover_node.jstree', function (e, data) {
+            var $node = $("#" + data.node.id);
+            if (data.node.data!=null && data.node.data.length > 0) {
+                fncGetBOAttributeValue(data.node.data[0].iBODID, data.node.data[0].sInsID).then(function (result) {
+                    // var SelectedText = data.node.data[0].sBO;
+                    $("a#" + data.node.a_attr.id).prop('title', result);
+                });
+            }
+        });
+    // bind customize icon change function in jsTree open_node event.
+        $('#TreeStrctr-@sTreeGuid').on('open_node.jstree', function(e, data){
+            var icon = $('#' + data.node.id).find('i.jstree-icon.jstree-themeicon').first();
+            icon.removeClass('fa-folder').addClass('fa-folder-open');
+        });
+
+        // bind customize icon change function in jsTree close_node event.
+        $('#TreeStrctr-@sTreeGuid').on('close_node.jstree', function(e, data){
+            var icon = $('#' + data.node.id).find('i.jstree-icon.jstree-themeicon').first();
+            icon.removeClass('fa-folder-open').addClass('fa-folder');
+        });
+    }
+
+    function createJSTree(UIjsondata) {
+        $('#TreeStrctr-@sTreeGuid').jstree({
+            "core": {
+                "themes": {
+                    "variant": "large"
+                },
+                "check_callback": true,
+                'data': UIjsondata,
+            },
+            "state" : { "key" : "TreeStrctr-@sTreeGuid" },
+            "types": {
+                "#": {
+                    "valid_children": ["default"]
+                },
+                //les dossiers
+                "default": {
+                    "valid_children": ["default", "presentation"],
+                    //"icon": "img/icons/etablissement.png"
+                    "icon" : "fa fa-folder fc-theme"
+                },
+                "demo" : {
+                    "icon" : "fa fa-folder-open"
+                }
+            },
+            "contextmenu":{
+                "items": function($node) {
+                    return {
+                        "Create": {
+                            "separator_before": false,
+                            "separator_after": false,
+                            "label": "Clear",
+                            "action": function (obj) {
+                                var ParentID = $node.parent;
+                                if(('@Role' == "OrgIDE" || '@Role' == "AppAdmin" || '@Role'=="OrgAdmin") && ParentID == "#" ){
+
+}
+                                else
+                                {
+                                    var _Tree = $("#TreeStrctr-@sTreeGuid");
+                                    var childrens = $("#TreeStrctr-@sTreeGuid").jstree("get_children_dom",$node);
+                                    $("#TreeStrctr-@sTreeGuid").jstree(true).get_node($node.id).data[0].sInsID = "";
+                                    var NodeName = $node.text;
+                                    var n = NodeName.indexOf('(');
+                                    NodeName = NodeName.substring(0, n != -1 ? n : NodeName.length).trim();
+                                    $("#TreeStrctr-@sTreeGuid").jstree('rename_node', $node , NodeName );
+                                    for(var i=0;i<childrens.length;i++)
+                                    {
+                                        var ChildNode = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node(childrens[i].id);
+                                        $("#TreeStrctr-@sTreeGuid").jstree(true).get_node(childrens[i].id).data[0].sInsID = "";
+                                        var NodeName = ChildNode.text;
+                                        var n = NodeName.indexOf('(');
+                                        NodeName = NodeName.substring(0, n != -1 ? n : NodeName.length).trim();
+                                        $("#TreeStrctr-@sTreeGuid").jstree('rename_node', ChildNode , NodeName );
+                                        //alert(childrens[i].innerText);
+                                    }
+                                    fncSelectNode($node, _Tree[0], "yes");
+                                }
+                            }
+                        }
+                    };
+                }
+            },
+            //"plugins": ["contextmenu", "types", "dnd", "state"],
+            "plugins": ["types", "contextmenu"],
+            "dnd": {},
+            //}).bind("move_node.jstree", function (e, data) {
+            //    DragAndDropNodes(data)
+        }).bind("loaded.jstree", function (event, data) {
+            $(this).jstree("open_all");
+        }).on("changed.jstree", function (event, data) {
+            var evt =  window.event || event;
+            var button = evt.which || evt.button;
+            if( button != 1 && ( typeof button != "undefined")) return false;
+            if(data.selected.length == 1){
+                var sdfd = Mode;
+                fncSelectNode(data.node, this);
+            }
+            else{
+                for(i=0;i<data.selected.length;i++){
+                    if(i!=0){
+                        data.instance.deselect_node(data.node)
+                    }
+                }
+            }
+        });
+        // bind customize icon change function in jsTree open_node event.
+        $('#TreeStrctr-@sTreeGuid').on('open_node.jstree', function(e, data){
+            var icon = $('#' + data.node.id).find('i.jstree-icon.jstree-themeicon').first();
+            icon.removeClass('fa-folder').addClass('fa-folder-open');
+        });
+
+        // bind customize icon change function in jsTree close_node event.
+        $('#TreeStrctr-@sTreeGuid').on('close_node.jstree', function(e, data){
+            var icon = $('#' + data.node.id).find('i.jstree-icon.jstree-themeicon').first();
+            icon.removeClass('fa-folder-open').addClass('fa-folder');
+        });
+    }
+    function fncSelectNode(_node, _this, ParamClear){
+        //debugger
+        var Output = 'LeftTreeOutput';
+        var _uidialog = fncgetDialogFromHTMLTree('dialog', _this.element[0]);
+        if (Output && Output.length > 0) {
+            $(_uidialog).find('#' + Output).html('<div class="loader"></div>');
+        }
+        sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this.element[0]);
+        var sLayoutType = "Dialog";
+        var Parent = _node.parent;
+        var ComponentName = fncGetComponentNameFromHTMLTree('Component', _this.element[0]);
+        if (_uidialog == null || (_uidialog && _uidialog.length == 0)) {
+            sLayoutType = "inline-layout";
+            _uidialog = fncgetInlineLayoutFromHTMLTree('inline-layout', _this.element[0]);
+        }
+        var CurrentGUID = sCurrentGUID;
+        var NewParams = [];
+        //var StepID = ComponentName.split('-')[1];
+        //if(QSInfo[2].sValue && QSInfo[2].sValue > 0){
+        //var iQSDID = QSInfo[0].sValue;
+        var jCompDef = '@Html.Raw(Json.Encode(Model.oDefintion))';
+        var ConfigParams = JSON.parse(jCompDef).Params;
+        if(ConfigParams && ConfigParams.length > 0) {
+            var InputParams = [];
+            var id = _node.id;
+            var parent = _node.parent;
+            for(var i=0;i<ConfigParams.length;i++){
+                if (ConfigParams[i].sName.toLowerCase() == "MenuNodeparamname".toLowerCase()) {
+                    var WrapperParms = {};
+                    WrapperParms["sName"] = ConfigParams[i].sValue;
+                    WrapperParms["sValue"] = "XIC|null";
+                    // if(Mode.length > 0 ){
+                    var param1 = {};
+                    param1["sName"] = '{XIP|ParentNode}';
+                    param1["sValue"] = parent;
+                    InputParams.push(param1);
+                    var param2 = {};
+                    param2["sName"] = 'iInstanceID';
+                    param2["sValue"] = id;
+                    InputParams.push(param2);
+                    WrapperParms["nSubParams"] = InputParams;
+                    NewParams.push(WrapperParms);
+                }
+            }
+            fncUpdateXIParams('', sGUID, sGUID, NewParams).then(function (data) {
+                $('#MainContent').empty();
+                $('.tabbtn').attr('data-load', 'false');
+                TriggerComponent(sGUID, ComponentName, data, 'MainContent',_uidialog).then(function (ID) {
+                    //LoadSubnodeStep(sGUID, 'Step7 with BO Component', QSInfo[0].sValue, ID);
+                });
+
+
+            })
+        }
+    }
+    //rename and save the details
+    function RenameAndSaveToDB($node, action,node) {
+        var jsondata = [];
+        var Nodes = @Html.Raw(Json.Encode(Nodes));
+        var Nodes;
+        if(Nodes && Nodes!=null && Nodes.length > 0){
+            Mode = Nodes[0].sContext;
+            Output = Nodes[0].sOutputArea;
+            var j=0;
+            for (var i = 0; i < Nodes.length; i++) {
+                item = {}
+                item["id"] = Nodes[i].ID
+                item["sName"] = Nodes[i].sName;
+                // var nodedata = [];
+                //nodedata.push({sInsName:Nodes[i].sInsName, sInsID:Nodes[i].sInsID,iBODID:Nodes[i].BOID, sBO:Nodes[i].sBO, i1ClickID:Nodes[i].i1ClickID, sType: Nodes[i].sType, sMode: Nodes[i].sMode, sParentFK:Nodes[i].sParentFKColumn, iStepID:Nodes[i].FKiStepDefinitionID, sOutputArea:Nodes[i].sOutputArea, sNameAttribute:Nodes[i].sNameAttribute, FKiVisualisationID:Nodes[i].FKiVisualisationID});
+                //item["data"] = nodedata;
+                jsondata.push(item);
+            }
+        }
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ParentID = $node.parent;
+        NodeTitle = $node.text;
+        // var RootName = $("#RootName").val();
+        @*if (NodeID != "MainPrnt") {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("SaveScriptDetails", "XiLink")',
+                data: {RootNode:'',  ParentNode: ParentID, NodeID: NodeID, NodeTitle: NodeTitle, Type: action,Nodes:jsondata},
+                cache: false,
+                dataType: 'json',
+                success: function (data) { }
+            });
+        }
+        else {
+
+        }*@
+        //"Create": {
+        //    "separator_before": false,
+        //    "separator_after": true,
+        //    "label":"Create",
+        //    action: function (obj) {
+        //        $node = tree.create_node($node, { text: 'New Menu', type: 'default' });
+        //    }}
+    }
+    //delete
+    function DeleteNodeDetails($node, action) {
+        var NodeID = $node.id;
+        var ChldnID = $node.children_d;
+        var ChildrnID = "";
+        for (var i = 0; i < ChldnID.length; i++)
+        {
+            var chldID = ChldnID[i];
+            ChildrnID = chldID + "," + ChildrnID;
+        }
+        var ChildrnIDs = ChildrnID.substring(0, ChildrnID.length - 1);
+        var ParentID = $node.parent;
+        var NodeTitle = $node.text;
+        var iRoleID = 0;
+        //if (NodeID != "MainPrnt") {
+        $.ajax({
+            type: 'POST',
+            @*url: '@Url.Action("DeleteNodeDetails", "Home")',*@
+            url: '@Url.Action("SaveScriptDetails", "XiLink")',
+            data: { ParentNode: ParentID, NodeID: NodeID, ChildrnIDs: ChildrnIDs, Type: action ,iRoleID:iRoleID},
+            cache: false,
+            dataType: 'json',
+            success: function (data) {
+                //you can also remove this... as client side has the details and on load we are displaying above
+                if (data != null) {
+                    var jsondata = [];
+                    item = {}
+                    item["id"] = "MainPrnt";
+                    item["parent"] = "#";
+                    item["text"] = "Add Menu";
+                    jsondata.push(item);
+
+                    for (var i = 0; i < data.length; i++) {
+                        var ID = data[i].MenuID;
+                        var Parent = data[i].ParentID;
+                        var text = data[i].Name;
+
+                        item = {}
+                        item["id"] = ID;
+                        item["parent"] = Parent;
+                        item["text"] = text;
+                        jsondata.push(item);
+
+                    }
+                    var jsonString = JSON.stringify(jsondata);
+                }
+                else {
+                    jsonString = [
+                       { "id": "MainPrnt", "parent": "#", "text": "Add" }
+                    ];
+                }
+                //call function to recreate tree
+                //createJSTree(JSON.parse(jsonString));
+                //$('#jstree').jstree(true).settings.core.data = jsonString;
+                //$('#jstree').jstree(true).refresh();
+            }
+        });
+        // }
+        //else {
+
+        //}
+    }
+    function fncTriggerSelectNode(sBO, text, value){
+        var $tree = $('#TreeStrctr-@sTreeGuid').jstree(true).get_json('#', {'flat': true});
+        for(var i=0;i<$tree.length;i++){
+            if($tree[i].text == sBO){
+                var _node =$("#TreeStrctr-@sTreeGuid").jstree(true).get_node($tree[i].id);
+                $("#TreeStrctr-@sTreeGuid").jstree(true).get_node($tree[i].id).data[0].sInsID = value;
+                var NodeText = $("#TreeStrctr-@sTreeGuid").jstree(true).get_node($tree[i].id).text;
+                var NodeName = NodeText + " (" +text + ")";
+                $("#TreeStrctr-@sTreeGuid").jstree('rename_node', _node , NodeName );
+                break;
+            }
+        }
+    }
+
+    function fncSelectNode(_node, _this, ParamClear) {
+        debugger;
+        //var Output = 'LeftTreeOutput';
+        if(_node.data[0].sType== "Popup"){
+            var XILinkID = _node.data[0].iStepIDXIGUID;
+            XILinkLoadJson(XILinkID);
+        }
+        else if(_node.data[0].sType== "Controller"){
+
+        }
+        else{
+            var _uidialog = fncgetDialogFromHTMLTree('dialog', _this);
+            if (Output && Output.length > 0) {
+                $(_uidialog).find('#' + Output).html('<div class="loader"></div>');
+            }
+            var ParentInsID = 0;
+            var ParentBOName;
+            var CurrentBOName;
+            var CurrentBOType;
+            var Current1Click;
+            var Parent1ClickID;
+            var CurrentInstanceID;
+            var ParentFKColumn;
+            var sStepName;
+            var sOutputArea;
+            var FKiVisualisationID = 0;
+            var FKiVisualisationIDXIGUID;
+            var sNameAttribute;
+            var sAspectWhere;
+            var sLayoutType = "Dialog";
+            var QSInfo = fncQSInfoFromHTMLTree(_this);
+            var Parent = _node.parent;
+            var ParentNodeData="";
+            var NodeData ="";
+            var CurrentNodeData = _node.data;
+            var OptionAttr="";
+            var OptionFieldID="";
+            var OptionBOID="";
+            if(Parent!="#"){
+                var ParentNodeID = _node.parents[0];
+                ParentNodeData = $('#TreeStrctr-@sTreeGuid').jstree(true).get_node(ParentNodeID);
+                NodeData = ParentNodeData.data;
+                ParentBOName = NodeData[0].sBO;
+                ParentInsID = NodeData[0].sInsID;
+                sNameAttribute = NodeData[0].sNameAttribute;
+                Parent1ClickID = NodeData[0].s1ClickID;
+                //ParentBOName =  $('#TreeStructure').jstree(true).get_node(ParentNodeID).data["BO"];
+                //ParentInsID =  $('#TreeStructure').jstree(true).get_node(ParentNodeID).data.sInsID;
+                if(CurrentNodeData[0].sBO == "XIBOOptionList"){
+                    if(sNameAttribute && sNameAttribute.length>0){
+                        OptionFieldID = ParentInsID;
+                        OptionAttr = sNameAttribute.split(' ')[1];
+                        var parentBONodeID = ParentNodeData.parents[0];
+                        var ParentBONode = $('#TreeStrctr-@sTreeGuid').jstree(true).get_node(parentBONodeID);
+                        var ParentBONodeData = ParentBONode.data;
+                        OptionBOID = ParentBONodeData[0].sInsID;
+                    }
+                }
+            }
+            else{
+                ParentInsID = _node.data[0].sInsID;
+            }
+            var ComponentName = fncGetComponentNameFromHTMLTree('Component', _this);
+            sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+
+            if (_uidialog == null || (_uidialog && _uidialog.length == 0)) {
+                sLayoutType = "inline-layout";
+                _uidialog = fncgetInlineLayoutFromHTMLTree('inline-layout', _this);
+            }
+            var CurrentGUID = sCurrentGUID;
+            var NewParams = [];
+            //var StepID = ComponentName.split('-')[1];
+            if ('@sTreeType' == 'datatree') {
+                debugger;
+                var InputParams = [];
+                var iInsID = CurrentNodeData[0].sInsID;
+                var sCode = '@sCode';
+                var iLevel = _node.parents.length;
+                var iQSDID = QSInfo[0].sValue;
+                var sMode = CurrentNodeData[0].sMode;
+                CurrentBOName = CurrentNodeData[0].sBO;
+                var NodeName = _node.text;
+                if (NodeName.startsWith('Version')) {
+                    var VersionID = CurrentNodeData[0].ID;
+                    var AuditNode = _node.parents[1];
+                    var AuditNodeData = $('#TreeStrctr-@sTreeGuid').jstree(true).get_node(AuditNode);
+                    var AuditID = AuditNodeData.data[0].ID
+                    var param1 = {};
+                    param1["sName"] = '{iVersionID}';
+                    param1["sValue"] = VersionID;
+                    InputParams.push(param1);
+                    var param3 = {};
+                    param3["sName"] = '{iAuditID}';
+                    param3["sValue"] = AuditID;
+                    InputParams.push(param3);
+                }
+                if (CurrentBOName == 'bcoContractVersion' || sMode=="Multiple" || CurrentBOName == 'Multiple' || CurrentBOName == 'bcoContract' ) {
+                    //CurrentInstanceID = ParentInsID;
+                    var AuditNode = _node.parents[1];
+                    var AuditNodeData = $('#TreeStrctr-@sTreeGuid').jstree(true).get_node(AuditNode);
+                    var AuditID = AuditNodeData.data[0].ID;
+                    CurrentInstanceID = AuditID;
+                }
+                else if (CurrentBOName == 'sdnaRequirements' || CurrentBOName =='sdnaTasks')
+                {
+                    debugger
+                    var ProjectID = '';
+                    var ProjectNode = _node.parents[1];
+                    var ProjectNodeData = $('#TreeStrctr-@sTreeGuid').jstree(true).get_node(ProjectNode);
+                    ProjectID = ProjectNodeData.data[0].ID;
+                    
+                    var param11 = {};
+                    param11["sName"] = '{XIP|ProjectID}';
+                    param11["sValue"] = ProjectID;
+                    InputParams.push(param11)
+
+                    var param12 = {};
+                    param12["sName"] = 'ProjectID';
+                    param12["sValue"] = ProjectID;
+                    InputParams.push(param12);
+
+                    CurrentInstanceID = ProjectID;
+                }
+                else {
+                    CurrentInstanceID = CurrentNodeData[0].ID;
+                }
+                var Guid = CurrentNodeData[0].XIGUID;
+                fncdatatreeData(iInsID, sCode, iLevel, _node, CurrentInstanceID, sMode, Guid, '@BOIDXIGUID');
+                iStepIDXIGUID = CurrentNodeData[0].iStepIDXIGUID;
+                CurrentBOName = CurrentNodeData[0].sBO;
+                Output = CurrentNodeData[0].sOutputArea;
+                Current1Click = CurrentNodeData[0].s1ClickID;
+                $(_uidialog).find('#' + Output).html('<div class="loader"></div>');
+                var param2 = {};
+                param2["sName"] = '{XIP|ActiveBO}';
+                param2["sValue"] = CurrentBOName;
+                InputParams.push(param2);
+                var param9 = {};
+                param9["sName"] = '{-iInstanceID}';
+                param9["sValue"] = CurrentInstanceID;
+                InputParams.push(param9);
+                var param10 = {};
+                param10["sName"] = '{XIP|i1ClickID}';
+                param10["sValue"] = Current1Click;
+                InputParams.push(param10);
+                fncUpdateXIParams('', sGUID, sGUID, InputParams).then(function (data) {
+                            $.ajax({
+                                contentType: 'application/json; charset=utf-8',
+                                url: '@Url.Action("LoadStep", "XiLink")',
+                                datatype: 'json',
+                                cache: false,
+                                async: true,
+                                data: { sStep: iStepIDXIGUID, iQSID: iQSDID, sGUID: sGUID },
+                                success: function (oStepI) {
+                                    fncRenderStepContent(oStepI, '#'+Output, null, null, _uidialog).then(function (ConfigParams) {
+                                        $(_uidialog).find('#' + Output).find('.loader').remove();
+                                        fncApplyHalfScroll(_uidialog, sLayoutType);
+                                    });
+                                }
+                            });
+                    });
+            }
+            else if(QSInfo[0].sValue && QSInfo[0].sValue && QSInfo[0].sValue && QSInfo[0].sValue.length > 0){
+                var iQSDID = QSInfo[0].sValue;
+                var jCompDef = '@Html.Raw(Json.Encode(Model.oDefintion))';
+                var ConfigParams = JSON.parse(jCompDef).Params;
+                if(ConfigParams && ConfigParams.length > 0) {
+                    var InputParams = [];
+                    var id = _node.id;
+                    var NodeName = _node.text;
+                    var n = NodeName.indexOf('(');
+                    NodeName = NodeName.substring(0, n != -1 ? n : NodeName.length);
+                    Current1Click = CurrentNodeData[0].s1ClickID;
+                    CurrentBOType = CurrentNodeData[0].sMode;
+                    CurrentBOName = CurrentNodeData[0].sBO;
+                    ParentFKColumn = CurrentNodeData[0].sParentFK;
+                    CurrentInstanceID = CurrentNodeData[0].sInsID;
+                    if(CurrentBOType =="Aspect"){
+                        Current1Click = Parent1ClickID;
+                        sAspectWhere = CurrentNodeData[0].sSearchText;
+                        var SuperParent = ParentNodeData.parents[0];
+                        var SPNode = $('#TreeStrctr-@sTreeGuid').jstree(true).get_node(SuperParent);
+                        var SPNodeData = SPNode.data;
+                        ParentInsID = SPNodeData[0].sInsID;
+                        ParentFKColumn = NodeData[0].sParentFK;
+                    }
+                    //iStepID = "3336";
+                    iStepID = CurrentNodeData[0].iStepID;
+                    iStepIDXIGUID = CurrentNodeData[0].iStepIDXIGUID;
+                    //sOutputArea = "FormComponent";
+                    sOutputArea = CurrentNodeData[0].sOutputArea;
+                    FKiVisualisationID = CurrentNodeData[0].FKiVisualisationID;
+                    FKiVisualisationIDXIGUID = CurrentNodeData[0].FKiVisualisationIDXIGUID;
+                    var i1ClickID=Current1Click;
+                    var iInstanceID = CurrentInstanceID;
+                    for(var i=0;i<ConfigParams.length;i++){
+                        if(ConfigParams[i].sName.toLowerCase() == "nodeClickparamname".toLowerCase()){
+                            var WrapperParms = {};
+                            WrapperParms["sName"] = ConfigParams[i].sValue;
+                            WrapperParms["sValue"] = "XIC|null";
+                            if(Mode.length > 0 ){
+                                var param2 = {};
+                                param2["sName"] = '{XIP|ActiveBO}';
+                                param2["sValue"] = CurrentBOName;
+                                InputParams.push(param2);
+                                var param3 = {};
+                                param3["sName"] = 'BO';
+                                param3["sValue"] = CurrentBOName;
+                                InputParams.push(param3);
+                                var param4 = {};
+                                param4["sName"] = '{XIP|i1ClickID}';
+                                param4["sValue"] = Current1Click;
+                                InputParams.push(param4);
+                                var param5 = {};
+                                param5["sName"] = 'CurrentBOType';
+                                param5["sValue"] = CurrentBOType;
+                                InputParams.push(param5);
+                                var param6 = {};
+                                param6["sName"] = 'ParentInsID';
+                                param6["sValue"] = ParentInsID;
+                                InputParams.push(param6);
+                                var param7 = {};
+                                param7["sName"] = 'iInstanceID';
+                                param7["sValue"] = CurrentInstanceID;
+                                InputParams.push(param7);
+                                var param8 = {};
+                                param8["sName"] = 'ParentFKColumn';
+                                param8["sValue"] = ParentFKColumn;
+                                InputParams.push(param8);
+                                var param9 = {};
+                                param9["sName"] = '{-iInstanceID}';
+                                param9["sValue"] = CurrentInstanceID;
+                                InputParams.push(param9);
+                                if(CurrentBOType =="Aspect"){
+                                    var param8 = {};
+                                    param8["sName"] = 'sAspectWhere';
+                                    param8["sValue"] = sAspectWhere;
+                                    InputParams.push(param8);
+                                }
+                                if(Mode == "IDE"){
+                                    var param9 = {};
+                                    param9["sName"] = 'iNodeStepID';
+                                    param9["sValue"] = iStepIDXIGUID;
+                                    param9["sType"] = "template";
+                                    InputParams.push(param9);
+                                    var param10 = {};
+                                    param10["sName"] = 'sOutputArea';
+                                    param10["sValue"] = sOutputArea;
+                                    InputParams.push(param10);
+                                    var param11 = {};
+                                    param11["sName"] = '{XIP|FKiVisualisationID}';
+                                    param11["sValue"] = FKiVisualisationID;
+                                    InputParams.push(param11);
+                                    var param11 = {};
+                                    param11["sName"] = '{XIP|FKiVisualisationIDXIGUID}';
+                                    param11["sValue"] = FKiVisualisationIDXIGUID;
+                                    InputParams.push(param11);
+                                    var param11 = {};
+                                    param11["sName"] = 'sTreeGUID';
+                                    param11["sValue"] = '@sTreeGuid';
+                                    InputParams.push(param11);
+                                    var param11 = {};
+                                    param11["sName"] = 'sMode';
+                                    param11["sValue"] = Mode;
+                                    InputParams.push(param11);
+                                    var param11 = {};
+                                    param11["sName"] = 'iNodeID';
+                                    param11["sValue"] = id;
+                                    InputParams.push(param11);
+                                }
+                            }
+                            else{
+                                var param1 = {};
+                                param1["sName"] = "ParentBOName";
+                                param1["sValue"] = "0";
+                                param1["sType"] = "Structure";
+                                InputParams.push(param1);
+                                var param2 = {};
+                                param2["sName"] = 'ParentInstanceID';
+                                param2["sValue"] = "0";
+                                param2["sType"] = "Structure";
+                                InputParams.push(param2);
+                                var param3 = {};
+                                param3["sName"] = 'CurrentBOName';
+                                param3["sValue"] = "0";
+                                param3["sType"] = "Structure";
+                                InputParams.push(param3);
+                            }
+                            var param11 = {};
+                            param11["sName"] = 'iNodeID';
+                            param11["sValue"] = id;
+                            InputParams.push(param11);
+                            var param11 = {};
+                            param11["sName"] = 'sTreeGUID';
+                            param11["sValue"] = '@sTreeGuid';
+                            InputParams.push(param11);
+                            WrapperParms["nSubParams"] = InputParams;
+                            NewParams.push(WrapperParms);
+                        }
+                        else if( ConfigParams[i].sName.toLowerCase() == "nodeClickparamname2".toLowerCase()){
+                            var FormInputParams = [];
+                            var WrapperParms = {};
+                            WrapperParms["sName"] = ConfigParams[i].sValue;
+                            WrapperParms["sValue"] = "XIC|null";
+
+                            var param1 = {};
+                            param1["sName"] = '{XIP|ActiveBO}';
+                            param1["sValue"] = CurrentBOName;
+                            FormInputParams.push(param1);
+                            var param3 = {};
+                            param3["sName"] = 'ParentFKColumn';
+                            param3["sValue"] = ParentFKColumn;
+                            FormInputParams.push(param3);
+                            if(CurrentInstanceID && parseInt(CurrentInstanceID) > 0){
+                                var param2 = {};
+                                param2["sName"] = 'iInstanceID';
+                                param2["sValue"] = CurrentInstanceID;
+                                FormInputParams.push(param2);
+                            }
+                            if(ParamClear == "yes"){
+                                var param2 = {};
+                                param2["sName"] = 'ParamClear';
+                                param2["sValue"] = ParamClear;
+                                FormInputParams.push(param2);
+                            }
+                            if(CurrentNodeData[0].sBO == "XIBOOptionList"){
+                                var param1 = {};
+                                param1["sName"] = 'OptionAttr';
+                                param1["sValue"] = OptionAttr;
+                                FormInputParams.push(param1);
+                                param1 = {};
+                                param1["sName"] = 'OptionFieldID';
+                                param1["sValue"] = OptionFieldID;
+                                FormInputParams.push(param1);
+                                param1 = {};
+                                param1["sName"] = 'OptionBOID';
+                                param1["sValue"] = OptionBOID;
+                                FormInputParams.push(param1);
+                            }
+                            var param1 = {};
+                            param1["sName"] = 'ParentInsID';
+                            param1["sValue"] = ParentInsID;
+                            FormInputParams.push(param1);
+                            WrapperParms["nSubParams"] = FormInputParams;
+                            NewParams.push(WrapperParms);
+                        }
+                    }
+                    var IDEParams = [];
+                    var IDEPrm1 = {};
+                    IDEPrm1["sName"] = "sParentBO";
+                    IDEPrm1["sValue"] = ParentBOName;
+                    IDEParams.push(IDEPrm1);
+                    var IDEPrm2 = {};
+                    IDEPrm2["sName"] = "iParentBOIID";
+                    IDEPrm2["sValue"] = ParentInsID;
+                    IDEParams.push(IDEPrm2);
+                    var IDEPrm3 = {};
+                    IDEPrm3["sName"] = "sParentName";
+                    IDEPrm3["sValue"] = sNameAttribute;
+                    IDEParams.push(IDEPrm3);
+                    var IDEPrm4 = {};
+                    IDEPrm4["sName"] = "sParentFKColumn";
+                    IDEPrm4["sValue"] = ParentFKColumn;
+                    IDEParams.push(IDEPrm4);
+                    var WrapperParms = {};
+                    WrapperParms["sName"] = "IDEParams";
+                    WrapperParms["sValue"] = "IDEParams";
+                    WrapperParms["nSubParams"] = IDEParams;
+                    NewParams.push(WrapperParms);
+                    //debugger
+                    fncUpdateXIParams('', sGUID, sGUID, NewParams).then(function (data) {
+                        //debugger
+                        if(Mode && Mode == "IDE"){
+                            TriggerComponent(sGUID, ComponentName, data, null,_uidialog).then(function (ID) {
+                                //LoadSubnodeStep(sGUID, 'Step7 with BO Component', QSInfo[0].sValue, ID);
+                            });
+                        }
+                        else{
+                            $.ajax({
+                                contentType: 'application/json; charset=utf-8',
+                                url: '@Url.Action("LoadStep", "XiLink")',
+                                datatype: 'json',
+                                cache: false,
+                                async: true,
+                                data: { sStep: iStepIDXIGUID, iQSID: iQSDID, i1ClickID: i1ClickID, sDefaultStep: iStepIDXIGUID, iInstanceID: iInstanceID, sGUID: sGUID },
+                                success: function (oStepI) {
+                                    fncRenderStepContent(oStepI, '#'+Output, null, null, _uidialog).then(function (ConfigParams) {
+                                        $(_uidialog).find('#' + Output).find('.loader').remove();
+                                        fncApplyHalfScroll(_uidialog, sLayoutType);
+                                    });
+                                }
+                            });
+                        }
+
+                    });
+                }
+            }
+        }
+    }
+    var Backnav = "";
+    var BackName = "";
+    function fncTreeInlineReplace(nodeID, _this, ParentNode, sNodeName, NavType) {
+        $('.treenode').removeClass('active');
+        $(_this).addClass('active');
+        var SubNodes = $('.subnodes-' + nodeID);
+        if(SubNodes && SubNodes.length > 0){
+            $('li.parent-' + ParentNode).hide();
+            $('.subnodes-' + nodeID).show();
+            $('.subnodes-' + ParentNode).find('.chead-' + ParentNode).hide();
+        }
+        $('.treesearch').attr('data-parentid', nodeID);
+        $('.UpldCIFDoc').attr('data-parentid', nodeID);
+        var BuildingID = $('.BuildBtns').find('button.active');
+        var bid = $(BuildingID).attr('data-bid');
+        $('.UpldCIFDoc').attr('data-buildingid', bid);
+        var FolderName = $(_this).attr('data-foldername');
+        $('.UpldCIFDoc').attr('data-foldername', FolderName);
+        $('#PDFPreview').empty();
+        var TopNode = "";
+        Backnav = $('.BackBtn').attr('data-backnav');
+        if(Backnav){
+
+        }
+        else{
+            Backnav = "";
+        }
+        if(NavType == 'forward'){
+            Backnav = Backnav +"/"+ nodeID+"-"+sNodeName;
+            var SpanCount =0;
+            var NavCount = $('.instancetree').find('.content-header').find('h1').find('span');
+            if(NavCount){
+                if(NavCount.length == 0){
+                    SpanCount =1;
+                }
+                else{
+                    SpanCount = NavCount.length + 1;
+                }
+            }
+            else{
+                SpanCount = 1;
+            }
+            BackName = '<span data-navcount='+SpanCount+' onclick="fncTreeInlineReplace('+nodeID+',this,'+ParentNode+', \''+sNodeName+'\', \'navigate\' )">'+sNodeName+'</span>';
+            var Header = $('.instancetree').find('.content-header').find('h1').html();
+            if(Header){
+                BackName = Header + ' > '+BackName;
+            }
+        }
+        else if(NavType == 'back'){
+            var Navs = Backnav.split('/');
+            var LastNav = Navs[Navs.length-2];
+            if(LastNav==""){
+                TopNode = $('#LeftMenu').find('li.active').attr('data-name');
+            }
+            Navs.pop(Navs[Navs.length-1]);
+            nodeID =LastNav.split('-')[0];
+            BackName =LastNav.split('-')[1];
+            Backnav = Navs.join("/");
+            $('.treesearch').val('');
+            var Header="";
+            var NavCount = $('.instancetree').find('.content-header').find('h1').find('span');
+            for(var t=0; t<NavCount.length-1;t++){
+                Header = Header+ NavCount[t].outerHTML+" > ";
+            }
+            if(Header && Header.length>0){
+                Header = Header.substr(0, Header.length-3);
+                BackName = Header;
+            }
+
+        }
+        else if(NavType == 'navigate'){
+            var navc = $(_this).attr('data-navcount');
+            var NavCount = $('.instancetree').find('.content-header').find('h1').find('span');
+            var Bread = ""; var BBread="";
+            for(var h=0;h<navc;h++){
+                Bread = Bread + NavCount[h].outerHTML+" > ";
+            }
+            if(Bread.length > 0){
+                Bread = Bread.substr(0, Bread.length-3);
+                BackName = Bread;
+            }
+            var BNavs = $('.BackBtn').attr('data-backnav');
+            if(BNavs && BNavs.length > 0){
+                var BNs = BNavs.split('/');
+                navc++;
+                for(var h=0;h<navc;h++){
+                    BBread = BBread + BNs[h]+"/";
+                }
+                if(BBread.length>0){
+                    BBread = BBread.substr(0, BBread.length-1);
+                    Backnav = BBread;
+                    //$('.BackBtn').attr('data-backnav', BBread);
+                }
+            }
+
+        }
+        $('#CIFFileUpload').html('');
+        var iBuildingID = $('.slctpro').attr('data-bid');
+        var Folders = $('.slctpro').attr('data-foldername');
+        $('.slctpro').attr('data-parentid', nodeID );
+        if(Folders.indexOf("//")>0){
+            var LstFolder =Folders.lastIndexOf("//");
+            var LstFolderName = Folders.substring(LstFolder, Folders.length);
+            LstFolderName = LstFolderName.replace("//","");
+            if(sNodeName != LstFolderName){
+                $('.slctpro').attr('data-foldername', Folders + "//"+ sNodeName);
+            }
+            if(NavType == 'back'){
+                var LstFolderName = Folders.substring(0, LstFolder);
+                $('.slctpro').attr('data-foldername', LstFolderName);
+            }
+        }
+        else{
+            $('.slctpro').attr('data-foldername', Folders + "//"+ sNodeName);
+        }
+        $('.slctpro').attr('data-currentdocid',"");
+        fncGetChildData(nodeID, TopNode, iBuildingID, 'instancetree', ParentNode, sNodeName);
+    }
+
+    function fncFilteredData(_this){
+        var bid = $('.slctpro').attr('data-bid');
+        var sSearchText = $(_this).val();
+        var sParentID = $('.slctpro').attr('data-parentid');
+        var sFolder = $('.slctpro').attr('data-foldername');
+        var iBODID = $(_this).attr('data-ibodid');
+        var sGUID = $(_this).attr('data-treeguid');
+
+        fncGetChildData(sParentID, sFolder, bid, 'instancetree', sParentID, '', sSearchText)
+    }
+
+    function fncClearLocal(){
+        var Search = $('.treesearch');
+        if(Search && Search.length > 0){
+            var _this = Search[0];
+            var bid = $('.slctpro').attr('data-bid');
+            var sSearchText = '';
+            var sParentID = $('.slctpro').attr('data-parentid');
+            var sFolder = $('.slctpro').attr('data-foldername');
+            var iBODID = $(_this).attr('data-ibodid');
+            var sGUID = $(_this).attr('data-treeguid');
+            $('.treesearch').val('');
+
+            if (changeTimer !== false) clearTimeout(changeTimer);
+            changeTimer = setTimeout(function () {
+                fncGetChildData(sParentID, sFolder, bid, 'instancetree', sParentID, '', sSearchText)
+                changeTimer = false;
+            }, 300);
+        }
+    }
+
+    function fncdatatreeData(sInsID, sCode, iLevel, $node, ParentInsID, sMode, XIGUID, BOIDXIGUID) {
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ sInsID: sInsID, sCode: sCode, iLevel: iLevel, ParentInsID: ParentInsID, sMode: sMode, XIGUID: XIGUID, BOIDXIGUID: BOIDXIGUID }),
+            url: '@Url.Action("GetDataTreeData", "BusinessObjects")',
+            datatype: 'json',
+            cache: false,
+            async: false,
+            success: function (data) {
+                debugger
+                var tree = $("#TreeStrctr-@sTreeGuid").jstree(true);
+                var childs = $node.children;
+                var iCount = childs.length;
+                if (childs && childs.length > 0) {
+                    for (var p = 0; p < iCount; p++) {
+                        var Del_node = tree.get_node(childs[0]);
+                        tree.delete_node(Del_node);
+                    }
+                }
+                for (var t = 0; t < data.length; t++) {
+                    var nodedata = [];
+                    nodedata.push({ sInsID: data[t].sInsID, sBO: data[t].sBO, sOutputArea: data[t].sOutputArea, iStepIDXIGUID: data[t].FKiStepDefinitionIDXIGUID, sMode: data[t].sMode, ID: data[t].ID, XIGUID: data[t].XIGUID, s1ClickID: data[t].FKi1ClickIDXIGUID });
+                    item["data"] = nodedata;
+                    tree.create_node($node, { text: data[t].sName, type: 'default', id: data[t].sInsID, data: nodedata });
+                    var NewNode = tree.get_node(data[t].sInsID);
+                    var sCSS = data[t].sCSS;
+                    if (sCSS && sCSS.length > 0) {
+                        NewNode.li_attr.class += ' ' + sCSS;
+                    }
+                }
+                    $("#TreeStrctr-@sTreeGuid").jstree("open_all");
+            },
+            error: function (data) { }
+        })
+    }
+
+    function fncGetChildData(nodeID, TopNode, iBuildingID, sLoadType, ParentNode, sNodeName, sSearchText, sFilterType){
+         $.ajax({
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({ nodeID: nodeID, nodeName:TopNode, iBuildingID: iBuildingID, sLoadType: "instancetree", sSearchText:sSearchText, sFilterType:sFilterType}),
+            url: '@Url.Action("GetChildData", "File")',
+            datatype: 'json',
+            cache: false,
+            async: false,
+            success: function (data) {
+                if(data && data.length > 0){
+                    var PID = data[0].Attributes['sparentid'].sValue;
+                    var Back = "";
+                    if(Backnav && Backnav.length > 0){
+                        if('@bBackBtn' =="False"){
+                            Back = '<div class="treeList"><div class="content-header"><a class="pull-right font-md BackBtn" data-backnav="'+Backnav+'" onclick="fncTreeInlineReplace('+ParentNode+', this, 0, \''+sNodeName+'\', \'back\')" style="cursor: pointer;display:none;"></a><a class="pull-right font-md lclosebtn" onclick="fncClearLocal()"><i class="fa fa-times" aria-hidden="true" style="display:none"></i></a><h1 style="cursor: pointer;">'+BackName+'</h1></div><ul class="trNodes">';
+                        }
+                        else{
+                            Back = '<div class="treeList"><div class="content-header"><a class="pull-right font-md BackBtn" data-backnav="'+Backnav+'" onclick="fncTreeInlineReplace('+ParentNode+', this, 0, \''+sNodeName+'\', \'back\')" style="cursor: pointer;"><i class="fa ion-ios-arrow-back"></i>Back</a><h1 style="cursor: pointer;">'+BackName+'</h1></div><ul class="trNodes">';
+                        }
+                    }
+                    else{
+                        ParentNode = 0;
+                        sNodeName = TopNode.replace("&amp;","&");
+                        BackName = '<span data-navcount="1" onclick="fncTreeInlineReplace('+PID+',this,'+ParentNode+', \''+sNodeName+'\', \'navigate\' )">'+sNodeName+'</span>';
+                        var Header = $('.instancetree').find('.content-header').find('h1').html();
+                        if(Header){
+                            BackName = Header + ' > '+BackName;
+                        }
+                        else{
+                            Back = '<div class="treeList"><div class="content-header"><a class="pull-right font-md BackBtn" data-backnav="'+Backnav+'" onclick="fncTreeInlineReplace('+ParentNode+', this, 0, \''+sNodeName+'\', \'back\')" style="cursor: pointer;display:none;"><i class="fa ion-ios-arrow-back"></i>Back</a><h1 style="cursor: pointer;">'+BackName+'</h1></div><ul class="trNodes">';
+                        }
+                    }
+                    var ChildFolds= Back;
+                    //var ChildFolds= '<ul>'+Back+'<h1>'+sNodeName+'</h1><ul>';
+                    var ID = ""; var Name =""; var Type="";var iVersionBatchID="";var sParentID=""; var sFoldrName=""; var iApprovalStatus="";
+                    for(k=0;k<data.length;k++){
+                        for (var key in data[k].Attributes) {
+                            if (data[k].Attributes.hasOwnProperty(key)) {
+                                if(key == 'id'){
+                                    ID = data[k].Attributes[key].sValue;
+                                }
+                                else if(key == 'sname'){
+                                    Name = data[k].Attributes[key].sValue;
+                                }
+                                else if(key == 'stype'){
+                                    Type = data[k].Attributes[key].sValue;
+                                }
+                                else if(key == 'iversionbatchid'){
+                                    iVersionBatchID = data[k].Attributes[key].sValue;
+                                }
+                                else if(key == 'sparentid'){
+                                    sParentID = data[k].Attributes[key].sValue;
+                                }
+                                else if(key == 'sfoldername'){
+                                    sFoldrName = data[k].Attributes[key].sValue;
+                                }
+                                else if(key == 'iapprovalstatus'){
+                                    iApprovalStatus = data[k].Attributes[key].sValue;
+                                }
+                            }
+                        }
+                        if(Type=="10"){
+                            ChildFolds = ChildFolds+ '<li class="parent- treenode folder-icon" onclick="fncTreeInlineReplace('+ID+', this, '+sParentID+', \''+Name+'\', \'forward\')"><a>'+Name+'</a></li>';
+                        }
+                        else{
+                            if('@sFilterType' == 'Red Documents' || '@sFilterType' == 'Amber Documents'){
+
+                            }
+                            $('.colorbar').html(sFoldrName);
+                            var ColorClass="";
+                            if(iApprovalStatus== 10){
+                                ColorClass = "green";
+                            }
+                            else if(iApprovalStatus== 20){
+                                ColorClass="red";
+                            }
+                            else if(iApprovalStatus== 30){
+                                ColorClass="amber";
+                            }
+                            ChildFolds = ChildFolds + '<li class="parent-'+sParentID+' treenode pdf-icon '+ColorClass+'" data-pid="'+sParentID+'"data-status="'+iApprovalStatus+'" data-versionbatchid="'+iVersionBatchID+'" data-foldername="'+sFoldrName+'" onclick="fncLoadPDFPreview(this, '+ID+')"><a>'+Name+'</a></li>';
+                        }
+                    }
+                    if(Backnav && Backnav.length > 0){
+                        ChildFolds = ChildFolds + '</ul></div>';}
+                    else{
+                        ChildFolds = ChildFolds;
+                    }
+                    $('.instancetree').html(ChildFolds);
+                    if(sSearchText && sSearchText.length>0){
+                        $('.fa-times').show();
+                    }
+                }
+                else{
+                    if(sSearchText && sSearchText.length > 0){
+                        $('.instancetree').html('<span style="color:red;">No data found</span>');
+                    }
+                }
+            },
+            error: function (data) {
+            }
+        })
+    }
+
+    @*function fncViewDocument(_this){
+        var id = $('.slctpro').attr('data-currentdocid');
+        $('.ciftab').removeClass('active');
+        $('a[data-name="View"]').addClass('active');
+        $('#PDFPreview').html('<div class="loader"></div>');
+        fncLoadPDFPreview(_this, id);
+    }
+
+    function fncUpLoadDocument(_this, sType){
+        $('.ciftab').removeClass('active');
+        $('a[data-name="Upload"]').addClass('active');
+        $('#PDFPreview').html('<div class="loader"></div>');
+        if('@Role' == "Approver"){
+            var id = $('#CIFFolderTree');
+            if(sType && sType == "NewDocument"){
+                $('.slctpro').attr('data-currentdocid', 0);
+            }
+            var PID=""; var BID =""; var FolderPath ="";var docid="";
+            if(sType && sType == 'Admin'){
+                PID = $(_this).attr('data-parentid');
+                BID = $(_this).attr('data-buildingid');
+                FolderPath = $(_this).attr('data-foldername');
+            }
+            else{
+                PID = $('.slctpro').attr('data-parentid'); //$(_this).attr('data-parentid');
+                BID = $('.slctpro').attr('data-bid'); //$(_this).attr('data-buildingid');
+                FolderPath = $('.slctpro').attr('data-foldername');
+                docid = $('.slctpro').attr('data-currentdocid');
+            }
+
+            var InputParams = [];
+            var param1 = {};
+            param1["sName"] = 'sParentID';
+            param1["sValue"] = PID;
+            InputParams.push(param1);
+            var param2 = {};
+            param2["sName"] = 'iBuildingID';
+            param2["sValue"] = BID;
+            InputParams.push(param2);
+            var param3 = {};
+            var Upload = 'Upload';
+            if(sType && sType == "NewDocument"){
+                Upload= "NewDocument"
+            }
+            else if(sType && sType == "Admin"){
+                Upload= "Admin"
+            }
+            param3["sName"] = Upload;
+            param3["sValue"] = 'Yes';
+            InputParams.push(param3);
+            var param4 = {};
+            param4["sName"] = '{XIP|iBuildingiD}';
+            param4["sValue"] = BID;
+            InputParams.push(param4);
+            var param5 = {};
+            param5["sName"] = '{XIP|sParentID}';
+            param5["sValue"] = PID;
+            InputParams.push(param5);
+            var param6 = {};
+            param6["sName"] = 'sFolderName';
+            param6["sValue"] = FolderPath;
+            InputParams.push(param6);
+            var param6 = {};
+            param6["sName"] = 'sFolderTreeGUID';
+            param6["sValue"] = '@sTreeGuid';
+            InputParams.push(param6);
+            var param7 = {};
+            param7["sName"] = 'iDocID';
+            param7["sValue"] = docid;
+            InputParams.push(param7);
+            if(PID && BID)
+                fncLoadPDFPreview(id[0], 0, InputParams);
+        }
+        else{
+            $('#PDFPreview').html('<h4>No Access</h4>');
+        }
+    }
+
+    function fncLoadDocHistory(_this, sType){
+        $('.ciftab').removeClass('active');
+        if(sType && sType =="comments"){
+            $('a[data-name="Comments"]').addClass('active');
+        }
+        else{
+            $('a[data-name="History"]').addClass('active');
+        }
+        $('#PDFPreview').html('<div class="loader"></div>');
+        var id = $('#CIFFolderTree');
+        var docid = 0;
+        var PID = $('.slctpro').attr('data-parentid'); //$(_this).attr('data-parentid');
+        var BID = $('.slctpro').attr('data-bid'); //$(_this).attr('data-buildingid');
+        var VBatchID = $('.slctpro').attr('data-vbatchid');
+        var InputParams = [];
+        var param1 = {};
+        param1["sName"] = 'sParentID';
+        param1["sValue"] = PID;
+        InputParams.push(param1);
+        var param2 = {};
+        param2["sName"] = 'iBuildingID';
+        param2["sValue"] = BID;
+        InputParams.push(param2);
+        var Type = 'History';
+        if(sType && sType.length>0){
+            Type = sType;
+            docid = $('.slctpro').attr('data-currentdocid');
+        }
+        var param3 = {};
+        param3["sName"] = Type;
+        param3["sValue"] = 'Yes';
+        InputParams.push(param3);
+        var param4 = {};
+        param4["sName"] = '{XIP|iBuildingID}';
+        param4["sValue"] = BID;
+        InputParams.push(param4);
+        var param5 = {};
+        param5["sName"] = '{XIP|sParentID}';
+        param5["sValue"] = PID;
+        InputParams.push(param5);
+        var param6 = {};
+        param6["sName"] = '{XIP|iVersionBatchID}';
+        param6["sValue"] = VBatchID;
+        InputParams.push(param6);
+        if(sType && sType.length>0){
+            InputParams = [];
+            var param1 = {};
+            param1["sName"] = '';
+            param1["sValue"] = 0;
+            InputParams.push(param1);
+            var param2 = {};
+            param2["sName"] = '';
+            param2["sValue"] = 0;
+            InputParams.push(param2);
+            var Type = 'History';
+            if(sType && sType.length>0){
+                Type = sType;
+                docid = $('.slctpro').attr('data-currentdocid');
+            }
+            var param3 = {};
+            param3["sName"] = Type;
+            param3["sValue"] = 'Yes';
+            InputParams.push(param3);
+        }
+        if(PID && BID && VBatchID)
+            fncLoadPDFPreview(id[0], docid, InputParams);
+    }
+
+    function fncLoadPDFPreview(_this, id, Params) {
+        debugger
+        var iVersionBatchID = $(_this).attr('data-versionbatchid');
+        var iDocVersionID = iVersionBatchID;
+        var iStatus = $(_this).attr('data-status');
+        $('.slctpro').attr('data-appstatus', iStatus);
+        $('.slctpro').attr('data-vbatchid', iVersionBatchID);
+        if(id && parseInt(id) > 0){
+            $('.slctpro').attr('data-currentdocid', id);
+        }
+
+        if(Params && Params.length > 0){
+
+        }
+        else{
+            $('.treenode').removeClass('active');
+            $(_this).addClass('active');
+        }
+        var iStepID = "Step with Level3 Layout"; //"Step with FormComponent";
+        var BtnType = "";
+        if(Params && Params.length > 2){
+            BtnType = Params[2].sName;
+            var BtnValue = Params[2].sValue;
+            if(BtnType && BtnValue && (BtnType == 'History' && BtnValue=='Yes')){
+                iStepID = "Step with OneClick Component";
+            }
+        }
+        var iBuildingID = 0;
+        var sParentID = 0;
+        var iVersionBatchID = 0;
+        var sLayoutType = "Dialog";
+        var _uidialog = fncgetDialogFromHTMLTree('dialog', _this);
+        if (_uidialog == null || (_uidialog && _uidialog.length == 0)) {
+            sLayoutType = "inline-layout";
+            _uidialog = fncgetInlineLayoutFromHTMLTree('inline-layout', _this);
+        }
+        var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', _this);
+        var ParentID = $(_this).attr('data-nodeid');
+        var PID = $(_this).attr('data-pid');
+        $('.slctpro').attr('data-parentid', PID);
+        var sFolderName= $(_this).attr('data-foldername');
+        $('.slctpro').attr('data-foldername', sFolderName);
+        var jCompDef = '@Html.Raw(Json.Encode(Model.oDefintion))';
+        var JParams = JSON.parse(jCompDef).Params;
+        //var JParams = JSON.parse(jCompDef).Params;
+        for (var i = 0; i < JParams.length; i++) {
+            var InputParams = [];
+            if (JParams[i].sName.toLowerCase() == "nodeClickparamname".toLowerCase()) {
+                var WrapperParms = {};
+                WrapperParms["sName"] = JParams[i].sValue;
+                WrapperParms["sValue"] = "XIC|null";
+                var param7 = {};
+                param7["sName"] = 'iInstanceID';
+                param7["sValue"] = id;
+                InputParams.push(param7);
+                if(Params && Params.length > 0 && BtnType != 'comments'){
+                    for(var k=0;k<Params.length;k++){
+                        if(Params[k].sName.length > 0){
+                            var param9 = {};
+                            param9["sName"] = Params[k].sName;
+                            param9["sValue"] = Params[k].sValue;
+                            param9["sType"] = "merge";
+                            InputParams.push(param9);
+                            if(Params[k].sName == '{XIP|iBuildingID}' ){
+                                iBuildingID = Params[k].sValue;
+                            }
+                            if(Params[k].sName == '{XIP|sParentID}' ){
+                                sParentID = Params[k].sValue;
+                            }
+                            if(Params[k].sName == '{XIP|iVersionBatchID}' ){
+                                iVersionBatchID = Params[k].sValue;
+                            }
+                        }
+                    }
+                }
+                WrapperParms["nSubParams"] = InputParams;
+            }
+        }
+        var NewParams = [];
+        NewParams.push(WrapperParms);
+        var param4 = {};
+        param4["sName"] = '{XIP|iBuildingID}';
+        param4["sValue"] = iBuildingID;
+        var param5 = {};
+        param5["sName"] = '{XIP|sParentID}';
+        param5["sValue"] = sParentID;
+        var param6 = {};
+        param6["sName"] = '{XIP|iVersionBatchID}';
+        param6["sValue"] = iVersionBatchID;
+        var param8 = {};
+        param8["sName"] = '{XIP|iDocID}';
+        param8["sValue"] = iDocVersionID;
+        var param9 = {};
+        param9["sName"] = '{XIP|iDocVersionID}';
+        param9["sValue"] = id;
+        NewParams.push(param9);
+        NewParams.push(param8);
+        NewParams.push(param4);
+        NewParams.push(param5);
+        NewParams.push(param6);
+        fncUpdateXIParams("", sGUID, sGUID, NewParams).then(function (data) {
+            var QSInfo = fncQSInfoFromHTMLTree(_this);
+            var iQSDID = QSInfo[0].sValue;// 3067;
+            if(BtnType == 'NewDocument' || BtnType == 'Upload'){
+                iStepID = "Step with FormComponent";
+            }
+            else if(BtnType == 'comments'){
+                iStepID = "Step with Comments";
+            }
+            $.ajax({
+                contentType: 'application/json; charset=utf-8',
+                url: '@Url.Action("LoadStep", "XiLink")',
+                datatype: 'json',
+                cache: false,
+                async: true,
+                //data: { sStep: DefaultStep, iQSID: iQSDID, i1ClickID: i1ClickID, sDefaultStep: DefaultStep, iInstanceID: iInstanceID, sGUID: sGUID },
+                data: { sStep: iStepID, iQSID: iQSDID, i1ClickID: "0", sDefaultStep: iStepID, iInstanceID: "0", sGUID: sGUID },
+                success: function (oStepI) {
+                    var Output = "CIFFileUpload";
+                    if(BtnType == 'History' || BtnType == 'Upload' || BtnType == 'View'|| BtnType == 'comments'){
+                        Output = "PDFPreview";
+                    }
+                    var iBODID = 0;
+                    $(_this).attr('data-load', 'true');
+                    fncRenderStepContent(oStepI, '#' + Output, "", null, _uidialog).then(function (ConfigParams) {
+                        $(_uidialog).find('#' + Output).find('.loader').remove();
+                        fncLoadScroll(_uidialog, sLayoutType);
+                    });
+                    //if (Output != 'undefined') {
+                    //    $('#' + Output).html(StepData);
+                    //}
+
+                }
+            })
+        })
+   }*@
+</script>
+<script>
+    const content_height = $(window).height() - $('#HomeHeader').height() - 10;
+    $('.scroll_vh_100').not('.sec-controlbox .scroll_vh_100').slimScroll({
+        height: content_height,
+    });
+</script>
+<div id="TempDataMsg" class="dialog-box" title="Confirm Message" style="background-color:red;"></div>
+@if (!string.IsNullOrEmpty(sErrorMessage))
+{
+    <h4>@sErrorMessage</h4>
+}
+else
+{
+    <div id="TreeScrollbar" data-guid="@sTreeGuid">
+        @{
+            if (sTreeType == "script")
+            {
+                DivClass = "col-md-6";
+            }
+        }
+        <div class="@DivClass">
+            <div id="TreeStrctr-@sTreeGuid" class="scroll_vh_100 tree-guid">
+                @if (!string.IsNullOrEmpty(sTreeType) && (sTreeType == "instancetree" || sTreeType == "instancetreefilter"))
+                {   
+                    <div class="search-record">
+                        <div class="form-inline">
+                            <label class="control-label normal">Search record</label>
+                            <input type="text" placeholder="Search Record" class="form-control treesearch" data-parentid="@sParentID" data-treeguid="@sTreeGuid" data-ibodid="@iBODID" onkeyup="fncFilteredData(this)">
+                        </div>  
+                    </div>
+                    <div class="instancetree">
+                        @InlineTreeView(TreeData, "", "")
+                        @helper InlineTreeView(IEnumerable<IEnumerable<XICore.XIIBO>> nodes, string ParentID, string Folder)
+                        {
+                            if (nodes.Count() > 0)
+                            {
+                                <div class="treeList">
+                                    <ul class="trNodes">
+                                        @foreach (var node in nodes)
+                                        {
+                                            foreach (var boi in node)
+                                            {
+                                                if (string.IsNullOrEmpty(ParentID))
+                                                {
+                                                    Folder = string.Empty;
+                                                }
+                                                var id = boi.Attributes["ID"].sValue;
+                                                var sType = boi.Attributes["sType"].sValue;
+                                                ParentID = boi.Attributes["sParentID"].sValue;
+                                                if (boi.SubChildI.Count() > 0 && boi.SubChildI.FirstOrDefault().Value.Count() > 0)
+                                                {
+                                                    var sNodeName = @boi.Attributes["sName"].sValue;
+                                                    Folder = Folder + "/" + boi.Attributes["sFolderName"].sValue;
+                                                    <li class="parent-@ParentID treenode folder-icon" data-foldername="@Folder" onclick="fncTreeInlineReplace('@id', this, '@ParentID', '@sNodeName', 'forward')"><a>@boi.Attributes["sName"].sValue</a></li>
+                                                    <div class="subnodes-@id" style="display:none">
+                                                        <div class="content-header chead-@id">
+                                                            <a class="pull-right font-md" onclick="fncReturnToParent('@id','@ParentID')" style="cursor: pointer;"><i class="fa ion-ios-arrow-back"></i> Back</a>
+                                                            <h1 class="">@sNodeName</h1>
+                                                        </div>
+                                                        @InlineTreeView(boi.SubChildI.Values.ToList(), id, Folder)
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    Folder = string.Empty;
+                                                    var BatchID = boi.Attributes["iVersionBatchID"].sValue;
+                                                    if (sType == "20")
+                                                    {
+                                                        <li class="parent-@ParentID treenode pdf-icon" data-pid="@ParentID" data-versionbatchid="@BatchID" onclick="fncLoadPDFPreview(this, '@id')"><a>@boi.Attributes["sName"].sValue</a></li>
+                                                    }
+                                                    else
+                                                    {
+                                                        var sNodeName = @boi.Attributes["sName"].sValue;
+                                                        var Fold = "/" + boi.Attributes["sFolderName"].sValue;
+                                                        <li class="parent-@ParentID treenode folder-icon" data-foldername="@Fold" onclick="fncTreeInlineReplace('@id', this, '@ParentID', '@sNodeName', 'forward')"><a>@sNodeName</a></li>
+                                                    }
+
+                                                }
+                                            }
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+        @if (sTreeType == "script")
+        {
+            <div class="col-md-6">
+                <div id="dialog">
+                    <label class="col-md-4">Name</label>
+                    <input type="text" name="sName" id="sName" class="col-md-8">
+                    <label class="col-md-4">Description</label>
+                    <input type="text" name="sDescription" id="sDescription" class="col-md-8">
+                    <label class="col-md-4">Type</label>
+                    <select name="sType" id="sType" class="col-md-8">
+                        <option value="">Please select</option>
+                        <option value="Script">Script</option>
+                        <option value="Library">Library</option>
+                    </select>
+                    <label class="col-md-4">Script</label>
+                    <label id="sScript" class="col-md-12"></label>
+                    <div class="form-group">
+                        <input type="button" value="Save" id="SaveBtn" class="savebtn btn btn-theme" />
+                    </div>
+                    <label id="lblID" class></label>
+                </div>
+            </div>
+        }
+        <div id="MainDiv">
+            @*<div id="XIMenuStructure" class="col-md-4"></div>*@
+            <div id="AddDetails" class="col-md-6"></div>
+            <div id="Remove" class="col-md-12"></div>
+            <div id="dialogbox" class="col-md-12">
+                <div id="dynamicFields"></div>
+            </div>
+        </div>
+    </div>
+}
+<label id="data"></label>
+@if (sTreeType == "script")
+{
+    <div class="form-group">
+        <input type="button" value="Save" id="TreeSave" class="savebtn btn btn-theme" onclick="TreeSave()">
+        <input type="button" value="Algorithm" id="AlgSave" class="savebtn btn btn-theme" onclick="SaveAlg()">
+    </div>
+}
+<div id="DeleteFolder"></div>
+<div class="slctpro"></div>
+<style>
+    .importantRule {
+        background-position: -96px 0 !important;
+    }
+</style>

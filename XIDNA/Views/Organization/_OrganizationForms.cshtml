@@ -1,0 +1,742 @@
+﻿@model XIDNA.ViewModels.VMOrganizationForms
+@using XIDNA.ViewModels
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        $('div.fa-hover').click(function () {
+            var Text = $(this).text();
+            var icon1 = $(this).closest('.fa-hover').find('i');
+            var Name = $(icon1).attr('class');
+            $('#IconName').val(Name);
+            $('#IconDisplay').html('<i class="' + Name + '" aria-hidden="true"></i>' + Text);
+            $(".close").click();
+        });
+        $("#postcode").keyup(function () {
+            $(this).val($(this).val().toUpperCase());
+        });
+        if ('@Model.ID' > 0) {
+            $('#IconDisplay').html('<i class="' + '@Model.Icon' + '" aria-hidden="true"></i>' + '@Model.Icon');
+        }
+        //
+        //if ('@Model.ID' == 0) {
+        //$("#renewaldate").datepicker({
+        // minDate: 1,
+        // dateFormat: 'dd-M-yy'
+        // });
+        // $("#renewaldate").datepicker("setDate", new Date());
+        // }
+        //
+        //var defaultdate = new Date();
+        //defaultdate.setDate(defaultdate.getDate() + 1);
+        //$("#renewaldate").datepicker({
+        //    minDate: defaultdate,
+        //    dateFormat: 'dd-M-yy'
+        //});
+        //Setting Date for EditSourceForm
+        if ('@Model.ID' != 0) {
+            // $("#renewaldate").datepicker({
+            // minDate: 1,
+            // dateFormat: 'dd-M-yy'
+            //});
+            // $("#renewaldate").datepicker("setDate", new Date());
+        }
+        if ('@Model.ID' > 0) {
+            $('#icon').val('@Model.Icon');
+        }
+        $('#OrgID').change(function () {
+            var orgid = $('#OrgID :selected').val();
+            $.ajax({
+                url: '@Url.Action("SpecificSorces", "Organization")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                data: { OrgID: orgid },
+                cache: false,
+                success: function (data) {
+                    $('#SpecificSources').empty();
+                    $('#SpecificSources').html(data);
+                },
+                error: function (data) { }
+            });
+        });
+        $('#SubscriptionsForm').hide();
+        $('#SourceFields').hide();
+        $('#subscriptions').click(function () {
+            $('#sources').removeClass('active');
+            $('#subscriptions').addClass('active');
+            $('#sourcefields').removeClass('active');
+            $('#SourceForm').hide();
+            $('#SourceFields').hide();
+            $('#SubscriptionsForm').show();
+            @*$.ajax({
+                url: '@Url.Action("CreateOrgSubscription", "Organization")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                success: function (data) {
+                    $('#SubscriptionsForm').empty();
+                    $('#SubscriptionsForm').append(data);
+                },
+                error: function (data) { }
+            });*@
+            $.ajax({
+                url: '@Url.Action("Sources", "Organization")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                data: { OrgID: '@Model.OrganizationID' },
+                cache: false,
+                success: function (data) {
+                    $('#Sources').empty();
+                    $('#Sources').append('<option value="">--Select--</option>');
+                    if (data.length > 0) {
+                        for (i = 0; i < data.length; i++) {
+                            $('#Sources').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                        }
+                    }
+                },
+                error: function (data) { }
+            });
+        });
+        $('#sources').click(function () {
+            $('#subscriptions').removeClass('active');
+            $('#sourcefields').removeClass('active');
+            $('#sources').addClass('active');
+            $('#SubscriptionsForm').hide();
+            $('#SourceFields').hide();
+            $('#SourceForm').show();
+        });
+        $('#sourcefields').click(function () {
+            if (!($(this).hasClass('disabled'))) {
+                $('#subscriptions').removeClass('active');
+                $('#sources').removeClass('active');
+                $('#sourcefields').addClass('active');
+                $('#SubscriptionsForm').hide();
+                $('#SourceForm').hide();
+                $('#SourceFields').show();
+            }
+        });
+        $('#Organizations').change(function () {
+            var orgid = $('#Organizations :selected').val();
+            if (orgid > 0) {
+                $.ajax({
+                    url: '@Url.Action("Sources", "Organization")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "JSON",
+                    data: { OrgID: orgid },
+                    cache: false,
+                    success: function (data) {
+                        $('#Sources').empty();
+                        $('#Sources').append('<option value="">--Select--</option>');
+                        if (data.length > 0) {
+                            for (i = 0; i < data.length; i++) {
+                                $('#Sources').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                            }
+                        }
+                    },
+                    error: function (data) { }
+                });
+                $.ajax({
+                    url: '@Url.Action("GetOrgClasses", "Organization")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "JSON",
+                    data: { OrgID: orgid },
+                    cache: false,
+                    success: function (data) {
+                        $('#Classes').empty();
+                        $('#Classes').append('<option value="">--Select--</option>');
+                        if (data.length > 0) {
+                            for (i = 0; i < data.length; i++) {
+                                $('#Classes').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                            }
+                        }
+                    },
+                    error: function (data) { }
+                });
+
+                $.ajax({
+                    url: '@Url.Action("SpecificSubscriptions", "Organization")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    data: { OrgID: orgid },
+                    cache: false,
+                    success: function (data) {
+                        $('#SpecificSubscriptions').empty();
+                        $('#SpecificSubscriptions').html(data);
+                    },
+                    error: function (data) { }
+                });
+                $('#Providers').val('');
+            }
+            else {
+                $('#Sources').empty();
+                $('#Sources').append('<option value="">--Select--</option>');
+                $('#Classes').empty();
+                $('#Classes').append('<option value="">--Select--</option>');
+                $('#SpecificSubscriptions').empty();
+            }
+        });
+        $('#Sources').change(function () {
+            var source = $('#Sources :selected').val();
+            if (source == "") {
+                source = 0;
+            }
+            var orgid = 0;
+            if ('@Model.OrganizationID' > 0) {
+                var orgid = parseInt('@Model.OrganizationID');
+            }
+            else {
+                var orgid = $('#Organizations :selected').val();
+            }
+            $.ajax({
+                url: '@Url.Action("SpecificSubscriptions", "Organization")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                data: { OrgID: orgid, SourceID: source },
+                cache: false,
+                success: function (data) {
+                    $('#SpecificSubscriptions').html(data);
+                },
+                error: function (data) { }
+            });
+            @*if (source > 0) {
+                $.ajax({
+                    url: '@Url.Action("GetSourceClasses", "Organization")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "JSON",
+                    data: { SourceID: source, OrgID:orgid },
+                    cache: false,
+                    success: function (data) {
+                        $('#Classes').empty();
+                        $('#Classes').append('<option value="">--Select--</option>');
+                        if (data.length > 0) {
+                            for (i = 0; i < data.length; i++) {
+                                $('#Classes').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                            }
+                        }
+                    },
+                    error: function (data) { }
+                });
+            }
+            else {
+                $('#Classes').empty();
+                $('#Classes').append('<option value="">--Select--</option>');
+            }*@
+            @*if (source > 0 && orgid > 0) {
+                $.ajax({
+                    url: '@Url.Action("GetSourceClasses", "Organization")',
+                    type: 'GET',
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "JSON",
+                    data: { SourceID: source, OrgID: orgid },
+                    cache: false,
+                    success: function (data) {
+                        $('#Classes').empty();
+                        $('#Classes').append('<option value="">--Select--</option>');
+                        if (data.length > 0) {
+                            for (i = 0; i < data.length; i++) {
+                                $('#Classes').append('<option value="' + data[i].Value + '">' + data[i].text + '</option>');
+                            }
+                        }
+                    },
+                    error: function (data) { }
+                });
+            }
+        else {
+                $('#Classes').empty();
+            $('#Classes').append('<option value="">--Select--</option>');
+        }*@
+        });
+        @*$('#Classes').change(function () {
+        var orgid = 0;
+        if ('@Model.OrganizationID' > 0) {
+            var orgid = parseInt('@Model.OrganizationID');
+        }
+        else {
+            var orgid = $('#Organizations :selected').val();
+        }
+        var source = $('#Sources :selected').val();
+        var type = $('#Types :selected').val();
+        var clas = $('#Classes :selected').val();
+        if (orgid > 0 && source > 0 && type && clas >0) {
+            $.ajax({
+                url: '@Url.Action("GetProviders", "Organization")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                data: { OrgID: orgid, SourceID: source, Type:type, Clas:clas },
+                cache: false,
+                success: function (data) {
+                    $('#Providers').empty();
+                    $('#Providers').append('<option value="">--Select--</option>');
+                    if (data.length > 0) {
+                        for (i = 0; i < data.length; i++) {
+                            $('#Providers').append('<option value="' + data[i].text + '">' + data[i].text + '</option>');
+                        }
+                    }
+                },
+                error: function (data) { }
+            });
+        }
+        else {
+            $('#Providers').empty();
+            $('#Providers').append('<option value="">--Select--</option>');
+        }
+    });*@
+    });
+</script>
+<style>
+    .orgsorerror, .suberror {
+        margin-top: 28px;
+    }
+
+    #srctabs li:hover {
+        cursor: pointer;
+    }
+</style>
+<section class="content-header hedr">
+    @if (Model.ID == 0)
+    {
+        <h1> Add Source/Subscription </h1>
+    }
+    else
+    {
+        <h1> Edit Source/Subscription </h1>
+    }
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Organization Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div class="content">
+    <div class="nav-tabs-custom">
+        <ul class="nav nav-tabs" id="srctabs">
+            <li id="sources" class="active"><a>Source</a></li>
+            <li id="subscriptions"><a>Subscription</a></li>
+            @*<li id="sourcefields" class="disabled"><a>Source Fields</a></li>*@
+        </ul>
+    </div>
+    <section>
+        <div class="row">
+            <div class="box">
+                <div class="box-body">
+                    <div id="SourceForm" class="tab-pane innerborder">
+                        @using (Ajax.BeginForm("SaveSource", "Organization", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnSorComplete" }, new { @id = "AddSourceForm", @class = "form-horizontal" }))
+                        {
+                            @Html.ValidationSummary(true);
+                                                         if (Model.ID > 0)
+                                                         {
+                                                            @Html.HiddenFor(m => m.ID)
+                                                         }
+                                                         else
+                                                         {
+                                                            @Html.HiddenFor(m => m.ID, new { @Value = 0 })
+                                                         }
+
+                                                         if (@Model.Role == EnumRoles.SuperAdmin.ToString())
+                                                         {
+                                                            <div class="form-group">
+                                                                <div class="col-md-3">
+                                                                    <label for="inputEmail" class="gn">Organization<span class="danger">*</span></label>
+                                                                    @if (Model.ID > 0)
+                                                                    {
+                                                                        @Html.DropDownListFor(m => m.OrganizationID, new SelectList(Model.OrgList, "value", "text"), "--Select--", new { @class = "form-control", @id = "OrgID", @disabled = "disabled" })
+                                                                        @Html.HiddenFor(m => m.OrgID, new { @Value = Model.OrganizationID })
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        @Html.DropDownListFor(m => m.OrganizationID, new SelectList(Model.OrgList, "value", "text"), "--Select--", new { @class = "form-control", @id = "OrgID" })
+                                                                    }
+
+                                                                </div>
+                                                                <div class="col-sm-7 orgsorerror">
+                                                                    @Html.ValidationMessageFor(m => m.OrganizationID, "", new { @class = "red" })
+                                                                </div>
+                                                            </div>
+                                                         }
+                                                         else
+                                                         {
+                                                            @Html.HiddenFor(m => m.OrganizationID)
+                                                         }
+
+                                                        <div class="form-group">
+                                                            <div class="col-md-3">
+                                                                <label for="inputEmail" class="gn">Name<span class="danger">*</span></label>
+                                                                @Html.TextBoxFor(m => m.Name, new { @class = "form-control", @placeholder = "Enter Source Name", @id = "SorName" })
+                                                            </div>
+                                                            <div class="col-sm-7 orgsorerror">
+                                                                @Html.ValidationMessageFor(m => m.Name, "", new { @class = "red" })
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <div class="col-md-3">
+                                                                <label for="inputEmail" class="gn">Type<span class="danger">*</span></label>
+                                                                @Html.DropDownListFor(m => m.Type, new SelectList(Model.SourceTypes, "Value", "text"), "--Select--", new { @class = "form-control", @id = "Providers" })
+                                                            </div>
+                                                            <div class="col-sm-7 orgsorerror">
+                                                                @Html.ValidationMessageFor(m => m.Type, "", new { @class = "red" })
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <div class="col-md-3">
+                                                                <label for="inputEmail" class="gn">Provider<span class="danger">*</span></label>
+                                                                @Html.DropDownListFor(m => m.Provider, new SelectList(Model.ProviderList, "value", "text"), "--Select--", new { @class = "form-control", @id = "SorProviders" })
+                                                            </div>
+                                                            <div class="col-sm-7 orgsorerror">
+                                                                @Html.ValidationMessageFor(m => m.Provider, "", new { @class = "red" })
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <div class="col-md-3">
+                                                                <label for="inputEmail" class="gn">Email ID<span class="danger">*</span></label>
+                                                                @Html.TextBoxFor(m => m.EmailID, new { @class = "form-control", @placeholder = "Enter Email ID", @id = "SorEmailID" })
+                                                            </div>
+                                                            <div class="col-sm-7 orgsorerror">
+                                                                @Html.ValidationMessageFor(m => m.EmailID, "", new { @class = "red" })
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <div class="col-md-3">
+                                                                <label for="inputEmail" class="gn">Mobile Number<span class="danger">*</span></label>
+                                                                @Html.TextBoxFor(m => m.MobileNumber, new { @class = "form-control", @placeholder = "Enter Mobile Number", @id = "SorMobileNumber" })
+                                                            </div>
+                                                            <div class="col-sm-7 orgsorerror">
+                                                                @Html.ValidationMessageFor(m => m.MobileNumber, "", new { @class = "red" })
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <div class="col-md-3">
+                                                                <label for="inputEmail" class="gn">Icon<span class="danger"></span></label>
+                                                                <button type="button" data-original-title="Click to select icons" data-toggle="modal" data-target="#icn_select_modal" class="text-yellow">Select Icon</button>
+                                                                <span id="IconDisplay" style="padding-left:10px;"></span>
+                                                                <input id="IconName" type="hidden" name="Icon" />
+                                                                @{
+                            Html.RenderPartial("~/Views/Master/_UIIcons.cshtml");
+                                                                }
+                                                                @*<select class="form-control fa" id="icon" name="Icon">
+                                                                        <option value="">--Select--</option>
+                                                                        <option value="fa fa-bar-chart"> &#xf080; fa-bar-chart</option>
+                                                                        <option value="fa fa-balance-scale"> &#xf24e; fa-balance-scale</option>
+                                                                        <option value="fa fa-area-chart"> &#xf1fe; fa-area-chart</option>
+                                                                        <option value="fa fa-ban"> &#xf05e; fa-ban</option>
+                                                                        <option value="fa fa-car"> &#xf1b9; fa-automobile</option>
+                                                                    </select>*@
+                                                            </div>
+                                                            <div class="col-sm-7 usererror">
+                                                                @Html.ValidationMessageFor(m => m.Icon, "", new { @class = "red" })
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <div class="col-md-3">
+                                                                <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                                                @Html.DropDownListFor(m => m.StatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Status" })
+                                                            </div>
+                                                        </div>
+
+
+                                                        <div class="form-group">
+                                                            <div class="col-sm-12">
+                                                                <button type="submit" class="btn btn-theme" id="SourceSave">Save</button>
+                                                                @if (Model.ID == 0)
+                                                                {
+                                                                    <button type="reset" class="btn btn-theme reverse" id="SourceReset">Reset</button>
+                                                                }
+                                                                <button class="btn btn-theme decline SourceCancel">Cancel</button>
+                                                            </div>
+                                                        </div>
+                        }
+                        <div id="SpecificSources">
+                            @if (Model.OrganizationID > 0)
+                            {
+                                {
+                                    Html.RenderAction("SpecificSorces", "Organization", new { OrgID = Model.OrganizationID });
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div id="SubscriptionsForm" class="tab-pane innerborder">
+                        @using (Ajax.BeginForm("SaveSubscription", "Organization", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Test", OnSuccess = "OnSubComplete" }, new { @id = "SubForm", @class = "form-horizontal" }))
+                        {
+                            @Html.HiddenFor(m => m.SubID, new { @Value = 0 })
+                            if (Model.SubOrganizationID == 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Organization<span class="danger">*</span></label>
+                                        @Html.DropDownListFor(m => m.SubOrganizationID, new SelectList(Model.OrgList, "value", "text"), "--Select--", new { @class = "form-control", @id = "Organizations" })
+                                    </div>
+                                    <div class="col-sm-7 orgsorerror">
+                                        @Html.ValidationMessageFor(m => m.SubOrganizationID, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                @Html.HiddenFor(m => m.SubOrganizationID)
+                            }
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Source<span class="danger">*</span></label>
+                                    @Html.DropDownListFor(m => m.SourceID, new SelectList(new List<Object>{
+                                               new { key= "" , value = "--Select--" },
+                    }, "key", "Value"), new { @class = "form-control", @id = "Sources" })
+                                </div>
+                                <div class="col-sm-7 orgsorerror">
+                                    @Html.ValidationMessageFor(m => m.SourceID, "", new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Class<span class="danger">*</span></label>
+                                    @Html.DropDownListFor(m => m.ClassID, new SelectList(Model.ClassesList, "value", "text"), "--Select--", new { @class = "form-control", @id = "Classes" })
+                                </div>
+                                <div class="col-sm-7 orgsorerror">
+                                    @Html.ValidationMessageFor(m => m.ClassID, "", new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Lead Cost<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(m => m.LeadCost, new { @class = "form-control", @placeholder = "Enter Source Name", @id = "LeadCost" })
+                                </div>
+                                <div class="col-sm-7 orgsorerror">
+                                    @Html.ValidationMessageFor(m => m.LeadCost, "", new { @class = "red" })
+                                </div>
+                            </div>
+                            //
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Email<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(m => m.Email, new { @class = "form-control", @placeholder = "Enter Email ID", @id = "email" })
+                                </div>
+                                <div class="col-sm-7 orgsorerror">
+                                    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Post Code<span class="danger">*</span></label>
+                                    @Html.TextBoxFor(m => m.PostCode, new { @class = "form-control", @placeholder = "Enter Post Code", @id = "postcode" })
+                                </div>
+                                <div class="col-sm-7 orgsorerror">
+                                    @Html.ValidationMessageFor(m => m.PostCode, "", new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Renewal Date In Days <span class="danger">*</span></label>
+                                    @Html.TextBoxFor(m => m.RenewalDate, new { @class = "form-control", @id = "renewaldate", @Value = 2 })
+                                </div>
+                                <div class="col-sm-7 orgsorerror">
+                                    @Html.ValidationMessageFor(m => m.RenewalDate, "", new { @class = "red" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Status<span class="danger"></span></label>
+                                    @Html.DropDownListFor(m => m.SubStatusTypeID, new SelectList(new List<Object>{
+                                               new { key= 10 , value = "Active" },
+                       new { key= 20 , value = "Inactive" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "SubStatus" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-10">
+                                    <button type="submit" class="btn btn-theme" id="SubSave">Save</button>
+                                    @if (Model.ID == 0)
+                                    {
+                                        <button type="reset" class="btn btn-theme reverse" id="SubReset">Reset</button>
+                                    }
+                                    <button type="button" class="btn btn-theme decline SourceCancel">Cancel</button>
+                                </div>
+                            </div>
+                        }
+                        <div id="SpecificSubscriptions">
+                            @if (Model.SubOrganizationID != 0)
+                            {
+                                {
+                                    Html.RenderAction("SpecificSubscriptions", "Organization", new { OrgID = Model.OrganizationID, SourceID = Model.SourceID });
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div id="SourceFields">
+                        <div class="col-xs-12">
+                            @using (Ajax.BeginForm("AddSourceFields", "Organization", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnSorFieldComplete" }, new { @id = "SourceForm", @class = "form-horizontal" }))
+                            { @Html.HiddenFor(m => m.SorFieldOrganizationID, new { @id = "SubfieldOrgID" }) ; @Html.HiddenFor(m => m.SorFieldSubscriptionID, new { @id = "SubFieldID" }) ;
+                                <div class="form-group">
+                                    <div class="col-md-3">
+                                        <label for="inputEmail" class="gn">Source Fields<span class="danger"></span></label>
+                                        @Html.TextAreaFor(m => m.FieldName, new { @class = "form-control", @rows = 10, @id = "SorFieldName" })
+                                    </div>
+                                    <div class="col-sm-7 orgsorerror">
+                                        @Html.ValidationMessageFor(m => m.FieldName, "", new { @class = "red" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <button type="submit" class="btn btn-theme" id="SorFieldsSave">Save</button>
+                                        <button class="btn btn-theme decline SourceCancel">Cancel</button>
+                                    </div>
+                                </div>
+
+                            }
+                        </div>
+                        <div id="SourceFieldsGrid">
+                        </div>
+                    </div>
+
+
+
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<div class="dialog-box AddSorDlg" title="Confirm Message" style="background-color:white;"></div>
+<script>
+
+    function OnSorComplete(e) {
+        if (e > 0) {
+            opener.location.reload();
+            $('#IconDisplay').html('');
+            $('#SorName').val('');
+            $('#SorTypes').val('');
+            $('#OrgID').val('');
+            $('#Providers').val('');
+            $('#SorProviders').val('');
+            $('#SorEmailID').val('');
+            $('#SorMobileNumber').val('');
+            $('#icon').val('');
+            var orgid = e;
+            $.ajax({
+                url: '@Url.Action("SpecificSorces", "Organization")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                data: { OrgID: orgid },
+                cache: false,
+                success: function (data) {
+                    $('#SpecificSources').empty();
+                    $('#SpecificSources').html(data);
+                },
+                error: function (data) { }
+            });
+            $(".AddSorDlg").unblock();
+            opener.location.reload();
+            CustomMessage(e.ResponseMessage, e.Status);
+        }
+        else {
+            $(".AddSorDlg").unblock();
+            opener.location.reload();
+            CustomMessage(e.ResponseMessage, e.Status);
+        }
+    }
+    $('.SourceCancel').click(function () {
+        window.close();
+    });
+    $('#SourceReset').click(function () {
+        $('#AddSourceForm')[0].reset();
+        $('#AddSourceForm .orgsorerror').find('span').html('');
+        $('#IconDisplay').empty();
+    });
+
+    function OnSubComplete(e) {
+        //$('#subscriptions').removeClass('active');
+        //$('#sources').removeClass('active');
+        //$('#sourcefields').removeClass('disabled');
+        //$('#sourcefields').addClass('active');
+        //$('#SubscriptionsForm').hide();
+        //$('#SourceForm').hide();
+        //$('#SourceFields').show();
+        $('#Organizations').val('');
+        $('#Sources').val('');
+        $('#Classes').val('');
+        $('#LeadCost').val(0);
+        $('#email').val('');
+        $('#postcode').val('');
+        $('#renewaldate').val('');
+        opener.location.reload();
+        var orgid = e.split('-')[1];
+        var subid = e.split('-')[0];
+        $.ajax({
+            url: '@Url.Action("SpecificSubscriptions", "Organization")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            data: { OrgID: orgid },
+            cache: false,
+            success: function (data) {
+                $('#SpecificSubscriptions').empty();
+                $('#SpecificSubscriptions').html(data);
+            },
+            error: function (data) { }
+        });
+        if (e != "0") {
+            $(".AddSorDlg").unblock();
+            opener.location.reload();
+            CustomMessage(e.ResponseMessage, e.Status);
+        }
+        else {
+            $(".AddSorDlg").unblock();
+            opener.location.reload();
+            CustomMessage(e.ResponseMessage, e.Status);
+        }
+        $('#SubForm select').val('');
+        $('#SubStatus').val(10);
+        if ('@Model.OrganizationID' > 0) {
+
+        }
+        else {
+            $('#Sources').html('<option value="">--Select--</option>');
+        }
+        //$('#Classes').html('<option value="">--Select--</option>');
+        $('#Status').val(10);
+    }
+    $('#SubReset').click(function () {
+        $('#SubForm')[0].reset();
+        $('#SubForm .orgsorerror').find('span').html('');
+        @*if ('@Model.OrganizationID' > 0) {
+
+        }
+    else {
+            $('#Sources').html('<option value="">--Select--</option>');
+    }*@
+        //$('#Classes').html('<option value="">--Select--</option>');
+        $('#SubForm .orgsuberror').find('span').html('');
+    });
+    function OnSorFieldComplete(e) {
+        var subid = e;
+        opener.location.reload();
+        $('#SorFieldName').val('');
+        $(".AddSorDlg").unblock();
+        opener.location.reload();
+        CustomMessage(e.ResponseMessage, e.Status);
+        $.ajax({
+            url: '@Url.Action("OrganizationSourceSpecFields", "Organization")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            data: { SubID: subid },
+            cache: false,
+            success: function (data) {
+                $('#SourceFieldsGrid').empty();
+                $('#SourceFieldsGrid').append(data);
+            },
+            error: function (data) { }
+        });
+    }
+</script>

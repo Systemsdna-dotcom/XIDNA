@@ -1,0 +1,432 @@
+﻿@using Microsoft.AspNet.Identity
+@using XIDNA.Models
+@using XIDNA.ViewModels
+@using XIDNA
+@{
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["ApplicationPath"];
+    var sImagePath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+    var Title = "Motorhome Insurance";
+    var sQSURL = PhysicalPath + "mh";
+    //if (SessionManager.AppName != null)
+    //{
+    //    Title = SessionManager.AppName;
+    //}
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Google Tag Manager -->
+    <script>
+        (function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-MVBR6MJ');</script>
+    <!-- End Google Tag Manager -->
+    @*<script type="text/javascript">
+        try{
+            window._pfq = window._pfq || [];
+            (function () {
+                var pf = document.createElement("script");
+                pf.type = "text/javascript";
+                pf.id = "5e1e211a731cdc611f6ddbb4";
+                pf.dataset.name = "flopandaScript";
+                pf.async = true;
+                pf.src = "https://flopandascripts.s3.eu-west-2.amazonaws.com/assets/js/code-live.min.js";
+                document.getElementsByTagName("head")[0].appendChild(pf);
+            })();
+        }
+            catch (exception) {
+                }
+        </script>*@
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport1" content="width=device-width, minimum-scale=0.1">
+    <title>Motorhomeinsurance.com</title>
+    <!-- <link rel="icon" type="image/png" href="~/favicon.ico" /> -->
+    <link rel="icon" type="image/png" href="~/Content/images/GIT/images/favicon.png" />
+    <link href="@Url.Content("~/Content/css/plugins/jquery-ui/jquery-ui.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/css/plugins/jquery-ui/jquery-ui-custom.css")" rel="stylesheet" />
+    <!-- Bootstrap 3.3.5 -->
+    <link href="@Url.Content("~/Content/css/bootstrap.min.css")" rel="stylesheet" />
+    <!-- Font Awesome -->
+    @*<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">*@
+    <link href="~/Content/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/Content/ionicons/css/ionicons.min.css" rel="stylesheet" />
+    <!-- Ionicons -->
+    @*<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">*@
+    <link rel="stylesheet" href="@Url.Content("~/Content/plugins/datatables/dataTables.bootstrap.css")">
+    @*<link href="@Url.Content("~/Content/css/main.css")" rel="stylesheet" />
+        <link href="@Url.Content("~/Content/plugins/tabScroll/jquery.scrolling-tabs.css")" rel="stylesheet" />
+         <link href="@Url.Content("~/Content/css/custom.css")" rel="stylesheet" />*@
+    @*<link href="@Url.Content("~/Content/css/ClientLayout.css")" rel="stylesheet" />*@
+    @*<link href="@Url.Content("~/Content/css/userclient.css")" rel="stylesheet" />*@
+    @*<link href="@Url.Content("~/Content/css/Motorhome.css")" rel="stylesheet" />*@
+    <link rel="stylesheet" href="~/Content/css/@SessionManager.Theme">
+    @*@if (User.Identity.GetGroupName().Contains(EnumRoles.SuperAdmin.ToString()))
+        {
+            <link rel="stylesheet" href="~/Content/css/skins/dark-theme.css">
+        }
+        else
+        {
+            <link rel="stylesheet" href="~/Content/css/skins/@User.Identity.GetOrganizationTheme()">
+        }*@
+
+    <!-- DataTables -->
+    <!--<link rel="stylesheet" href="plugins/datatables/dataTables.bootstrap.css">-->
+    @*<link href="@Url.Content("~/Content/css/animate.css")" rel="stylesheet" />*@
+
+    <script src="@Url.Content("~/Scripts/JQuery/jQuery-2.1.4.min.js")"></script>
+    @*<script src="@Url.Content("~/Scripts/ajaxfileupload.js")"></script>*@
+    <script src="@Url.Content("~/Scripts/CommonFunctions.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.unobtrusive-ajax.min.js")"></script>
+    <script src="@Url.Content("~/Content/plugins/datatables/jquery.dataTables.min.js")"></script>
+    <script src="@Url.Content("~/Content/plugins/datatables/dataTables.bootstrap.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.validate.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")"></script>
+    <!-- jQuery UI -->
+    <script src="@Url.Content("~/Scripts/JQuery/jquery-ui.js")"></script>
+    <script src="@Url.Content("~/Scripts/js/bootstrap.min.js")"></script>
+    @*<link href="~/Scripts/JSTree/themes/default/style.css" rel="stylesheet" />*@
+    <!-- JSTree -->
+    <link href="@Url.Content("~/Content/jsTree/themes/default/style.min.css")" rel="stylesheet" />
+    <script src="@Url.Content("~/Scripts/treeview/jstree.min.js")"></script>
+    <!-- Loading Js -->
+    <script src="@Url.Content("~/Scripts/jquery.blockUI.js")"></script>
+    <!-- AdminLTE App -->
+    <script src="@Url.Content("~/Scripts/app.min.js")"></script>
+    <!-- ChartJS-->
+    <script src="@Url.Content("~/Scripts/js/plugins/chartJs/Chart.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/js/plugins/easypiechart/jquery.easypiechart.js")"></script>
+    <script src="@Url.Content("~/Scripts/C3/d3.v3.min.js")"></script>
+    <script src="@Url.Content("~/Scripts/C3/c3.min.js")"></script>
+    <link href="@Url.Content("~/Scripts/C3/c3.css")" rel="stylesheet" />
+    @*<link href="@Url.Content("~/Content/plugins/tabScroll/jquery.scrolling-tabs.css")" rel="stylesheet" />*@
+    <script src="@Url.Content("~/Content/plugins/mCustomScrollbar/jquery.mCustomScrollbar.concat.min.js")"></script>
+    <link href="@Url.Content("~/Content/plugins/mCustomScrollbar/jquery.mCustomScrollbar.min.css")" rel="stylesheet" />
+    <script src="@Url.Content("~/Content/plugins/timepicker/bootstrap-datetimepicker.js")"></script>
+    <link href="@Url.Content("~/Content/plugins/timepicker/bootstrap-datetimepicker.min.css")" rel="stylesheet" />
+    <script src="@Url.Content("~/Scripts/bluebird.min.js")"></script>
+    <script>
+        $(document).ready(function () {
+            AddEditLayoutURL = '@Url.Action("AddEditPopupLayout","Popup")';
+            LayoutMappingsURL = '@Url.Action("GetLayoutMappings", "Popup")';
+            AddEditXiLinkURL = '@Url.Action("AddEditXiLink", "XiLink")';
+            XiLinkListByOrgURL = '@Url.Action("GetXiLinkListByOrg", "QueryGeneration")';
+            ViewXiLinkURL = '@Url.Action("ViewXiLink", "XiLink")';
+            ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+            DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+            PopupURL = '@Url.Action("GetPopupDetails", "XiLink")';
+            PopupORDialogURL = '@Url.Action("GetPopupORDialog", "XiLink")';
+            DialogURL = '@Url.Action("GetDialog", "XiLink")';
+            SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+            SemanticURL = '@Url.Action("GetSemanticDetails", "XiLink")';
+            ComponentURL = '@Url.Action("LoadComponentByID", "XIComponents")';
+            StepURL = '@Url.Action("GetStepContent", "XiLink")';
+            AddEditXiParameterURL = '@Url.Action("AddEditXiParameter", "XiLink")';
+            ViewXiParameterURL = '@Url.Action("ViewXiParameter", "XiLink")';
+            XiParameterListByOrgURL = '@Url.Action("GetXiParameterListByOrg", "QueryGeneration")';
+            AddEditXiLayoutURL = '@Url.Action("AddEditLayoutDetails", "Popup")';
+            XiLayoutListByOrgURL = '@Url.Action("GetXiLayoutListByOrg", "Popup")';
+            UpdateXIParamsURL = '@Url.Action("UpdateXIParams", "XIComponents")';
+            StepContentURL = '@Url.Action("GetStepContent", "XiLink")';
+            StepDataURL = '@Url.Action("GetStepData", "XiLink")';
+            CallQSEventURL = '@Url.Action("CallQSEvent", "XIComponents")';
+            ComponentParmsByStepURL = '@Url.Action("GetComponentParmsByStep", "XIComponents")';
+            XILinkLoadURL = '@Url.Action("XILinkLoad", "XiLink")';
+            XILinkLoadJsonURL = '@Url.Action("XILinkLoadJson", "XiLink")';
+            XIContentURL = '@Url.Action("XIContent", "XiLink")';
+            XIContentLoadURL = '@Url.Action("XIContentLoad", "XiLink")';
+            MakeaChangeURL = '@Url.Action("MakeaChange", "XiLink")';
+            LoadStepURL = '@Url.Action("TriggerStep", "XiLink")';
+            LoadLayoutURL = '@Url.Action("LoadLayout", "XiLink")';
+            XILinkDefinitionURL = '@Url.Action("GetXILinkDefinition", "XiLink")';
+            PopupDefinitionURL = '@Url.Action("GetPopupDefinition", "XiLink")';
+            SetParamUrl = '@Url.Action("SetParams", "XiLink")';
+            OpenInPopupURL = '@Url.Action("OpenInPopup", "XiLink")';
+            NextStepURL = '@Url.Action("GetNextStep", "XiLink")';
+            PrevStepURL = '@Url.Action("GetPreviousStep", "XiLink")';
+            SaveQSStepURL = '@Url.Action("SaveQSStep", "XiLink")';
+            LogSignalRURL = '@Url.Action("LogSignalR", "XiLink")';
+            AmendDetailsURL = '@Url.Action("AmendDetails", "XiLink")';
+            UpdateQuoteURL = '@Url.Action("UpdateQuotePrice", "XiLink")';
+            PaymentURL = '@Url.Action("Payment", "Payment")';
+            SaveGridURL = '@Url.Action("SaveGrid", "XiLink")';
+            RemoveSectionURL = '@Url.Action("RemoveSectionInstance", "XiLink")';
+            sImagePath = '@sImagePath';
+            ExecuteXIScriptURL = '@Url.Action("ExecuteXIScript", "XiLink")';
+            SecureKeyURL = '@Url.Action("CheckSecureKey", "Account")';
+            GetQSDefinitionURL = '@Url.Action("GetQSDefinitionByInstanceID", "XiLink")';
+            GetTemplateDefinitionURL = '@Url.Action("GetTemplateIDByClass", "XiLink")';
+            RemoveStepXIIValuesURL = '@Url.Action("RemoveStepXIIValues", "XiLink")';
+            UpdateQuoteRankURL = '@Url.Action("UpdateQuoteRank", "XiLink")';
+            XIPreviewURL = '@Url.Action("XIPreviewXiLink", "XiLink")';
+            GetNextHTMLRowsURL = '@Url.Action("GetNextHTMLRows", "XiLink")';
+            LoadSectionContentURL = '@Url.Action("Load_Component", "XIComponents")';
+            GetBOInstanceIDURL = '@Url.Action("GetBOInstanceID", "BusinessObjects")';
+            GetBOAttributeValueURL = '@Url.Action("GetBOAttributeValue", "BusinessObjects")';
+        });
+    </script>
+</head>
+@*<body class="@SessionManager.Theme.Replace(".css","") sidebar-mini">*@
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MVBR6MJ"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div class="page-wrapper" id="firsttheme">
+        @*<div id="Dialogs"></div>
+            <div id="DialogGroups" class="no-padding" style="display:none;">
+                <div id="VerticalLeftBar" class="col-xs-1 btn-popover gutter6"></div>
+                <div id="HorizontalTopBar" class="col-xs-12 btn-popover bottom"></div>
+                <div id="DialogContent">
+                </div>
+                <div id="VerticalRightBar" class="col-xs-1 btn-popover left gutter6 pull-right"></div>
+                <div id="HorizontalBottonBar" class="col-xs-12 btn-popover top"></div>
+            </div>*@
+        <header class="main-header" id="mototrhomeHead">
+            <nav class="navbar clientnav" id="headerSection">
+                <div class="container">
+                    <!-- <div class="navbar-header">
+           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+               <span class="sr-only">Toggle navigation</span>
+               <i class="fa fa-user"></i>
+           </button>
+           <div class="newquotebtnxs">
+               <a href="@PhysicalPath/zeeqs" target="_blank" class="getquote-btn" style="cursor:pointer;">GET A QUOTE</a>
+           </div>
+           <a class="navbar-brand" href="#">
+               <img src="~/Content/images/MotorHome.png">
+           </a>
+            </div> -->
+                    <a class="navbar-brand" href="#">
+                        <img src="~/Content/images/MotorHome.png">
+                    </a>
+
+                    <div class="HeaderMenu">
+                        <a title="" class="mobileBtn">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </a>
+                        <div class="user_loged_details">
+                            <!-- <i class="fa ion-person"></i> -->
+                            <div class="user_loged">
+                                <div class=""><span style="color: #5bb59c;">@User.Identity.GetUserName()</span></div>
+                                <div class="">Client Reference: <span style="color: #5bb59c;">@SessionManager.sCustomerRefNo</span></div>
+                            </div>
+                            <button type="button" class="mobile_menuLogs" data-toggle="collapse" data-target="#mobile_menuLogs_toggle" aria-expanded="false">
+                                <i class="fa fa-angle-down"></i>
+                            </button>
+                        </div>
+                        <div class="newquotebtnxs">
+                            <a href="@PhysicalPath/zeeqs" target="_blank" class="getquote-btn" style="cursor:pointer;">GET A QUOTE</a>
+                        </div>
+                        <div class="collapse navbar-collapse" id="mobile_menuLogs_toggle">
+                            <ul class="nav navbar-nav navbar-right">
+                                <li class="newquotebtn">
+                                    <a href="@sQSURL" target="_blank" class="getquote-btn" style="cursor:pointer;">GET A QUOTE</a>
+                                </li>
+                                <li class="login-user">
+                                    <p class="no-margin">Welcome: <span class="">@User.Identity.GetUserName()</span></p>
+                                    <p class="no-margin">Client Reference: <span class="">@SessionManager.sCustomerRefNo</span></p>
+                                </li>
+                                <li class="signout-user">
+                                    @using (Html.BeginForm("ClientLogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                                    {
+                                        @Html.AntiForgeryToken()
+                                        <a href="javascript:document.getElementById('logoutForm').submit()" class="signout-btn"><i class="fa fa-sign-out" aria-hidden="true"></i>Sign out</a>
+                                    }
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="menuNav">
+                            <ul class="nav navbar-nav nav-main sub-menuMain">
+                                <li class="active">
+                                    <a class="" href="https://www.motorhomeinsurance.com/">Home</a>
+                                </li>
+                                <li>
+                                    <a class="">Information<span class="sub-arrow"><i class="fa fa-caret-down"></i></span></a>
+                                    <ul class="sub-menuOne">
+                                        <li class="sub-menuOneli">
+                                            <a href="#" class="sub-aOneli">Types of Motorhome<span class="sub-arrow"><i class="fa fa-caret-right"></i></span></a>
+                                            <ul class="sub-menuTwo">
+                                                <li class="sub-menuTwoli"><a href="https://www.motorhomeinsurance.com/information/types-of-motorhome/low-profile-coach-built-motorhomes/" class="sub-aTwoli">Low-profile Coach-built Motorhomes</a></li>
+                                                <li class="sub-menuTwoli"><a href="https://www.motorhomeinsurance.com/information/types-of-motorhome/over-cab-bed-motorhomes/" class="sub-aTwoli">Over Cab Bed Motorhomes</a></li>
+                                                <li class="sub-menuTwoli"><a href="https://www.motorhomeinsurance.com/information/types-of-motorhome/a-class-motorhomes/" class="sub-aTwoli">A-class Motorhomes</a></li>
+                                                <li class="sub-menuTwoli"><a href="https://www.motorhomeinsurance.com/information/types-of-motorhome/fixed-roof-campervans/" class="sub-aTwoli">Fixed Roof Campervans</a></li>
+                                                <li class="sub-menuTwoli"><a href="https://www.motorhomeinsurance.com/information/types-of-motorhome/high-top-campervans/" class="sub-aTwoli">High-top Campervans</a></li>
+                                            </ul>
+                                        </li>
+                                        <li class="sub-menuOneli"><a href="https://www.motorhomeinsurance.com/information/add-ons/" class="sub-aOneli">Add-On Products</a></li>
+                                        <li class="sub-menuOneli"><a href="https://www.motorhomeinsurance.com/information/how-to-report-a-claim/" class="sub-aOneli">How to Report a Claim</a></li>
+                                        <li class="sub-menuOneli"><a href="https://www.motorhomeinsurance.com/information/faqs/" class="sub-aOneli">FAQs</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a class="" href="https://www.motorhomeinsurance.com/news/">News</a>
+                                </li>
+                                <li>
+                                    <a class="" href="https://www.motorhomeinsurance.com/about/">About us</a>
+                                </li>
+                                <li>
+                                    <a class="" href="https://www.motorhomeinsurance.com/contact/">Contact</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <header id="headerSection" class="gitHeader">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <img src="~/Content/images/GIT/images/logo.png" />
+                </a>
+                <div class="menuNav menu">
+                    <div class="logInfo">
+                        @using (Html.BeginForm("ClientLogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <a href="javascript:document.getElementById('logoutForm').submit()" class="signout-btn">Sign out</a>
+                        }
+                    </div>
+                    <ul class="">
+                        <li class="active">
+                            <a class="" href="#">Home</a>
+                        </li>
+                        <!-- <li>
+                            <a class="" href="#">Information <i class="fa fa-caret-down"></i></a>
+                            <ul>
+                                <li><a href="#">link</a></li>
+                                <li><a href="#">link</a></li>
+                                <li><a href="#">link</a></li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a class="" href="#">News</a>
+                        </li> -->
+                        <li>
+                            <a class="" href="#">About us</a>
+                        </li>
+                        <li>
+                            <a class="" href="#">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+        <div class="bodyview ClientContentDiv ResponseMsg">
+            <div class="admin-section container-fluid">
+                <div class="main">
+                    <div class="header-top">
+                        <button class="button-nav">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <em>Content Menu</em>
+                        </button>
+                    </div>
+                </div>
+                <script>
+                      $(document).ready(function () {
+                        $(".button-nav").click(function () {
+                            $(this).toggleClass('open');
+                            $("#ClientPage").toggleClass("Clienttoggle");
+                            $('body').toggleClass('overflow-hide')
+                        });
+                        $(document).click(function (e) {
+                            var clickover = $(e.target);
+                            var _opened = $("#ClientPage").hasClass("Clienttoggle");
+                            if (_opened === true && !clickover.hasClass("button-nav")) {
+                                $(".button-nav").click();
+                            }
+                        });
+                    });
+                </script>
+                @RenderBody()
+            </div>
+        </div>
+
+        @*<div id="Dialogs"></div>
+            <div id="DialogGroups" class="no-padding" style="display:none;">
+                <div id="VerticalLeftBar" class="col-xs-1 btn-popover gutter6"></div>
+                <div id="HorizontalTopBar" class="col-xs-12 btn-popover bottom"></div>
+                <div id="DialogContent">
+                </div>
+                <div id="VerticalRightBar" class="col-xs-1 btn-popover left gutter6 pull-right"></div>
+                <div id="HorizontalBottonBar" class="col-xs-12 btn-popover top"></div>
+            </div>*@
+    </div>
+    <div class="col-md-12 bottomstrip">
+        <p class="no-margin">Motorhome Insurance Services is a trading name of Quotemetoday.co.uk Ltd.</p>
+        <p class="no-margin">Quotemetoday.co.uk Ltd is authorised and regulated by the Financial Conduct Authority FCA Number 786619</p>
+    </div>
+    @*<footer class="page-footer">
+                <p class="text-center no-margin copyright">Copyright © 2018-2019 ZeeInsurance. All rights reserved.</p>
+        </footer>*@
+    <div id="Dialogs"></div>
+    <!--<script>
+        $(document).ready(function(){
+
+            $(window).on("resize load scroll", function () {
+                setTimeout(function(){
+                    $(".admin-body > div").height($(window).height() - 150).css('overflow-y','auto');
+                },1000);
+            }).trigger("resize");
+        });
+    </script>-->
+    <script type="text/javascript">
+        $('.mobileBtn').on('click',function(){
+            $(this).toggleClass('close');
+            //$(this).next().toggleClass('open');
+            $('.menuNav .sub-menuMain').slideToggle(200);
+            $('body').toggleClass('overflow-hide')
+            $('.sub-menuOne,.sub-menuTwo').slideUp();
+        });
+        $(document).ready(function(){
+            $(window).resize(function(){
+                if($(window).width()<768){
+                    var w_height = $(window).height() - $('.bottomstrip').height() - 70;
+                    $('.sub-menuMain').animate({height:w_height});
+                }else{
+                    $('.sub-menuMain').css({'height':'auto'});
+                }
+                ////////////////////////////////////
+                if($(window).width()<768){
+                    $('.sub-menuOne').parent('li').addClass('subListOne');
+                    $('.sub-menuTwo').parent('li').addClass('subListTwo');
+                }else{
+                    $('.sub-menuOne').parent('li').removeClass('subListOne');
+                    $('.sub-menuTwo').parent('li').removeClass('subListTwo');
+                };
+            }).trigger('resize');
+            $('.subListOne>a').on('click',function(){
+                $('.sub-menuOne').slideToggle();
+            });
+            $('.subListTwo>a').on('click',function(){
+                $('.sub-menuTwo').slideToggle();
+            })
+        });
+        $(document).ready(function () {
+            $(document).click(function (e) {
+                var clickover = $(e.target);
+                var _opened = $(".menuLogs").hasClass("in");
+                if (_opened === true && !clickover.hasClass("mobile_menuLogs")) {
+                    $(".mobile_menuLogs").click();
+                }
+            });
+            $(document).on('click','.mobile_menuLogs',function(){
+                $('.mobileBtn').removeClass('close');
+                $('.menuNav .sub-menuMain').hide();
+                $('body').removeClass('overflow-hide')
+            });
+        });
+    </script>
+</body>
+</html>

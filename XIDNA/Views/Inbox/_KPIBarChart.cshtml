@@ -1,0 +1,296 @@
+﻿@model XIDNA.ViewModels.LineGraph
+@using XIDNA.ViewModels
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: '@Url.Action("GetBarChart", "Inbox")',
+            type: 'POST',
+            data: JSON.stringify({ ReportID: '@Model.ReportID' }),
+            contentType: "application/json; charset=utf-8",
+            datatype: 'JSON',
+            cache: false,
+            success: function (data) {
+                getbarchartdata(data);
+            },
+            error: function (data) {
+            }
+        });
+        @*var GraphData = @Html.Raw(Json.Encode(Model))
+            getbarchartdata(GraphData);*@
+        var idname = '@Model.QueryName.Replace(" ", "_")';
+        $("#BarChartGraphClose-" + idname).click(function () {
+            var Type = $(this).attr('data-Type');
+            var Name = $(this).attr('data-name');
+            $('input[data-id=' + Name + ']').prop('checked', false);
+            var visibility = $(this).closest('.portlet').attr('data-id');
+            visibility = visibility.replace("true", "false");
+            $(this).closest('.portlet').attr('data-id', visibility);
+            $(this).closest('.portlet').hide();
+            var Rows = $('.sortable').find('.portlet');
+            var ReportIDs = new Array();
+            for (i = 0; i < Rows.length; i++) {
+                var Row = Rows[i].attributes;
+                for (j = 0; j < Row.length; j++) {
+                    if (Row[j].name == "data-id") {
+                        id = Row[j].nodeValue;
+                    }
+                }
+                var type = id.split('-')[0];
+                if (type == "Row") {
+                    var ids = "";
+                    var circles = $('.KPICircles');
+                    for (k = 0; k < circles.length; k++) {
+                        var circle = circles[k].attributes;
+                        for (l = 0; l < circle.length; l++) {
+                            if (circle[l].name == "data-id") {
+                                ids = ids + circle[l].nodeValue + ",";
+                            }
+                        }
+                    }
+                    ids = ids.substring(0, ids.length - 1);
+                    id = "{" + ids + "}"
+                }
+                ReportIDs.push(id);
+                var RowData = {
+                    ColOrder: ReportIDs, UserID: parseInt(@Model.UserID)
+                }
+            }
+            $.ajax({
+                url: '@Url.Action("SaveColSettings", "Inbox")',
+                type: 'POST',
+                data: JSON.stringify(RowData),
+                contentType: "application/json; charset=utf-8",
+                datatype: 'JSON',
+                cache: false,
+                success: function (data) {
+                },
+                error: function (data) {
+                }
+            });
+
+        });
+        $('#@Model.QueryName.Replace(" ", "_")-ddlClassBarChart').change(function () {
+            var ClassValue = $('#@Model.QueryName.Replace(" ", "_")-ddlClassBarChart').val();
+            var DateValue = $('#@Model.QueryName.Replace(" ", "_")-ddlDateBarChart').val();
+            $.ajax({
+                url: '@Url.Action("GetBarChart", "Inbox")',
+                type: 'GET',
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                async: false,
+                data: { ReportID: '@Model.ReportID', ClassValue: ClassValue, DateValue: DateValue },
+                success: function (data) {
+                    getbarchartdata(data)
+                }
+            });
+        });
+        $('#@Model.QueryName.Replace(" ", "_")-ddlDateBarChart').change(function () {
+            var ClassValue = $('#@Model.QueryName.Replace(" ", "_")-ddlClassBarChart').val();
+            var DateValue = $('#@Model.QueryName.Replace(" ", "_")-ddlDateBarChart').val();
+            $.ajax({
+                url: '@Url.Action("GetBarChart", "Inbox")',
+                type: 'GET',
+                cache: false,
+                contentType: 'application/json; charset=utf-8',
+                async: false,
+                data: { ReportID: '@Model.ReportID', ClassValue: ClassValue, DateValue: DateValue },
+                success: function (data) {
+                    getbarchartdata(data)
+                }
+            });
+        });
+    });
+    function getbarchartdata(GraphData) {
+        var Name = "BarChart-" + GraphData.ReportID;
+        if ('@Model.Type' == '@EnumLocations.Dashboard.ToString()') {
+            var chart = c3.generate({
+                size: {
+                    //width:390,
+                    height: 300
+                },
+                bindto: '#' + Name,
+                data: {
+                    x: 'x',
+                    columns: GraphData.Data,
+                    type: 'bar',
+                    onclick: function (d, i) {
+                        var XValue = 0;
+                        var Yvalue = "";
+                        var Hour = d.x + 1;
+                        for (i = 0; i < GraphData.Data[0].length; i++) {
+                            if (i == Hour) {
+                                XValue = GraphData.Data[0][Hour];
+                            }
+                        }
+                        Yvalue = d.name;
+                        if (GraphData.IsColumnClick == true) {
+                            if (GraphData.OnClickParameter.length > 0) {
+                                var SearchText = GraphData.OnClickParameter + "=" + XValue + " AND " + GraphData.OnClickCell + "=" + Yvalue;
+                            }
+                            else {
+                                var SearchText = GraphData.OnClickColumn + "=" + XValue + " AND " + GraphData.OnClickCell + "=" + Yvalue;
+                            }
+                            var Url = "@Url.Action("ReportResult", "Inbox")?QueryID=" +GraphData.OnClickResultID +"&PageIndex=1&ResultIn=Popup&SearchText=" + SearchText;
+                            window.open(Url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+                        }
+                    },
+                },
+                color: {
+                    pattern: ['#e58c7a', '#d789a3', '#eeba6f', '#e47b78']
+                },
+                padding: { bottom: 10 },
+                axis: {
+                    x: {
+                        type: 'category' // this is needed to load string x value
+                    },
+                    y: {
+                        tick: {
+                            format: function (d) {
+                                return (parseInt(d) == d) ? d : null;
+                            }
+                        }
+                    }
+                },
+            });
+        }
+        else if ('@Model.Type' == "Run") {
+            var chart = c3.generate({
+                size: {
+                    width: 390,
+                    height: 300
+                },
+                bindto: '#' + Name,
+                data: {
+                    x: 'x',
+                    columns: GraphData.Data,
+                    type: 'bar',
+                    onclick: function (d, i) {
+                        var XValue = 0;
+                        var Yvalue = "";
+                        var Hour = d.x + 1;
+                        for (i = 0; i < GraphData.Data[0].length; i++) {
+                            if (i == Hour) {
+                                XValue = GraphData.Data[0][Hour];
+                            }
+                        }
+                        Yvalue = d.name;
+                        if ('@Model.IsColumnClick' == "True") {
+                            if ('@Model.OnClickParameter'.length > 0) {
+                                var SearchText = '@Model.OnClickParameter' + "=" + XValue + " AND " + '@Model.OnClickCell' + "=" + Yvalue;
+                            }
+                            else {
+                                var SearchText = '@Model.OnClickColumn' + "=" + XValue + " AND " + '@Model.OnClickCell' + "=" + Yvalue;
+                            }
+                            var Url = "@Url.Action("ReportResult", "Inbox")?QueryID=" +@Model.OnClickResultID +"&PageIndex=1&ResultIn=Popup&SearchText=" + SearchText;
+                            window.open(Url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+                        }
+                    },
+                },
+                color: {
+                    pattern: ['#e58c7a', '#d789a3', '#eeba6f', '#e47b78']
+                },
+                padding: { bottom: 10 },
+                axis: {
+                    x: {
+                        type: 'category' // this is needed to load string x value
+                    },
+                    y: {
+                        tick: {
+                            format: function (d) {
+                                return (parseInt(d) == d) ? d : null;
+                            }
+                        }
+                    }
+                },
+            });
+        }
+        else {
+            var chart = c3.generate({
+                size: {
+                    //width: 390,
+                    height: 300
+                },
+                bindto: '#' + Name,
+                data: {
+                    x: 'x',
+                    columns: val,
+                    type: 'bar',
+                },
+                color: {
+                    pattern: ['#e58c7a', '#d789a3', '#eeba6f', '#e47b78']
+                },
+                padding: { bottom: 10 },
+                axis: {
+                    x: {
+                        type: 'category' // this is needed to load string x value
+                    },
+                    y: {
+                        tick: {
+                            format: function (d) {
+                                return (parseInt(d) == d) ? d : null;
+                            }
+                        }
+                    }
+                },
+            });
+        }
+    }
+
+</script>
+<div>
+    @if (Model.Type != EnumLocations.Dashboard.ToString() && Model.Type != "Run")
+    {
+        if (Model.SectionName != null)
+        {
+            <div class="panel panel-default">
+                @if (Model.SectionName != null)
+                {
+                    <div class="panel-heading usericon Lead1">
+                        <a class="accordion-toggle collapsed " data-toggle="collapse" data-parent="#accordion" href="#@Model.SectionName.Replace(" ","")@Model.TabID">
+                            <h4 class="panel-title">@Model.SectionName</h4>
+                        </a>
+                    </div>
+                }
+                <div class="panel-collapse collapse in" id=@Model.SectionName.Replace(" ","")@Model.TabID>
+                    <div class="panel-body LeadContent">
+                        <div class="ibox float-e-margins">
+                            @*<div class="ibox-title">
+                                    <h5>Lead Count</h5>
+                                    <span class="label label-success pull-left LeadCount"></span>
+                                    <div class="ibox-header-items">
+                                        <a href="#" class="btn-minimize btn-default"><i class="fa fa-angle-down"></i></a>
+                                        <a href="#" class="btn-close btn-default" id="@Model.ID"><i class="fa fa-close"></i></a>
+                                    </div>
+                                </div>*@
+                            <div id="Bar-@Model.TabID@Model.SectionName"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">@Model.QueryName</h3>
+                <div class="pull-right box-tools form-inline">
+                    @if (Model.Type != "Run")
+                    {
+                        @Html.DropDownList("ddlBarChart", new SelectList(@Model.ClassDDL, "Value", "text", ""), "-Class-", new { @class = "form-control BarClassDropDown", @id = Model.QueryName.Replace(" ", "_") + "-ddlClassBarChart" })
+
+                        @Html.DropDownList("ddlDateBarChart", new SelectList(@Model.DateDDL, "Value", "text", ""), "-Date-", new { @class = "form-control BarDateDropDown", @id = Model.QueryName.Replace(" ", "_") + "-ddlDateBarChart" })
+                        <button class="btn btn-box-tool" data-widget="remove" id="BarChartGraphClose-@Model.QueryName.Replace(" ","_")" data-name="@Model.QueryName.Replace(" ","_")" data-toggle="tooltip" title="Remove"><i class="fa fa-times"></i></button>
+                    }
+                </div>
+            </div>
+            <div class="box-body">
+                <div id="BarChart-@Model.ReportID"></div>
+            </div>
+        </div>
+    }
+</div>
+
+

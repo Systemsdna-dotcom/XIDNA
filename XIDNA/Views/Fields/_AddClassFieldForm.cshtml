@@ -1,0 +1,167 @@
+﻿@model XIDNA.Models.AddFields
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script>
+    $(document).ready(function () {
+        
+        $('#FieldType').change(function () {
+            if ($(this).val() == "VARCHAR") {
+                $('#Length').prop("disabled", false);
+            }
+            else {
+                $('#Length').prop("disabled", true);
+            }
+        });
+        if ('@Model.OrganizationID' == 0) {
+            $('.Fieldheading').append(" Admin - Class Specific Field");
+        } else {
+            $('.Fieldheading').append('@Model.OrgName' + " - Class Specific Field");
+        }
+        $('#Class').change(function () {
+            $('#ClassName').val($('#Class :selected').text());
+            $('#ClassID').val($('#Class :selected').val());
+        });
+
+        $('#Class').change(function () {
+            var value = $(this).val();
+            $.ajax({
+                url: '@Url.Action("SelectedFields", "Fields")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: 'JSON',
+                cache: false,
+                data: { ID: value },
+                success: function (data) {
+                    $('#Selectedfield').html(data);
+                },
+                error: function (data) {
+                }
+            })
+        })
+    });
+</script>
+<style>
+    .danger{
+        color:red;
+    }
+    .fielderror{
+        margin-top:30px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Create Class Specific Field </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Field</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+<div id="AddFieldForm" class="col-xs-12 box-body">
+    <div class="innerborder">
+        <h6 class="Fieldheading"></h6>
+        @using (Ajax.BeginForm("SaveField", "AddFields", new AjaxOptions { HttpMethod = "POST", UpdateTargetId = "Field", OnSuccess = "OnComplete()" }, new { @id = "FieldsForm", @class = "form-horizontal" }))
+        {
+            @Html.HiddenFor(m => m.ID, new { @Value = 0 })
+            @Html.HiddenFor(m => m.OrgName)
+            @Html.HiddenFor(m => m.ClassSpecific, new { @Value = "ClassSpecific" })
+            @Html.HiddenFor(m => m.TableName, new { @value = Model.TableName })
+            @Html.HiddenFor(m => m.CreationType, new { @Value = "Create" })
+
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">Class<span class="danger">*</span></label>
+                    @Html.DropDownListFor(m => m.Class, new SelectList(Model.Classes, "Value", "text"), "--Select--", new { @class = "form-control", @id = "Class" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.Class, "", new { @class = "red" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">Field Name<span class="danger">*</span></label>
+                    @Html.TextBoxFor(m => m.FieldName, new { @class = "form-control", @placeholder = "Enter Name", @id = "FieldName" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.FieldName, "", new { @class = "red" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">Field Type<span class="danger">*</span></label>
+                    @Html.DropDownListFor(m => m.FieldType, new SelectList(new List<Object>{
+                                               new { key= "" , value = "--Select--" },
+                       new { key= "INT" , value = "int" },
+                       new { key= "VARCHAR", value = "varchar" },
+                       new { key= "DATETIME", value = "datetime" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "FieldType" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.FieldType, "", new { @class = "red" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-3">
+                    <label for="inputEmail" class="gn">Field Length<span class="danger">*</span></label>
+                    @Html.DropDownListFor(m => m.Length, new SelectList(new List<Object>{
+                                               new { key= "" , value = "--Select--" },
+                       new { key= "32" , value = "32" },
+                       new { key= "64" , value = "64" },
+                       new { key= "128" , value = "128" },
+                       new { key= "256" , value = "256" },
+                       new { key= "512" , value = "512" },
+                       new { key= "MAX" , value = "MAX" }
+                    }, "key", "Value"), new { @class = "form-control", @id = "Length" })
+                </div>
+                <div class="col-sm-7 fielderror">
+                    @Html.ValidationMessageFor(m => m.Length, "", new { @class = "red" })
+                </div>
+            </div>
+            <input type="hidden" id="ClassName" name="ClassName" class="form-control">
+            <input type="hidden" id="ClassID" name="ClassID" class="form-control">
+            <div class="form-group">
+                <div class="col-sm-10">
+                    <button type="submit" class="btn btn-theme" id="FieldSave">Save</button>
+                    <button type="button" class="btn btn-theme reverse" id="FieldReset">Reset</button>
+                    <button type="button" class="btn btn-theme decline" id="FieldCancel">Cancel</button>
+                </div>
+            </div>
+        }
+        <div id="Selectedfield">
+
+        </div>
+    </div>
+</div>
+<div class="dialog-box AddFieldDlg" title="Confirm Message" style="background-color:white;"></div>
+<script>
+        var form = $('#FieldsForm');
+        $.validator.unobtrusive.parse(form);
+        function OnComplete(res) {
+            $(".AddFieldDlg").unblock();
+            opener.location.reload();
+            CustomMessage(res.ResponseMessage, res.Status);
+            var classval = $('#Class option:selected').val();
+            $('#Selectedfield').load('@Url.Action("SelectedFields", "Fields")?ID=' + classval);
+            var classID = $('#Class').val();
+            var classname = $('#Class :selected').text();
+            $('#AddFieldForm input#FieldName').val('');
+            $('#AddFieldForm select#FieldType').val("");
+            $('#AddFieldForm select#Length').val("");
+            $('#Class').val(classID);
+            $('#Class').prop('disabled', true);
+            $('#ClassName').val(classname);
+            $('#ClassID').val(classID);
+            $('#Length').prop('disabled', false);       
+            opener.location.reload();
+        }
+        $('#FieldReset').click(function () {
+            $('#FieldsForm')[0].reset();
+            $('#Class').prop("disabled", false);
+            $('#Length').prop("disabled", false);
+            $('#FieldsForm .fielderror').find('span').html('');
+        });
+        $('#FieldCancel').click(function () {
+            window.close();
+        });
+</script>

@@ -1,0 +1,358 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@using XIDNA
+@{
+    List<XICore.XIDInbox> oInbox = new List<XICore.XIDInbox>();
+    if (Model.oContent.ContainsKey(XIConstant.InboxComponent))
+    {
+        oInbox = (List<XICore.XIDInbox>)Model.oContent[XIConstant.InboxComponent];
+        if (oInbox == null)
+        {
+            oInbox = new List<XICore.XIDInbox>();
+        }
+    }
+}
+<script>
+    $(document).ready(function () {
+        $('#1ClicksInboxTree').jstree({
+            "core": {
+                "themes": {
+                    "icons": false
+                },
+                "check_callback": function (op, node, par, pos, more) {
+                    if (op === "delete_node") {
+                        return confirm("Are you sure you want to delete?");
+                    }
+                }
+            },
+            "plugins": [
+                "themes", "html_data", "ui"
+               //"themes", "html_data", "ui", "state"
+            ],
+        });
+        //if ($('#1ClicksInboxTree a').hasClass('jstree-clicked')) {
+        //    $(this).parent().addClass('active-jstree');
+        //}
+        $('#1ClicksInboxTree').on('click', 'a', function () {
+            var Name = $(this).text();
+            var ResultIn = $(this).attr('data-ResultIn');
+            var Ptype = $(this).attr('data-ptype');
+            var Pleft = $(this).attr('data-pleft');
+            var Ptop = $(this).attr('data-ptop');
+            var Pwidth = $(this).attr('data-pwidth');
+            var Pheight = $(this).attr('data-pheight');
+            var My1 = $(this).attr('data-my1');
+            var My2 = $(this).attr('data-my2');
+            var At1 = $(this).attr('data-at1');
+            var At2 = $(this).attr('data-at2');
+            var ID = $(this).attr('id');
+
+
+            var OutputType = "";
+            if (ResultIn == "Inline" || ResultIn == 'null') {
+                OutputType = null;
+            }
+            else if (ResultIn == "Dialog") {
+                OutputType = "Dialog";
+            }
+            else {
+                OutputType = "Popup";
+            }
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("ReportResult", "Inbox")',
+                data: { QueryID: ID, PageIndex: 1, ResultIn: OutputType },
+                cache: false,
+                async: true,
+                dataType: 'html',
+                @*beforeSend: function (request) {
+                    $.blockUI({ message: '<h3 class="nh3"><img src="@PhysicalPath/Scripts/ckfinder/plugins/gallery/colorbox/images/loading.gif" width="50px" /> Please wait while loading...</h3>' });
+                },*@
+                success: function (data) {
+                    $.unblockUI();
+                    if (ResultIn == "Inline" || ResultIn == 'null') {
+                        $('.content-wrapper').html(data);
+                    }
+                    else if (ResultIn == "Popup") {
+                        var win;
+                        if (Ptype == "Default") {
+                            win = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+                        }
+                        else if (Ptype == "Max" || Ptype == "Medium" || Ptype == "Small") {
+                            win = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + Pwidth + ", height=" + Pheight);
+                        }
+                        else if (Ptype == "Specific") {
+                            win = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + Pwidth + ", height=" + Pheight + ", left=" + Pleft + ",top=" + Ptop);
+                        }
+                        with (win.document) {
+                            open();
+                            write(data);
+                            close();
+                        }
+                    }
+                    else if (ResultIn == "Dialog") {
+                        var my = "";
+                        var at = "";
+                        var width = 300;
+                        var height = 400;
+                        if (Ptype == "Specific") {
+                            my = My1 + " " + My2;
+                            at = At1 + " " + At2;
+                            width = Pwidth;
+                            height = Pheight;
+                        }
+                        else {
+                            my = Ptype;
+                            at = Ptype;
+                        }
+                        var DialogID = "ResultDialog-" + ID;
+                        $('.' + DialogID).dialog('destroy').remove();
+                        AddDialogToTaskbar(DialogID);
+                        var Div = '<div class="dialog-box ' + DialogID + '" title="Confirm Message" data-dname="' + DialogID + '" style="background-color:white;"></div>';
+                        $('#Dialogs').append(Div);
+                        $("." + DialogID).html(data);
+                        $("." + DialogID).dialog({
+                            title: ' ',
+                            height: height,
+                            width: width,
+                            position: { my: my, at: at, of: "body" },
+                            buttons: [
+                            //{
+                            //    text: "Ok",
+                            //    click: function () {
+                            //        $(this).dialog('destroy').remove()
+                            //        $("." + DialogID).remove();
+                            //    }
+                            //}
+                            ],
+                            close: function (event, ui) {
+                                $('.' + DialogID).parent().hide();
+                                $('button[data-name="' + DialogID + '"]').attr('data-status', 'close');
+                            }
+                        });
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("SaveUserDialog", "XiLink")',
+                            data: { QueryID: ID },
+                            cache: false,
+                            async: true,
+                            dataType: 'json',
+                            success: function (data) {
+                                $.unblockUI();
+                            }
+                        });
+                    }
+                }
+            });
+        });
+        //$(document.body).on('click', '.ui-dialog-titlebar-close', function () {
+        //    var dName = $(this).closest('div').find('.dialog-box').attr('data-dname');
+        //});
+        $('#DialogTaskbar').on('click', 'button.dialogtaskbarbtn', function () {
+            var name = $(this).attr('data-name');
+            var status = $(this).attr('data-status');
+            if (status == "open") {
+                $('.' + name).parent().hide();
+                $(this).attr('data-status', 'close');
+            }
+            else {
+                $('.' + name).parent().show();
+                $(this).attr('data-status', 'open');
+            }
+        });
+        $('#1CInboxTree12').on('click', 'a', function () {
+            var XiLinkID = $(this).attr('data-xilinkid');
+            var InputParams = [];
+            var param = {};
+            param["sName"] = 'sType';
+            param["sValue"] = 'Menu';
+            InputParams.push(param);
+            var MenuName = $(this).attr('data-mname');
+            if (XiLinkID && XiLinkID > 0) {
+                XILinkLoadJson(XiLinkID, null, InputParams, MenuName);
+            }
+            //var ActionType = $(this).attr('data-action');
+            //if (XiLinkID > 0) {
+            //    if (ActionType == 30) {
+
+            //    }
+            //    else {
+            //        XIRun(XiLinkID, 0, null, null, false, 0);
+            //    }
+            //}
+        });
+    });
+
+    function fncLoadInbox(_this) {
+        var XiLinkID = $(_this).attr('data-xilinkid');
+        var InputParams = [];
+        var param = {};
+        param["sName"] = 'sType';
+        param["sValue"] = 'Menu';
+        InputParams.push(param);
+        var MenuName = $(_this).attr('data-mname');
+        if (XiLinkID && XiLinkID > 0) {
+            XILinkLoadJson(XiLinkID, null, InputParams, MenuName);
+        }
+        //var ActionType = $(this).attr('data-action');
+        //if (XiLinkID > 0) {
+        //    if (ActionType == 30) {
+
+        //    }
+        //    else {
+        //        XIRun(XiLinkID, 0, null, null, false, 0);
+        //    }
+        //}
+    }
+</script>
+
+<div class="inboxtree">
+    <div class="control-sidebar sidebar control-sidebar-open right-nav-btns">
+        <ul class="sidebar-menu menulist">
+            <li class="treeview">            
+                <a href="#"><span>Inbox</span></a>
+                @*control-sidebar control-sidebar-dark sidebar control-sidebar-open right-nav-btns*@
+                <ul class="treeview-menu">
+                    @TreeView(oInbox)
+                    @helper TreeView(IEnumerable<XICore.XIDInbox> nodes)
+                    {
+                        foreach (var node in nodes)
+                        {
+                            <li class="treeview" id="@node.ID">
+                                @if (node.o1ClickD != null && node.o1ClickD.Sub1Clicks != null && node.o1ClickD.Sub1Clicks.Count() == 0)
+                                {
+                                    <a class="@node.Name" id="@node.ID" onclick="fncLoadInbox(this)" data-xilinkid="@node.FKiXILinkID" data-resultin="@node.o1ClickD.ResultIn" data-ptype="@node.o1ClickD.PopupType"
+                                    data-pleft="@node.o1ClickD.PopupLeft" data-ptop="@node.o1ClickD.PopupTop" data-pwidth="@node.o1ClickD.PopupWidth" data-pheight="@node.o1ClickD.PopupHeight"
+                                    data-my1="@node.o1ClickD.DialogMy1" data-my2="@node.o1ClickD.DialogMy2" data-at1="@node.o1ClickD.DialogAt1" data-at2="@node.o1ClickD.DialogAt2"
+                                    data-mname="@node.o1ClickD.Title">
+                                        @if (node.o1ClickD.Type == "Progress Bar")
+                                        {
+                                            <span class="ProBar ProBarBL" id="Menu-@node.ID">
+                                                <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:@node.InboxCount%">
+
+                                                </div>
+                                            </span>@node.o1ClickD.Name
+
+                                        }
+                                        else if (node.o1ClickD.Type == "Progress Bar & Number")
+                                        {
+                                            <span class="ProBar ProBarBL" id="Menu-@node.ID">
+                                                <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:@node.Percentage%">
+
+                                                </div>@node.InboxCount
+                                            </span>@node.Name
+
+                                        }
+                                        else if (node.o1ClickD.Type == "HTML")
+                                        {
+                                            <span class="ProBar" id="Menu-@node.ID">@Html.Raw(node.sHTML)</span>@node.Name
+                                        }
+                                        else
+                                        {
+                                            if (node.SubGroups.Count == 0)
+                                            {
+                                    <span>@node.Name</span> <span class="badge @node.CountColour" onclick="fncLoadInbox(this)" id="Menu-@node.ID">@node.InboxCount</span>
+                                            }
+                                            else
+                                            {
+
+                                                if (node.FKiXILinkID > 0)
+                                                {
+                                                    <a href="#"><span class="ProBar @node.CountColour" onclick="fncLoadInbox(this)" id="Menu-@node.ID">@node.InboxCount</span> @node.Name <i class="fa fa-angle-left pull-right"></i></a>
+                                                }
+                                                else
+                                                {
+                                                    <a href="#"><span class="ProBar @node.CountColour" onclick="fncLoadInbox(this)" id="Menu-@node.ID">@node.InboxCount</span> @node.Name <i class="fa fa-angle-left pull-right"></i></a>
+                                                }
+                                                <ul class="treeview-menu">@TreeView(node.SubGroups)</ul>
+
+                                            }
+                                        }
+                                    </a>
+                                }
+                                else
+                                {
+                                    if (node.StatusTypeID == 10 && node.o1ClickD != null)
+                                    {
+                                        <a id="@node.ID" data-xilinkid="@node.FKiXILinkID" data-resultin="@node.o1ClickD.ResultIn" data-ptype="@node.o1ClickD.PopupType" data-pleft="@node.o1ClickD.PopupLeft" data-ptop="@node.o1ClickD.PopupTop" data-pwidth="@node.o1ClickD.PopupWidth" data-pheight="@node.o1ClickD.PopupHeight" data-my1="@node.o1ClickD.DialogMy1" data-my2="@node.o1ClickD.DialogMy2" data-at1="@node.o1ClickD.DialogAt1" data-at2="@node.o1ClickD.DialogAt2">
+                                            @if (node.o1ClickD.Type == "Progress Bar")
+                                            {
+                                                <span class="ProBar ProBarBL" id="Menu-@node.ID">
+                                                    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:@node.InboxCount%">
+                                                    </div>
+                                                </span>@node.Name
+                                            }
+                                            else if (node.o1ClickD.Type == "Progress Bar & Number")
+                                            {
+                                                <span class="ProBar ProBarBL" id="Menu-@node.ID">
+                                                    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:@node.Percentage%">
+                                                        @node.InboxCount
+                                                    </div>
+                                                </span>@node.Name
+                                            }
+                                            else if (node.o1ClickD.Type == "HTML")
+                                            {
+                                                <span class="ProBar" id="Menu-@node.ID">@Html.Raw(node.sHTML)</span>@node.Name
+                                            }
+                                            else
+                                            {
+                                                <span class="ProBar" id="Menu-@node.ID">@node.InboxCount</span> @node.Name
+                                            }
+                                        </a>
+                                        <ul>
+                                            @if (node.Sub1Clicks != null && node.Sub1Clicks.Count() > 0)
+                                            {
+                                                @TreeView(node.Sub1Clicks)
+                                            }
+                                        </ul>
+                                    }
+                                    if (node.SubGroups.Count == 0 && node.o1ClickD != null)
+                                    {
+                                        <span class="ProBar @node.CountColour" id="Menu-@node.ID" onclick="fncLoadInbox(this)">@node.InboxCount</span> @node.Name
+                                    }
+                                    else if (node.SubGroups != null && node.SubGroups.Count() > 0)
+                                    {
+                                        if (node.FKiXILinkID > 0)
+                                        {
+                                            <a href="#"><span class="ProBar @node.CountColour" onclick="fncLoadInbox(this)" id="Menu-@node.ID">@node.InboxCount</span> @node.Name <i class="fa fa-angle-left pull-right"></i></a>
+                                        }
+                                        else
+                                        {
+                                            <a href="#">@node.Name <i class="fa fa-angle-left pull-right"></i></a>
+                                        }
+                                        <ul class="treeview-menu">@TreeView(node.SubGroups)</ul>
+                                    }
+
+                                }
+                            </li>
+                        }
+                    }
+                </ul>
+            </li>
+            <li class="treeview">            
+                <a href="#"><span>Note</span></a>
+            </li>
+        </ul>
+    </div>
+</div>
+<script>
+    var inboxtreeMenu = $(".inboxtree");
+    var inboxtreeBtns = $("<div class='inboxtreeBtn'>Inbox <i class='fa fa-bars'></i></div>");
+
+    $(inboxtreeMenu).each(function () {
+        if ($(window).width() < 992) {
+            $(this).prepend(inboxtreeBtns);
+            $(this).parent('[data-name="Inbox"]').addClass('inboxToggle');
+        } else {
+            //$(this).remove(inboxtreeBtns);
+        }
+    });
+
+    $(".inboxtreeBtn").on('click', function () {
+        $(this).toggleClass("active");
+        $(this).next().toggleClass("inboxOpen");
+        $('.menuComponentBtn').next('.menuComponentOpen').removeClass("menuComponentOpen");
+        $('.menuComponentBtn').removeClass("active");
+    });
+</script>

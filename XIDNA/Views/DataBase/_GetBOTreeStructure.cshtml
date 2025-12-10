@@ -1,0 +1,117 @@
+﻿@model IEnumerable<XICore.XIDStructure>
+@{
+
+}
+<input type="radio" id="XIGUID" name="ComparingType" value="XIGUID">
+<label for="XIGUID">XIGUID</label><br>
+<input type="radio" id="ID" name="ComparingType" value="ID">
+<label for="ID">Primary Key</label><br>
+<div id="DatabaseTreeStructure"></div>
+
+<button id="GetAll" onclick="GetallData(this,'Data')" style="color: black;">GetAll</button>
+<script>
+ $(function() {
+        var jsondata = [];
+        var jsonString = '@Html.Raw(Json.Encode(Model))';
+        var Nodes = JSON.parse(jsonString);
+        if (Nodes && Nodes != null && Nodes.length > 0) {
+            for (var i = 0; i < Nodes.length; i++) {
+                item = {}
+                item["id"] = Nodes[i].ID
+                if(Nodes[i].FKiParentID == "#"){
+                    item["parent"] = "#";
+                }
+                else{
+                    item["parent"] = Nodes[i].FKiParentID;
+                }
+                item["text"] = Nodes[i].sName;
+                var nodedata = [];
+                nodedata.push({sInsName:Nodes[i].sInsName, sInsID:Nodes[i].sInsID,iBODID:Nodes[i].BOID, sBO:Nodes[i].sBO, i1ClickID:Nodes[i].i1ClickID, sType: Nodes[i].sType, sMode: Nodes[i].sMode, sParentFK:Nodes[i].sParentFKColumn, iStepID:Nodes[i].FKiStepDefinitionID, sOutputArea:Nodes[i].sOutputArea, sNameAttribute:Nodes[i].sNameAttribute});
+                item["data"] = nodedata;
+                jsondata.push(item);
+            }
+            if (jsondata.length > 0) {
+                var jsonString = JSON.stringify(jsondata);
+                LoadJSTree(JSON.parse(jsonString));
+            }
+        }
+   });
+
+    function LoadJSTree(UIjsondata) {
+        $('#DatabaseTreeStructure').jstree({
+            "core": {
+                "themes": {
+                    "variant": "large"
+                },
+                "check_callback": true,
+                'data': UIjsondata,
+            },
+            "state": { "key": "DatabaseTreeStructure" },
+            "types": {
+                "#": {
+                    "valid_children": ["default"]
+                },
+                "default": {
+                    "valid_children": ["default", "presentation"],
+                    "icon": "fa fa-folder fc-theme"
+                },
+                "demo": {
+                    "icon": "fa fa-folder-open"
+                }
+            },
+            "plugins": ["types"],
+            "dnd": {},
+        }).bind("loaded.jstree", function (event, data) {
+            $(this).jstree("open_all");
+        }).on("changed.jstree", function (event, data) {
+                BONames = [];
+                if (data.selected.length == 1) {
+                    var Parent = data.node.parent;
+                    if (Parent == "#" || data.node.children.length > 0) {
+                        var childNodes = data.node.children;
+                        BONames.push($('#DatabaseTreeStructure').jstree(true).get_node(data.node.id).data[0].sBO);
+                        if (data.node.data[0].sNameAttribute != "0" && data.node.data[0].sNameAttribute != null)
+                        DBSchemaCompare(this,'Data',$('#StructureBOID').val(), data.node.data[0].sBO);
+                     //if (childNodes && childNodes.length > 0) {
+                         //   $.each(childNodes, function(i, item) {
+                         //       var NodeInfo = $('#DatabaseTreeStructure').jstree(true).get_node(item);
+                         //       if (NodeInfo && NodeInfo.data)
+                         //           BONames.push(NodeInfo.data[0].sBO);
+                         //   })
+                     //   }
+                    }
+                    else
+                    {
+                        var NodeInfo = $('#DatabaseTreeStructure').jstree(true).get_node(data.node.id);
+                        if (NodeInfo && NodeInfo.data)
+                            BONames.push(NodeInfo.data[0].sBO);
+                        if (NodeInfo.data[0].sNameAttribute != "0" && NodeInfo.data[0].sNameAttribute != null)
+                            DBSchemaCompare(this, 'Data', $('#StructureBOID').val(), NodeInfo.data[0].sBO);
+                    }
+
+                }
+                //if (BONames.length > 0)
+                   // Compare($('.radio_Compare:checked').val());
+            });
+    }
+    $(document).ready(function () {
+        $('input[type=radio][name=ComparingType]').change(function () {
+            if (this.value == 'ID') {
+                $.ajax({
+                    type: 'POST',
+                    url: "@Url.Action("FindingDuplicateIDs", "BusinessObjects")",
+                    //data: { oNVParams: FormValues, AllBos: true },
+                    dataType: 'json',
+                    cache: false,
+                    async: false,
+                    success: function (data) {
+                        alert("test");
+
+                    }
+                });
+
+            }
+        });
+       
+    });
+</script>

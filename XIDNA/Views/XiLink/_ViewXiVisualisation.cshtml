@@ -1,0 +1,185 @@
+﻿@model XIDNA.ViewModels.VMXiVisualisations
+
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+
+<section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body padding10Tab">
+                <div class="innerborder">
+                    <form class="form-horizontal">
+                        <div id="clear-text">
+                            <input type="hidden" value="@Model.XiVisualID" id="XiVisualID" />
+                            @if (Model.FKiApplicationID == 0)
+                            {
+                                <div class="form-group">
+                                    <div class="col-md-1">
+                                        <label for="inputEmail" class="gn"> Application : </label>
+                                    </div>
+                                    <div class="col-md-1">
+                                        @if (Model.ddlApplications.Count() > 0)
+                                        {
+                                            foreach (var items in Model.ddlApplications)
+                                            {
+                                                if (Model.FKiApplicationID == items.Value)
+                                                {
+                                                    <span>@items.text</span>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" id="ApplicationID" name="FKiApplicationID" value="@Model.FKiApplicationID" />
+                            }
+                            <div class="form-group">
+                                <div class="col-md-1">
+                                    <label for="inputEmail" class="gn"> Name : </label>
+                                </div>
+                                <div class="col-md-1">
+                                    <span>@Model.Name</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-1">
+                                    <label for="inputEmail" class="gn"> Type : </label>
+                                </div>
+                                <div class="col-md-1">
+                                    <span>@Model.Type</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-md-12">
+                                    @if (Model.XiVisualID == 0 || Model.NVs.Count() == 0)
+                                    {
+                                        if (Model.NVs.Count() > 0)
+                                        {
+                                            <br />
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn"> Name : </label>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn"> Value : </label>
+                                                </div>
+                                            </div>
+                                            <br />
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div>
+                                            <h1>Name Value Pairs</h1>
+                                        </div>
+                                        foreach (var NVs in Model.NVs)
+                                        {
+                                            <br />
+                                            <div class="form-group col-md-12">
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn"> Name :  </label>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <span>@NVs.Name</span>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn"> Value : </label>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <span>@NVs.Value</span>
+                                                </div>
+                                            </div>
+                                            <br />
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div></div>
+
+                            @if (Model.XiVisualID == 0 || Model.Lists.Count() == 0)
+                            {
+                                if (Model.Lists.Count() > 0)
+                                {
+
+                                    <br />
+                                    <div class="form-group col-md-12">
+                                        <div class="col-md-4">
+                                            <label for="inputEmail" class="gn"> List :</label>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label for="inputEmail" class="gn"> Name : </label>
+                                            <label for="inputEmail" class="gn"> Value : </label>
+                                        </div>
+                                    </div>
+                                    <br />
+                                }
+                            }
+                            else
+                            {
+                                <div>
+                                    <h2 class="col-sm-offset-4 col-sm-5" style="margin-left:initial"> Lists </h2>
+                                </div>
+                                foreach (var items in Model.Lists)
+                                {
+                                    <br />
+                                    <div class="form-group col-md-12">
+                                        <div class="col-md-1">
+                                            <label for="inputEmail" class="gn"> List : </label>
+                                        </div>
+                                        <div class="col-md-1">
+                                            <span>@items.ListName</span>
+                                        </div>
+                                        <br />
+                                        <div>
+                                            @foreach (var NVs in items.NVs)
+                                            {
+                                                <br />
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn"> Name : </label>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <span>@NVs.Name</span>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <label for="inputEmail" class="gn"> Value : </label>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <span>@NVs.Value</span>
+                                                </div>
+                                                <br />
+                                            }
+                                        </div>
+                                    </div>
+                                    <br />
+
+                                }
+                            }
+
+                            <div class="form-group">
+                                <div class="col-md-1">
+                                    <label for="inputEmail" class="gn"> Status : </label>
+                                </div>
+                                <div class="col-md-1">
+                                    <span>@Model.StatusTypeID</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,171 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>HelpLayoutCode</title>
+</head>
+<body>
+    <div>
+        <h3> Responsive Classes</h3>
+        <p>The grid consists of rows and columns. This allows us to freely position elements vertically and horizontally.</p>
+        <p>
+            Rows are block level. This means, that when we create a row, it takes up the entire width of the element it is in.
+            You can think of rows as new lines in your layout.
+        </p>
+        <p>
+            The horizontal alignment in the grid is done via columns. Only columns can be the direct children of a row and all content should go inside them.
+            Placing content directly within a row will break the layout.
+        </p>
+        <p>  Bootstrap has a number of these classes for different screen sizes:</p>
+        <p>1. xs - Extra small screens like smartphones. Use it as .col-xs-NUMBER</p>
+        <p>2. sm - Small screen devices like tablets. .col-sm-NUMBER</p>
+        <p>3. md - Medium sized screens such as low dpi desktops and laptops. .col-md-NUMBER</p>
+        <p>4. lg - Large, high resolution screens. .col-lg-NUMBER</p>
+    </div>
+   
+        <div class="container-fluid">
+            <h4>1. If you want Single row with equal width, you could write:</h4>
+            <div id="Layout1">
+                <div class="row">
+                    <div class="col-sm-3" id="1">col-sm-3</div>
+                    <div class="col-sm-6" id="2">col-sm-6</div>
+                    <div class="col-sm-3" id="3">col-sm-3</div>
+                </div>
+            </div>        
+                Note : 1. You Must give Id for each column with Double Quotes. EX: id="3"
+                       2. Don't give duplicate Ids to column.
+        <div class="form-group">
+            <div class="col-sm-10">
+                <button type="button" class="btn btn-theme" id="Layout1Btn">ShowCode</button>
+            </div>
+        </div>
+            <div id="Layout1Code" class="col-sm-6" style="white-space: pre;"></div>
+    </div>
+<br />
+    <br />
+    <br />
+    <div class="container-fluid">
+        <h4>2. If you want Multi rows with equal width, you could write: </h4>
+        <div id="Layout2">
+                <div class="row">
+                    <div class="col-sm-6" id="1">col-sm-6</div>
+                    <div class="col-sm-6" id="2">col-sm-6</div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6" id="3">col-sm-6</div>
+                    <div class="col-sm-6" id="4">col-sm-6</div>
+                </div>
+        </div>
+    <div class="form-group">
+        <div class="col-sm-10">
+            <button type="button" class="btn btn-theme" id="Layout2Btn">ShowCode</button>
+        </div>
+    </div>
+        <div id="Layout2Code" class="col-sm-6" style="white-space: pre;"></div>
+        </div>
+    <br />
+    <br />
+    <div class="container-fluid">
+        <h4>3. If you want Multi rows with Multi width sizes(Mix and Match), you could write: </h4>
+        <div id="Layout3">
+            <div class="row">
+                <div class="col-sm-8" id="1">col-sm-8</div>
+                <div class="col-sm-4" id="2">col-sm-4</div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-4" id="1">col-sm-4</div>
+                <div class="col-sm-4" id="2">col-sm-4</div>
+                <div class="col-sm-4" id="3">col-sm-4</div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6" id="4">col-sm-6</div>
+                <div class="col-sm-6" id="5">col-sm-6</div>
+            </div>
+        </div>
+    <div class="form-group">
+        <div class="col-sm-10">
+            <button type="button" class="btn btn-theme" id="Layout3Btn">ShowCode</button>
+        </div>
+    </div>
+        <div id="Layout3Code" class="col-sm-6" style="white-space: pre;"></div>
+        </div>
+
+</body>
+</html>
+
+<style>
+    #Layout1 div
+    {
+        height:30px;
+        border: 1px solid #dac6c1;
+        text-align: center;
+    }
+
+    #Layout2 div {
+        height: 30px;
+        border: 1px solid #dac6c1;
+        text-align: center;
+    }
+
+    #Layout3 div {
+        height: 30px;
+        border: 1px solid #dac6c1;
+        text-align: center;
+    }
+</style>
+
+
+
+<script>
+    $(document).ready(function () {
+
+        //$('#Multiple').hide();
+        //$('#Multiple1').hide();
+        //$('#Multiple2').hide();
+        //$('#Layout1').hide();
+        //$('#Layout2').hide();
+        //$('#Layout3').hide();
+        $('#Layout1Btn').click(function () {
+            $('#Layout1').show();
+            //$('#Layout2').hide();
+            //$('#Layout3').hide();
+            $('#Layout1Code').show();
+            $('#Layout2Code').hide();
+            $('#Layout3Code').hide();
+            var Code = $('#Layout1').html();
+            $('#Layout1Code').text(Code);
+        });
+
+        $('#Layout2Btn').click(function () {
+            $('#Layout2').show();
+            //$('#Layout1').hide();
+            //$('#Layout3').hide();
+            $('#Layout2Code').show();
+            $('#Layout1Code').hide();
+            $('#Layout3Code').hide();
+            var Code = $('#Layout2').html();
+            $('#Layout2Code').text(Code);
+        });
+
+        $('#Layout3Btn').click(function () {
+            $('#Layout3').show();
+            //$('#Layout2').hide();
+            //$('#Layout1').hide();
+            $('#Layout3Code').show();
+            $('#Layout2Code').hide();
+            $('#Layout1Code').hide();
+            var Code = $('#Layout3').html();
+            $('#Layout3Code').text(Code);
+        });
+    });
+
+</script>
+
+

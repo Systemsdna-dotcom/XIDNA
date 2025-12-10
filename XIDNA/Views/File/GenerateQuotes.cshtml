@@ -1,0 +1,87 @@
+﻿@model List<XICore.XIIBO>
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+@if (Model == null)
+{
+    <div class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-body">
+                        @using (Html.BeginForm("UploadFile", "File", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal" }))
+                        {
+
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Origin :</label>
+                                    @Html.DropDownList("FKiOriginID", new List<SelectListItem>
+{
+    new SelectListItem{ Text="Internal", Value = "1" },
+    new SelectListItem{ Text="Internet", Value = "2" },
+ }, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Source : </label>
+                                    @Html.DropDownList("FKiSourceID", new List<SelectListItem>
+{
+    new SelectListItem{ Text="Money.co.uk", Value = "1" },
+    new SelectListItem{ Text="Motorhomeinsurance.com", Value = "2" },
+    new SelectListItem{ Text="Touring Caravan", Value = "3" },
+    new SelectListItem{ Text="Static Caravan", Value = "4" },
+    new SelectListItem{ Text="ParkHome Caravan", Value = "5" },
+    new SelectListItem{ Text="Internal", Value = "6" },
+    new SelectListItem{ Text="Recommendation", Value = "7" },
+    new SelectListItem{ Text="L2M", Value = "8" },
+    new SelectListItem{ Text="Goodsintransitquote.com", Value = "9" },
+    new SelectListItem{ Text="Quote Zone", Value = "10" },
+    new SelectListItem{ Text="Kompare", Value = "11" },
+    new SelectListItem{ Text="Confused.com", Value = "12" },
+    new SelectListItem{ Text="ComparetheMarket.com", Value = "13" },
+    new SelectListItem{ Text="GoCompare.co.uk", Value = "14" },
+    new SelectListItem{ Text="Switcha", Value = "15" },
+    new SelectListItem{ Text="Policy Link", Value = "16" },
+       new SelectListItem{ Text="KENTOFFER", Value = "17" },
+            }, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Class :</label>
+                                    @Html.DropDownList("FKiClassID", new List<SelectListItem>
+                {
+    new SelectListItem{ Text="Motorhome", Value = "1" },
+    new SelectListItem{ Text="Touring Caravan", Value = "2" },
+    new SelectListItem{ Text="Static Caravan", Value = "3" },
+    new SelectListItem{ Text="Park Home", Value = "4" },
+    new SelectListItem{ Text="GIT", Value = "5" }
+ }, new { @class = "form-control" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <label for="inputEmail" class="gn">Upload File :</label>
+                                    @Html.TextBox("file", "", new { type = "file" })
+                                </div>
+                            </div>
+                            @*</div>
+                                @*<input type="submit" value="Upload" />
+                                <div class="col-md-offset-3 col-md-9">*@
+                            <div class="form-group">
+                                <div class="col-md-3">
+                                    <input type="submit" class="form-control" value="Save" />
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @Html.Partial("_XMLQuotesList", Model);
+}

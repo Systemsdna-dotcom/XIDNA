@@ -1,0 +1,125 @@
+﻿@*@model IEnumerable<XIDNA.Models.UserConfiguration>*@
+
+
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+<script>
+    $(document).ready(function () {
+        var Poppopups = new Array();
+        var editpopups = new Array();
+        var table = $('#UserGrid').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("UserConfigurationGrid", "Home")",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"l<"new-query">f><"datatable-scroll"t><"dtable-footer"ip>',
+            "initComplete": function () {
+                $("div.new-query").html('<button type="button" class="savebtn btn btn-theme" ID="NewPopupBtn" data-url="@Url.Action("AddUserConfiguration", "Home")" >Add</button>');
+            },
+            'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+        { "bSortable": false },
+                             {
+                                 "sName": "ID",
+                                 "visible": false
+                             },
+                              {
+                                  "sName": "Name",
+                              },
+                            {
+                                "sName": "StatusTypeID",
+                            },
+                            { "bSortable": false }
+            ],
+            "columnDefs": [{
+                "targets": [3],
+                "createdCell": function (td, cellData, rowData, row, col) {
+                    if (cellData == 10)
+                        $(td).replaceWith('<td>Active</td>')
+                    else
+                        $(td).replaceWith('<td>Inactive</td>')
+                }
+            }],
+            "fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(3)', nRow).html('<input type="button" class="EditPopup btn btn-theme btn-xs" ID="' + aData[1] + '" value="Edit"/>');
+                return nRow;
+            }
+        });
+        $('#UserGrid').on('click', 'input.EditPopup', function () {
+            var ID = $(this).attr('ID');
+            if (editpopups.length > 0) {
+                for (i = 0; i < editpopups.length; i++) {
+                    editpopups[i].close();
+                }
+            }
+            var editpopup = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("EditUserConfigurations", "Home")',
+                data: { ID: ID },
+                cache: false,
+                async: false,
+                dataType: 'html',
+                success: function (data) {
+                    with (editpopup.document) {
+                        open();
+                        write(data);
+                        close();
+                    }
+                    editpopups.push(editpopup);
+                    editpopup.moveTo(0, 0);
+                }
+            });
+        })
+
+
+        $('.new-query').on('click', 'button#NewPopupBtn', function () {
+            var url = $(this).attr('data-url');
+            if (Poppopups.length > 0) {
+                for (i = 0; i < Poppopups.length; i++) {
+                    Poppopups[i].close();
+                }
+            }
+            var newpopup = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            Poppopups.push(newpopup);
+            newpopup.moveTo(0, 0);
+        });
+    });
+</script>
+<div class="dialog-box Send" title="Confirm Message" style="background-color:white;"></div>
+
+<section class="content-header hedr">
+    <h1> User Configuration </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> User Configuration</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="table-clean">
+                        <table id="UserGrid" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>S.No</th>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>StatusType</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,166 @@
+﻿@model List<XICore.XIInfraRoles>
+@using XIDNA.ViewModels
+<ul>
+    @TreeView(Model)
+</ul>
+@helper TreeView(IEnumerable<XICore.XIInfraRoles> nodes)
+{
+foreach (var node in nodes)
+{
+    int ID = node.RoleID;
+    <li data-name="@node.sRoleName" id="@ID" data-parent="@node.iParentID">
+        @if (node.IsLeaf)
+            {
+            <span>
+                @node.sRoleName
+            </span>
+            }
+            else
+            {
+            <span>
+                @node.sRoleName
+            </span>
+
+            <ul>
+                @TreeView(node.SubGroups)
+            </ul>
+            }
+    </li>
+}
+}
+
+<script>
+    var LastSelectedParentID = 0;
+    var checked_ids = [];
+    var Ids = "";
+    var IDs = "";
+    $("#UserMainTree").jstree({
+        "checkbox": {
+            "three_state": false,
+            real_checkboxes: true,
+            real_checkboxes_names: function (n) {
+                function submitMe() {
+                    $("#UserMainTree").jstree("get_checked", null, true).each
+                        (function () {
+                            if ($(this).prop('checked') == true) {
+                                var id = $(this).attr('data-id');
+                                Ids = Ids + id + ",";
+                            }
+                            else {
+                                var id = $(this).attr('data-id') + ",";
+                                Ids = Ids.replace(id);
+                                if (Ids == 'undefined') {
+                                    Ids = "";
+                                }
+                            }
+                            checked_ids.push(Ids);
+                        });
+                    doStuff(checked_ids);
+                }
+            },
+
+        },
+        "plugins": ["themes", "html_data", "ui", "checkbox"]
+    }).bind("select_node.jstree", function (NODE, REF_NODE) {
+        @*LastSelectedParentID = REF_NODE.node.id;
+        UserID = '@Model.FirstOrDefault().UserID';*@
+        GetReportToUsers();
+        try { OnSelectGrouptree(LastSelectedParentID); } catch (ex) { }
+    }).bind("deselect_node.jstree", function (NODE, REF_NODE) {
+        @*LastSelectedParentID = REF_NODE.node.id;
+        UserID = '@Model.FirstOrDefault().UserID';*@
+        GetReportToUsers();
+    }).bind("ready.jstree", function (event, data) {
+        $(this).jstree("open_all");
+    });
+
+    @*$('#UserMainTree').jstree({
+        "plugins": ["themes", "html_data", "ui"],
+        //'contextmenu': {
+        //    'items': customMenu
+        //},
+        'core': {
+            //'data': TreeData
+            "check_callback": true,
+        }
+
+    }).bind("select_node.jstree", function (NODE, REF_NODE) {
+        LastSelectedParentID = REF_NODE.node.id;
+        $("#GroupID").val(REF_NODE.node.id);
+        $.ajax({
+            url: '@Url.Action("GetReportToUsers", "Users")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            cache: false,
+            data: { ID: LastSelectedParentID, UserID:'@Model.FirstOrDefault().UserID'},
+            success: function (data) {
+                $('#ReportTo').html('<option value="">--Select--</option>');
+                for (i = 0; i < data.length; i++) {
+                    $('#ReportTo').append('<option value ='+data[i].Value+'>'+data[i].text+'</option>')
+                }
+                if ('@Model.FirstOrDefault().ReportToID' > 0) {
+                    $('#ReportTo').val(@Model.FirstOrDefault().ReportToID)
+                } else {
+                    $('#ReportTo').val('')
+                }
+
+                },
+                error: function (data) { }
+            });
+            try { OnSelectGrouptree(LastSelectedParentID); } catch (ex) { }
+        });*@
+
+    if ('@ViewBag.Disable' == '') {
+
+        $('#UserMainTree ul').children('li').each(function () {
+            var Role = $(this).attr('data-name');
+            var id = $(this).attr('id');
+            if (Role == '@EnumRoles.Admin.ToString()') {
+                $('#UserMainTree').jstree('disable_node', $(this));
+            }
+            else {
+
+            }
+        })
+    }
+    function GetReportToUsers() {
+        var UserID = '@Model.FirstOrDefault().UserID';
+        IDs = "";
+        var selectedNode = $('#UserMainTree').jstree(true).get_selected(true);
+        $('#RoleID').html('<option value=>--Select--</option>');
+        for (i = 0; i < selectedNode.length; i++) {
+            IDs = IDs + selectedNode[i].id + ",";
+            $('#RoleID').append('<option value=' + selectedNode[i].id + '>' + selectedNode[i].text + '</option>');
+        }
+        if (IDs.length > 0) {
+            IDs = IDs.substring(0, IDs.length - 1);
+        }
+        $("#GroupID").val(IDs);
+        if (IDs.length > 0) {
+            $.ajax({
+                url: '@Url.Action("GetReportToUsers", "Users")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { ID: IDs, UserID: UserID },
+                success: function (data) {
+                    $('#ReportTo').html('<option value="">--Select--</option>');
+                    for (i = 0; i < data.length; i++) {
+                        $('#ReportTo').append('<option value =' + data[i].Value + '>' + data[i].text + '</option>')
+                    }
+                    if ('@Model.FirstOrDefault().ReportToID' > 0) {
+                        $('#ReportTo').val(@Model.FirstOrDefault().ReportToID);
+                    } else {
+                        $('#ReportTo').val('');
+                    }
+                },
+                error: function (data) { }
+            });
+        }
+        else {
+            $('#ReportTo').html('<option value="">--Select--</option>');
+        }
+    }
+</script>

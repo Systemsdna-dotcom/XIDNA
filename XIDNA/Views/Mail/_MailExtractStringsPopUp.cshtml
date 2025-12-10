@@ -1,0 +1,75 @@
+﻿@model int
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var popups = new Array();
+        var table = $('#Spesubtbl').dataTable({
+            "paging": true,
+            "bProcessing": true,
+            "bServerSide": true,
+            "sAjaxSource": "@Url.Action("MailExtractStringsPopUpGrid", "Mail", new { OrgID = @Model })",
+            "aaSorting": [[1, 'desc']],
+            "sDom": 'r<"dtable-header"lf><"datatable-scroll"t><"dtable-footer"ip>', 'bJQueryUI': false,
+            "autoWidth": false,
+            "aoColumns": [
+            {},
+                             {
+                                 "sName": "ID",
+                                 "visible": false
+                             },
+                            {
+                                "sName": "SubscriptionID"
+                            },
+                            {
+                                "sName": "Details"
+                            },
+                            {
+                                "sName": "sStartString",
+
+                            },
+                            {
+                                "sName": "sEndString"
+                            },
+            ],
+            "columnDefs": [
+             {
+             }
+            ],
+            @*"fnRowCallback": function (nRow, aData, iDisplayIndex) {
+                $('td:eq(4)', nRow).html('<a class="EditOrgDwindow" data-url="@Url.Action("GetMailExtractStringsDetails", "Mail")?ID=' + aData[1] + '" data-ajax-update="#QueryPreview"  data-ajax-method="POST" data-ajax="true">Edit</a>');
+            }*@
+        });
+        $('#Spesubtbl').on('click', 'a.EditOrgDwindow', function () {
+            var url = $(this).attr('data-url');
+            var edit = window.open(url, '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            popups.push(edit);
+            edit.moveTo(0, 0);
+        })
+    });
+</script>
+<style>
+    .box.box-primary {
+        display: block;
+    }
+</style>
+<div id="MailextractStringsGrid">
+    <div id="box-body">
+        <div class="table-clean">
+            <table class="table table-striped custom-table dark-head dark-head2 table-condensed" id="Spesubtbl">
+                <thead>
+                    <tr role="row">
+                        <th>S.No</th>
+                        <th style="display:none;">ID</th>
+                        <th>Subscription ID</th>
+                        <th>Details</th>
+                        <th>Start String</th>
+                        <th>End String</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+

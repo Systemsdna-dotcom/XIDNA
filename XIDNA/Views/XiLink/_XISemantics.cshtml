@@ -1,0 +1,33 @@
+﻿@model XIDNA.Models.cXISemantics
+
+<script>
+    $(document).ready(function () {
+        $('#XISemanticDiv').hide();
+        var Steps = @Html.Raw(Json.Encode(Model.XISemanticsSteps.OrderBy(m=>m.iOrder)));
+        if(Steps.length>0){
+            fncGetNextSemanticStep(Steps[0].XIStepID, Steps);
+        }
+        $('#SemanticNxtBtn').click(function(){
+            var StepID = fncGetStepIDFromHTMLTree("XISemanticStepDiv", this);
+            var XISemanticID = fncGetSemanticIDFromHTMLTree("XISemanticDiv", this);
+            fncGetNextSemanticStep(parseInt(StepID), Steps);
+        });
+        $('#SemanticBckBtn').click(function(){
+            var StepID = fncGetStepIDFromHTMLTree("XISemanticStepDiv", this);
+            var XISemanticID = fncGetSemanticIDFromHTMLTree("XISemanticDiv", this);
+            fncGetPreviousSemanticStep(parseInt(StepID), Steps);
+        });
+    });
+</script>
+
+<div class="box-body">
+    <div class="XISemanticDiv" data-semanticid="@Model.XISemanticID" data-formlocation="Semantic">
+        <div class="XISemanticStepDiv" data-stepid="@Model.XISemanticsSteps.FirstOrDefault().XIStepID">
+            <div class="XIStepContent"></div>
+            @*<div class="form-group">
+                <input type="button" class="btn-theme" value="Back" id="SemanticBckBtn" />
+                <input type="button" class="btn-theme" value="Next" id="SemanticNxtBtn" />
+            </div>*@
+        </div>
+    </div>
+</div>

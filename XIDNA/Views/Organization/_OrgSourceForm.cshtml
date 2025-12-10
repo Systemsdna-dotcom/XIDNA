@@ -1,0 +1,71 @@
+﻿@model XIDNA.Models.OrganizationSources
+
+@*@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}*@
+
+<script>
+    $(document).ready(function () {
+        $('#SubscriptionsForm').hide();
+        $('#OrgID').change(function () {
+            var orgid = $('#OrgID :selected').val();
+            $.ajax({
+                url: '@Url.Action("SpecificSorces", "Organization")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                data: { OrgID: orgid },
+                cache: false,
+                success: function (data) {
+                    $('#SpecificSources').empty();
+                    $('#SpecificSources').html(data);
+                },
+                error: function (data) { }
+            });
+        });
+    });
+</script>
+
+<style>
+    .orgsorerror{
+        margin-top:28px;
+    }
+    #srctabs li:hover{
+        cursor:pointer;
+    }
+</style>
+@*<section class="content-header hedr">
+    <h1> Add Source/Subscription </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Source</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>*@
+@*<section class="content">
+    <div class="row">
+        <div class="">
+            <div class="box">
+                <div class="box-body">
+                    <div class="nav-tabs-custom col-xs-12">
+                        <ul class="nav nav-tabs" id="srctabs">
+                            <li id="sources" class="active"><a>Source</a></li>
+                            <li id="subscriptions" ><a>Subscription</a></li>
+                        </ul>
+                        </div>
+                    <div id="SourceForm" class="active tab-pane">
+                        
+                    </div>
+                    
+
+                        
+                    </div>
+</div>
+</div>
+</div>
+</section>*@
+
+
+<div class="dialog-box AddSorDlg" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    
+</script>

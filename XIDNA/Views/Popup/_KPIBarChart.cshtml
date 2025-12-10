@@ -1,0 +1,109 @@
+﻿@model XIDNA.ViewModels.User
+@using XIDNA.ViewModels
+<script>
+    $(document).ready(function () {
+        var income = document.getElementById("Bar-@Model.SectionName").getContext("2d");
+        if ('@Model.Type' == '@EnumLocations.Dashboard.ToString()') {
+            $.ajax({
+                url: '@Url.Action("GetBarChart", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: 'JSON',
+                data: { ReportID: '@Model.ReportID' },
+                cache: false,
+                success: function (data) {
+                    var barData = {
+                        labels: generateLabels(data),
+                        datasets: generateDataSets(data)
+                    };
+                    new Chart(income).Bar(barData, {
+                        animation: true,
+                        scaleOverride: true,
+                        scaleSteps: 5,
+                        scaleStartValue: 0,
+                        scaleStepWidth: 2
+                    });
+                },
+                error: function (data) {
+                }
+            });
+        }
+        else {
+            $.ajax({
+                url: '@Url.Action("GetLeadsBySourceForTab", "Popup")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: 'JSON',
+                cache: false,
+                data: { TabID: '@Model.TabID', ClassID: '@Model.ClassID' },
+                success: function (data) {
+                    var barData = {
+                        labels: generateLabels(data),
+                        datasets: generateDataSets(data)
+                    };
+                    new Chart(income).Bar(barData, {
+                        animation: true,
+                        scaleOverride: true,
+                        scaleSteps: 5,
+                        scaleStartValue: 0,
+                        scaleStepWidth: 2
+                    });
+                },
+                error: function (data) {
+                }
+            });
+        }
+        function generateLabels(data) {
+            var labels = [];
+            for (i = 0; i < data.length; i++) {
+                labels.push(data[i].label);
+            }
+            return labels;
+        }
+        function generateDataSets(data) {
+            var datavalues = [], total = 0;
+            var datasets = [];
+            for (i = 0; i < data.length; i++) {
+                datavalues.push(data[i].value);
+                total = total + parseInt(data[i].value);
+            }
+            var dataset =
+            {
+                fillColor: "#48A497",
+                strokeColor: "#48A4D1",
+                data: datavalues
+            }
+            datasets.push(dataset);
+            $('#LeadCount').text(total);
+            return datasets;
+        }
+        @*$.ajax({
+            url: '@Url.Action("GetAllLeadsCount", "Inbox")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: 'JSON',
+            cache: false,
+            success: function (data) {
+
+            },
+            error: function (data) {
+            }
+        });*@
+    });
+</script>
+
+<section class="content-header hedr">
+    <h1 class="TabPreview"> Tab Preview </h1>
+</section>
+<div class="ibox float-e-margins">
+    @*<div class="ibox-title">
+        <h5>Lead Count</h5>
+        <span class="label label-success pull-left" id="LeadCount"></span>
+    </div>*@
+
+        <div class="flot-chart">
+            <div class="flot-chart-content">
+                <canvas id="Bar-@Model.SectionName" width="350" height="250"></canvas>
+            </div>
+        </div>
+</div>

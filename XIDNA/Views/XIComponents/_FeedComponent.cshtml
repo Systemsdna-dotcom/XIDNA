@@ -1,0 +1,110 @@
+﻿@model XICore.XIIComponent
+@using XICore
+@using XISystem
+@using XIDNA
+@{
+    //Layout = "~/views/shared/_nanolayout.cshtml";
+    var sHTML = string.Empty;
+    XIIComponent oCompI = new XIIComponent();
+    List<string> CSS = new List<string>();
+    List<string> Layouts = new List<string>();
+    List<XIIBO> nRight = new List<XIIBO>();
+    List<Dictionary<string, object>> nLeft = new List<Dictionary<string, object>>();
+    var iUserOrg = SessionManager.iUserOrg;
+
+    if (Model.oContent.ContainsKey(XIConstant.FeedComponent))
+    {
+        oCompI = (XIIComponent)Model.oContent[XIConstant.FeedComponent];
+    }
+    if (oCompI.oContent.ContainsKey("CSS"))
+    {
+        CSS = (List<string>)oCompI.oContent["CSS"];
+    }
+    if (oCompI.oContent.ContainsKey("Layout"))
+    {
+        Layouts = (List<string>)oCompI.oContent["Layout"];
+    }
+    if (oCompI.oContent.ContainsKey("Right"))
+    {
+        nRight = (List<XIIBO>)oCompI.oContent["Right"];
+    }
+    if (oCompI.oContent.ContainsKey("Left"))
+    {
+        nLeft = (List<Dictionary<string, object>>)oCompI.oContent["Left"];
+    }
+}
+
+<script>
+    $(document).ready(function () {
+    var iPage=0;
+        var Layouts = @Html.Raw(Json.Encode(Layouts));
+        for(var i=0;i<Layouts.length;i++){
+            fncLoadLayout(Layouts[i]);
+        }
+        $('.sendBtn').click(function(){
+         var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+        XIRun(this, 9366, "",sGUID,"", false)
+        })
+        $('#FeedData').unbind().scroll(function() {
+    var pos = $('#FeedData').scrollTop();
+    if (pos == 0) {
+        iPage++;
+        debugger
+        var NannoDiv = $('.Nanno-@iUserOrg');
+        var QSInfo = fncQSInfoFromHTMLTree(NannoDiv[0]);
+        var SecID = QSInfo[2].sValue;
+    var sGUID = fncGetGUIDFromHTMLTree('LayoutGUID', this);
+    fncLoadFeed(SecID, sGUID, iPage);
+        //alert('top of the div');
+    }
+});
+    });
+</script>
+<link href="@Url.Content("~/Content/css/nano.css")" rel="stylesheet" />
+@section Styles {
+    <!-- some external CSS -->
+    @foreach (var items in CSS)
+    {
+        <link href="@Url.Content("~/Content/css/"+@items)" rel="stylesheet" />
+    }
+
+
+    @*<link href="http://www.example.com/@Model.sThemeName" rel="stylesheet" type="text/css" />*@
+}
+
+<div class="msgBody">
+    <div class="Nanno-@iUserOrg" data-type="nanno" data-identity="@iUserOrg">
+        @*@Html.Raw(sHTML)*@
+        @foreach (var item in nLeft)
+        {
+            {
+                Html.RenderPartial("~/Views/XIComponents/_NanoComponent.cshtml", item);
+            }
+
+        }
+        @foreach (var items in Layouts)
+        {
+        <div class="Layout_@items"></div>
+        }
+        @*@foreach (var items in nLeft)
+            {
+                <div class="user sender">
+                    <div class="msgContent">
+                        <h4>@items.AttributeI("sname").sValue</h4>
+                    </div>
+                </div>
+            }*@
+        @foreach (var items in nRight)
+        {
+        <div class="user reciever">
+            <div class="msgContent viewed">
+                <h4>@items.AttributeI("sname").sValue</h4>
+            </div>
+        </div>
+        }
+    </div>
+</div>
+<div class="footInputBox">
+    <a class="sendBtn" title=""><i class="fas fa-paper-plane"></i></a>
+</div>
+

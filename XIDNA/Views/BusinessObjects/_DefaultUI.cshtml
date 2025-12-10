@@ -1,0 +1,66 @@
+﻿@model XIDNA.Models.cBOUIDefaults
+
+<script>
+    $(document).ready(function () {
+        $('#BODefaultCancelBtn').click(function () {
+            window.close();
+        });
+    });
+    function OnBODefFormBegin() {
+        $('body').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+    function OnBODefComplete(e) {
+        $('body').unblock();
+        CustomMessage(e.ResponseMessage, e.Status);
+    }
+</script>
+<div class="box">
+    <div class="row">
+        <div class="innerborder">
+            @using (Ajax.BeginForm("SaveBODefaults", "BusinessObjects", new AjaxOptions { OnBegin = "OnBODefFormBegin()", HttpMethod = "POST", OnSuccess = "OnBODefComplete" }, new { @id = "BODefaultsForm", @class = "form-horizontal" }))
+            {
+                @Html.HiddenFor(m => m.ID)
+                @Html.HiddenFor(m => m.FKiBOID)
+                <div class="form-group">
+                    <label for="inputSkills" class="col-sm-2 control-label">XI Component</label>
+                    <div class="col-sm-4">
+                        @Html.DropDownListFor(m => m.iXIComponentID, new SelectList(Model.ddlXIComponents, "value", "text"), "--Select--", new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputSkills" class="col-sm-2 control-label">Structure</label>
+                    <div class="col-sm-4">
+                        @Html.DropDownListFor(m => m.iStructureID, new SelectList(Model.ddlStructures, "value", "text"), "--Select--", new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputSkills" class="col-sm-2 control-label">Popup</label>
+                    <div class="col-sm-4">
+                        @Html.DropDownListFor(m => m.iPopupID, new SelectList(Model.ddlPopups, "value", "text"), "--Select--", new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputSkills" class="col-sm-2 control-label">1-Click</label>
+                    <div class="col-sm-4">
+                        @Html.DropDownListFor(m => m.i1ClickID, new SelectList(Model.ddl1Clicks, "value", "text"), "--Select--", new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputSkills" class="col-sm-2 control-label">Layout</label>
+                    <div class="col-sm-4">
+                        @Html.DropDownListFor(m => m.iLayoutID, new SelectList(Model.ddlLayouts, "value", "text"), "--Select--", new { @class = "form-control" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-10" style="float:right;">
+                        <button type="submit" class="btn btn-theme">Save</button>
+                        <button type="button" class="btn btn-theme decline" id="BODefaultCancelBtn">Cancel</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

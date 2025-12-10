@@ -1,0 +1,330 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIQSLinkDefintion oLDef = new XIQSLinkDefintion();
+    if (Model.oContent.ContainsKey(XIConstant.QSLinkDefinationComponent))
+    {
+        oLDef = (XIQSLinkDefintion)Model.oContent[XIConstant.QSLinkDefinationComponent];
+        if (oLDef == null)
+        {
+            oLDef = new XIQSLinkDefintion();
+        }
+    }
+}
+
+<style>
+    .taberrormsg {
+        margin-top: 30px;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        //XILinks Autocomplete
+        //var XILinks = @Html.Raw(Json.Encode(oLDef.XILinks));
+        //var availableXiLinks = Object.keys(XILinks);
+        //$( ".XILink" ).autocomplete({
+        //    source: availableXiLinks
+        //});
+        var availableXiLinks;
+        GetXILinks();
+
+        if (parseInt('@oLDef.ID')) {
+            $('#StatusTypeID').val('@oLDef.StatusTypeID');
+        }
+
+        //Add More XiLinks
+        $('#AddMore').click(function () {
+            var Divs = $('.NVPairs').first().clone();
+            if ($('.NVPairs').length > 0) {
+                $(Divs).find('input').val('');
+                $(Divs).find('select').val(0);
+                $(Divs).find('button').attr('data-deleteid', '0');
+                $('#NameValuePairs').append(Divs);
+                $('.NVPairs').last().css("display", "block");
+                fncResetIdexValues();
+            } else {
+                fncHTMLNVPairs();
+            }
+            if (Divs.length > 0) {
+                $(".XILink").autocomplete({
+                    source: availableXiLinks
+                });
+            }
+        });
+
+        function fncResetIdexValues() {
+            var Divs = $('.NVPairs');
+            $.each(Divs, function (i, item) {
+                var input = $(item).find('input:eq(0)').attr('name', 'NVs[' + i + '].ID');
+                var input = $(item).find('input:eq(1)').attr('name', 'NVs[' + i + '].XiLinkName');
+                var DropDown = $(item).find('select:eq(0)').attr('name', 'NVs[' + i + '].sType');
+                var DropDown2 = $(item).find('select:eq(1)').attr('name', 'NVs[' + i + '].sRunType');
+                var Order = $(item).find('input:eq(2)').attr('name', 'NVs[' + i + '].rOrder');
+                var XiScript = $(item).find('input:eq(3)').attr('name', 'NVs[' + i + '].FKIXIScriptID');
+            });
+        }
+
+        function fncHTMLNVPairs() {
+            var HTML = '<div class="form-group NVPairs"><div class="col-md-2">';
+            HTML += '<label for="inputEmail" class="gn"> XiLink Name<span class="danger"></span></label><input type="text" name="NVs[0].XiLinkName" placeholder="XiLink Name" class="form-control XILink" /></div>';
+            HTML += '<div class="col-md-2"> <label for="inputEmail" class="gn">Type<span class="danger"></span></label>';
+            HTML += ' <select class="form-control" id="sType" name="NVs[0].sType"> <option value="0">--Select--</option> <option value="Pre">Pre</option> <option value="Post">Post</option><option value="Button">Button</option></select>';
+            HTML += ' </div><div class="col-md-2"> <label for="inputEmail" class="gn"> Order<span class="danger"></span></label><input type="text" name="NVs[0].rOrder" placeholder="Order" class="form-control" /></div> <br /> <div class="col-md-2"> <button type="button" class="btn btn-theme btn-xs DeleteNVPair" data-deleteid="0">Delete</button></div> </div>';
+
+            $('#NameValuePairs').append(HTML);
+
+        }
+
+        function GetXILinks() {
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Get_XILinks", "XiLink")',
+                cache: false,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    availableXiLinks = Object.keys(data);
+                    $(".XILink").autocomplete({
+                        source: availableXiLinks
+                    });
+                }
+            });
+        }
+
+        $(document.body).on('click', 'button.DeleteNVPair', function () {
+            var iNVPairID = $(this).attr('data-deleteid');
+            if (iNVPairID == 0) {
+                var SecPairsHide = $(this).closest(".NVPairs").remove();
+                fncResetIdexValues();
+            }
+            else {
+                var SecPairsHide = $(this).closest(".NVPairs");
+                $("#Remove").dialog({
+                    title: "Are you sure you want to delete ? ",
+                    buttons: {
+                        "Yes": function () {
+                            if (parseInt(iNVPairID) != 0 && typeof iNVPairID !== 'undefined') {
+                                $.ajax({
+                                    type: 'POST',
+                                    url: '@Url.Action("DeleteXIQSLinkByID", "XISemantics")',
+                                    data: { ID: iNVPairID },
+                                    cache: false,
+                                    async: false,
+                                    dataType: 'json',
+                                    success: function (data) {
+                                        SecPairsHide.remove();
+                                        //fncResetIdexValues();
+                                    }
+                                });
+                            }
+                            $(this).dialog("close");
+                        },
+                        "No": function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
+
+        });
+    });
+</script>
+<script>
+    const content_height = $(window).height() - $('#HomeHeader').height() - 10;
+    $('.scroll_vh_100').slimScroll({
+        height: content_height,
+    });
+</script>
+<!-- <section class="content">
+    <div class="row">
+        <div class="box">
+            <div class="box-body">
+<div class="innerborder"> -->
+    <div class="p5">
+        <div class="scroll_vh_100 form-container">
+            <div class="clearfix flex-head"><h3 class="maintitle">QSLink</h3></div>
+            @using (Ajax.BeginForm("Save_QSLinks", "XISemantics", FormMethod.Post, new AjaxOptions { OnBegin = "OnFormBegin()", HttpMethod = "POST", OnSuccess = "OnComplete" }, new { @id = "QSXiLinkForm", @class = "" }))
+            {
+                @Html.ValidationSummary(true);
+                <input type="hidden" name="ID" value="@oLDef.ID" id="ID" />
+                            <div id="clear-text" class="form-rows">
+                                @*@if (oLDef.ID > 0)
+                                    {
+                                        <div class="form-group">
+                                            <div class="col-md-1">
+                                                <label for="inputEmail" class="gn">ID:<span class="danger"></span></label>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <label for="inputEmail" class="gn">@oLDef.ID<span class="danger"></span></label>
+                                            </div>
+                                        </div>
+                                    }*@
+                                <div class="form-group row">
+                                    <label for="inputEmail" class="control-label col-sm-3"> Name<span class="danger"></span></label>
+                                    <div class="col-sm-6">
+                                        @Html.TextBox("sName", oLDef.sName, new { @placeholder = "Enter name", @class = "form-control req" })
+                                    <div class="emperrormsg">
+                                        @Html.ValidationMessage("sName", null, new { @class = "red" })
+                                    </div>
+                                        </div>
+
+                                </div>
+                                <div class="form-group row">
+                                    <label for="inputEmail" class="control-label col-sm-3"> Code<span class="danger"></span></label>
+                                    <div class="col-sm-6">
+                                        @Html.TextBox("sCode", oLDef.sCode, new { @placeholder = "Enter Code here", @class = "form-control req" })
+                                        <div class="emperrormsg">
+                                            @Html.ValidationMessage("sCode", null, new { @class = "red" })
+                                        </div>
+                                    </div>
+
+                                </div>
+                                @*<div class="form-group">
+                                        <div class="col-md-4">
+                                            <label for="inputEmail" class="gn"> Order<span class="danger"></span></label>
+                                            @Html.TextBoxFor(m => m.rOrder, new { @placeholder = "Enter order here", @class = "form-control req" })
+                                        </div>
+                                        <div class="col-sm-7 emperrormsg">
+                                            @Html.ValidationMessageFor(m => m.rOrder, null, new { @class = "red" })
+                                        </div>
+                                    </div>*@
+                                <div class="">
+                                    <div id="NameValuePairs" class="">
+                                        @if (oLDef.ID == 0 || oLDef.NVs.Count() == 0 && oLDef.NVs == null)
+                                        {
+                                            <div class="form-group row NVPairs align-items-flex-end">
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> XiLink Name<span class="danger"></span></label>
+                                                    <input type="text" name="NVs[0].XiLinkName" placeholder="XiLink Name" class="form-control XILink" />
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn">Type<span class="danger"></span></label>
+                                                    <select class="form-control" id="sType" name="NVs[0].sType">
+                                                        <option value="0">--Select--</option>
+                                                        <option value="Pre">Pre</option>
+                                                        <option value="Post">Post</option>
+                                                        <option value="Button">Button</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> Order<span class="danger"></span></label>
+                                                    <input type="text" name="NVs[0].rOrder" placeholder="Order" class="form-control" />
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn">Run Type<span class="danger"></span></label>
+                                                    <select class="form-control" id="sRunType" name="NVs[0].sRunType">
+                                                        <option value="0">--Select--</option>
+                                                        <option value="XILink">XILink</option>
+                                                        <option value="XIScript">XIScript</option>
+                                                        <option value="XIAlgorithm">XIAlgorithm</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="inputEmail" class="gn"> ScriptID <span class="danger"></span></label>
+                                                    <input type="text" name="NVs[0].FKIXIScriptID" placeholder="XI ScriptID" class="form-control" />
+                                                </div>
+                                                <br />
+                                                <div class="col-md-2">
+                                                    <button type="button" class="btn btn-theme btn-xs DeleteNVPair" data-deleteid="0">Delete</button>
+                                                </div>
+                                            </div>
+
+                                        }
+                                        else
+                                        {
+                                            for (int i = 0; i < oLDef.NVs.Count(); i++)
+                                            {
+                                                <div class="form-group row NVPairs align-items-flex-end">
+                                                    <input type="hidden" name="NVs[@i].ID" value="@oLDef.NVs[i].ID" />
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn">XiLink Name<span class="danger"></span></label>
+                                                        @Html.TextBox("XiLinkName", oLDef.NVs[i].XiLinkName, new { @placeholder = "XiLink Name", @Name = "NVs[" + i + "].XiLinkName", @class = "form-control XILink" })
+                                                    </div>
+
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn"> Type <span class="danger"></span></label>
+
+                                                        @Html.DropDownList("sType", new SelectList(new List<object>
+                                            {
+                                            new { key="0", Value = "--Select--" },
+                                            new { key="Pre", Value = "Pre" },
+                                            new { key="Post", Value = "Post" },
+                                            new { key="Button", Value = "Button" }
+                                            }, "key", "value", oLDef.NVs[i].sType), new { @class = "form-control", @Name = "NVs[" + i + "].sType" })
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn">Order<span class="danger"></span></label>
+                                                        @Html.TextBox("rOrder", oLDef.NVs[i].rOrder, new { @placeholder = "Order", @Name = "NVs[" + i + "].rOrder", @class = "form-control" })
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn">Run Type<span class="danger"></span></label>
+
+                                                        @Html.DropDownList("sRunType", new SelectList(new List<object>
+                                            {
+                                            new { key="0", Value = "--Select--" },
+                                            new { key="XILink", Value = "XILink" },
+                                            new { key="XIScript", Value = "XIScript" },
+                                            new { key="XIAlgorithm", Value = "XIAlgorithm" },
+                                            }, "key", "value", oLDef.NVs[i].sRunType), new { @class = "form-control", @Name = "NVs[" + i + "].sRunType" })
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label for="inputEmail" class="gn"> ScriptID <span class="danger"></span></label>
+                                                        @Html.TextBox("FKIXIScriptID", oLDef.NVs[i].FKIXIScriptID, new { @placeholder = "XI ScriptID", @Name = "NVs[" + i + "].FKIXIScriptID", @class = "form-control" })
+                                                    </div>
+                                                    <br />
+                                                    <div class="col-md-2">
+                                                        <button type="button" class="btn btn-theme btn-xs DeleteNVPair" data-deleteid="@oLDef.NVs[i].ID">Delete</button>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <input type="button" id="AddMore" value="Add" class="btn btn-theme">
+                                </div>
+                                <div class="form-group row">
+                                    <label for="inputEmail" class="control-label col-sm-3">Status<span class="danger"></span></label>
+                                    <div class="col-sm-6">
+                                        @Html.DropDownList("StatusTypeID", new SelectList(new List<object>
+                                    {
+                                    new { key=10, Value = "Active"},
+                                    new { key=20, Value = "Inactive" },
+                                    }, "key", "value", oLDef.StatusTypeID), new { @class = "form-control" })
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-offset-3 col-sm-9">
+                                        <input type="submit" class="btn btn-theme" value="Save" />
+                                        <button type="button" class="btn btn-theme decline CancelQSLink">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+            }
+        </div>
+        </div>
+        <!-- </div>
+                </div>
+            </div>
+        </div>
+    </section> -->
+<script>
+    $('.CancelQSLink').click(function () {
+        window.close();
+    });
+    function OnFormBegin() {
+        $('#QSLinkForm').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+    function OnComplete(e) {
+        $('#QSLinkForm').unblock();
+        $('.QSLinkStatusMessages').append($('<div class="alert alert-success">Data Saved Succesfully</div>'));
+        //CustomMessage(e.ResponseMessage, e.Status);
+        //opener.window.location.reload();
+    }
+</script>
+<div id="Remove"></div>

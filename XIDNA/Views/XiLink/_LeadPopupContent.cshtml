@@ -1,0 +1,126 @@
+﻿@model XIDNA.ViewModels.VMViewPopup
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        if('@Model.LayoutType'=="Layout1"){
+            $("#tabs").tabs();
+        }
+        else{
+            $( "#tabs" ).tabs().addClass( "ui-tabs-vertical ui-helper-clearfix" );
+            $( "#tabs li" ).removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
+            $( 'html' ).addClass( "layout2-popup" );
+        }
+
+        var model =@Html.Raw(Json.Encode(Model));
+        if (model.Tabs.length > 0) {
+            var name = model.Tabs[0].text;
+            var tabid = model.Tabs[0].Value;
+            var TabName = "tabs-1";
+            var LeadID = model.LeadID;
+            var pvalue = {
+                Tabid: tabid,
+                TabName: TabName,
+                LeadID: LeadID,
+                Name: name,
+                PopType:'@Model.PopType',
+                StageID:'@Model.StageID',
+                RowID : '@Model.RowID',
+                ClientID:'@Model.ClientID'
+            }
+            $.ajax({
+                url: '@Url.Action("GetTabContent", "XiLink")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                async: false,
+                data: JSON.stringify(pvalue),
+                success: function (data) {
+                    //$('#tabs').append('<div id="' + TabName + '"></div>');
+                    $('#' + TabName).html(data);
+                },
+                error: function (data) {
+                }
+            });
+        }
+        $('#tabs').on('click', 'a', function (e) {
+            var name = $(this).text();
+            var tabid = $(this).attr('id');
+            var TabName = $(this).attr('data-tab');
+            var LeadID = "@Model.LeadID";
+            var pvalue = {
+                TabID: tabid,
+                TabName: TabName,
+                LeadID: LeadID,
+                Name: name,
+                RowID:'@Model.RowID',
+                PopType:'@Model.PopType'
+            }
+            $.ajax({
+                url: '@Url.Action("GetTabContent", "XiLink")',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                datatype: "html",
+                cache: false,
+                async: false,
+                data: JSON.stringify(pvalue),
+                success: function (data) {
+                    if (data) {
+                        //$('#tabs').append('<div id="' + TabName + '"></div>');
+                        $('#' + TabName).html(data);
+                        //$('#' + TabName).addClass('ui-tabs-panel ui-widget-content ui-corner-bottom');
+                        //$('#' + TabName).attr('role', 'tabpanel');
+                    }
+                },
+                error: function (data) {
+                }
+            });
+            //$("#tabs").tabs();
+        });
+    });
+
+</script>
+
+@if (Model.LayoutType == "Layout1")
+{
+    <div class="box box-primary" id="tabs">
+        <div class="box-header bg-grey-darker no-padding">
+            <ul id="PopupTabs" class="bg-transparent">
+                @{int j = 0;}
+                @for (int i = 0; i < Model.Tabs.Count(); i++)
+                {
+                    j = i + 1;
+                    <li id="tab-@j"><a href="#tabs-@j" data-tab="tabs-@j" id='@Model.Tabs[i].Value'>@Model.Tabs[i].text</a></li>
+                }
+            </ul>
+        </div>
+        <div class="box-body">
+            @for (int k = 1; k <= Model.Tabs.Count(); k++)
+            {
+                <div id="tabs-@k" class="no-border no-padding no-margin bg-transparent"></div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="p5" style="background: #181818;color: #F44336"><i class="fa fa-exclamation-triangle"></i> Call back pending : 6/30/2017 12:30:00 PM</div>
+    <div class="box box-primary layout2" id="tabs">
+        <ul class="layout2-sidebar">
+            @{int j = 0;}
+            @for (int i = 0; i < Model.Tabs.Count(); i++)
+            {
+                j = i + 1;
+                <li id="tab-@j"><a href="#tabs-@j" data-tab="tabs-@j" id='@Model.Tabs[i].Value'>@Model.Tabs[i].text</a></li>
+            }
+        </ul>
+        @for (int k = 1; k <= Model.Tabs.Count(); k++)
+{
+    <div id="tabs-@k" class="layout2-content"></div>
+}
+    </div>
+}
+
+
+
+

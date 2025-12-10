@@ -1,0 +1,97 @@
+﻿@model XICore.XIBOInstance
+
+@using XISystem
+@using XICore
+@{
+
+    var XiModel = Model;
+}
+<style>
+    table1 {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    table, th, td {
+        border: 0.1px solid black;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+
+    th, td {
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #e3dada;
+    }
+
+    tr:nth-child(odd) {
+        background-color: #FFFFFF;
+    }
+    /*table { page-break-inside:auto }
+    tr    { page-break-inside:avoid; page-break-after:auto }
+    thead { display:table-header-group }
+    tfoot { display:table-footer-group }*/
+</style>
+@if (XiModel.oStructureInstance != null)
+{
+    <div class="form-group">
+
+        @if (XiModel.oStructureInstance.Count > 0)
+        {
+            var StructureResultData = XiModel.oStructureInstance;
+            foreach (var item in StructureResultData)
+            {
+                var attributes = item.Value.Select(r => r.Attributes).ToList();
+                var AttrHeaders = item.Value.Select(r => r.Attributes).FirstOrDefault();
+                var Subchild = item.Value.Select(u => u.SubChildI).ToList();
+
+                if (attributes != null && AttrHeaders.Where(r => r.Value.bIsHidden == true).ToList().Count > 0)
+                {
+                    <h2><span @*style="background-color:burlywood"*@>@item.Key</span></h2>
+                    <table style="width:750px; page-break-inside:auto" cellspacing="0">
+                        <thead align="left" style="display: table-header-group">
+                            <tr style="background-color:antiquewhite; page-break-inside:avoid; page-break-after:auto">
+                                @foreach (var TableHeaders in AttrHeaders.Where(r => r.Value.bIsHidden == true).ToList())
+                                {
+                                    <td>
+                                        @TableHeaders.Value.sDisplayName
+                                    </td>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var attr in attributes)
+                            {
+                                <tr>
+                                    @foreach (var TableData in attr.Where(r => r.Value.bIsHidden == true).ToList())
+                                {
+                                    TableData.Value.BOD = item.Value.Select(r => r.BOD).FirstOrDefault();
+                                        <td>
+                                            @TableData.Value.sResolvedValue
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                <div class="m-l-40">
+                    @if (Subchild != null && Subchild.Count > 0)
+                    {
+                        XIBOInstance SubChild = new XIBOInstance();
+                        SubChild.oStructureInstance = Subchild.FirstOrDefault();
+                        @Html.Partial("~/Views/XIComponents/_HTMLDataComponent.cshtml", SubChild);
+                    }
+                </div>
+            }
+        }
+    </div>
+}
+
+
+

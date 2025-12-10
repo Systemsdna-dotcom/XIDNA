@@ -1,0 +1,25 @@
+﻿@model IEnumerable<XIDNA.ViewModels.DashBoardGraphs>
+
+
+<div class="ibox float-e-margin">
+    <div class="ibox-title">
+        <h5>EveryOne</h5>
+        <div class="ibox-header-items">
+            <a href="#" class="btn-minimize btn-default"><i class="fa fa-angle-down"></i></a>
+            <a href="#" class="btn-close btn-default" id="@ViewBag.id"><i class="fa fa-close"></i></a>
+        </div>
+    </div>
+    <div class="ibox-content">
+        <ul class="headgroplist">
+            @foreach (var items in Model)
+            {
+                <li>
+                    <div class="@items.color"><i class="@items.highlight"></i></div>   
+                    <div class="headtext"><a href="#">@items.label</a></div>
+                    <div class="headleval">@items.value</div>
+                </li>
+            }
+        </ul>
+
+    </div>
+</div>

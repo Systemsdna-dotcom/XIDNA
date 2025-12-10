@@ -1,0 +1,2116 @@
+﻿@model XICore.XID1Click
+@using Microsoft.AspNet.Identity
+@using XIDNA
+@using XIDNA.Models
+@using XISystem
+@using XICore
+@{
+    int iUserID = SessionManager.UserID;
+    int iRoleID = SessionManager.iRoleID;
+    //int iProjectID = SessionManager.ProjectID;
+    //Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    string sSearchFields = string.Empty;
+    XIIXI oIXI = new XIIXI();
+    XI1QueryAttributeDetails ListofDetails = null;
+    var SortColumns = Model.TableColumns;
+    var model = Model;
+    var sTabColumns = "";
+
+    XIInfraCache oCache = new XIInfraCache();
+    var oBOD = (XIDBO)oCache.GetObjectFromCache(XIConstant.CacheBO_All, null, Model.BOIDXIGUID.ToString());
+    if (Model.BOD == null)
+    {
+        Model.BOD = oBOD;
+    }
+    int iAppID = SessionManager.ApplicationID;
+    var Chosen = (string)oCache.GetObjectFromCache(XIConstant.CacheConfig, iAppID + "_" + XIConstant.Chosen_Plugin);
+    if (SortColumns != null)
+    {
+        sTabColumns = string.Join(",", SortColumns);
+        sTabColumns = sTabColumns.Replace("'", "\"");
+    }
+    var sSearchType = "";
+    if (Model.bIsEqualOperator == true)
+    {
+        sSearchType = "EqualOperator";
+    }
+    if (Model.FKiSearchGroup > 0 || (Model.FKiSearchGroupXIGUID != null && Model.FKiSearchGroupXIGUID != Guid.Empty))
+    {
+        var GroupD = Model.BOD.GroupD("Search");
+        if (GroupD != null && !string.IsNullOrEmpty(GroupD.BOFieldNames))
+        {
+            sSearchFields = GroupD.BOFieldNames;
+        }
+    }
+    else
+    {
+        sSearchFields = Model.SearchFields;
+    }
+    //Model.BOD = oBOD;
+    bool bIsMultiBO = Model.bIsMultiBO;
+}
+<head>
+    @*<link href="~/Scripts/Choosen/chosen.min.css" rel="stylesheet" />
+        <script src="~/Scripts/Choosen/chosen.jquery.min.js"></script>*@
+</head>
+@*<style>
+    #DynamicForm {
+        margin-top: 15px;
+    }
+</style>*@
+<style>
+    .mainDate {
+        width: 240px;
+        height: 28px;
+        border: 0.1px solid;
+        text-align: center;
+        border-color: lightgray;
+    }
+
+    .myField {
+        width: 73.5px;
+        height: 25px;
+        border: none;
+        text-align: center;
+    }
+</style>
+
+@*<script src="/js/jquery.inputmask.js"></script>*@
+<script src="@Url.Content("~/Scripts/Inputmask/inputmask.binding.js")"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/3.3.4/jquery.inputmask.bundle.min.js"></script>
+<script>
+    $(document).ready(function () {
+        @*$('.@Model.sGUID-BetweenDate').hide();*@
+
+        $(".@Model.sGUID-datefield1").datepicker({
+            dateFormat: 'dd-M-yy',
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "-70:+10",
+            onSelect: function (date) {
+                debugger;
+                var date2 = $('.@Model.sGUID-datefield1').datepicker('getDate');
+                if (date2 != null) {
+                    date2.setDate(date2.getDate() + 1);
+                }
+                $('.@Model.sGUID-datefield2').datepicker('option', 'minDate', date2);
+            }
+        });
+        $('.@Model.sGUID-datefield2').datepicker({
+            dateFormat: 'dd-M-yy',
+            changeMonth: true,
+            changeYear: true,
+            yearRange: "-70:+10",
+            onClose: function () {
+                var dt1 = $('.@Model.sGUID-datefield1').datepicker('getDate');
+                var dt2 = $('.@Model.sGUID-datefield2').datepicker('getDate');
+                if (dt2 <= dt1) {
+                    var minDate = $('.@Model.sGUID-datefield2').datepicker('option', 'minDate');
+                    $('.@Model.sGUID-datefield2').datepicker('setDate', minDate);
+                }
+            }
+        });
+        $('.oprator').change(function () {
+            debugger
+            var Oprtval = $(this).val();
+            if (Oprtval && Oprtval.length > 0 && (Oprtval == 'is null' || Oprtval == 'is not null')) {
+                $(this).parent().parent().parent().parent().find('.value-block').hide();
+            }
+            else {
+                $(this).parent().parent().parent().parent().find('.value-block').find('input').val('');
+                $(this).parent().parent().parent().parent().find('.value-block').show();
+            }
+        })
+    });
+    function GetDBValues(DBQuery) {
+        var query = DBQuery;
+        query = query.replace(/&#39;/g, "'");
+        $.ajax({
+            url: '@Url.Action("GetDBValuesForField", "QueryGeneration")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "JSON",
+            cache: false,
+            data: { Query: query },
+            success: function (data) {
+                $.each(data, function (i, val) {
+                    $('#dbvalue').append(
+                        $('<option></option>').val(val.Value).html(val.Expression)
+                        );
+                });
+            }
+        });
+    }
+</script>
+@*<style>
+    #datefield2 {
+        margin-top: 10px;
+    }
+</style>*@
+
+<form class="CreateForm form-h label-5 wrap-10 wrap-fullwidth" id="DynamicQueryForm">
+    @{int v = 0; int F = 1;}
+    @if (sSearchFields != null && sSearchFields != "")
+    {
+        var dGUID = Model.sGUID;
+        var ModelBOD = new XICore.XID1Click();
+        var AllFields = sSearchFields.Split(',').Select(p => p.Trim()).ToList();
+        foreach (var items in AllFields)
+        {
+            var item = items;
+            var boname = "";
+            var NewLabel = item.Split('.');
+            if (NewLabel.Count() == 2)
+            {
+                boname = NewLabel[0];
+                boname = boname.Substring(1, boname.Length - 2);
+                item = NewLabel[1];
+            }
+            XIDAttribute AttrDOrginal = new XIDAttribute();
+            XIDAttribute AttrD = new XIDAttribute();
+            if (Model.SubAttributes != null && Model.SubAttributes.Count() > 0)
+            {
+                foreach (var it in Model.SubAttributes.ToList())
+                {
+                    ModelBOD = it;
+                    if (ModelBOD.BOD.TableName == boname)
+                    {
+                        AttrDOrginal = it.BOD.Attributes.Values.ToList().Where(m => m.Name.ToLower() == item.ToLower()).FirstOrDefault();
+                        AttrD = (XIDAttribute)AttrDOrginal.Clone(AttrDOrginal);
+                        if (AttrD != null)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (!string.IsNullOrEmpty(boname))
+            {
+                oBOD = (XIDBO)oCache.GetObjectFromCache(XIConstant.CacheBO, boname);
+                AttrDOrginal = oBOD.Attributes.Values.ToList().Where(m => m.Name.ToLower() == item.ToLower()).FirstOrDefault();
+                AttrD = (XIDAttribute)AttrDOrginal.Clone(AttrDOrginal);
+            }
+            else
+            {
+                AttrDOrginal = oBOD.Attributes.Values.ToList().Where(m => m.Name.ToLower() == item.ToLower()).FirstOrDefault();
+                AttrD = (XIDAttribute)AttrDOrginal.Clone(AttrDOrginal);
+            }
+            if (AttrD == null)
+            {
+                var Label = string.Empty;
+                if (item.ToLower() == "zXUpdtdWhn".ToLower())
+                {
+                    item = XIConstant.Key_XIUpdtdWhn.ToLower();
+                }
+                else if (item.ToLower() == "zXCrtdWhn".ToLower())
+                {
+                    item = XIConstant.Key_XICrtdWhn.ToLower();
+                }
+                if (item.ToLower() == XIConstant.Key_XICrtdWhn.ToLower() || item.ToLower() == XIConstant.Key_XIUpdtdWh.ToLower() || item.ToLower() == XIConstant.Key_XIUpdtdWhn.ToLower())
+                {
+                    if (item.ToLower() == XIConstant.Key_XICrtdWhn.ToLower())
+                    {
+                        Label = "Created When";
+                    }
+                    else if (item.ToLower() == XIConstant.Key_XIUpdtdWh.ToLower() || item.ToLower() == XIConstant.Key_XIUpdtdWhn.ToLower())
+                    {
+                        Label = "Updated When";
+                    }
+                    var LValue = (DateTime?)null;
+                    @Html.HiddenFor(m => Label, new { @id = dGUID + '-' + v + "-FieldName", @Value = items })
+                    if (sSearchType == "EqualOperator")
+                    {
+                        <div class="highlight--help">
+                            <div class="wrap-width clearfix control-block">
+                                <label class="control-label">@Label</label>
+                                <div class="gutter6">
+                                </div>
+                                <div class="" id="datetime">
+                                    <div class="col-md-1 control-label QuickSearchTBox">
+                                        @Html.TextBoxFor(m => LValue, new { @Name = items, @id = dGUID + "-" + v + "-Value", @class = dGUID + "-" + v + "-" + "datefield1 form-control", @style = "padding:1px 5px;" })
+                                    </div>
+                                </div>
+                                <script>
+                                    $('#@dGUID-@v-Value').datepicker({
+                                        dateFormat: 'dd-M-yy',
+                                        changeMonth: true,
+                                        changeYear: true,
+                                        yearRange: "-70:+10",
+                                        onSelect: function (date) {
+                                            oneClickSearch($('.QuickSearchTBox'), '@Model.XIGUID', '@sTabColumns', '@Model.sGUID', '@sSearchFields', 'Result List', 'FilterSearch', 'EqualOperator');
+                                        }
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="form-group highlight--help">
+                            <div class="wrap-width clearfix control-block">
+                                <label class="col-sm-2 control-label">@Label</label>
+                                <div class="col-sm-3 m-r-5">
+                                    <div class="Operators">
+                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                        {
+                                        new { key= "=" , value = "equals" },
+                                        new { key= ">" , value = "greater than" },
+                                        new { key= "<", value = "less than" },
+                                        new { key= ">=" , value = "greater than or equal to" },
+                                        new { key= "<=" , value = "less than or equal to" },
+                                        new { key= "!=" , value = "not equal to" },
+                                        new { key= "between" , value = "between" }
+                                        }, "key", "Value"), new { @class = "form-control oprator dateoperators", @id = dGUID + "-" + v + "-Operator" })
+                                    </div>
+                                </div>
+                                <div class="" id="datetime">
+                                    <div class="col-sm-3 control-label">
+                                        @Html.TextBoxFor(m => LValue, new { @Name = items, @id = dGUID + "-" + v + "-Value", @class = dGUID + "-" + v + "-" + "datefield1 form-control", @style = "padding:1px 5px;" })
+                                    </div>
+                                    <div class="col-sm-offset-5 col-sm-3 m-t-5 control-label" style="display:none" id="dBetweenID-@v-@dGUID">
+                                        @Html.TextBoxFor(m => LValue, new { @Name = items, @id = dGUID + "-" + v + "-Value2", @class = dGUID + "-" + v + "-" + "datefield2 form-control " + dGUID + "-" + "BetweenDate form-control ", @style = "padding:1px 5px;" })
+                                    </div>
+                                </div>
+                                <script>
+                                    $('#@dGUID-@v-Operator').change(function () {
+                                        var operator = $('#@dGUID-@v-Operator :selected').val();
+                                        if (operator == "between") {
+                                            $('#@dGUID-@v-Value2').show();
+                                            $('.@dGUID-datefield2').val('');
+                                            $('#dBetweenID-@v-@dGUID').show();
+                                        }
+                                        else {
+                                            $('#@dGUID-@v-Value2').hide();
+                                            $('#dBetweenID-@v-@dGUID').hide();
+                                        }
+                                    });
+                                    $('#@dGUID-@v-Value').datepicker({
+                                        dateFormat: 'dd-M-yy',
+                                        changeMonth: true,
+                                        changeYear: true,
+                                        yearRange: "-70:+10",
+                                        onSelect: function (date) {
+                                            debugger;
+                                            var date2 = $('.@dGUID-@v-datefield1').datepicker('getDate');
+                                            if (date2 != null) {
+                                                date2.setDate(date2.getDate() + 1);
+                                            }
+                                            $('.@dGUID-@v-datefield2').datepicker('option', 'minDate', date2);
+                                        }
+                                    });
+
+                                    $('#@dGUID-@v-Value2').datepicker({
+                                        dateFormat: 'dd-M-yy',
+                                        changeMonth: true,
+                                        changeYear: true,
+                                        yearRange: "-70:+10",
+                                        onClose: function () {
+                                            var dt1 = $('.@dGUID-@v-datefield1').datepicker('getDate');
+                                            var dt2 = $('.@dGUID-@v-datefield2').datepicker('getDate');
+                                            if (dt2 <= dt1) {
+                                                var minDate = $('#@dGUID-@v-datefield2').datepicker('option', 'minDate');
+                                                $('.@dGUID-@v-datefield2').datepicker('setDate', minDate);
+                                            }
+                                        }
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                    }
+                }
+                else if (item.ToLower() == XIConstant.Key_XIUpdtdBy.ToLower() || item.ToLower() == XIConstant.Key_XICrtdBy.ToLower())
+                {
+                    if (item.ToLower() == "zXUpdtdBy".ToLower())
+                    {
+                        item = XIConstant.Key_XIUpdtdBy.ToLower();
+                    }
+                    else if (item.ToLower() == "zXCrtdBy".ToLower())
+                    {
+                        item = XIConstant.Key_XICrtdBy.ToLower();
+                    }
+                    if (item.ToLower() == XIConstant.Key_XIUpdtdBy.ToLower())
+                    {
+                        Label = "Updated By";
+                    }
+                    else if (item.ToLower() == XIConstant.Key_XICrtdBy.ToLower())
+                    {
+                        Label = "Created By";
+                    }
+                    var LValue = string.Empty;
+                    @Html.HiddenFor(m => Label, new { @id = dGUID + '-' + v + "-FieldName", @Value = items })
+                    <div class="form-group highlight--help">
+                        <div class="wrap-width clearfix control-block">
+                            <label class="col-sm-2 control-label">@Label</label>
+                            <div class="col-sm-3 m-r-5">
+                                <div class="Operators">
+                                    @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                        {
+                                                    new { key= "=" , value = "equals" },
+                                        new { key= "starts with" , value = "starts with" },
+                                        new { key= "not starts with", value = "not starts with" },
+                                        new { key= "ends with" , value = "ends with" },
+                                        new { key= "not ends with" , value = "not ends with" },
+                                        new { key= "contains" , value = "contains" }
+                                        }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                </div>
+                            </div>
+                            @*<div class="col-sm-3 control-label">
+                                    @Html.TextBoxFor(m => LValue, new { @Name = items, @class = "form-control", @style = "padding:1px 5px;", @id = dGUID + "-" + v + "-Value" })
+                                </div>*@
+                            @if (Label == "Created By")
+                            {
+                                <div class="col-sm-3 control-label">
+                                    <div class="select-wrapper">
+                                        <select name="@items" class="form-control optionvalue" style="padding:1px 5px;" id="@dGUID-@v-Value" data-attrname="@item">
+                                            @{
+                                                if (Model.CrtdFieldDDL != null && Model.CrtdFieldDDL.Count() > 0)
+                                                {
+                                                    <option value="-1">Please Select</option>
+                                                    foreach (var opt in Model.CrtdFieldDDL.OrderBy(m => m.Expression))
+                                                    {
+                                                        <option value="@opt.text">@opt.Expression</option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                        <span class="select_wrapper_caret fa fa-chevron-down"></span>
+                                    </div>
+                                </div>
+                            }
+                            @if (Label == "Updated By")
+                            {
+                                <div class="col-sm-3 control-label">
+                                    <div class="select-wrapper">
+                                        <select name="@items" class="form-control optionvalue" style="padding:1px 5px;" id="@dGUID-@v-Value" data-attrname="@item">
+                                            @{
+                                                if (Model.UpdtdFieldDDL != null && Model.UpdtdFieldDDL.Count() > 0)
+                                                {
+                                                    <option value="-1">Please Select</option>
+                                                    foreach (var opt in Model.UpdtdFieldDDL.OrderBy(m => m.Expression))
+                                                    {
+                                                        <option value="@opt.text">@opt.Expression</option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                        <span class="select_wrapper_caret fa fa-chevron-down"></span>
+                                    </div>
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+                }
+                {
+                    v++;
+                }
+            }
+            else
+            {
+                @*@Html.HiddenFor(m => m.Name, new { @id = i + "-FieldName", @Value = AttrD.Name })*@
+                var AttrListData = oBOD.Attributes.Values.Where(m => m.Name.ToLower() == item.ToLower()).FirstOrDefault();
+                @Html.HiddenFor(m => m.Name, new { @id = dGUID + '-' + v + "-FieldName", @Value = items, @data_typeid = AttrD.TypeID, @data_datetype = AttrD.iDateType })
+                                                    var Label = AttrD.LabelName;
+                                                    //if (bIsMultiBO)
+                                                    //{
+                                                    //    Label = oBOD.LabelName + " " + Label;
+                                                    //}
+
+                                                    var LValue = AttrD.Value;
+                                                    if (Model.OverrideAttributeDetails != null && Model.OverrideAttributeDetails.Count > 0)
+                                                    {
+                                                        ListofDetails = Model.OverrideAttributeDetails.Where(k => k.FKiAttrXIGUID == AttrD.XIGUID).FirstOrDefault();
+                                                        if (ListofDetails != null)
+                                                        {
+                                                            Label = ListofDetails.sLabel;
+                                                            LValue = ListofDetails.sDefaultValue;
+                                                        }
+                                                    }
+                                                    XIDAttribute FieldOriginOriginal = new XIDAttribute();
+                                                    XIDAttribute FieldOrigin = new XIDAttribute();
+                                                    if (Model.bIsMultiSearch)
+                                                    {
+                                                        var oXIDBO = new XICore.XIDBO();
+                                                        oXIDBO = ModelBOD.BOD;
+                                                        oBOD = oXIDBO;
+                                                        FieldOriginOriginal = AttrListData;//Model.BOD.Attributes.Values.Where(m => m.Name.ToLower() == item.ToLower()).FirstOrDefault();
+                                                        FieldOrigin = (XIDAttribute)FieldOriginOriginal.Clone(FieldOriginOriginal);
+                                                    }
+                                                    else
+                                                    {
+                                                        FieldOriginOriginal = AttrListData;//Model.BOD.Attributes.Values.Where(m => m.Name.ToLower() == item.ToLower()).FirstOrDefault();
+                                                        FieldOrigin = (XIDAttribute)FieldOriginOriginal.Clone(FieldOriginOriginal);
+                                                        if (ListofDetails != null)
+                                                        {
+                                                            //var o1clickid = ListofDetails.sReferenceData;
+                                                            var RangeGuid = ListofDetails.FKsRangeBOXIGUID.ToString();
+                                                            var Refdata = ListofDetails.bIsOverrideReferenceData.ToString();
+                                                            if (Refdata != null && Refdata.ToLower() == "true" && !string.IsNullOrEmpty(RangeGuid))
+                                                            {
+                                                                XIDXI oXDXI = new XIDXI();
+                                                                var DDLFields = oXDXI.OptionListOverride(RangeGuid, @Model.sGUID);
+                                                                FieldOrigin.FKiType = 40;
+                                                                FieldOrigin.sFKBOSize = "10";
+                                                                FieldOrigin.FieldDDL = (List<XIDropDown>)DDLFields.oResult;
+
+                                                            }
+                                                        }
+                                                    }
+                                                    if (item != null && item.ToLower() != "id")
+                                                    {
+                                                        if (FieldOrigin.IsOptionList)
+                                                        {
+                                                            if (sSearchType == "EqualOperator")
+                                                            {
+                            <div class="highlight--help">
+                                <div class="wrap-width clearfix control-block">
+                                    <label class="control-label">@Label</label>
+                                    <div class="gutter6">
+                                    </div>
+                                    <div class="col-md-1 control-label">
+                                        <div class="select-wrapper">
+                                            <select name="@items" class="form-control optionvalue ddlOptionChange" style="padding:1px 5px;" id="@dGUID-@v-Value" data-attrname="@item">
+                                                @if (FieldOrigin.OptionList != null)
+                                                {
+                                                    var OptValue = oBOD.Attributes.Values.Where(m => m.Name == item).Select(s => s.Value).FirstOrDefault();
+                                                    <option value="-1" selected>Please Select</option>
+                                                    foreach (var opt in FieldOrigin.OptionList.OrderBy(m => m.sOptionName))
+                                                    {
+                                                        if (opt.sOptionName != null && opt.sOptionName.ToLower() != "please select")
+                                                        {
+                                                            if (OptValue == null)
+                                                            {
+                                                                if (!string.IsNullOrEmpty(FieldOrigin.DefaultValue))
+                                                                {
+                                                                    if (opt.sOptionName == FieldOrigin.DefaultValue)
+                                                                    {
+                                                                        <option value="@opt.sValues" selected>@opt.sOptionName</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@opt.sValues">@opt.sOptionName</option>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@opt.sValues">@opt.sOptionName</option>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                if (opt.sValues == OptValue)
+                                                                {
+                                                                    <option value="@opt.sValues" selected>@opt.sOptionName</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@opt.sValues">@opt.sOptionName</option>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                            <span class="select_wrapper_caret fa fa-chevron-down"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group highlight--help">
+                                <div class="wrap-width clearfix control-block">
+                                    <label class="col-sm-2 control-label">@Label</label>
+                                    <div class="col-sm-3 m-r-5">
+                                        <div class="Operators">
+                                            @if (Model.OverrideAttributeDetails != null && Model.OverrideAttributeDetails.Count > 0)
+                                            {
+                                                ListofDetails = Model.OverrideAttributeDetails.Where(k => k.FKiAttrXIGUID == AttrD.XIGUID).FirstOrDefault();
+                                                if (ListofDetails != null)
+                                                {
+                                                    var Operator = ListofDetails.FKiOperator; //BOIInstance.Attributes["FKiOperator"].sValue.ToLower();
+                                                    var ExposeOperator = ListofDetails.bIsExposeOperator.ToString();// ListofDetails.bIsExposeOperator;//BOIInstance.Attributes["bIsExposeOperator"].sValue;
+                                                    if (!string.IsNullOrEmpty(ExposeOperator) && ExposeOperator.ToLower() == "true")
+                                                    {
+                                                        if (Operator == ">")
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = ">", value = "greater than" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                        else if (Operator == "<")
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "<", value = "less than" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                        else if (Operator == "=")
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "=", value = "equals" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                        else if (Operator == ">=")
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = ">=", value = "greater than or equal to" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                        else if (Operator == "<=")
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "<=", value = "less than or equal to" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                        else if (Operator == "!=")
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "!=", value = "not equal to" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                        else
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                                            {
+                                                                new { key= "=" , value = "equals" },
+                                                new { key= ">" , value = "greater than" },
+                                                new { key= "<", value = "less than" },
+                                                new { key= ">=" , value = "greater than or equal to" },
+                                                new { key= "<=" , value = "less than or equal to" },
+                                                new { key= "!=" , value = "not equal to" }
+                                                            }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                            {
+                                            new { key= "=" , value = "equals" },
+                                            new { key= ">" , value = "greater than" },
+                                            new { key= "<", value = "less than" },
+                                            new { key= ">=" , value = "greater than or equal to" },
+                                            new { key= "<=" , value = "less than or equal to" },
+                                            new { key= "!=" , value = "not equal to" }
+                                            }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                    {
+                                    new { key= "=" , value = "equals" },
+                                    new { key= ">" , value = "greater than" },
+                                    new { key= "<", value = "less than" },
+                                    new { key= ">=" , value = "greater than or equal to" },
+                                    new { key= "<=" , value = "less than or equal to" },
+                                    new { key= "!=" , value = "not equal to" }
+                                    }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3 control-label">
+                                        <div class="select-wrapper">
+                                            <select name="@items" class="form-control optionvalue" style="padding:1px 5px;" id="@dGUID-@v-Value" data-attrname="@item">
+                                                @if (FieldOrigin.OptionList != null)
+                                                {
+                                                    var OptValue = oBOD.Attributes.Values.Where(m => m.Name == item).Select(s => s.Value).FirstOrDefault();
+                                                    if (ListofDetails != null)
+                                                    {
+                                                        OptValue = ListofDetails.sDefaultValue;
+                                                    }
+                                                    <option value="-1" selected>Please Select</option>
+                                                    foreach (var opt in FieldOrigin.OptionList.OrderBy(m => m.sOptionName))
+                                                    {
+                                                        if (opt.sOptionName != null && opt.sOptionName.ToLower() != "please select")
+                                                        {
+                                                            if (OptValue == null)
+                                                            {
+                                                                if (!string.IsNullOrEmpty(FieldOrigin.DefaultValue))
+                                                                {
+                                                                    if (opt.sOptionName == FieldOrigin.DefaultValue)
+                                                                    {
+                                                                        <option value="@opt.sValues" selected>@opt.sOptionName</option>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <option value="@opt.sValues">@opt.sOptionName</option>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@opt.sValues">@opt.sOptionName</option>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                if (opt.sValues == OptValue)
+                                                                {
+                                                                    <option value="@opt.sValues" selected>@opt.sOptionName</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@opt.sValues">@opt.sOptionName</option>
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+
+                                            @if (ListofDetails != null)
+                                            {
+                                                AttrD.iDisplayType = 30;
+                                            }
+                                            @if (!string.IsNullOrEmpty(Chosen) || Chosen.ToLower() == "yes")
+                                            {
+                                                if (AttrD.iDisplayType == 30)
+                                                {
+                                                    <script>
+                                                $('#@dGUID-@v-Value').attr("multiple", "multiple").addClass('chosen', function () { $('.chosen').chosen(); });
+                                                    </script>
+                                                }
+                                                else
+                                                {
+                                                    <script>
+                                               $('#@dGUID-@v-Value').addClass('chosen', function () { $('.chosen').chosen(); });
+                                                    </script>
+                                                }
+                                            }
+                                            else if (AttrD.iDisplayType == 20)
+                                            {
+                                                <script>
+                                               $('#@dGUID-@v-Value').addClass('chosen', function () { $('.chosen').chosen(); });
+                                                </script>
+                                            }
+                                            else if (AttrD.iDisplayType == 30)
+                                            {
+                                                <script>
+                                                $('#@dGUID-@v-Value').attr("multiple", "multiple").addClass('chosen', function () { $('.chosen').chosen(); });
+                                                </script>
+                                            }
+                                            <span class="select_wrapper_caret fa fa-chevron-down"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else if (FieldOrigin.FKiType > 0)
+                    {
+                        if (sSearchType == "EqualOperator")
+                        {
+                            <div class="highlight--help">
+                                <div class="wrap-width clearfix control-block">
+                                    <label class="control-label">@Label</label>
+                                    <div class="gutter6">
+                                    </div>
+                                    <div class="col-md-1 control-label">
+                                        @if (FieldOrigin.sFKBOSize == "10")
+                                        {
+                                            <div class="select-wrapper">
+                                                <select name="@items" class="form-control optionvalue ddlOptionChange" style="padding:1px 5px;" id="@dGUID-@v-Value" data-attrname="@item">
+                                                    @{var OptValue = oBOD.Attributes.Values.Where(m => m.Name == item).Select(s => s.Value).FirstOrDefault();
+                                                        if (FieldOrigin.FieldDDL != null && FieldOrigin.FieldDDL.Count() > 0)
+                                                        {
+                                                            <option value="-1" selected>Please Select</option>
+                                                            foreach (var opt in FieldOrigin.FieldDDL.OrderBy(m => m.Expression))
+                                                            {
+                                                                if (opt.Expression != null && opt.Expression.ToLower() != "please select")
+                                                                {
+                                                                    if (string.IsNullOrEmpty(OptValue))
+                                                                    {
+                                                                        if (!string.IsNullOrEmpty(FieldOrigin.DefaultValue))
+                                                                        {
+                                                                            if (opt.text == FieldOrigin.DefaultValue)
+                                                                            {
+                                                                                <option value="@opt.text" selected>@opt.Expression</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@opt.text">@opt.Expression</option>
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="@opt.text">@opt.Expression</option>
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        if (opt.text == OptValue)
+                                                                        {
+                                                                            <option value="@opt.text" selected>@opt.Expression</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="@opt.text">@opt.Expression</option>
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="0"></option>
+                                                        }
+                                                    }
+                                                </select>
+                                                <span class="select_wrapper_caret fa fa-chevron-down"></span>
+                                            </div>
+                                        }
+                                        else if (FieldOrigin.sFKBOSize == "20")
+                                        {
+                                            if (!string.IsNullOrEmpty(item))
+                                            {
+                                                var sValue = string.Empty;
+                                                <input id="srhDDLShow-@dGUID-@item" type="text" class="form-control autocomplete" value="@sValue" />
+                                            }
+                                            else
+                                            {
+                                                <input id="srhDDLShow-@dGUID-@item" type="text" class="form-control autocomplete" />
+                                            }
+                                            <input type="hidden" class="form-control srhDDL-@dGUID-@item ddlOptionChange" name="@items" id="@dGUID-@v-Value" data-value="" />
+                                            <script>
+                                                                                                    var iBODID = 0;
+                                                                                                    var sBOName = '@FieldOrigin.FKTableName';
+                                                                                                    var fieldVal = '@item';
+                                                                                                    var AutoCompleteList = 0;
+                                                                                                    var sRefType = "bo";
+                                                                                                    $.ajax({
+                                                                                                        url: AutoCompleteMedium,
+                                                                                                        type: 'POST',
+                                                                                                        contentType: "application/json; charset=utf-8",
+                                                                                                        datatype: "json",
+                                                                                                        async: true,
+                                                                                                        cache: false,
+                                                                                                        data: JSON.stringify({ sType: sRefType, iBODID: iBODID, sBOName: sBOName }),
+                                                                                                        success: function (data) {
+                                                                                                            AutoCompleteList = data;
+                                                                                                            if ('@Model.ID' > 0) {
+                                                                                                                AutoCompleteDict.push({
+                                                                                                                    key: '@FieldOrigin.FKTableName',
+                                                                                                                    value: AutoCompleteList
+                                                                                                                });
+                                                                                                            }
+                                                                                                            else if ('@FieldOrigin.BOID' > 0) {
+                                                                                                                AutoCompleteDict.push({
+                                                                                                                    key: '@FieldOrigin.FKTableName',
+                                                                                                                    value: AutoCompleteList
+                                                                                                                });
+                                                                                                            }
+
+                                                                                                            if (fieldVal && fieldVal.length > 0) {
+                                                                                                                var autoDict = 0;
+                                                                                                                if ('@FieldOrigin.FKTableName' > 0) {
+                                                                                                                    for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                                                        if (AutoCompleteDict[k].key == '@FieldOrigin.FKTableName') {
+                                                                                                                            autoDict = AutoCompleteDict[k].value;
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                                else if ('@Model.ID' > 0) {
+                                                                                                                    for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                                                        if (AutoCompleteDict[k].key == '@FieldOrigin.FKTableName') {
+                                                                                                                            autoDict = AutoCompleteDict[k].value;
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                                var sResValue = Object.keys(autoDict).filter(function (key) { return autoDict[key] === fieldVal })[0];
+                                                                                                                $("#srhDDLShow-@dGUID-@item").val(sResValue);
+                                                                                                            }
+                                                                                                        }
+                                                                                                    });
+
+                                                                                                    $("#srhDDLShow-@dGUID-@item").change(function () {
+                                                                                                        var sResult = 0;
+                                                                                                        if ('@FieldOrigin.BOID' > 0) {
+                                                                                                            for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                                                if (AutoCompleteDict[k].key == '@FieldOrigin.FKTableName') {
+                                                                                                                    sResult = AutoCompleteDict[k].value;
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                        else if ('@Model.ID' > 0) {
+                                                                                                            for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                                                if (AutoCompleteDict[k].key == '@Model.ID') {
+                                                                                                                    sResult = AutoCompleteDict[k].value;
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                        var txtValue = $(this).val();
+                                                                                                        $(".srhDDL-@dGUID-@item").val("");
+                                                                                                        $(".srhDDL-@dGUID-@item").attr("data-value", "");
+                                                                                                        if (typeof txtValue !== 'undefined' && txtValue != '') {
+                                                                                                            var sValue = sResult[$(this).val()];
+                                                                                                            if (typeof sValue !== 'undefined' && sValue != '') {
+                                                                                                                $(".srhDDL-@dGUID-@item").val(sValue);
+                                                                                                                $(".srhDDL-@dGUID-@item").attr("data-value", sValue);
+                                                                                                            }
+                                                                                                            else {
+                                                                                                                $(this).val('');
+                                                                                                            }
+                                                                                                        }
+                                                                                                    });
+
+                                                                                                    $("#srhDDLShow-@dGUID-@item").autocomplete({
+                                                                                                        source: function (request, response) {
+                                                                                                            var DOptionsList = 0;
+                                                                                                            if ('@FieldOrigin.BOID' > 0) {
+                                                                                                                for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                                                    if (AutoCompleteDict[k].key == '@FieldOrigin.FKTableName') {
+                                                                                                                        DOptionsList = AutoCompleteDict[k].value;
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                            else if ('@Model.ID' > 0) {
+                                                                                                                for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                                                    if (AutoCompleteDict[k].key == '@FieldOrigin.FKTableName') {
+                                                                                                                        DOptionsList = AutoCompleteDict[k].value;
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                            $(".srhDDL-@dGUID-@item").val("");
+                                                                                                            var List = [];
+                                                                                                            $.each(DOptionsList, function (key, value) {
+                                                                                                                List.push({ label: key, value: value });
+                                                                                                            });
+                                                                                                            response($.ui.autocomplete.filter(List, request.term));
+                                                                                                        },
+                                                                                                        select: function (event, ui) {
+                                                                                                            $("#srhDDLShow-@dGUID-@item").val(ui.item.label);
+                                                                                                            $(".srhDDL-@dGUID-@item").val(ui.item.value);
+                                                                                                            return false;
+                                                                                                        },
+                                                                                                        focus: function (event, ui) {
+                                                                                                            $("#srhDDLShow-@dGUID-@item").val(ui.item.label);
+                                                                                                            $(".srhDDL-@dGUID-@item").val(ui.item.value);
+                                                                                                            return false;
+                                                                                                        }
+                                                                                                    });
+
+                                            </script>
+
+                                        }
+                                        else if (FieldOrigin.sFKBOSize == "30")
+                                        {
+                                            <input type="text" class="form-control autocomplete" name="@items" value="@LValue" placeholder="Type Here" id="@dGUID-@v-Value" data-value="-1" onkeyup="fncgetautocomplete('@FieldOrigin.iOneClickID', this, event)" />
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group highlight--help">
+                                <div class="wrap-width clearfix control-block">
+                                    <label class="col-sm-2 control-label">@Label</label>
+                                    <div class="col-sm-3 m-r-5">
+                                        <div class="Operators">
+                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                        {
+                                        new { key= "=" , value = "equals" },
+                                        new { key= ">" , value = "greater than" },
+                                        new { key= "<", value = "less than" },
+                                        new { key= ">=" , value = "greater than or equal to" },
+                                        new { key= "<=" , value = "less than or equal to" },
+                                        new { key= "!=" , value = "not equal to" }
+                                        }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3 control-label">
+                                        @if (FieldOrigin.sFKBOSize == "10")
+                                        {
+                                            <div class="select-wrapper">
+                                                @if (FieldOrigin.iDependentFieldID > 0)
+                                                {
+                                                    <select name="@items" class="form-control optionvalue" style="padding:1px 5px;" id="@dGUID-@v-Value" data-attrname="@item" onchange="fncGetDependencySearch(@FieldOrigin.ID , '@FieldOrigin.sFKBOName',this, @FieldOrigin.iDependentFieldID)" data-attrid="@FieldOrigin.ID" data-DependentID="@FieldOrigin.iDependentFieldID">
+                                                        @{var OptValue = oBOD.Attributes.Values.Where(m => m.Name == item).Select(s => s.Value).FirstOrDefault();
+                                                            if (FieldOrigin.FieldDDL != null && FieldOrigin.FieldDDL.Count() > 0)
+                                                            {
+                                                                <option value="-1" selected>Please Select</option>
+                                                                foreach (var opt in FieldOrigin.FieldDDL.OrderBy(m => m.Expression))
+                                                                {
+                                                                    if (opt.Expression != null && opt.Expression.ToLower() != "please select")
+                                                                    {
+                                                                        if (string.IsNullOrEmpty(OptValue))
+                                                                        {
+                                                                            if (!string.IsNullOrEmpty(FieldOrigin.DefaultValue))
+                                                                            {
+                                                                                if (opt.text == FieldOrigin.DefaultValue)
+                                                                                {
+                                                                                    <option value="@opt.text" selected>@opt.Expression</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    <option value="@opt.text">@opt.Expression</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@opt.text">@opt.Expression</option>
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            if (opt.text == OptValue)
+                                                                            {
+                                                                                <option value="@opt.text" selected>@opt.Expression</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@opt.text">@opt.Expression</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="0"></option>
+                                                            }
+                                                        }
+                                                    </select>
+
+                                                }
+                                                else
+                                                {
+                                                    <select name="@items@F" class="form-control optionvalue CustomDateFields" style="padding:1px 5px;" id="@dGUID-@v-Value" data-attrname="@item" data-attrid="@FieldOrigin.ID" onchange="fncGetDependencyDDChange(this, '@item', '@AttrD.BOIDXIGUID', '@AttrD.FKTableName')">
+                                                        @{var OptValue = oBOD.Attributes.Values.Where(m => m.Name == item).Select(s => s.Value).FirstOrDefault();
+                                                            if (FieldOrigin.FieldDDL != null && FieldOrigin.FieldDDL.Count() > 0)
+                                                            {
+                                                                <option value="-1" selected>Please Select</option>
+                                                                    foreach (var opt in FieldOrigin.FieldDDL.OrderBy(m => m.Expression))
+                                                                    //foreach (var opt in FieldOrigin.FieldDDL)
+                                                                    {
+                                                                        if (opt.Expression != null && opt.Expression.ToLower() != "please select")
+                                                                        {
+                                                                            if (string.IsNullOrEmpty(OptValue))
+                                                                            {
+                                                                                if (!string.IsNullOrEmpty(FieldOrigin.DefaultValue))
+                                                                                {
+                                                                                    if (opt.text == FieldOrigin.DefaultValue)
+                                                                                    {
+                                                                                    <option value="@opt.text" selected>@opt.Expression</option>
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    if (opt.Expression.ToLower() == "custom")
+                                                                                    {
+                                                                                        <script>
+                                                                                            $(document).ready(function () {
+                                                                                                $('.CustomDateFields[name="@items"]').addClass('CustomFilter');
+                                                                                               // $('.CustomDateFields').addClass('CustomFilter');
+                                                                                            });
+                                                                                        </script>
+
+                                                                                    }
+                                                                                    <option value="@opt.text">@opt.Expression</option>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@opt.text">@opt.Expression</option>
+                                                                            }
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            if (opt.text == OptValue)
+                                                                            {
+                                                                                <option value="@opt.text" selected>@opt.Expression</option>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <option value="@opt.text">@opt.Expression</option>
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <option value="0"></option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                    if (AttrListData.TypeID == 150 || AttrListData.TypeID == 110)
+                                                    {
+                                                        <div class="col-sm-6 control-label CustomFieldsDate">
+                                                            @{var sidFilter = dGUID + "-" + v + "-Value1"; var sclass = dGUID + "-" + v + "-" + "datefield1 form-control"; }
+                                                            <input data-inputmask-alias="dd/mm/yyyy" data-inputtype="mask" id="@sidFilter" placeholder="dd/mm/yyyy" class="@sclass datemask" hidden />
+                                                            @{var DateFilter2 = dGUID + "-" + v + "-Value2"; var Dateclass = dGUID + "-" + v + "-" + "datefield2 form-control " + dGUID + "-" + "BetweenDate form-control "; }
+                                                            <input data-inputmask-alias="dd/mm/yyyy" data-inputtype="mask" style="display:none" id="@DateFilter2" placeholder="dd/mm/yyyy" class="@Dateclass datemask" hidden />
+
+                                                        </div>
+                                                        <script>
+
+                                                                    $('#@DateFilter2').hide();
+                                                                    $('#@sidFilter').hide();
+                                                                    $('#@DateFilter2').val('');
+                                                                    $('#@sidFilter').val('');
+                                                    $(function () {
+
+                                                            $(".CustomFilter").change(function () {
+                                                                debugger;
+                                                                 //var filName=$("select.CustomFilter option").filter(":selected").val();
+                                                                var Filtername = ($('option:selected', this).text());
+                                                                if (Filtername.toLowerCase() == "custom") {
+                                                                    $(this).addClass('CustomFieldsDate');
+                                                                    $('#@DateFilter2').show();
+                                                                    $('#@sidFilter').show();
+                                                                }
+                                                                else {
+                                                                    $('#@DateFilter2').hide();
+                                                                    $('#@DateFilter2').val('');
+                                                                    $('#@sidFilter').hide();
+                                                                    $('#@sidFilter').val('');
+                                                                }
+                                                            });
+                                        $('.datemask').datepicker({
+                                            dateFormat: "dd/mm/yy",
+                                            changeMonth: true,
+                                            changeYear: true,
+                                            yearRange: "-30:+30"
+                                        });
+
+                                                                                                                                                $('#@dGUID-@v-Operator').change(function () {
+                                                                                                                                                    debugger;
+                                                                                                                                                    var operator = $('#@dGUID-@v-Operator :selected').val();
+                                                                                                                                                    if (operator == "between") {
+                                                                                                                                                        $('#dBetweenID-@v-@dGUID').show();
+                                                                                                                                                        $('#@dGUID-@v-Value2').show();
+                                                                                                                                                        $('#@dGUID-@v-Value2').val('');
+                                                                                                                                                    }
+                                                                                                                                                    else {
+                                                                                                                                                        $('#@dGUID-@v-Value2').hide();
+                                                                                                                                                        $('#dBetweenID-@v-@dGUID').hide();
+                                                                                                                                                    }
+                                                                                                                                                });
+
+                                                        $('#@dGUID-@v-Value1').datepicker({
+                                                                                                                                                    dateFormat: 'dd-M-yy',
+                                                                                                                                                    changeMonth: true,
+                                                                                                                                                    changeYear: true,
+                                                                                                                                                    yearRange: "-70:+10",
+                                                                                                                                                    onSelect: function (date) {
+                                                                                                                                                        debugger;
+                                                                                                                                                        var date2 = $('.@dGUID-@v-datefield1').datepicker('getDate');
+                                                                                                                                                        if (date2 != null) {
+                                                                                                                                                            date2.setDate(date2.getDate() + 1);
+                                                                                                                                                        }
+                                                                                                                                                        $('.@dGUID-@v-datefield2').datepicker('option', 'minDate', date2);
+                                                                                                                                                    }
+                                                                                                                                                });
+
+                                                                                                                                                $('#@dGUID-@v-Value2').datepicker({
+                                                                                                                                                    dateFormat: 'dd-M-yy',
+                                                                                                                                                    changeMonth: true,
+                                                                                                                                                    changeYear: true,
+                                                                                                                                                    yearRange: "-70:+10",
+                                                                                                                                                    onClose: function () {
+                                                                                                                                                        var dt1 = $('.@dGUID-@v-datefield1').datepicker('getDate');
+                                                                                                                                                        var dt2 = $('.@dGUID-@v-datefield2').datepicker('getDate');
+                                                                                                                                                        if (dt2 <= dt1) {
+                                                                                                                                                            debugger;
+                                                                                                                                                            var minDate = $('#@dGUID-@v-datefield2').datepicker('option', 'minDate');
+                                                                                                                                                            $('.@dGUID-@v-datefield2').datepicker('setDate', minDate);
+                                                                                                                                                        }
+                                                                                                                                                    }
+                                                                                                                                                });
+
+                                                    });
+
+                                                        </script>
+                                                    }
+
+                                                }
+                                                <span class="select_wrapper_caret fa fa-chevron-down"></span>
+                                            </div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(Chosen) && Chosen.ToLower() == "yes")
+                                        {
+                                            if (AttrD.iDisplayType == 30)
+                                            {
+                                                <script>
+                                                 $('#@dGUID-@v-Value').attr("multiple", "multiple").addClass('chosen', function () { $('.chosen').chosen(); });
+                                                </script>
+                                            }
+                                            else
+                                            {
+                                                <script>
+                                                 $('#@dGUID-@v-Value').addClass('chosen', function () { $('.chosen').chosen(); });
+                                                </script>
+                                            }
+                                        }
+                                        else if (AttrD.iDisplayType == 20)
+                                        {
+                                            <script>
+                                            $('#@dGUID-@v-Value').addClass('chosen', function () { $('.chosen').chosen(); });
+                                            </script>
+                                        }
+                                        else if (AttrD.iDisplayType == 30)
+                                        {
+                                            <script>
+                                             $('#@dGUID-@v-Value').attr("multiple", "multiple").addClass('chosen', function () { $('.chosen').chosen(); });
+                                            </script>
+                                        }
+                                        else if (FieldOrigin.sFKBOSize == "20")
+                                        {
+                                            if (!string.IsNullOrEmpty(item))
+                                            {
+                                                var sValue = string.Empty;
+                                                <input id="srhDDLShow-@dGUID-@item" type="text" class="form-control autocomplete" value="@sValue" />
+                                            }
+                                            else
+                                            {
+                                                <input id="srhDDLShow-@dGUID-@item" type="text" class="form-control autocomplete" />
+                                            }
+                                            <input type="hidden" class="form-control srhDDL-@dGUID-@item" name="@items" id="@dGUID-@v-Value" data-value="" />
+                                            <script>
+                                                                                                                                    var iBODID = 0;
+                                                                                                                                    var sBOName = '@FieldOrigin.FKTableName';
+                                                                                                                                    var fieldVal = '@item';
+                                                                                                                                    var AutoCompleteList = 0;
+                                                                                                                                    var sRefType = "bo";
+                                                                                                                                    $.ajax({
+                                                                                                                                        url: AutoCompleteMedium,
+                                                                                                                                        type: 'POST',
+                                                                                                                                        contentType: "application/json; charset=utf-8",
+                                                                                                                                        datatype: "json",
+                                                                                                                                        async: true,
+                                                                                                                                        cache: false,
+                                                                                                                                        data: JSON.stringify({ sType: sRefType, iBODID: iBODID, sBOName: sBOName }),
+                                                                                                                                        success: function (data) {
+                                                                                                                                            AutoCompleteList = data;
+                                                                                                                                            if ('@Model.ID' > 0) {
+                                                                                                                                                AutoCompleteDict.push({
+                                                                                                                                                    key: '@FieldOrigin.FKTableName',
+                                                                                                                                                    value: AutoCompleteList
+                                                                                                                                                });
+                                                                                                                                            }
+                                                                                                                                            else if ('@FieldOrigin.BOID' > 0) {
+                                                                                                                                                AutoCompleteDict.push({
+                                                                                                                                                    key: '@FieldOrigin.FKTableName',
+                                                                                                                                                    value: AutoCompleteList
+                                                                                                                                                });
+                                                                                                                                            }
+
+                                                                                                                                            if (fieldVal && fieldVal.length > 0) {
+                                                                                                                                                var autoDict = 0;
+                                                                                                                                                if ('@FieldOrigin.FKTableName' > 0) {
+                                                                                                                                                    for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                                                                                        if (AutoCompleteDict[k].key == '@FieldOrigin.FKTableName') {
+                                                                                                                                                            autoDict = AutoCompleteDict[k].value;
+                                                                                                                                                        }
+                                                                                                                                                    }
+                                                                                                                                                }
+                                                                                                                                                else if ('@Model.ID' > 0) {
+                                                                                                                                                    for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                                                                                        if (AutoCompleteDict[k].key == '@FieldOrigin.FKTableName') {
+                                                                                                                                                            autoDict = AutoCompleteDict[k].value;
+                                                                                                                                                        }
+                                                                                                                                                    }
+                                                                                                                                                }
+                                                                                                                                                var sResValue = Object.keys(autoDict).filter(function (key) { return autoDict[key] === fieldVal })[0];
+                                                                                                                                                $("#srhDDLShow-@dGUID-@item").val(sResValue);
+                                                                                                                                            }
+                                                                                                                                        }
+                                                                                                                                    });
+
+                                                                                                                                    $("#srhDDLShow-@dGUID-@item").change(function () {
+                                                                                                                                        var sResult = 0;
+                                                                                                                                        if ('@FieldOrigin.BOID' > 0) {
+                                                                                                                                            for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                                                                                if (AutoCompleteDict[k].key == '@FieldOrigin.FKTableName') {
+                                                                                                                                                    sResult = AutoCompleteDict[k].value;
+                                                                                                                                                }
+                                                                                                                                            }
+                                                                                                                                        }
+                                                                                                                                        else if ('@Model.ID' > 0) {
+                                                                                                                                            for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                                                                                if (AutoCompleteDict[k].key == '@Model.ID') {
+                                                                                                                                                    sResult = AutoCompleteDict[k].value;
+                                                                                                                                                }
+                                                                                                                                            }
+                                                                                                                                        }
+                                                                                                                                        var txtValue = $(this).val();
+                                                                                                                                        $(".srhDDL-@dGUID-@item").val("");
+                                                                                                                                        $(".srhDDL-@dGUID-@item").attr("data-value", "");
+                                                                                                                                        if (typeof txtValue !== 'undefined' && txtValue != '') {
+                                                                                                                                            var sValue = sResult[$(this).val()];
+                                                                                                                                            if (typeof sValue !== 'undefined' && sValue != '') {
+                                                                                                                                                $(".srhDDL-@dGUID-@item").val(sValue);
+                                                                                                                                                $(".srhDDL-@dGUID-@item").attr("data-value", sValue);
+                                                                                                                                            }
+                                                                                                                                            else {
+                                                                                                                                                $(this).val('');
+                                                                                                                                            }
+                                                                                                                                        }
+                                                                                                                                    });
+
+                                                                                                                                    $("#srhDDLShow-@dGUID-@item").autocomplete({
+                                                                                                                                        source: function (request, response) {
+                                                                                                                                            var DOptionsList = 0;
+                                                                                                                                            if ('@FieldOrigin.BOID' > 0) {
+                                                                                                                                                for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                                                                                    if (AutoCompleteDict[k].key == '@FieldOrigin.FKTableName') {
+                                                                                                                                                        DOptionsList = AutoCompleteDict[k].value;
+                                                                                                                                                    }
+                                                                                                                                                }
+                                                                                                                                            }
+                                                                                                                                            else if ('@Model.ID' > 0) {
+                                                                                                                                                for (var k = 0; k < AutoCompleteDict.length; k++) {
+                                                                                                                                                    if (AutoCompleteDict[k].key == '@FieldOrigin.FKTableName') {
+                                                                                                                                                        DOptionsList = AutoCompleteDict[k].value;
+                                                                                                                                                    }
+                                                                                                                                                }
+                                                                                                                                            }
+                                                                                                                                            $(".srhDDL-@dGUID-@item").val("");
+                                                                                                                                            var List = [];
+                                                                                                                                            $.each(DOptionsList, function (key, value) {
+                                                                                                                                                List.push({ label: key, value: value });
+                                                                                                                                            });
+                                                                                                                                            response($.ui.autocomplete.filter(List, request.term));
+                                                                                                                                        },
+                                                                                                                                        select: function (event, ui) {
+                                                                                                                                            $("#srhDDLShow-@dGUID-@item").val(ui.item.label);
+                                                                                                                                            $(".srhDDL-@dGUID-@item").val(ui.item.value);
+                                                                                                                                            return false;
+                                                                                                                                        },
+                                                                                                                                        focus: function (event, ui) {
+                                                                                                                                            $("#srhDDLShow-@dGUID-@item").val(ui.item.label);
+                                                                                                                                            $(".srhDDL-@dGUID-@item").val(ui.item.value);
+                                                                                                                                            return false;
+                                                                                                                                        }
+                                                                                                                                    });
+
+                                            </script>
+
+                                        }
+                                        else if (FieldOrigin.sFKBOSize == "30")
+                                        {
+                                            <input type="text" class="form-control autocomplete" name="@items" value="@LValue" placeholder="Type Here" id="@dGUID-@v-Value" data-value="-1" onkeyup="fncgetautocomplete('@FieldOrigin.iOneClickID', this, event)" />
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else if (AttrListData.FKiFileTypeID > 0 && AttrListData.FKiType == 0)
+                    {
+                        <div class="form-group highlight--help">
+                            <div class="wrap-width clearfix control-block">
+                                <label class="col-sm-2 control-label">@Label</label>
+                                <div class="col-sm-3 control-label">
+                                    <input type="file" class="UploadImage" name="UploadImage" id="UploadImage-@item" data-attrname="@item" data-bofieldid="@AttrListData.ID" multiple />
+                                    @if (AttrListData.ImagePathDetails.Count() == 0)
+                                    {
+                                        <input class="IconDisplay" type="hidden" name="@items" id="ImageID-@item" value="0" />
+                                    }
+                                    else
+                                    {
+                                        <input type="hidden" name="@items" id="ImageID-@item" value="@LValue" />
+                                    }
+                                    <div class=form-group id="dvPreview-@items">
+
+                                    </div>
+                                    @if (oBOD.Attributes.Values.Where(m => m.Name == item).Select(m => m.ImagePathDetails).Count() > 0)
+                                    {
+                                        var Images = oBOD.Attributes.Values.Where(m => m.LabelName == item).Select(m => m.ImagePathDetails);
+                                        foreach (var img in Images)
+                                        {
+                                            foreach (var itemss in img)
+                                            {
+                                                <img src="@itemss.Expression width="50" height="50" />
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (AttrListData.TypeID == 150 || AttrListData.TypeID == 110)
+                    {
+                        if (sSearchType == "EqualOperator")
+                        {
+                            <div class="highlight--help">
+                                <div class="wrap-width clearfix control-block">
+                                    <label class="control-label">@Label</label>
+                                    <div class="gutter6">
+                                    </div>
+                                    <div class="dBtnDatesRes">
+                                        <div class="control-label col-md-1 QuickSearchTBox">
+                                            @Html.TextBoxFor(m => LValue, new { @Name = items, @id = dGUID + "-" + v + "-Value", @class = dGUID + "-" + v + "-" + "datefield1 form-control", @style = "padding:1px 130px;" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <script>
+                                                                                                                                        $('#@dGUID-@v-Value').datepicker({
+                                                            dateFormat: 'dd-M-yy',
+                                                                                                                                            changeMonth: true,
+                                                                                                                                            changeYear: true,
+                                                                                                                                            yearRange: "-70:+10",
+                                                                                                                                            onSelect: function (date) {
+                                                                    oneClickSearch($('.QuickSearchTBox'), '@Model.ID', '@sTabColumns', '@Model.sGUID', '@sSearchFields', 'Result List', 'FilterSearch', 'EqualOperator');
+                                                                }
+                                                            });
+                            </script>
+                        }
+                        else
+                        {
+                            <div class="form-group highlight--help">
+                                <div class="wrap-width clearfix control-block">
+                                    <label class="col-sm-2 control-label">@Label</label>
+                                    <div class="col-sm-3 m-r-5">
+                                        <div class="Operators">
+                                            @*@if (BOIInstance != null && BOIInstance.Attributes.Count > 0 && !string.IsNullOrEmpty(BOIInstance.Attributes["FKiOperator"].sValue))
+                                                {*@
+                                            @if (ListofDetails != null)
+                                            {
+
+                                                var Operator = ListofDetails.FKiOperator;//BOIInstance.Attributes["FKiOperator"].sValue;
+                                                var ExposeOperator = ListofDetails.bIsExposeOperator.ToString();//BOIInstance.Attributes["bIsExposeOperator"].sValue;
+                                                if (!string.IsNullOrEmpty(ExposeOperator) && ExposeOperator.ToLower() == "true")
+                                                {
+                                                    if (Operator == ">")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = ">", value = "greater than" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "<")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "<", value = "less than" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "=")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "=", value = "equals" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == ">=")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = ">=", value = "greater than or equal to" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "<=")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "<=", value = "less than or equal to" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "!=")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "!=", value = "not equal to" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "between")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "between", value = "between" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                                {
+                                                new { key= "=" , value = "equals" },
+                                                new { key= ">" , value = "greater than" },
+                                                new { key= "<", value = "less than" },
+                                                new { key= ">=" , value = "greater than or equal to" },
+                                                new { key= "<=" , value = "less than or equal to" },
+                                                new { key= "!=" , value = "not equal to" },
+                                                new { key= "between" , value = "between" }
+                                                }, "key", "Value"), new { @class = "form-control oprator dateoperators", @id = dGUID + "-" + v + "-Operator" })
+                                                }
+                                            }
+                                            else
+                                            {
+                                                @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                            {
+                                            new { key= "=" , value = "equals" },
+                                            new { key= ">" , value = "greater than" },
+                                            new { key= "<", value = "less than" },
+                                            new { key= ">=" , value = "greater than or equal to" },
+                                            new { key= "<=" , value = "less than or equal to" },
+                                            new { key= "!=" , value = "not equal to" },
+                                            new { key= "between" , value = "between" }
+                                            }, "key", "Value"), new { @class = "form-control oprator dateoperators", @id = dGUID + "-" + v + "-Operator" })
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="dBtnDatesRes">
+
+                                        @if (AttrD.iDateType == 30)
+                                        {
+                                            //auto tab
+                                            <div class="">@*<div class="col-sm-6 control-label">*@
+                                                <div class="mainDate">
+                                                    @{var Aid = dGUID + "-" + v + "-Value"; var Aclass = dGUID + "-" + v + "-" + "datefield1 form-control"; }
+                                                    <input type="text" value="" id=@Aid class="@Aclass" style="display: none" />
+                                                    <input type="number" class="myField" maxlength="2" placeholder="DD" id="@dGUID-@v-day" autocomplete="off">/
+                                                    <input type="number" class="myField" maxlength="2" placeholder="MM" id="@dGUID-@v-month" autocomplete="off">/
+                                                    <input type="text" class="myField" maxlength="4" placeholder="YYYY" id="@dGUID-@v-year" autocomplete="off">
+                                                </div>
+
+                                                <div class="mainDate" id="dBetweenID-@v-@dGUID" style="display:none">
+                                                    @*<div class="col-sm-offset-5 col-sm-3 m-t-5 control-label" style="display:none" id="dBetweenID-@v-@dGUID">*@
+                                                    @{var Aid1 = dGUID + "-" + v + "-Value2"; var Aclass1 = dGUID + "-" + v + "-" + "datefield2 form-control " + dGUID + "-" + "BetweenDate form-control "; }
+                                                    <input type="text" value="" id=@Aid1 class="@Aclass1" style="display: none" />
+                                                    <input type="number" class="myField" maxlength="2" placeholder="DD" id="@dGUID-@v-day" autocomplete="off">/
+                                                    <input type="number" class="myField" maxlength="2" placeholder="MM" id="@dGUID-@v-month" autocomplete="off">/
+                                                    <input type="text" class="myField" maxlength="4" placeholder="YYYY" id="@dGUID-@v-year" autocomplete="off">
+                                                    @* @Html.TextBoxFor(m => LValue, new { @Name = items, @id = dGUID + "-" + v + "-Value2", @class = dGUID + "-" + v + "-" + "datefield2 form-control " + dGUID + "-" + "BetweenDate form-control ", @style = "padding:10px 50px;" })*@
+                                                </div>
+                                         </div>
+                                        }
+
+                                        else if (AttrD.iDateType == 20)
+                                        {
+                                            <div>@*<div class="col-sm-6 control-label">*@
+                                                @{var sid = dGUID + "-" + v + "-Value"; var sclass = dGUID + "-" + v + "-" + "datefield1 form-control"; }
+                                                <input data-inputmask-alias="dd/mm/yyyy" data-inputtype="mask" id="@sid" placeholder="dd/mm/yyyy" class="@sclass datemask" />
+                                                @{var Date2 = dGUID + "-" + v + "-Value2"; var Dateclass = dGUID + "-" + v + "-" + "datefield2 form-control " + dGUID + "-" + "BetweenDate form-control "; }
+                                                <input data-inputmask-alias="dd/mm/yyyy" data-inputtype="mask" style="display:none" id="@Date2" placeholder="dd/mm/yyyy" class="@Dateclass datemask" />
+
+                                                @*<div class="col-sm-offset-5 col-sm-3 m-t-5 control-label" style="display:none" id="dBetweenID-@v-@dGUID">
+                                                        @Html.TextBoxFor(m => LValue, new { @Name = items, @id = dGUID + "-" + v + "-Value2", @class = dGUID + "-" + v + "-" + "datefield2 form-control " + dGUID + "-" + "BetweenDate form-control ", @style = "padding:10px 50px;" })
+                                                    </div>*@
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            // default
+                                            <div class="col-sm-3 control-label">
+                                                @Html.TextBoxFor(m => LValue, new { @Name = items, @id = dGUID + "-" + v + "-Value", @class = dGUID + "-" + v + "-" + "datefield1 form-control abc", @style = "" })
+
+                                                <div class="" style="display:none" id="dBetweenID-@v-@dGUID">
+                                                    @Html.TextBoxFor(m => LValue, new { @Name = items, @id = dGUID + "-" + v + "-Value2", @class = dGUID + "-" + v + "-" + "datefield2 form-control " + dGUID + "-" + "BetweenDate", @style = "" })
+                                                </div>
+                                            </div>
+                                        }
+                                        @*<div class="col-sm-3 control-label">
+                                                @Html.TextBoxFor(m => LValue, new { @Name = items, @id = dGUID + "-" + v + "-Value", @class = dGUID + "-" + v + "-" + "datefield1 form-control", @style = "padding:1px 5px;" })
+                                            </div>
+                                            <div class="col-sm-offset-5 col-sm-3 m-t-5 control-label" style="display:none" id="dBetweenID-@v-@dGUID">
+                                                @Html.TextBoxFor(m => LValue, new { @Name = items, @id = dGUID + "-" + v + "-Value2", @class = dGUID + "-" + v + "-" + "datefield2 form-control " + dGUID + "-" + "BetweenDate form-control ", @style = "padding:1px 5px;" })
+                                            </div>*@
+                                    </div>
+                                    <script>
+                                        $('.datemask').datepicker({
+                                            dateFormat: "dd/mm/yy",
+                                            changeMonth: true,
+                                            changeYear: true,
+                                            yearRange: "-30:+30"
+                                        });
+                                        //Nikhitha K
+                                        $(".myField").keyup(function () {
+                                            if (this.value.length == this.maxLength)
+                                            {
+                                                $(this).next('.myField').focus();
+                                            }
+                                        });
+                                        //      $('#year').blur(function () {
+                                        //      // debugger;
+                                        //       //get user input values
+                                        //       var day = $('#day').val();
+                                        //       var month = $('#month').val();
+                                        //          var year = $('#year').val();
+                                        //
+                                        //var val = day + '-' + month + '-' + year;
+                                        //       //Call the function to validate date
+                                        //       fncCheckValidDate(day, month, year);
+                                        //});
+
+                                        //    function fncCheckValidDate(day, month, year)
+                                        //    {
+                                        //      // debugger;
+                                        //       //create object
+                                        //       var obj = new Date(year, month - 1, day);
+                                        //       var msg = obj && (obj.getMonth() + 1) == month
+                                        //       //if validation is successfull then in returns boolean value
+
+                                        //       if (msg == true)
+                                        //       {
+                                        //     $('.mainDate').css("border-color", "green");
+                                        //           //change month number to month name
+                                        //           month = obj.toLocaleString('default', { month: 'short' });
+                                        //           var Fulldate = day + '-' + month + '-' + year;
+
+                                        //       }
+                                        //       else
+                                        //       {
+                                        //      $('.mainDate').css("border-color", "red");
+
+                                        //       }
+                                        //    }
+
+                                                                                                                                                $('#@dGUID-@v-Operator').change(function () {
+                                                                                                                                                    debugger;
+                                                                                                                                                    var operator = $('#@dGUID-@v-Operator :selected').val();
+                                                                                                                                                    if (operator == "between") {
+                                                                                                                                                        $('#dBetweenID-@v-@dGUID').show();
+                                                                                                                                                        $('#@dGUID-@v-Value2').show();
+                                                                                                                                                        $('#@dGUID-@v-Value2').val('');
+                                                                                                                                                    }
+                                                                                                                                                    else {
+                                                                                                                                                        $('#@dGUID-@v-Value2').hide();
+                                                                                                                                                        $('#dBetweenID-@v-@dGUID').hide();
+                                                                                                                                                    }
+                                                                                                                                                });
+
+                                                                                                                                                $('#@dGUID-@v-Value').datepicker({
+                                                                                                                                                    dateFormat: 'dd-M-yy',
+                                                                                                                                                    changeMonth: true,
+                                                                                                                                                    changeYear: true,
+                                                                                                                                                    yearRange: "-70:+10",
+                                                                                                                                                    onSelect: function (date) {
+                                                                                                                                                        debugger;
+                                                                                                                                                        var date2 = $('.@dGUID-@v-datefield1').datepicker('getDate');
+                                                                                                                                                        if (date2 != null) {
+                                                                                                                                                            date2.setDate(date2.getDate() + 1);
+                                                                                                                                                        }
+                                                                                                                                                        $('.@dGUID-@v-datefield2').datepicker('option', 'minDate', date2);
+                                                                                                                                                    }
+                                                                                                                                                });
+
+                                                                                                                                                $('#@dGUID-@v-Value2').datepicker({
+                                                                                                                                                    dateFormat: 'dd-M-yy',
+                                                                                                                                                    changeMonth: true,
+                                                                                                                                                    changeYear: true,
+                                                                                                                                                    yearRange: "-70:+10",
+                                                                                                                                                    onClose: function () {
+                                                                                                                                                        var dt1 = $('.@dGUID-@v-datefield1').datepicker('getDate');
+                                                                                                                                                        var dt2 = $('.@dGUID-@v-datefield2').datepicker('getDate');
+                                                                                                                                                        if (dt2 <= dt1) {
+                                                                                                                                                            var minDate = $('#@dGUID-@v-datefield2').datepicker('option', 'minDate');
+                                                                                                                                                            $('.@dGUID-@v-datefield2').datepicker('setDate', minDate);
+                                                                                                                                                        }
+                                                                                                                                                    }
+                                                                                                                                                });
+                                    </script>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else if (AttrListData.TypeID == 20)
+                    {
+                        <div class="form-group highlight--help">
+                            <div class="wrap-width clearfix control-block">
+                                <label class="col-sm-2 control-label">@Label</label>
+                                <div class="col-sm-3 m-r-5">
+                                    <div class="Operators">
+                                        <input type="hidden" name="@items" value="=" id="@dGUID-@v-Operator" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 control-label">
+                                    <label class="label-wrapper">
+                                        <input type="checkbox" class="CheckboxClass" data-attrname="@item" id="@dGUID-@v-Value" />
+                                        <i class="check"></i>
+                                    </label>
+                                    @*@if (item == "False" || item == null)
+                                                                {
+
+                                                                }
+                                                                else
+                                                                {
+                                                                    <label class="label-wrapper">
+                                            <input type="checkbox" class="CheckboxClass" data-attrname="@item" checked />
+                                            <i class="check"></i>
+                                        </label>
+                                                                }
+                                                                <input type="hidden" name="@items" class="Checkboxs-@item" value="True"  />*@
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else if (AttrListData.TypeID == 90)
+                    {
+                        if (!string.IsNullOrEmpty(item))
+                        {
+                            if (sSearchType == "EqualOperator")
+                            {
+                                <div class="highlight--help">
+                                    <div class="wrap-width clearfix control-block">
+                                        <label class="control-label">@Label</label>
+                                        <div class="gutter6">
+                                        </div>
+                                        <div class="col-md-1 control-label QuickSearchTBox">
+                                            @Html.TextBoxFor(m => LValue, new { @Name = items, @class = "form-control", @style = "padding:1px 5px;", @id = dGUID + "-" + v + "-Value" })
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-group highlight--help">
+                                    <div class="wrap-width clearfix control-block">
+                                        <label class="col-sm-2 control-label">@Label</label>
+                                        <div class="col-sm-3 m-r-5">
+                                            <div class="Operators">
+                                                @*@if (BOIInstance != null && BOIInstance.Attributes.Count > 0 && !string.IsNullOrEmpty(BOIInstance.Attributes["FKiOperator"].sValue))
+                                                    {*@
+                                                @if (ListofDetails != null)
+                                                {
+                                                    var Operator = ListofDetails.FKiOperator; //BOIInstance.Attributes["FKiOperator"].sValue;
+                                                    var ExposeOperator = ListofDetails.bIsExposeOperator.ToString();//BOIInstance.Attributes["bIsExposeOperator"].sValue;
+                                                    if (!string.IsNullOrEmpty(ExposeOperator) && ExposeOperator.ToLower() == "true")
+                                                    {
+                                                        if (Operator == ">")
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = ">", value = "greater than" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                        else if (Operator == "<")
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "<", value = "less than" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                        else if (Operator == "=")
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "=", value = "equals" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                        else if (Operator == ">=")
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = ">=", value = "greater than or equal to" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                        else if (Operator == "<=")
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "<=", value = "less than or equal to" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                        else if (Operator == "!=")
+                                                        {
+                                                            @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "!=", value = "not equal to" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                                {
+                                                new { key= "=" , value = "equals" },
+                                                new { key= ">" , value = "greater than" },
+                                                new { key= "<", value = "less than" },
+                                                new { key= ">=" , value = "greater than or equal to" },
+                                                new { key= "<=" , value = "less than or equal to" },
+                                                new { key= "!=" , value = "not equal to" }
+                                                }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                            {
+                                            new { key= "=" , value = "equals" },
+                                            new { key= ">" , value = "greater than" },
+                                            new { key= "<", value = "less than" },
+                                            new { key= ">=" , value = "greater than or equal to" },
+                                            new { key= "<=" , value = "less than or equal to" },
+                                            new { key= "!=" , value = "not equal to" }
+                                            }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-3 control-label">
+                                            @Html.TextBoxFor(m => LValue, new { @Name = items, @class = "form-control", @style = "padding:1px 5px;", @id = dGUID + "-" + v + "-Value" })
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else if (AttrListData.TypeID == 40)
+                    {
+                        <div class="form-group highlight--help">
+                            <div class="wrap-width clearfix control-block">
+                                <label class="col-sm-2 control-label">@Label</label>
+                                <div class="col-sm-3 m-r-5">
+                                    <div class="Operators">
+                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                                {
+                                                new { key= "=" , value = "equals" },
+                                                new { key= ">" , value = "greater than" },
+                                                new { key= "<", value = "less than" },
+                                                new { key= ">=" , value = "greater than or equal to" },
+                                                new { key= "<=" , value = "less than or equal to" },
+                                                new { key= "!=" , value = "not equal to" }
+                                                }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 control-label value-block">
+                                    @if (AttrListData.IsTextArea == true)
+                                    {
+                                        @Html.TextAreaFor(m => LValue, new { @Name = items, @class = "form-control", @rows = 5, @cols = 40, @id = dGUID + "-" + v + "-Value" })
+                                    }
+                                    else
+                                    {
+                                        @Html.TextBoxFor(m => LValue, new { @Name = items, @class = "form-control", @style = "padding:1px 5px;", @id = dGUID + "-" + v + "-Value" })
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        if (sSearchType == "EqualOperator")
+                        {
+                            <div class="highlight--help">
+                                <div class="wrap-width clearfix control-block">
+                                    <label class="control-label">@Label</label>
+                                    <div class="gutter6">
+
+                                    </div>
+                                    <div class="col-md-1 control-label QuickSearchTBox">
+                                        @if (AttrListData.IsTextArea == true)
+                                        {
+                                            @Html.TextAreaFor(m => LValue, new { @Name = items, @class = "form-control", @rows = 5, @cols = 40, @id = dGUID + "-" + v + "-Value" })
+                                        }
+                                        else
+                                        {
+                                            @Html.TextBoxFor(m => LValue, new { @Name = items, @class = "form-control", @style = "padding:1px 5px;", @id = dGUID + "-" + v + "-Value" })
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group highlight--help">
+                                <div class="wrap-width clearfix control-block">
+                                    <label class="col-sm-2 control-label">@Label</label>
+                                    <div class="col-sm-3 m-r-5">
+                                        <div class="Operators">
+                                            @*@if (BOIInstance != null && BOIInstance.Attributes.Count > 0 && !string.IsNullOrEmpty(BOIInstance.Attributes["FKiOperator"].sValue))
+                                                {*@
+                                            @if (ListofDetails != null)
+                                            {
+                                                var Operator = ListofDetails.FKiOperator;////BOIInstance.Attributes["FKiOperator"].sValue;
+                                                var ExposeOperator = ListofDetails.bIsExposeOperator.ToString();//BOIInstance.Attributes["bIsExposeOperator"].sValue;
+                                                if (!string.IsNullOrEmpty(ExposeOperator) && ExposeOperator.ToLower() == "true")
+                                                {
+                                                    if (Operator == "starts with")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "starts with", value = "starts with" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "not starts with")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "not starts with", value = "not starts with" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "ends with")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "ends with", value = "ends with" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "not ends with")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "not ends with", value = "not ends with" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "contains")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "contains", value = "contains" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "=")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "=", value = "equals" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                                {
+                                                new { key= "starts with" , value = "starts with" },
+                                                new { key= "not starts with", value = "not starts with" },
+                                                new { key= "ends with" , value = "ends with" },
+                                                new { key= "not ends with" , value = "not ends with" },
+                                                new { key= "contains" , value = "contains" },
+                                                new { key= "=" , value = "equals" }
+                                                }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                }
+                                            }
+                                            else
+                                            {
+                                                @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                            {
+                                            new { key= "starts with" , value = "starts with" },
+                                            new { key= "not starts with", value = "not starts with" },
+                                            new { key= "ends with" , value = "ends with" },
+                                            new { key= "not ends with" , value = "not ends with" },
+                                            new { key= "contains" , value = "contains" },
+                                            new { key= "=" , value = "equals" },
+                                            new { key= "is null" , value = "is null" },
+                                            new { key= "is not null" , value = "is not null" }
+                                            }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3 control-label value-block">
+                                        @if (AttrListData.IsTextArea == true)
+                                        {
+                                            @Html.TextAreaFor(m => LValue, new { @Name = items, @class = "form-control", @rows = 5, @cols = 40, @id = dGUID + "-" + v + "-Value" })
+                                        }
+                                        else
+                                        {
+                                            @Html.TextBoxFor(m => LValue, new { @Name = items, @class = "form-control", @style = "padding:1px 5px;", @id = dGUID + "-" + v + "-Value" })
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+                else if (item != null && item.ToLower() == "id")
+                {
+                    if (!string.IsNullOrEmpty(item))
+                    {
+                        if (sSearchType == "EqualOperator")
+                        {
+                            <div class="highlight--help">
+                                <div class="wrap-width clearfix control-block">
+                                    <label class="control-label">@Label</label>
+                                    <div class="gutter6">
+                                    </div>
+                                    <div class="col-md-1 control-label QuickSearchTBox">
+                                        @Html.TextBoxFor(m => LValue, new { @Name = item, @class = "form-control", @style = "padding:1px 5px;", @id = dGUID + "-" + v + "-Value" })
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="form-group highlight--help">
+                                <div class="wrap-width clearfix control-block">
+                                    <label class="col-sm-2 control-label">@Label</label>
+                                    <div class="col-sm-3 m-r-5">
+                                        <div class="Operators">
+                                            @*@if (BOIInstance != null && BOIInstance.Attributes.Count > 0 && !string.IsNullOrEmpty(BOIInstance.Attributes["FKiOperator"].sValue))
+                                                {*@
+                                            @if (ListofDetails != null)
+                                            {
+                                                var Operator = ListofDetails.FKiOperator;//BOIInstance.Attributes["FKiOperator"].sValue;
+                                                var ExposeOperator = ListofDetails.bIsExposeOperator.ToString();//BOIInstance.Attributes["bIsExposeOperator"].sValue;
+                                                if (!string.IsNullOrEmpty(ExposeOperator) && ExposeOperator.ToLower() == "true")
+                                                {
+                                                    if (Operator == ">")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = ">", value = "greater than" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "<")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "<", value = "less than" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "=")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "=", value = "equals" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == ">=")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = ">=", value = "greater than or equal to" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "<=")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "<=", value = "less than or equal to" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                    else if (Operator == "!=")
+                                                    {
+                                                        @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object> { new { key = "!=", value = "not equal to" } }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                                {
+                                                new { key= "=" , value = "equals" },
+                                                new { key= ">" , value = "greater than" },
+                                                new { key= "<", value = "less than" },
+                                                new { key= ">=" , value = "greater than or equal to" },
+                                                new { key= "<=" , value = "less than or equal to" },
+                                                new { key= "!=" , value = "not equal to" }
+                                                }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                                }
+                                            }
+                                            else
+                                            {
+                                                @Html.DropDownListFor(m => m.Operator, new SelectList(new List<Object>
+                                            {
+                                            new { key= "=" , value = "equals" },
+                                            new { key= ">" , value = "greater than" },
+                                            new { key= "<", value = "less than" },
+                                            new { key= ">=" , value = "greater than or equal to" },
+                                            new { key= "<=" , value = "less than or equal to" },
+                                            new { key= "!=" , value = "not equal to" }
+                                            }, "key", "Value"), new { @class = "form-control oprator", @id = dGUID + "-" + v + "-Operator" })
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3 control-label">
+                                        @Html.TextBoxFor(m => LValue, new { @Name = item, @class = "form-control", @style = "padding:1px 5px;", @id = dGUID + "-" + v + "-Value" })
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <div class="form-group highlight--help">
+                        <div class="wrap-width clearfix control-block">
+                            <label class="form-label">@Label</label>
+                            <div class="form-input">
+                                <span class="form-control no-border bc-disable">@item</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+                {
+                    v++;
+                }
+            }
+        }
+    }
+    <div class="form-group highlight--help">
+        <div class="wrap-width clearfix control-block">
+            <div class="col-sm-offset-2 col-sm-6">
+                @{
+                    var sSrchType = string.Empty;
+                    if (Model.IsNaturalSearch)
+                    {
+                        sSrchType = "NaturalSearch";
+                    }
+                    else if (Model.IsFilterSearch)
+                    {
+                        sSrchType = "FilterSearch";
+                    } }
+                @if (sSearchFields != null && sSearchFields != "")
+                {
+                    if (Model.DisplayAs == 110)
+                    {
+                        <input type="button" class="btn btn-theme DFSubmit1" onclick="oneClickSearch(this, '@Model.XIGUID', '@sTabColumns', '@Model.sGUID', '@sSearchFields','Grid', '@sSrchType')" value="Search" />
+                    }
+                    if (Model.DisplayAs == 150)
+                    {
+                        <button type="button" class="btn btn-theme DFSubmit1" onclick="oneClickSearch(this, '@Model.XIGUID', '@sTabColumns', '@Model.sGUID', '@sSearchFields', 'Groupby', '@sSrchType')">Search</button>
+                        @*<script>
+                                document.getElementsByClassName("DFSubmit1").click();
+                            </script>*@
+                    }
+                    else if (sSearchType != "EqualOperator")
+                    {
+                        <input type="button" class="btn btn-theme DFSubmit1" onclick="oneClickSearch(this, '@Model.XIGUID', '@sTabColumns', '@Model.sGUID', '@sSearchFields','Result List', '@sSrchType')" value="Search" />
+                    }
+                    if (Model.DisplayAs == 110)
+                    {
+                        <button type="button" class="btn btn-theme reverse DFReset1" onclick="oneClickReset(this, '@Model.XIGUID', '@sTabColumns', '@Model.sGUID','Grid', '@sSrchType')">Reset</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-theme reverse DFReset1" onclick="oneClickReset(this, '@Model.XIGUID', '@sTabColumns', '@Model.sGUID','Result List', '@sSrchType')">Reset</button>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+    $('.CheckboxClass').change(function () {
+        var AttrNames = $(this).attr('data-attrname');
+        if ($(".CheckboxClass").is(':checked')) {
+            $(".Checkboxs-" + AttrNames).val("True");
+        }
+        else {
+            $(".Checkboxs-" + AttrNames).val("False");
+        }
+    });
+    $('.QuickSearchTBox').keypress(function (e) {
+        var key = e.which;
+        if (key == 13)  // the enter key code
+        {
+            oneClickSearch(this, '@Model.XIGUID', '@sTabColumns', '@Model.sGUID', '@sSearchFields', 'Result List', '@sSrchType', 'EqualOperator');
+        }
+    });
+
+    $('.ddlOptionChange').change(function () {
+        oneClickSearch($('.QuickSearchTBox'), '@Model.XIGUID', '@sTabColumns', '@Model.sGUID', '@sSearchFields', 'Result List', 'FilterSearch', 'EqualOperator');
+    });
+
+var addFilterDiv = $(".tradingview-theme .ui-dialog #DynamicForm");
+    var addFilterBtns = $("<div class='filterBtn'>Filters <i class='fa fa-sliders-h'></i></div><div class='filterClose'>Close filters <i class='fa fa-times'></i></div>");
+    $(addFilterDiv).each(function () { $(this).prepend(addFilterBtns); });
+    /*$(".tradingview-theme #DynamicForm").prepend("<div class='filterBtn'>Filters <i class='fa fa-sliders-h'></i></div><div class='filterClose'>Close filters <i class='fa fa-times'></i></div>");*/
+    $(".tradingview-theme .ui-dialog #DynamicForm .filterBtn").on('click', function(){$(this).parent().removeClass("filterOpen");});
+    $(".tradingview-theme .ui-dialog #DynamicForm .filterClose").on('click', function () { $(this).parent().addClass("filterOpen"); });
+    @*$(document).ready(function () {
+        // Attach a change event handler to the dropdown
+        var userid = '@iUserID';
+
+        if (userid != "5057") {
+            var selectedUserId = $(this).val();
+            $('[name=FKiUserID1]').val() = selectedUserId;
+            var htmldata = "<option value='@iUserID'>Please Select</option>";
+            $('[name=FKiProjectsID1]').html(htmldata);
+        }
+    });*@
+
+    $(document).ready(function () {
+        debugger;
+        var Role ='@iRoleID'
+        if (Role == "8033") {
+            $('[name=FKiUserID1]').val('-1'); // Set the value
+            $('[name=FKiUserID1]').prop("disabled", false); // Disable the input field
+        } else {
+            $('[name=FKiUserID1]').val('@iUserID'); // Set the value
+            $('[name=FKiUserID1]').prop("disabled", true); // Disable the input field
+        }
+
+        @*var userid = '@iUserID';
+        if (userid !== "5057") {
+        $('[name=FKiUserID1]').val('@iUserID'); // Set the value
+        $('[name=FKiUserID1]').prop("disabled", true); // Disable the input field
+        }*@
+
+    });
+    function fncGetDependencyDDChange(selectElement,$this, $BOXIGUID, $sboud) {
+
+         debugger
+        var name = $this.toLowerCase();
+        var id = selectElement.value.toLowerCase();
+
+        // Get the selected option element
+        var selectedOption = $(selectElement).find(":selected");
+
+        // Get the value of the data-attrname attribute
+        var dataAttrNameValue = selectedOption.data("attrname");
+
+        var selectedOption = $(this).find(":selected");
+        if ($('[name=FKiUserID1]').val()) {
+            userid = $('[name=FKiUserID1]').val();
+        }
+        else { userid = '@iUserID'; }
+        if (name != "fkitasksid")
+        {
+          $.ajax({
+            url: '@Url.Action("GetCategoriesDependencyDropDown", "XiLink")',
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            async: true,
+            cache: false,
+              data: JSON.stringify({ ID: id, Name: name, boidxiguid: $BOXIGUID, FKTableName: $sboud, UserID: userid }),
+              success: function (data) {
+                debugger
+                  var htmldata = "<option value='-1'>Please Select</option>";
+                  if ($this.toLowerCase() == 'fkiprojectsid') {
+                      $('[name=FKiFunctionalCategoriesID1]').html('');
+
+                      for (var i = 0; i < data.length; i++) {
+                          htmldata += '<option value="' + data[i].ID + '">' + data[i].text + '</option>';
+                      }
+                      $('[name=FKiFunctionalCategoriesID1]').html(htmldata);
+                  }
+                  else if ($this.toLowerCase() == 'fkifunctionalcategoriesid') {
+                      $('[name=FKiRequirementsIDs1]').html('');
+                      for (var i = 0; i < data.length; i++) {
+                          htmldata += '<option value="' + data[i].ID + '">' + data[i].text + '</option>';
+                      }
+                      $('[name=FKiRequirementsID1]').html(htmldata);
+                  }
+                  else if ($this.toLowerCase() == 'fkirequirementsid') {
+                      $('[name=FKiTasksID1]').html('');
+                      for (var i = 0; i < data.length; i++) {
+                          htmldata += '<option value="' + data[i].ID + '">' + data[i].text + '</option>';
+                      }
+                      $('[name=FKiTasksID1]').html(htmldata);
+                  }
+                  else if ($this.toLowerCase() == 'fkiuserid') {
+                      $('[name=FKiProjectsID1]').html('');
+                      for (var i = 0; i < data.length; i++) {
+                          htmldata += '<option value="' + data[i].ID + '">' + data[i].text + '</option>';
+                      }
+                      $('[name=FKiProjectsID1]').html(htmldata);
+                  }
+              },
+              error: function (data) {
+                  degugger
+              }
+        });
+        }
+    };
+</script>
+<div id="dialog_autocomplete"></div>

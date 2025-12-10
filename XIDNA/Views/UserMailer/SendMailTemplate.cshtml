@@ -1,0 +1,15 @@
+﻿
+@{
+    ViewBag.Title = "SendMailTemplate";
+    var sHtmlContent = ViewBag.HtmlContent;
+    var sUserName = ViewBag.UserName;
+}
+<link href="~/Content/theme.default.css" rel="stylesheet" />
+<script src="~/Scripts/jquery.tablesorter.js"></script>
+<script src="~/Scripts/jquery.tablesorter.widgets.js"></script>
+<style>
+    .table > tbody > tr > td{border-top:0 solid #e7eaec;} 
+    .table-striped > tbody > tr:nth-child(2n+1) > td{background:#efefef;}
+</style>
+@Html.Raw(sHtmlContent)
+

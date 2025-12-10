@@ -1,0 +1,879 @@
+﻿@using Microsoft.AspNet.Identity
+@using XIDNA.Models
+@using XIDNA.ViewModels
+@using XIDNA
+@{
+    string PhysicalPath = System.Configuration.ConfigurationManager.AppSettings["PhysicalPath"];
+    var Title = "XIDNA";
+    if (SessionManager.AppName != null)
+    {
+        Title = SessionManager.AppName;
+    }
+    var userID = SessionManager.UserID;
+    var roleID = SessionManager.iRoleID;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Google Tag Manager -->
+    <script>
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-MVBR6MJ');</script>
+    <!-- End Google Tag Manager -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-715397890"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'AW-715397890');
+    </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport1" content="width=device-width, minimum-scale=0.1">
+    <title>@Title</title>
+    <link rel="icon" type="image/png" href="~/favicon.ico" />
+    <link href="@Url.Content("~/Content/css/plugins/jquery-ui/jquery-ui.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/css/plugins/jquery-ui/jquery-ui-custom.css")" rel="stylesheet" />
+    <!-- Bootstrap 3.3.5 -->
+    <link rel="stylesheet" href="~/Content/css/bootstrap.min.css" />
+    <!-- Font Awesome -->
+    <!-- <link href="~/Content/font-awesome/css/font-awesome.min.css" rel="stylesheet" /> -->
+    <!-- <link href="~/Content/font-awesome/css/fontawesome-all.min.css" rel="stylesheet" /> -->
+    <link href="~/Content/font-awesome/css/all.min.css" rel="stylesheet" />
+    <link href="~/Content/ionicons/css/ionicons.min.css" rel="stylesheet" />
+    <link href="~/Scripts/C3/c3.css" rel="stylesheet" />
+    <!-- Ionicons -->
+    @*<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">*@
+    <!-- DataTables -->
+    <link rel="stylesheet" href="~/Content/plugins/datatables/dataTables.bootstrap.css">
+    <!--<link rel="stylesheet" href="~/Content/plugins/datatables/jquery.dataTables.min.css">-->
+    <link href="@Url.Content("~/Content/jsTree/themes/default/style.min.css")" rel="stylesheet" />
+    <!-- Morris -->
+    <link href="~/Content/css/plugins/morris/morris-0.4.3.min.css" rel="stylesheet" />
+    <link href="~/Content/css/animate.css" rel="stylesheet" />
+    <link href="~/Content/css/main.css" rel="stylesheet" />
+    <!--<link rel="stylesheet" href="~/Content/css/skins/skin-purple.min.css">-->
+    @*@if (User.Identity.GetGroupName().Contains(EnumRoles.SuperAdmin.ToString()))
+        {
+            <link rel="stylesheet" href="~/Content/css/skins/dark-theme.css">
+        }
+        else
+        {
+            <link rel="stylesheet" href="~/Content/css/skins/@User.Identity.GetOrganizationTheme()">
+        }*@
+
+    <link href="@Url.Content("~/Content/css/custom.css")" rel="stylesheet" />
+    @*<link href="@Url.Content("~/Content/css/SystemLayout.css")" rel="stylesheet" />*@
+    <link rel="stylesheet" href="~/Content/css/skins/@SessionManager.Theme">
+    @RenderSection("Styles", false)
+    <script>
+
+    </script>
+    <script src="~/Scripts/JQuery/jQuery-2.1.4.min.js"></script>
+    <script src="@Url.Content("~/Scripts/js/plugins/EasyAlert.js")"></script>
+    <script src="~/Scripts/JQuery/jquery-ui.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+    <script src="~/Scripts/CommonFunctions.js"></script>
+    <!--<script src="~/Scripts/DataTables/jquery.dataTables.min.js"></script>
+    <script src="~/Scripts/DataTables/dataTables.responsive.min.js"></script>-->
+    <script src="~/Content/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/Content/plugins/datatables/dataTables.bootstrap.min.js"></script>
+    <script src="~/Scripts/jquery.validate.min.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/Scripts/moment.min.js"></script>
+    <script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
+
+    <script src="~/Scripts/MenuJsonData.js"></script>
+    <script src="~/Scripts/C3/d3.v3.min.js"></script>
+    <script src="~/Scripts/C3/c3.min.js"></script>
+
+    <script src="~/Scripts/jquery.signalR-2.2.1.js"></script>
+    @*<script src="//tinymce.cachefly.net/4.0/tinymce.min.js"></script>*@
+    <script src="~/Scripts/tinymce/tinymce.min.js"></script>
+    <!--Reference the autogenerated SignalR hub script. -->
+    <script src="~/signalr/hubs"></script>
+    <script src="@Url.Content("~/Scripts/jquery.blockUI.js")"></script>
+    @*<link href="@Url.Content("~/Content/plugins/tabScroll/jquery.scrolling-tabs.css")" rel="stylesheet" />*@
+    <script src="@Url.Content("~/Content/plugins/mCustomScrollbar/jquery.mCustomScrollbar.concat.min.js")"></script>
+    <link href="@Url.Content("~/Content/plugins/mCustomScrollbar/jquery.mCustomScrollbar.min.css")" rel="stylesheet" />
+
+    <script src="@Url.Content("~/Content/plugins/timepicker/bootstrap-datetimepicker.js")"></script>
+    <link href="@Url.Content("~/Content/plugins/timepicker/bootstrap-datetimepicker.min.css")" rel="stylesheet" />
+    <script src="@Url.Content("~/Content/plugins/timepicker/jquery.timepicker.js")"></script>
+    <link href="@Url.Content("~/Content/plugins/timepicker/jquery.timepicker.min.css")" rel="stylesheet" />
+    <script src="@Url.Content("~/Scripts/bluebird.min.js")"></script>
+    @*//Charts//*@
+    <script src="~/Scripts/core.js"></script>
+    <script src="~/Scripts/charts.js"></script>
+    <script src="~/Scripts/animated.js"></script>
+    <script src="~/Scripts/dataviz.js"></script>
+
+    <script type="text/javascript">
+        LabelDataURL = '@Url.Action("GetLabelData", "XiLink")';
+        UpdateXIParamsURL = '@Url.Action("UpdateXIParams", "XIComponents")';
+        ParentGUIDURL = '@Url.Action("GetParentGUID", "XiLink")';
+        UpdateInstanceIDURL = '@Url.Action("UpdateInstanceID", "XiLink")';
+        CallQSEventURL = '@Url.Action("CallQSEvent", "XIComponents")';
+        ComponentParmsByStepURL = '@Url.Action("GetComponentParmsByStep", "XIComponents")';
+        ContentURL = '@Url.Action("GetXiLinkContent", "XiLink")';
+        DataURL = '@Url.Action("GetXiLinkData", "XiLink")';
+        PopupURL = '@Url.Action("GetPopupDetails", "XiLink")';
+        PopupORDialogURL = '@Url.Action("GetPopupORDialog", "XiLink")';
+        DialogURL = '@Url.Action("GetDialog", "XiLink")';
+        SaveEditBOURL = '@Url.Action("SaveBO", "XiLink")';
+        SemanticURL = '@Url.Action("GetSemanticDetails", "XiLink")';
+        ComponentURL = '@Url.Action("LoadComponentByID", "XIComponents")';
+        StepURL = '@Url.Action("GetStepContent", "XiLink")';
+        XILinkLoadURL = '@Url.Action("XILinkLoad", "XiLink")';
+        XILinkLoadJsonURL = '@Url.Action("XILinkLoadJson", "XiLink")';
+        XIContentURL = '@Url.Action("XIContent", "XiLink")';
+        XIContentLoadURL = '@Url.Action("XIContentLoad", "XiLink")';
+        DeleteBOURL = '@Url.Action("DeleteBO", "XiLink")';
+        LoadStepURL = '@Url.Action("TriggerStep", "XiLink")';
+        XILinkDefinitionURL = '@Url.Action("GetXILinkDefinition", "XiLink")';
+        PopupDefinitionURL = '@Url.Action("GetPopupDefinition", "XiLink")';
+        OpenInPopupURL = '@Url.Action("OpenInPopup", "XiLink")';
+        LoadLayoutURL = '@Url.Action("LoadLayout", "XiLink")';
+        UpdateLockURL = '@Url.Action("UpdatebLock", "XiLink")';
+        SetParamUrl = '@Url.Action("SetParams", "XiLink")';
+        AutoCompleteLarge = '@Url.Action("GetAutoCompleteData", "XiLink")';
+        AutoCompleteMedium = '@Url.Action("GetAutoCompleteList", "BusinessObjects")';
+        NextStepURL = '@Url.Action("GetNextStep", "XiLink")';
+        PrevStepURL = '@Url.Action("GetPreviousStep", "XiLink")';
+        SaveQSStepURL = '@Url.Action("SaveQSStep", "XiLink")';
+        LogSignalRURL = '@Url.Action("LogSignalR", "XiLink")';
+        LogJQueryURL = '@Url.Action("LogJqueryError", "XiLink")';
+        AmendDetailsURL = '@Url.Action("AmendDetails", "XiLink")';
+        UpdateQuoteURL = '@Url.Action("UpdateQuotePrice", "XiLink")';
+        PaymentURL = '@Url.Action("Payment", "Payment")';
+        SaveGridURL = '@Url.Action("SaveGrid", "XiLink")';
+        RemoveSectionURL = '@Url.Action("RemoveSectionInstance", "XiLink")';
+        sImagePath = '@PhysicalPath';
+        ExecuteXIScriptURL = '@Url.Action("ExecuteXIScript", "XiLink")';
+        SecureKeyURL = '@Url.Action("CheckSecureKey", "Account")';
+        GetCacheParameterValueURL = '@Url.Action("GetCacheParameterValue", "XiLink")';
+        TriggerXILinkURL = '@Url.Action("TriggerXILink", "XiLink")';
+        AddTriggerXILinkURL = '@Url.Action("AddTriggerXILink", "XiLink")';
+        GetQSDefinitionURL = '@Url.Action("GetQSDefinitionByInstanceID", "XiLink")';
+        GetTemplateDefinitionURL = '@Url.Action("GetTemplateIDByClass", "XiLink")';
+        RemoveStepXIIValuesURL = '@Url.Action("RemoveStepXIIValues", "XiLink")';
+        UpdateQuoteRankURL = '@Url.Action("UpdateQuoteRank", "XiLink")';
+        GetGridDataURL = '@Url.Action("GetGridData", "XiLink")';
+        LogJQueryURL = '@Url.Action("LogJqueryError", "XiLink")';
+        //SignalR
+        GetLeadsData = '@Url.Action("GetLeadData", "XiSignalR")';
+        ReqirementOSCount = '@Url.Action("ReqirementOSCount", "XiSignalR")';
+        NotificationCount = '@Url.Action("GetNotificationCount", "XiSignalR")';
+        BODependencyGroupDropDown = '@Url.Action("GetBoDependencyGroupDropDown", "XiLink")';
+        GetDependencyMenuDropDown = '@Url.Action("GetDependencyMenuDropDown", "XiLink")';//For MenuDependency
+        GetSignalROneClickContent = '@Url.Action("SignalROneClickContent", "XiSignalR")';
+        HeatMapReport = '@Url.Action("HeatMapReports", "XiSignalR")';
+        //END SingalR
+        GetNextHTMLRowsURL = '@Url.Action("GetNextHTMLRows", "XiLink")';
+        GetDependencyGroupDropDown = '@Url.Action("GetDependencyGroupDropDown", "XiLink")';
+        BOStructureDependencyDropDown = '@Url.Action("GetStructureDependency", "XiLink")';
+        DispalyTemplate = '@Url.Action("DispalyTemplate", "XiLink")';
+        HTMLDataTemplate = '@Url.Action("HTMLDataTemplate", "XiLink")';
+        SaveAuditBO = '@Url.Action("SaveAuditBO", "XiLink")';
+        TriggerBOActionURL = '@Url.Action("TriggerBOAction", "BusinessObjects")';
+        LoadSectionContentURL = '@Url.Action("Load_Component", "XIComponents")';
+        GetBOInstanceIDURL = '@Url.Action("GetBOInstanceID", "BusinessObjects")';
+        //$(function () {
+        //    // Declare a proxy to reference the hub.
+        //    var notifications = $.connection.notifyHub;
+
+        //    // Create a function that the hub can call to broadcast messages.
+        //    notifications.client.addNewMessageToPage = function (message) {
+        //        getAllMessages(message)
+        //    };
+        //    // Start the connection.
+        //    $.connection.hub.start().done(function () {
+        //        var message = "";
+        //        getAllMessages(message);
+        //    }).fail(function (e) {
+        //        alert(e);
+        //    });
+        //});
+        //var obj = {};
+        //obj = {
+        //    "1": "aa",
+        //    "2": "bb"
+        //};
+
+        //obj.another = "valuehere";
+        //obj["3"] = "cc";
+
+        var PopupList = {};
+        var PopupWindow;
+        var BarPosition;
+        var TransValue;
+        function getAllMessages(message) {
+            $.ajax({
+                url: '@Url.Action("GetAllMessages", "Data")',
+                contentType: 'application/html ; charset:utf-8',
+                type: 'POST',
+                dataType: 'json'
+            }).success(function (result) {
+                if (result == 1 && message.length > 0) {
+                    GetRemiderList(1);
+                    //    var count = $('.NotificationsCount1').text();
+                    //    var newcount = parseInt(count) + 1;
+                    //    $('.NotificationsCount1').html(newcount);
+                    //    $('.NotificationsCount2').html(newcount);
+                    //    $("#NewLead").html("New Lead!!!");
+                    //    $("#NewLead").dialog({
+                    //        autoOpen: true,
+                    //        modal: true,
+                    //        title: 'Lead Details',
+                    //        width: 400,
+                    //        buttons: {
+                    //            Ok: function () {
+                    //                $(this).dialog("close"); //closing on Ok click
+                    //            },
+                    //        },
+
+                    //    });
+
+                }
+            }).error(function () {
+
+            });
+        }
+        $.ajaxSetup({
+            cache: false,
+            error: function (x, e) {
+                if (x.status == 550)
+                    alert("550 Error Message");
+                else if (x.status == "0") {
+                    window.location.href = '@Url.Action("Login","Account")';
+                }
+                else if (x.status == "401") {
+                    window.location.href = '@Url.Action("Login","Account")';
+                }
+                else if (x.status == "403") {
+                    window.location.href = '@Url.Action("Login","Account")';
+                }
+                else if (x.status == "500")
+                    alert("500. Internal Server Error");
+                //else
+                //alert("Error...");
+            },
+            success: function (x) {
+                //do something global on success...
+            }
+        });
+        function GetAllClasses() {
+            var iUserID = @SessionManager.UserID;
+            var userid = parseInt(iUserID);
+            $.ajax({
+                url: '@Url.Action("GetQueriesByID", "Inbox")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                async: true,
+                cache: false,
+                data: { UserID: userid },
+                success: function (data) {
+                    $.each(data, function (i, val) {
+                        if (val.Location == "QuickSearch") {
+                            if (val.BO == "Leads") {
+                                $('#LeadsDDO').val(val.ID);
+                                $('#LeadsDDO').attr('data-isdefined', val.IsGroupDefined);
+                            }
+                            else {
+                                $('#LeadInstanceDDO').val(val.ID);
+                                $('#LeadInstanceDDO').attr('data-isdefined', val.IsGroupDefined);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        function GetUserDialogs() {
+            var iUserID = @SessionManager.UserID;
+            var userid = parseInt(iUserID);
+            $.ajax({
+                url: '@Url.Action("GetUserDialogs", "XiLink")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                async: true,
+                cache: false,
+                data: { UserID: userid },
+                success: function (data) {
+                    for (n = 0; n < data.length; n++) {
+                        ShowUserDialog(data[n]);
+                    }
+                }
+            });
+        }
+
+        function ShowUserDialog(data) {
+            var ResultIn = "Dialog";
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("ReportResult", "Inbox")',
+                data: { QueryID: data.ID, PageIndex: 1, ResultIn: "Dialog" },
+                cache: false,
+                async: true,
+                dataType: 'html',
+                beforeSend: function (request) {
+                    $.blockUI({ message: '<h3 class="nh3"><img src="@PhysicalPath/Scripts/ckfinder/plugins/gallery/colorbox/images/loading.gif" width="50px" /> Please wait while loading...</h3>' });
+                },
+                success: function (result) {
+                    if (ResultIn == "Dialog") {
+                        var my = "";
+                        var at = "";
+                        var width = 300;
+                        var height = 400;
+                        if (data.PopupType == "Specific") {
+                            my = data.DialogMy1 + " " + data.DialogMy2;
+                            at = data.DialogAt1 + " " + data.DialogAt2;
+                            width = data.PopupWidth;
+                            height = data.PopupHeight;
+                        }
+                        else {
+                            my = data.PopupType;
+                            at = data.PopupType;
+                        }
+                        var DialogID = "ResultDialog-" + data.ID;
+                        $('.' + DialogID).dialog('destroy').remove();
+                        AddDialogToTaskbar(DialogID);
+                        var Div = '<div class="dialog-box ' + DialogID + '" title="Confirm Message" data-dname="' + DialogID + '" style="background-color:white;"></div>';
+                        $('#Dialogs').append(Div);
+                        $("." + DialogID).html(result);
+                        $("." + DialogID).dialog({
+                            title: ' ',
+                            height: height,
+                            width: width,
+                            position: { my: my, at: at, of: "body" },
+                            buttons: [
+                            //{
+                            //    text: "Ok",
+                            //    click: function () {
+                            //        $(this).dialog('destroy').remove()
+                            //        $("." + DialogID).remove();
+                            //    }
+                            //}
+                            ],
+                            close: function (event, ui) {
+                                $('.' + DialogID).parent().hide();
+                                $('button[data-name="' + DialogID + '"]').attr('data-status', 'close');
+                            }
+                        });
+                    }
+                    $.unblockUI();
+                }
+            });
+        }
+
+        function DialogManager(data) {
+            var DialogID = 0;
+            var XiLinkID = data.XiLinkNVs[0].XiLinkID;
+            for (i = 0; i < data.XiLinkNVs.length; i++) {
+                if (data.XiLinkNVs[i].Name.toLowerCase() == "startaction".toLowerCase() || data.XiLinkNVs[i].Name.toLowerCase() == "DialogID".toLowerCase()) {
+                    //if (data.XiLinkNVs[i].Value.toLowerCase() == "dialog".toLowerCase()) {
+                    //    Dialog = data.XiLinkNVs[i].Value;
+                    //}
+                    //else
+                    if (data.XiLinkNVs[i].Name == "DialogID") {
+                        DialogID = data.XiLinkNVs[i].Value;
+                        break;
+                    }
+                }
+            }
+            $.ajax({
+                type: 'POST',
+                url: '/XiLink/GetDialog',
+                data: { ID: DialogID },
+                cache: false,
+                async: true,
+                dataType: 'json',
+                success: function (Dialogdata) {
+                    var TValue = Dialogdata.iTransparency;
+                    TransValue = TValue / 100;
+                    $.ajax({
+                        type: 'POST',
+                        url: '/XiLink/GetLeadPopup',
+                        data: { Lead: 0, XiLinkID: XiLinkID },
+                        cache: false,
+                        async: true,
+                        dataType: 'html',
+                        success: function (result) {
+                            var DialogDivID = "ResultDialog-" + DialogID;
+                            $('.' + DialogDivID).dialog('destroy').remove();
+                            var Div = '<div class="dialog-box ' + DialogDivID + '" title="Confirm Message" data-dname="' + DialogDivID + '" style="background-color:white;"></div>';
+                            $('#Dialogs').append(Div);
+                            $("." + DialogDivID).html(result);
+                            $("." + DialogDivID).dialog({
+                                title: ' ',
+                                height: Dialogdata.DialogHeight,
+                                width: Dialogdata.DialogWidth,
+                                resizable: Dialogdata.IsResizable,
+                                IsCloseIcon: Dialogdata.IsCloseIcon,
+                                BarPosition: Dialogdata.BarPosition,
+                                //position: { my: my, at: at },
+                                //buttons: [
+                                //],
+                            });
+                            return result;
+                        }
+                    });
+                }
+            });
+        }
+
+        function GetUserQueries() {
+
+        }
+
+        function GetUserQueryList() {
+            $.ajax({
+                url: '@Url.Action("GetUserQueryList", "Inbox")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                success: function (data) {
+                    var Types = "";
+                    for (i = 0; i < data.length; i++) {
+                        Types = Types + "<div id='control-sidebar-home-tab'><h3 class='control-sidebar-heading'>" + data[i].QueryType + "</h3>";
+                        Types = Types + "<ul class='control-sidebar-menu'>";
+                        for (j = 0; j < data[i].QueryName.length; j++) {
+                            Types = Types + "<li><a><label class='checkbox-inline'>";
+                            if (data[i].Visibility[j] == "true") {
+                                Types = Types + "<input type='checkbox' data-id='" + data[i].QueryName[j].replace(/ /g, "_") + "' visible='true' data-type='" + data[i].QueryType.replace(/ /g, "_") + "' checked /><span class='control-sidebar-subheading'>" + data[i].QueryName[j] + "</span>";
+                            }
+                            else {
+                                Types = Types + "<input type='checkbox' data-id='" + data[i].QueryName[j].replace(/ /g, "_") + "' visible='true' data-type='" + data[i].QueryType.replace(/ /g, "_") + "' /><span class='control-sidebar-subheading'>" + data[i].QueryName[j] + "</span>";
+                            }
+                            Types = Types + "</label></a></li>";
+                        }
+                        Types = Types + "</ul></div>";
+                    }
+                    $('#QueryList').html(Types);
+                }
+            });
+        }
+        function GetRemiderList(h) {
+            var iUserID = @SessionManager.UserID;
+            var userid = parseInt(iUserID);
+            $.ajax({
+                url: '@Url.Action("GetReminderUserCount", "Inbox")',
+                type: 'GET',
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                data: { UserID: userid },
+                success: function (data) {
+                    var PreCount = parseInt($('.NotificationsCount1').text());
+                    var Count = parseInt(data.Count);
+                    if (Count > PreCount) {
+                        $('.NotificationsCount1').html(Count);
+                        $('.NotificationsCount2').html(Count);
+                        $('a.AllMessages').attr("data-leads", data.Count);
+                        $('a.AllMessages').attr("data-ReportID", data.InnerReportID);
+                        $('#ReminderMessage').empty();
+                        for (i = 0; i < data.LeadDetails.length; i++) {
+                            $('#ReminderMessage').append('<li><a class="Msg" href="#" data-url="@Url.Action("LeadViewOnNotification", "Lead")?LeadID=' + data.LeadIDs[i] + '&ReportID=' + data.InnerReportID + '&LeadCount=' + data.Count + '"><i class="fa fa-users text-aqua"></i>' + data.LeadDetails[i] + '</a></li>');
+                            //$('#NotificationMessages').append('<li><a href="#"><div class="pull-left"><img src="/Content/images/human.png" class="img-circle" alt="User Image"/></div> <h4> Support Team <small><i class="fa fa-clock-o"></i> 5 mins</small> </h4><p>' + data.LeadDetails[i] + '</p></a></li>');
+                        }
+                        if (h != 0) {
+                            $("#NewLead").html("New Lead!!!");
+                            $("#NewLead").dialog({
+                                autoOpen: true,
+                                modal: true,
+                                title: 'Leads',
+                                width: 400,
+                                buttons: {
+                                    Ok: function () {
+                                        $(this).dialog("close"); //closing on Ok click
+                                    },
+                                },
+                            });
+                        }
+                    }
+                }
+            });
+        }
+        function ShowDialog(BtnID) {
+            var UIds = BtnID.split('-');
+            var DialogID = "ResultDialog-" + UIds[1] + "-" + UIds[2];
+            $('#DialogContent .dialog-box').each(function (j, obj) {
+                $(this).css({ "display": "none" });
+            });
+            $('.' + DialogID).show();
+        }
+        //var timer = 900;
+        //window.setInterval(function () {
+        //    var now = new Date();
+        //    document.getElementById('countDown').style.display = 'inline';
+        //    document.getElementById('countDown').innerHTML = "Countdown: " + timer + "Seconds";
+        //    if (timer <= 60)
+        //        alert('About to expire...');
+        //    timer = timer - 5;
+        //    /// call your function here
+        //}, 5000);
+
+        $(document).ready(function () {
+            UserID='@userID';
+            RoleID='@roleID';
+            //clearInterval(5000);
+            //startCountDown1();
+            LabelDataURL = '@Url.Action("GetLabelData", "XiLink")';
+            LayoutDetailsURL = '@Url.Action("GetLayoutDetails", "XiLink")';
+            @*if ('@User.Identity.GetMenu()' == "Close,Close") {
+                $('.control-sidebar').removeClass('control-sidebar-open');
+                $('body').removeClass('sidebar-right-toggle');
+                $('body').addClass('sidebar-collapse');
+            }*@
+            @*$('.AllMessages').on('click', function () {
+                var ReportID = $(this).attr('data-ReportID');
+                if (ReportID > 0) {
+                    var url = $(this).attr('data-url');
+                    window.open('@Url.Action("GetAllNewLeads", "Lead")?ReportID=' + ReportID, "_blank", "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+                }
+            })*@
+            //$('#VerticalLeftBar').on('click', 'button', function () {
+            //    var id = $(this).attr('id');
+            //    ShowDialog(id);
+            //});
+            //$('#VerticalRightBar').on('click', 'button', function () {
+            //    var id = $(this).attr('id');
+            //    ShowDialog(id);
+            //});
+            //$('#HorizontalTopBar').on('click', 'button', function () {
+            //    var id = $(this).attr('id');
+            //    ShowDialog(id);
+            //});
+            //$('#HorizontalBottonBar').on('click', 'button', function () {
+            //    var id = $(this).attr('id');
+            //    ShowDialog(id);
+            //});
+
+            //$('#VerticalLeftBar').hover('button', function () {
+            //    var id = $(this).attr('id');
+            //    ShowDialog(id);
+            //});
+            //$('#VerticalRightBar').hover('button', function () {
+            //    var id = $(this).attr('id');
+            //    ShowDialog(id);
+            //});
+            //$('#HorizontalTopBar').hover('button', function () {
+            //    var id = $(this).attr('id');
+            //    ShowDialog(id);
+            //});
+            //$(document.body).on('hover', 'button.dialogBtn', function () {
+            ////$('#HorizontalBottonBar').hover('button', function () {
+            //    var id = $(this).attr('id');
+            //    ShowDialog(id);
+            //});
+
+            $('#ReminderMessage').on('click', 'a.Msg', function () {
+                var url = $(this).attr('data-url');
+                window.open(url, "_blank", "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            })
+            $('#Reports').on('click', 'a', function () {
+                var ID = $(this).attr('id');
+                var OutputType = "";
+                var Result = $(this).attr('data-ResultIn');
+                if (Result == "Inline" || Result == 'null') {
+                    OutputType = "Inline";
+                }
+                else {
+                    OutputType = "Popup";
+                }
+                if (ID != "ViewMyReports") {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("ReportResult", "Inbox")',
+                        data: { QueryID: ID, PageIndex: 1, ResultIn: OutputType },
+                        cache: false,
+                        async: true,
+                        dataType: 'html',
+                        beforeSend: function (request) {
+                            $.blockUI({ message: '<h3 class="nh3"><img src="@PhysicalPath/Scripts/ckfinder/plugins/gallery/colorbox/images/loading.gif" width="50px" /> Please wait while loading...</h3>' });
+                        },
+                        success: function (data) {
+                            $.unblockUI();
+                            if (Result == "Inline" || Result == 'null') {
+                                $('.content-wrapper').html(data);
+                            }
+                            else {
+                                var win = window.open('', '_blank', "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+                                with (win.document) {
+                                    open();
+                                    write(data);
+                                    close();
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            $('#UserProfile').click(function () {
+                var url = '@Url.Action("GetUserProfile", "Users")';
+                window.open(url, "_blank", "scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+            });
+            //initialize the loop
+            //RefreshPartial();
+            $('#CacheBtn').click(function () {
+                $.ajax({
+                    url: '@Url.Action("ClearCache", "Home")',
+                    type: "get",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "html",
+                    cache: false,
+                    async: false,
+                    success: function (data) {
+                        $('#maincontentdv').html(data);
+                    }
+                });
+            });
+        });
+
+        $(document).on('click', '#ShowParamValBtn', function () {
+            var sParameter = $('#ParameterTBoxVal').val();
+            var sGUID = fncGetGUIDFromHTMLTree("LayoutGUID", this);
+            if (sParameter.length > 0 && sGUID != 0) {
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetCacheParameterValue", "XiLink")',
+                    data: { sParamName: sParameter, sGUID: sGUID },
+                    cache: false,
+                    async: false,
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result != "No Value") {
+                            $('.ParameterValueView').html(result);
+                        }
+                        else {
+                            $('.ParameterValueView').html('Parameter Not Found');
+                        }
+                    }
+                });
+            }
+            else if (!sParameter.length) {
+                $('.ParameterValueView').html('Please enter Parameter name');
+            }
+        })
+        //Inbox Refresh For Every One Minute
+        @*function RefreshPartial() {
+            var Time = parseInt('@User.Identity.GetInboxRefreshTime()');
+            if (Time > 0) {
+                var RefreshInterval = parseInt('@User.Identity.GetInboxRefreshTime()') * 60000;
+                //this will wait 3 seconds and then fire the load partial function
+                setTimeout(function () {
+                    //recall this function so that it will continue to loop
+                    RefreshLeftMenu();
+                    RefreshPartial();
+                }, RefreshInterval);
+            }
+        }*@
+
+
+
+        function RefreshLeftMenu() {
+            var iUserID = @SessionManager.UserID;
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("GetLeftMenu", "Inbox")',
+                data: { UserID: iUserID, Count: 1 },
+                cache: false,
+                async: false,
+                dataType: 'json',
+                success: function (data) {
+                    for (i = 0; i < data.length; i++) {
+                        ChangeInboxCounts(data[i]);
+                    }
+                }
+            });
+        }
+        function ChangeInboxCounts(data) {
+            if (data.Type == "Progress Bar") {
+                $('#Menu-' + data.ID).html('<div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:' + data.InboxCount + '%"></div>');
+            }
+            else if (data.Type == "Progress Bar & Number") {
+                $('#Menu-' + data.ID).html('<div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width:' + data.Percentage + '%">' + data.InboxCount + '</div>');
+            }
+            else if (data.Type == "HTML") {
+                $('#Menu-' + data.ID).html(data.HTMLCode);
+            }
+            else {
+                $('#Menu-' + data.ID).html(data.InboxCount);
+            }
+            if (data.Sub1Clicks.length > 0) {
+                for (j = 0; j < data.Sub1Clicks.length; j++) {
+                    ChangeInboxCounts(data.Sub1Clicks[j]);
+                }
+            }
+        }
+        var changeTimer = false;
+        function GetQuickSearchResults() {
+            var SearchText = $('#QuickSearchTextBox').val();
+            var ReportID = parseInt($('#SearchBO :selected').val());
+            var IsDefined = $('#SearchBO :selected').attr('data-isdefined');
+            if (SearchText.length > 0) {
+                if (ReportID > 0) {
+                    if (IsDefined == 'True') {
+                        if (changeTimer !== false) clearTimeout(changeTimer);
+                        changeTimer = setTimeout(function () {
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("ReportResult", "XILink")',
+                                data: { QueryID: ReportID, PageIndex: 1, ResultIn: "Quick", SearchText: SearchText, SearchType: "Quick" },
+                                cache: false,
+                                async: false,
+                                dataType: 'html',
+                                success: function (data) {
+                                    if ('@SessionManager.sRoleName.ToString()' == '@EnumRoles.Admin.ToString()') {
+                                        $('.content-wrapper').html(data);
+                                        $('.content-wrapper').find('.OneClickResDiv').height(screen.height - 190);
+                                    }
+                                    else {
+                                        $('#ZeeContent').html(data);
+                                        $('#ZeeContent').find('.OneClickResDiv').height(screen.height - 190);
+                                    }
+
+                                }
+                            });
+                            changeTimer = false;
+                        }, 300);
+                    }
+                    else {
+                        $('.content-wrapper').html('<section class="content-header hedr"><h1> Quick search group is not defined on this BO </h1></section>');
+                    }
+                }
+                else {
+                    $('.content-wrapper').html('<section class="content-header hedr"><h1> 1-Click not assigned to this BO for Quick search </h1></section>');
+                }
+            }
+        }
+
+    </script>
+    @*<script src="@Url.Content("~/Scripts/SignalRFunctions.js")"></script>*@
+    @*<script type="text/javascript">GetUserQueries();</script>*@
+    @*<script type="text/javascript">
+            if ('@Session["IsLogin"]' == 'True') {
+                GetUserDialogs();
+            }
+        </script>*@
+    @*<script type="text/javascript">GetRemiderList(0);</script>*@
+    @*<script type="text/javascript">GetAllClasses();</script>*@
+</head>
+<body class="@SessionManager.Theme.Replace(".css","") sidebar-right-toggle">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MVBR6MJ"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="wrapper">
+        <div id="HomeHeader">
+            @{
+                Html.RenderAction("GetHomeHeader", "Inbox");
+            }
+        </div>
+        <aside class="main-sidebar">
+            <!-- sidebar: style can be found in sidebar.less -->
+            <section class="sidebar" style="height: auto;">
+                <!-- Sidebar user panel (optional) -->
+                <ul id="side-Logo" class="nav menuright-mrg">
+                    <li class="nav-header text-center usernamebg">
+                        <div class="dropdown profile-element">
+                            <span> <img class="" style="width: 240px;height: 50px;" src="~/Content/images/@SessionManager.Logo" alt="image"> </span> <a class="dropdown-toggle" href="#" data-toggle="dropdown">
+                                <span class="clear">
+                                    <span class="block m-t-xs">
+                                        <strong class="font-bold usernamecl">Super Admin</strong>
+                                        @*@if (User.Identity.GetGroupName().Contains(EnumRoles.SuperAdmin.ToString()))
+                                            {
+                                                <strong class="font-bold usernamecl">Super Admin</strong>
+                                            }
+                                            else if (User.Identity.GetGroupName().Contains(EnumRoles.Admin.ToString()))
+                                            {
+                                                <strong class="font-bold usernamecl">Admin</strong>
+                                            }
+                                            else
+                                            {
+                                                <strong class="font-bold usernamecl">User</strong>
+                                            }*@
+                                    </span>
+                                </span>
+                            </a>
+                        </div>
+                        @*<div class="logo-element"> <img alt="" src="img/lead-logo.png"> </div>*@
+                    </li>
+                </ul>
+
+                <div id="InboxTree">
+                    @{
+                        Html.RenderAction("GetLeftMenu", "Inbox");
+                    }
+                </div>
+
+            </section>
+            <!-- /.sidebar -->
+        </aside>
+
+        <div class="content-wrapper" id="maincontentdv" style="min-height: 424px;">
+            @RenderBody()
+        </div>
+        <div id="RightMenu">
+            @{
+                Html.RenderAction("ShowRightMenu", "Home");
+            }
+        </div>
+
+        <div class="control-sidebar-bg" style="border-left: 1px solid rgba(40, 58, 70, 0.34);"></div>
+    </div>
+    @*<div id="NewLead" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>*@
+    <div id="Dialogs"></div>
+    <div id="DialogGroups" class="no-padding dialog-box">
+        <div id="VerticalLeftBar" class="col-xs-1 btn-popover gutter6"></div>
+        @*<div id="HorizontalTopBar" class="col-xs-12 btn-popover bottom"></div>*@
+        <div id="DialogContent" class="col-xs-11">
+        </div>
+        @*<div id="VerticalRightBar" class="col-xs-1 btn-popover left gutter6 pull-right"></div>
+            <div id="HorizontalBottonBar" class="col-xs-12 btn-popover top"></div>*@
+    </div>
+    <div id="ComponentParamsDialog"></div>
+    <!-- Custom and plugin javascript -->
+    @*<script src="~/Scripts/js/lead.js"></script>*@
+    @*<script src="~/Scripts/js/plugins/pace/pace.min.js"></script>*@
+
+    <!-- jQuery UI -->
+    <!-- JSTree -->
+
+    <script src="@Url.Content("~/Scripts/treeview/jstree.min.js")"></script>
+    <script src="~/Scripts/treeview/jstreegrid.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="~/Scripts/app.js"></script>
+    <!-- ChartJS-->
+    <script src="~/Scripts/js/plugins/chartJs/Chart.min.js"></script>
+
+    <!-- Full Calendar -->
+    <script src="~/Scripts/js/plugins/fullcalendar/fullcalendar.min.js"></script>
+    <script src="~/Scripts/js/plugins/easypiechart/jquery.easypiechart.js"></script>
+
+    <script>
+        $(".treebtn").click(function () {
+            $(".treetoggle").toggleClass("treeleft");
+            $(".treebtn").toggleClass("rotate");
+        });
+        $(".asidetoglbtn").click(function () {
+            $('body').toggleClass("sidebar-right-toggle");
+        });
+    </script>
+</body>
+</html>
+
+@*<style>
+        .ui-dialog {
+            opacity: 0.9;
+        }
+    </style>*@

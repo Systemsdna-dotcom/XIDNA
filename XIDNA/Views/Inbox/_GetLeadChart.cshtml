@@ -1,0 +1,377 @@
+﻿@model IEnumerable<XIDNA.ViewModels.VMKPIResult>
+<script>
+    $(document).ready(function () {
+        
+        var polarOptions = {
+            scaleShowLabelBackdrop: true,
+            scaleBackdropColor: "rgba(255,255,255,0.75)",
+            scaleBeginAtZero: true,
+            scaleBackdropPaddingY: 1,
+            scaleBackdropPaddingX: 1,
+            scaleShowLine: true,
+            segmentShowStroke: true,
+            segmentStrokeColor: "#fff",
+            segmentStrokeWidth: 2,
+            animationSteps: 100,
+            animationEasing: "easeOutBounce",
+            animateRotate: true,
+            animateScale: false,
+        };
+        var ctx = document.getElementById("polarChart").getContext("2d");
+
+        $.ajax({
+            url: '@Url.Action("GetPieChart", "Inbox")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: 'JSON',
+            cache:false,
+            success: function (data) {
+                var Polarchart = new Chart(ctx).Pie(data);
+            },
+            error: function (data) {
+            }
+        });
+        
+        var doughnutOptions = {
+            segmentShowStroke: true,
+            segmentStrokeColor: "#fff",
+            segmentStrokeWidth: 2,
+            percentageInnerCutout: 45, // This is 0 for Pie charts
+            animationSteps: 100,
+            animationEasing: "easeOutBounce",
+            animateRotate: true,
+            animateScale: false,
+        };
+
+        var ctxdoughnut = document.getElementById("doughnutChart").getContext("2d");
+        $.ajax({
+            url: '@Url.Action("GetLeadsByClass", "Inbox")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: 'JSON',
+            cache: false,
+            success: function (data) {
+                var DoughnutChart = new Chart(ctxdoughnut).Doughnut(data, doughnutOptions);
+
+            },
+            error: function (data) {
+            }
+        });
+
+        var income = document.getElementById("income").getContext("2d");
+        $.ajax({
+            url: '@Url.Action("GetPieChart", "Inbox")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: 'JSON',
+            cache: false,
+            success: function (data) {
+                var barData = {
+                    labels: generateLabels(data),
+                    datasets: generateDataSets(data)
+                };
+                new Chart(income).Bar(barData, {
+                    animation: true,
+                    scaleOverride: true,
+                    scaleSteps: 5,
+                    scaleStartValue: 0,
+                    scaleStepWidth: 2
+                });
+            },
+            error: function (data) {
+            }
+        });
+        function generateLabels(data) {
+            var labels = [];
+            for (i = 0; i < data.length; i++) {
+                labels.push(data[i].label);
+            }
+            return labels;
+        }
+        function generateDataSets(data) {
+            var datavalues = [], total = 0;
+            var datasets = [];
+            for (i = 0; i < data.length; i++) {
+                datavalues.push(data[i].value);
+                total = total + parseInt(data[i].value);
+            }
+            var dataset =
+            {
+                fillColor: "#48A497",
+                strokeColor: "#48A4D1",
+                data: datavalues
+            }
+            datasets.push(dataset);
+            $('#LeadCount').text(total);
+            return datasets;
+        }
+        $.ajax({
+            url: '@Url.Action("GetAllLeadsCount", "Inbox")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: 'JSON',
+            cache: false,
+            success: function (data) {
+                
+            },
+            error: function (data) {
+            }
+        });
+    });
+</script>
+
+<script>
+    $(function () {
+        $('#easypiechart-teal').easyPieChart({
+            scaleColor: false,
+            barColor: '#6894dd'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-orange').easyPieChart({
+            scaleColor: false,
+            barColor: '#58c8b9'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-red').easyPieChart({
+            scaleColor: false,
+            barColor: '#e7957c'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-blue').easyPieChart({
+            scaleColor: false,
+            barColor: '#f2c35f'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-pink').easyPieChart({
+            scaleColor: false,
+            barColor: '#ed7de4'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-litonrg').easyPieChart({
+            scaleColor: false,
+            barColor: '#f3a086'
+        });
+    });
+
+
+    $(function () {
+        $('#chart-topicon-purple').easyPieChart({
+            scaleColor: false,
+            barColor: '#a47ae9'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-rose').easyPieChart({
+            scaleColor: false,
+            barColor: '#ed5565'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-lightyl').easyPieChart({
+            scaleColor: false,
+            barColor: '#f3dd65'
+        });
+    });
+
+    $(function () {
+        $('#easypiechart-drakred').easyPieChart({
+            scaleColor: false,
+            barColor: '#ed5565'
+        });
+    });
+
+</script>
+<script>
+    $(document).ready(function () {
+        $("#allsort").sortable({
+            revert: true,
+            placeholder: "ui-state-highlight"
+        });
+        $("#sortable").sortable({
+            revert: true,
+            placeholder: "ui-state-highlight"
+        });
+        $("#sortable1").sortable({
+            revert: true,
+            placeholder: "ui-state-highlight"
+        });
+        //$('.dashboard').sortable({
+        //    revert: true,
+        //    placeholder: "ui-state-highlight"
+        //});
+        //$('.dashboard').disableSelection();
+    });
+
+</script>
+
+
+<style>
+    #sortable {
+        width: 100%;
+        height: 400px;
+        padding: 0.5em;
+    }
+    #sortable1 {
+        width: 100%;
+        height: 400px;
+        padding: 0.5em;
+    }
+        #sortable > div {
+            width: 33.33%;
+            float: left;
+            display: inline-block;
+        }
+    #origin {
+        width: 100%;
+        height:510px;
+    }
+    .fboxes {
+        width: 100%;
+        height: 510px;
+    }
+    #size12div {
+        width: 100%;
+        height: 250px;
+    }
+    #size4divs {
+        width: 100%;
+        height: 310px;
+    }
+
+    .over {
+        border: solid 5px purple;
+    }
+    .ui-state-highlight {
+        height: 310px;
+        line-height: 1.2em;
+    }
+    .ui-state-highlight2 {
+        width:50%;
+        height: 310px;
+        line-height: 1.2em;
+    }
+
+    .statistic-box{
+        height:200px;
+    }
+
+</style>
+
+<div class="col-md-12 dashboard">
+    <div id="allsort">
+        <div id="size12div" class="dashdiv">
+            <div class="col-md-12">
+                <div class="ibox float-e-margins">
+                    <div class="noborder">
+                        <div class="row">
+                        @foreach (var items in @Model)
+                        {
+                        <div class="col-md-2 graph-bg nlpd">
+                            <div class="panel">
+                                <div class="panel-body easypiechart-panel">
+                                    <div class="easypiechart col-md-offset-2" id=@items.KPICircleColor data-percent=@items.KPIPercent>
+                                        <div class=@items.KPIIconColor><i class='@items.KPIIcon' aria-hidden="true"></i></div>
+                                        <span class="percent blue" id="NewLeadSpan">@items.KPIValue</span>
+                                    </div>
+                                    <h5 class="text-center">@items.Name</h5>
+                                </div>
+                            </div>
+                        </div>
+                        }
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sortable">
+            <div class="col-md-4">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>Leads By Source And Class</h5>
+                        <span class="label label-success pull-left">1</span>
+                        <div class="ibox-header-items">
+                            <a href="#" class="btn-minimize btn-default"><i class="fa fa-angle-down"></i></a>
+                            <a href="#" class="btn-close btn-default"><i class="fa fa-close"></i></a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <div class="statistic-box">
+                            <div class="row text-center">
+                                <div class="col-lg-6">
+                                    <canvas id="polarChart" width="115" height="115"></canvas>
+                                    <h5>Leads By Source</h5>
+                                </div>
+                                <div class="col-lg-6">
+                                    <canvas id="doughnutChart" width="115" height="115"></canvas>
+                                    <h5>Leads By Class</h5>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>Lead Count</h5>
+                        <span class="label label-success pull-left" id="LeadCount"></span>
+                        <div class="ibox-header-items">
+                            <a href="#" class="btn-minimize btn-default"><i class="fa fa-angle-down"></i></a>
+                            <a href="#" class="btn-close btn-default"><i class="fa fa-close"></i></a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+
+                        <div class="flot-chart">
+                            <div class="flot-chart-content">
+                                <canvas id="income" width="350" height="250"></canvas>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="ibox float-e-margin">
+                    <div class="ibox-title">
+                        <h5>EveryOne</h5>
+                        <div class="ibox-header-items">
+                            <a href="#" class="btn-minimize btn-default"><i class="fa fa-angle-down"></i></a>
+                            <a href="#" class="btn-close btn-default"><i class="fa fa-close"></i></a>
+                        </div>
+                    </div>
+                    <div class="ibox-content">
+                        <ul class="headgroplist">
+                            @foreach (var items in Model.FirstOrDefault().AllLeadsCount)
+                            {
+                                <li>
+                                    <div class="@items.color"><i class="@items.highlight"></i></div>
+                                    <div class="headtext"><a href="#">@items.label</a></div>
+                                    <div class="headleval">@items.value</div>
+                                </li>
+                            }
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+

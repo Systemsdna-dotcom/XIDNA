@@ -1,0 +1,209 @@
+﻿@model IEnumerable<XIDNA.Models.OrganizationImages>
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+
+<script src="~/Scripts/ajaxfileupload.js"></script>
+
+<script>
+    window.onload = function () {
+        //Check File API support
+        if (window.File && window.FileList && window.FileReader) {
+            var filesInput = document.getElementById("UploadImage");
+            filesInput.addEventListener("change", function (event) {
+                var files = event.target.files; //FileList object
+                var output = document.getElementById("dvPreview");
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    //Only pics
+                    if (!file.type.match('image'))
+                        continue;
+                    var picReader = new FileReader();
+                    picReader.addEventListener("load", function (event) {
+                        var picFile = event.target;
+                        var div = document.createElement("div");
+                        div.innerHTML = "<img class='thumbnail' src='" + picFile.result + "'" +
+                                "title='" + picFile.name + "'width='100px' height='100px'/>";
+                        output.insertBefore(div, null);
+                    });
+
+                    //Read the image
+                    picReader.readAsDataURL(file);
+                }
+
+            });
+        }
+        else {
+            console.log("Your browser does not support File API");
+        }
+    }
+
+</script>
+<style>
+    .thumbnail {
+        float: left;
+    }
+
+    .Logo {
+        float: left;
+        margin-right: 10px;
+    }
+
+    .Delete {
+        margin-top: -95px;
+    }
+</style>
+<section class="content-header hedr">
+    <h1> Add Images </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Organization Management</a></li>
+        <li class="active">Home</li>
+    </ol>
+</section>
+
+<section class="content">
+    <div class="row">
+        <div class="content">
+            <div class="box">
+                <div id="OrgSaveLogo" class="innerborder">
+                    @Html.ValidationSummary(true)
+                    @if (Model.Count() > 0)
+                    {
+                        <div class="form-group col-xs-12 no-padding">
+                            @foreach (var items in Model)
+                            {
+                                <div class="Logo" id="images_@items.ID">
+                                    <img src="~/Content/images/@items.FileName" style="height:100px;width:100px;" />
+                                    <button class="btn btn-theme cross Delete" id=@items.ID>X</button>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <div class="form-group">
+                        <div class="col-md-12 no-padding">
+                            <label for="inputEmail" class="gn">Images</label>
+                            <input type="file" id="UploadImage" name="UploadImage" multiple />
+                            <div class=form-group id="dvPreview">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-10 no-padding">
+                            <button type="submit" class="btn btn-theme" name="Todo" id="SaveLogo">Upload</button>
+                            <button type="button" class="btn btn-theme decline Cancel">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="OrgImageDlg" class="dialog-box" title="Confirm Message" style="background-color:white;"></div>
+<script>
+    $(document).ready(function () {
+        $('#SaveLogo').on('click', function (e) {
+            if ($("#UploadImage").val() != "") {
+                $.ajaxFileUpload({
+                    url: '@Url.Action("SaveOtherImages", "Organization")',
+                    secureuri: false,
+                    type: 'POST',
+                    fileElementId: "UploadImage",
+                    dataType: 'json',
+                    success: function (data) {
+                        //$('#UploadImage').val(data);
+                        if (data == "success") {
+                            $("#OrgImageDlg").html('Images Uploaded Successfully');
+                            $("#OrgImageDlg").dialog({
+                                title: "Organization Images",
+                                modal: true,
+                                buttons: [
+                                   {
+                                       text: "OK",
+                                       click: function () {
+                                           opener.location.reload();
+                                           window.close();
+                                       }
+                                   },
+                                ]
+                            });
+                        }
+                        else {
+                            $("#OrgImageDlg").html('Error while uploading images!!!<br/>Please try again');
+                            $("#OrgImageDlg").dialog({
+                                title: "Organization Images",
+                                modal: true,
+                                buttons: [
+                                   {
+                                       text: "OK",
+                                       click: function () {
+                                           $("#OrgImageDlg").dialog("close");
+                                       }
+                                   },
+                                ]
+                            });
+                        }
+                    },
+                    error: function (data, status, e) {
+                    }
+                })
+            }
+            else {
+                $("#OrgImageDlg").html('Please Upload Image..!!');
+                $("#OrgImageDlg").dialog({
+                    title: "Organization Images",
+                    modal: true,
+                    buttons: [
+                       {
+                           text: "OK",
+                           click: function () {
+                               $("#OrgImageDlg").dialog("close");
+
+                           }
+                       },
+                    ]
+                });
+
+            }
+        });
+        $('.Delete').on('click', function () {
+            var id = $(this).attr('id');
+            var imageid = "images_" + id;
+            $("#OrgImageDlg").html('Do You Want To Delete This Image?');
+            $("#OrgImageDlg").dialog({
+                title: "Organization Images",
+                modal: true,
+                buttons: [
+                   {
+                       text: "Yes",
+                       click: function () {
+                           $.ajax({
+                               type: 'POST',
+                               url: '@Url.Action("DeleteLogo", "Organization")',
+                               data: { ID: id },
+                               cache: false,
+                               dataType: 'json',
+                               success: function (data) {
+                                   $('#' + imageid).remove();
+                                   $('#OrgImageDlg').dialog('close');
+                                   opener.location.reload();
+                               }
+                           });
+                       }
+                   },
+                {
+                    text: "No",
+                    click: function () {
+                        $("#OrgImageDlg").dialog("close");
+                    }
+                }
+                ]
+            });
+        });
+        $('.Cancel').click(function () {
+            window.close();
+        });
+    });
+</script>

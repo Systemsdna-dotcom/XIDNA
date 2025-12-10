@@ -1,0 +1,57 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+    ViewBag.Title = "GetReport";
+}
+
+<div class="col-xs-12">
+    <div class="box">
+        <div class="box-body" style="padding:0px;">
+            <div class="table-clean">
+                <table class="table table-striped custom-table table-condensed table-hover tablesorter dataTable tablelook" id="OneClickResult"></table>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        debugger
+        $.ajax({
+            url: '@Url.Action("GetReportData", "Reports")',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            cache: false,
+            success: function (data) {
+                debugger
+                if(data!=null){
+                    var expColumns = [];
+                    var res = $.parseJSON(data);
+                    $.each( res[0], function( key, value ) {
+                        var item = {};
+                        item.data = key;
+                        item.title = key;
+                        expColumns.push(item);
+                    });
+                    fncGetReport(expColumns, res)
+                }
+                else{
+                }
+            },
+            error: function (data) {
+            }
+        })
+    })
+
+    function fncGetReport(expColumns, dataSet) {
+        debugger
+        $('#OneClickResult').DataTable({
+            data: dataSet,
+            "columns": expColumns,
+            "paging": false,
+            "ordering": false,
+            "info": false,
+            "bFilter": false
+        });
+    }
+</script>

@@ -1,0 +1,95 @@
+﻿@model XIDNA.ViewModels.VMResultList
+
+@{
+    Layout = "~/Views/Shared/_PopupLayout.cshtml";
+}
+<script>
+    var pageIndex = 1;
+    var PageCount = 40;
+    $(window).scroll(function () {
+        if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+            GetRecords();
+        }
+    });
+    function GetRecords() {
+        if ('@Model.ResultListDisplayType' == 0) {
+            pageIndex++;
+            var sTable = "";
+            var QueryID = '@Model.QueryID';
+            $.ajax({
+                url: '@Url.Action("RunUserQuery", "Inbox")',
+                type: "GET",
+                contentType: "application/json; charset=utf-8",
+                datatype: "JSON",
+                cache: false,
+                async: false,
+                data: { PageIndex: pageIndex, QueryID: QueryID },
+                success: function (data) {
+                    for (i = 0; i < data.length; i++) {
+                        sTable = sTable + "<tr>";
+                        for (j = 0; j < data[i].length; j++) {
+                            @*if ('@Model.IDExists' == "True") {
+                                sTable = sTable + "<td>" + data[i][j] + "</td>";
+                            }
+                            else {
+                                if (j == 0) {
+                                    sTable = sTable + "<tdstyle='display:none'>" + data[i][j] + "</td>";
+                                }
+                                else {
+                                    sTable = sTable + "<td>" + data[i][j] + "</td>";
+                                }
+                            }*@
+                            sTable = sTable + "<td>" + data[i][j] + "</td>";
+                        }
+                        sTable = sTable + "</tr>";
+                    }
+                    $("#InnerReportResultList").append(sTable);
+                }
+            });
+        }
+    }
+</script>
+<section class="content-header hedr">
+    <h1>Result</h1>
+</section>
+
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+
+                    <div class="table-clean">
+                        <table id="InnerReportResultList" class="table table-striped custom-table dark-head dark-head2 table-condensed">
+                            <thead>
+                                <tr>
+                                    @foreach (var items in Model.Headings)
+                                    {
+                                        <th>@items</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.ResultListDisplayType == 0)
+                                {
+                                    foreach (var item in @Model.Rows)
+                                    {
+                                        <tr>
+                                            @foreach (var value in item)
+                                            {
+                                                <td>@value</td>
+                                            }
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

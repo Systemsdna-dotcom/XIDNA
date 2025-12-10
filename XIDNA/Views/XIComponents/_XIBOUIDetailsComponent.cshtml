@@ -1,0 +1,451 @@
+﻿@model XICore.XIIComponent
+@using XISystem
+@using XICore
+@{
+    XIDBOUI oBOUI = new XIDBOUI();
+    if (Model.oContent.ContainsKey(XIConstant.XIInfraXIBOUIComponent))
+    {
+        oBOUI = (XIDBOUI)Model.oContent[XIConstant.XIInfraXIBOUIComponent];
+        if (oBOUI == null)
+        {
+            oBOUI = new XIDBOUI();
+        }
+    }
+}
+<script>
+    const content_height = $(window).height() - $('#HomeHeader').height() -  10;
+    $('.scroll_vh_100').slimScroll({
+        height: content_height,
+    });
+</script>
+<!-- <section class="">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <div class="innerborder"> -->
+<section class="">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-body">
+                    <h3 class="maintitle">Structure UI</h3>
+                    <!--  <div class="innerborder"> -->
+                    <div class="StrStatusMessages"></div>
+                    <div class="scroll_vh_100 p5">
+                        <input type="hidden" id="ID" name="ID" value="@oBOUI.ID" />
+                        <input type="hidden" id="FKiBOID" name="FKiBOID" value="@oBOUI.FKiBOID" />
+                        <input type="hidden" id="sBOName" name="sBOName" value="@oBOUI.sBOName" />
+                        <input type="hidden" id="sSavingType" name="sSavingType" value="@oBOUI.sSavingType" />
+                        <input type="hidden" id="FKiStructureID" name="FKiStructureID" value="@oBOUI.FKiStructureID" />
+                        <input type="hidden" id="sSelectedBOGUID"/>
+                        <span id="XIBOUIBOName"></span>
+                        @if (oBOUI.ID != 0)
+                        {
+                            <div class="form-group row">
+                                <div class="col-md-2">
+                                    <label for="inputEmail" class="gn">ID:<span class="danger"></span></label>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="inputEmail" class="gn">@oBOUI.ID<span class="danger"></span></label>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="form-inline">
+                            <div class="form-group">
+                                <label for="inputEmail" class="gn">Structure<span class="danger">*</span></label>
+                                <select class="form-control" id="StructDDL">
+                                    <option value="0">--Select--</option>
+                                    @foreach (var items in oBOUI.Structures)
+                                    {
+                                        <option value="@items.sGUID">@items.text</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="TreeWrap"></div>
+                        <div id="DfltUIForm"></div>
+                        <div id="ShowStrDetails" class="form-rows">
+                            <div class="form-group row">
+                                <label for="inputEmail" class="control-label col-sm-2">BO:<span class="danger"></span></label>
+                                <label for="inputEmail" class="control-label  col-sm-6" id="sSelectedBOName">@oBOUI.sBOName<span class="danger"></span></label>
+                            </div>
+                            <div class="form-group row">
+                                <label for="inputEmail" class="control-label  col-sm-2">1-Click<span class="danger"></span></label>
+                                <div class="col-sm-6">
+                                    @Html.DropDownList("i1ClickIDXIGUID", new SelectList(oBOUI.ddl1Clicks, "sGUID", "text", oBOUI.i1ClickIDXIGUID), "--Select--", new { @class = "form-control" })
+                                </div>
+                            </div>
+
+                            @*<div class="form-group row">
+                <label for="inputEmail" class="control-label  col-sm-2">Layout<span class="danger"></span></label>
+                <div class="col-sm-6">
+                    @Html.DropDownList("iLayoutIDXIGUID", new SelectList(oBOUI.ddlLayouts, "sGUID", "text", oBOUI.iLayoutIDXIGUID), "--Select--", new { @class = "form-control" })
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="inputEmail" class="control-label  col-sm-2">Question Set Template<span class="danger"></span></label>
+                <div class="col-sm-6">
+                    @Html.DropDownList("FKiQSTemplateID", new SelectList(oBOUI.ddlQSTemplates, "Value", "text", oBOUI.FKiQSTemplateID), "--Select--", new { @class = "form-control" })
+                </div>
+            </div>*@
+
+                            @*<div class="form-group">
+                <div class="col-md-6">
+                    <label for="inputEmail" class="gn">Step Template<span class="danger"></span></label>
+                    @Html.DropDownList("FKiQSStepTemplateID", new SelectList(oBOUI.ddlQSStepTemplates, "Value", "text", oBOUI.FKiQSStepTemplateID), "--Select--", new { @class = "form-control" })
+                </div>
+            </div>*@
+
+                            <div class="form-group row">
+                                <div class="col-sm-offset-2 col-sm-10">
+                                    <button type="button" class="btn btn-theme" id="GenerateBOUIBtn">Generate</button>
+                                    <button type="button" class="btn btn-theme" id="SaveBOUIBtn">Save</button>
+                                    <button type="button" class="btn btn-theme decline" id="BOUICancel">Cancel</button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="@Url.Content("~/Scripts/treeview/jstree.min.js")"></script>
+
+<link href="@Url.Content("~/Content/jsTree/themes/default/style.min.css")" rel="stylesheet" />
+
+<script>
+    function fncSelectStrNode() {
+        debugger
+    }
+    var StrNodeData = [];
+    $(document).ready(function () {
+        $('#ShowStrDetails').hide();
+        var BOName;
+        @*var TreeUI = @Html.Raw(Json.Encode(Model));*@
+
+        $('#StructDDL').change(function(){
+            var ID = $(this).val();
+            if(ID && ID.length > 0){
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetXIStructureTreeDetails", "BusinessObjects")',
+                    data: JSON.stringify({ iStuctureID: ID }),
+                    contentType: 'application/json;',
+                    dataType: 'json',
+                    traditional: true,
+                    async: false,
+                    success: function (data) {
+                        $('#DfltUIForm').empty();
+                        $('#TreeWrap').empty();
+                        $('#TreeWrap').html('<div id="BOUITree" style="padding-left:15px;"></div>');
+                        LoadDUITree(data);
+                    }
+                });
+            }
+        });
+
+        $('#i1ClickIDXIGUID').change(function () {
+            debugger
+            var Val = $(this).val();
+            var bFound = false;
+            var NodeGUID = $('#sSelectedBOGUID').val();
+            for (var k = 0; k < StrNodeData.length; k++) {
+                if (StrNodeData[k].XIGUID == NodeGUID) {
+                    StrNodeData[k].sValue = Val;
+                    break;
+                    bFound = true;
+                }
+            }
+            if (!bFound) {
+                var item = {}
+                item["XIGUID"] = NodeGUID;
+                item["sValue"] = Val;
+                StrNodeData.push(item);
+            }
+        });
+
+        function LoadDUITree(data){
+            var UIjsondata = [];
+            var Nodes = data;
+            if (Nodes && Nodes != null) {
+                debugger
+                var j = 0;
+                for (var i = 0; i < Nodes.length; i++) {
+                    var item = {}
+                    item["id"] = Nodes[i].XIGUID;
+                    if (Nodes[i].FKiParentIDXIGUID == null || Nodes[i].FKiParentIDXIGUID == '00000000-0000-0000-0000-000000000000') {
+                        item["parent"] = "#";
+                    }
+                    else {
+                        item["parent"] = Nodes[i].FKiParentIDXIGUID;
+                    }
+                    item["text"] = Nodes[i].sName;
+                    item["sBO"] = Nodes[i].sBO;
+                    if (Nodes[i].StructureDetail && Nodes[i].StructureDetail != null) {
+                        item["i1ClickIDXIGUID"] = Nodes[i].StructureDetail.i1ClickIDXIGUID;
+                    }
+                    UIjsondata.push(item);
+                }
+                if (UIjsondata.length > 0) {
+                    var jsonStringUI = JSON.stringify(UIjsondata);
+                    createUIJSTree(JSON.parse(jsonStringUI));
+                    $('body').unblock();
+                }
+            }
+        }
+
+        function createUIJSTree(UIjsondata) {
+            $('#BOUITree').jstree({
+                "core": {
+                    "themes": {
+                        "variant": "large"
+                    },
+                    "check_callback": true,
+                    'data': UIjsondata,
+                },
+                "state" : { "key" : "BOUITree" },
+                "types": {
+                    "#": {
+                        "valid_children": ["default"]
+                    },
+                    //les dossiers
+                    "default": {
+                        "valid_children": ["default", "presentation"],
+                        //"icon": "img/icons/etablissement.png"
+                        "icon" : "fa fa-folder fc-theme"
+                    },
+                    "demo" : {
+                        "icon" : "fa fa-folder-open"
+                    }
+                },
+                //"plugins": ["contextmenu", "types", "dnd", "state"],
+                "plugins": ["types", "state"],
+                "dnd": {},
+                "contextmenu": {
+                    "items": function ($node) {
+                        var tree = $("#BOUITree").jstree(true);
+                        return {
+                            "Create": {
+                                "separator_before": false,
+                                "separator_after": true,
+                                "label": "Create",
+                                action: function (obj) {
+                                    var ID = 0;
+                                    var ParentNode = $node.id;
+
+                                    $.ajax({
+                                        type: 'POST',
+                                        url: '@Url.Action("CreateAndSaveTreeNode", "BusinessObjects")',
+                                        data: { ParentNode: ParentNode, NodeID: '', NodeTitle: 'New BO', Type: 'create' },
+                                        cache: false,
+                                        dataType: 'json',
+                                        success: function (data) {
+                                            if (parseInt(data) > 0) {
+                                                ID = parseInt(data);
+                                                $node = tree.create_node($node, { text: 'New BO', type: 'default', id: ID });
+                                                tree.deselect_all();
+                                                tree.select_node($node);
+                                                $('#DfltUIForm').empty();
+                                            }
+                                            else {
+                                                CustomMessage("Error! BO doesn't exist. Please check", false)
+                                            }
+                                        }
+                                    });
+                                }
+                            },
+                            "Rename": {
+                                "separator_before": false,
+                                "separator_after": false,
+                                "label": "Rename",
+                                "action": function (obj) {
+                                    var CheckNode = CheckIfMain($node);
+                                    if (CheckNode == '1') {
+                                        tree.edit($node, null, function (node, status) {
+                                            if (node.original.text != node.text) {
+                                                RenameAndSaveToDB($node, "rename");
+                                            }
+                                        });
+                                    }
+
+                                }
+                            },
+                            "Remove": {
+                                "separator_before": false,
+                                "separator_after": false,
+                                "label": "Remove",
+                                "action": function (obj) {
+                                    var CheckNode = CheckIfMain($node);
+                                    if (CheckNode == '1') {
+                                        tree.delete_node($node);
+                                        DeleteNodeDetails($node, "delete");
+                                    }
+                                }
+                            },
+                            "AddDetails": {
+                                "separator_before": false,
+                                "separator_after": false,
+                                "label": "Add Details",
+                                "action": function (obj) {
+                                    var CheckNode = CheckIfMain($node);
+                                    if (CheckNode == '1') {
+                                        AddDetails($node);
+                                    }
+                                }
+                            }
+                        };
+                    }
+                },
+                //}).bind("move_node.jstree", function (e, data) {
+                //    DragAndDropNodes(data)
+            }).bind("loaded.jstree", function (event, data) {
+                $(this).jstree("close_all");
+            }).on("select_node.jstree", function (e, data) {
+                debugger
+                var id = data.node.id;
+                $('#XIBOUIBOName').attr('data-selectedboname', data.node.original.sBO);
+                $('#sSelectedBOGUID').val(data.node.original.id);
+                $('#sSelectedBOName').html(data.node.original.sBO);
+                $('#ShowStrDetails').show();
+                var i1ClickIDXIGUID = data.node.original.i1ClickIDXIGUID;
+                $('#i1ClickIDXIGUID').val(i1ClickIDXIGUID);
+                //var item = {}
+                //item["XIGUID"] = data.node.original.id;
+                //item["sValue"] = i1ClickIDXIGUID;
+                //StrNodeData.push(item);
+                @*$.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("GetBOUIDetails", "BusinessObjects")',
+                    data: JSON.stringify({ ID: id }),
+                    contentType: 'application/json;',
+                    dataType: 'html',
+                    traditional: true,
+                    async: false,
+                    success: function (data) {
+                        if (data.Status && !data.Status) {
+                            CustomMessage(data.ResponseMessage, data.Status)
+                            $('#DfltUIForm').html('');
+                        }
+                        else {
+                            $('#DfltUIForm').html(data);
+                        }
+
+                    }
+                });*@
+            });;
+
+        }
+
+        $('#BOUICancel').click(function () {
+            window.close();
+        });
+        $('#GenerateBOUIBtn').click(function () {
+            $("#ConfirmBOUIGen").dialog({
+                title: "BO UI",
+                buttons: {
+                    "Yes": function () {
+                        debugger
+                        var FKiBOID = '@oBOUI.FKiBOID';
+                        var iStructureID = $('#StructDDL option:selected').val();
+                        var iLayoutID = 'D332FA95-65DE-4EC8-9454-978A111AF22D';
+                        var XIBOUIBOName = $("#XIBOUIBOName").attr('data-selectedboname');
+                        var sSavingType ="generate";
+                        if (iLayoutID && iLayoutID.length > 0) {
+                        var Data = { FKiBOID: FKiBOID, iStructureIDXIGUID: iStructureID, iLayoutIDXIGUID:iLayoutID,sBOName:XIBOUIBOName,sSavingType:sSavingType, FKiBOIDXIGUID:'@oBOUI.FKiBOIDXIGUID'};
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("IDEBOUIDetails", "BusinessObjects")',
+                                data: JSON.stringify(Data),
+                                contentType: 'application/json;',
+                                dataType: 'json',
+                                traditional: true,
+                                async: false,
+                                success: function (data) {
+                                    $('.StrStatusMessages').empty();
+                                    if(data == "Success")
+                                    {
+                                        $('.StrStatusMessages').prepend($('<div class="alert alert-success">Data Saved Succesfully</div>'));
+                                    }
+                                    else
+                                    {
+                                        $('.StrStatusMessages').prepend($('<div class="alert alert-danger">Failure! Error Occured</div>'));
+                                        //CustomMessage("Failure! Error Occured", false);
+                                    }
+                                }
+                            });
+                        }
+                        $(this).dialog("close");
+                    },
+                    "No": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+        $('#SaveBOUIBtn').click(function () {
+            $('#sSavingType').val('Save');
+            $("#ConfirmBOUISave").dialog({
+                title: "BO UI",
+                buttons: {
+                    "Yes": function () {
+
+                        debugger
+                        var FKiBOID = '@oBOUI.FKiBOIDXIGUID';
+                        var iStructureID = $('#StructDDL option:selected').val();
+                        var iLayoutID = 'D332FA95-65DE-4EC8-9454-978A111AF22D'; //$('#iLayoutIDXIGUID option:selected').val();
+                        var XIBOUIBOName = $("#XIBOUIBOName").attr('data-selectedboname');
+                        var sSavingType = "save";
+                        if (iLayoutID && iLayoutID.length > 0) {
+                            var Data = { FKiBOID: FKiBOID, iStructureIDXIGUID: iStructureID, iLayoutIDXIGUID: iLayoutID, sBOName: XIBOUIBOName, sSavingType: sSavingType, FKiBOIDXIGUID: '@oBOUI.FKiBOIDXIGUID', NodeData: StrNodeData };
+                            $.ajax({
+                                type: 'POST',
+                                url: '@Url.Action("IDEBOUIDetails", "BusinessObjects")',
+                                data: JSON.stringify(Data),
+                                contentType: 'application/json;',
+                                dataType: 'json',
+                                traditional: true,
+                                async: false,
+                                success: function (data) {
+                                    $('.StrStatusMessages').empty();
+                                    if(data == "Success")
+                                    {
+                                        $('.StrStatusMessages').prepend($('<div class="alert alert-success">Data Saved Succesfully</div>'));
+                                    }
+                                    else
+                                    {
+                                        $('.StrStatusMessages').prepend($('<div class="alert alert-danger">Failure! Error Occured</div>'));
+                                        //CustomMessage("Failure! Error Occured", false);
+                                    }
+                                }
+                            });
+                        }
+                        $(this).dialog("close");
+                    },
+                    "No": function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+    });
+    function OnFormBegin() {
+        $('body').block({
+            message: '<h4>Saving</h4>',
+            blockMsgClass: 'report-success',
+        });
+    }
+    function OnComplete(e) {
+        $('body').unblock();
+        CustomMessage(e.ResponseMessage, e.Status)
+    }
+</script>
+<div id="ConfirmBOUIGen" style="display:none;">This will generate new popup, Do you want to continue?</div>
+<div id="ConfirmBOUISave" style="display:none;">This will update the existing popup according to above structure, Do you want to continue?</div>

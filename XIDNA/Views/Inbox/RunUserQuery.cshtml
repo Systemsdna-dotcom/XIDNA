@@ -1,0 +1,177 @@
+﻿@model XIDNA.ViewModels.VMResultList
+
+@{
+    Layout = "~/Views/Shared/_XIDynawareLayout.cshtml";
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        if('@Model.ResultListDisplayType'==1)
+        {
+            var table = $('#UserResult').dataTable({});
+        }
+        else
+        {
+            var pageIndex = 1;
+            var PageCount = 40;
+            $(window).scroll(function () {
+                if ($(window).scrollTop() == $(document).height() - $(window).height()) {
+                    GetRecords();
+                }
+            });
+            function GetRecords() {
+                pageIndex++;
+                var sTable = "";
+                var QueryID='@Model.QueryID';
+                $.ajax({
+                    url: '@Url.Action("RunUserQuery", "Inbox")',
+                    type: "GET",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "JSON",
+                    cache: false,
+                    async: false,
+                    data: { PageIndex: pageIndex,QueryID:QueryID },
+                    success: function (data) {
+                        for(i=0;i<data.length;i++)
+                        {
+                            sTable = sTable + "<tr>";
+                            for(j=0;j<data[i].length;j++)
+                            {
+                                if('@Model.IDExists'=="True")
+                                {
+                                    sTable = sTable +"<td>" + data[i][j]+ "</td>";
+                                }
+                                else
+                                {
+                                    if(j==0)
+                                    {
+                                        sTable = sTable +"<tdstyle='display:none'>" + data[i][j]+ "</td>";
+                                    }
+                                    else{
+                                        sTable = sTable +"<td>" + data[i][j]+ "</td>";
+                                    }
+                                }                               
+                            }
+                            sTable = sTable + "</tr>";
+                        }
+                        $("#Mastertbody").append(sTable);
+                    }
+                });
+            }
+        }
+        if ('@Model.IDExists') {
+
+        }
+        else {
+            table.api().column(1).visible(false);
+        }
+        $('#UserResult').css('width', '100%');
+        $('#UserResult tbody').on('click', 'tr', function () {
+            var hg =@Html.Raw(Json.Encode(Model.Headings));
+            if('@Model.ResultListDisplayType'==1)
+            {
+                var table = $('#UserResult').dataTable();
+                var tr = $(this).closest('tr');
+                var data1 = table.fnGetData(tr);
+            }
+            else{
+                var data1 = $(this).children("td").map(function() {
+                    return $(this).text();
+                }).get();
+            }
+            var id;
+            if(data1){
+                for (var i = 0; i < hg.length; i++) {
+                    if (hg[i] == "ID") {
+                        id = data1[i];
+                    }
+                }
+                var selid = parseInt(id);
+                var url = "@Url.Action("GetLeadPopup", "Lead")?LeadID=" + selid +"&PopupID="+ '@Model.QueryID';
+                if('@Model.IsPopup'=="True"){
+                    window.open(url, '_blank',"scrollbars=1,resizable=1,width=" + screen.width + ", height=" + screen.height);
+                }
+            }
+        });
+    })
+</script>
+
+
+<section class="content-header hedr">
+    <h1><i class="@Model.QueryIcon" aria-hidden="true"></i> - @Model.QueryName</h1>
+</section>
+<div class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div id="box-body" class="col-xs-12">
+                    <div class="tab_scroll main-table">
+                        <div class="dataTables_wrapper no-footer table-responsive">
+                            <div id="UserQueryResult">
+                                <h4></h4>
+                                <table id="UserResult" class="table table-bordered table-striped dataTable">
+                                    <thead>
+                                        <tr>
+                                            @{int i = 0;}
+                                            @foreach (var items in @Model.Headings)
+                                            {
+                                                if (i == 0)
+                                                {
+                                                    if (Model.IDExists)
+                                                    {
+                                                        <th>@items</th>
+                                                    }
+                                                    else
+                                                    {
+                                                        <th style="display:none">@items</th>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <th>@items</th>
+                                                }
+                                                i++;
+                                            }
+                                        </tr>
+                                    </thead>
+                                    <tbody id="Mastertbody">
+
+                                        @foreach (var item in @Model.Rows)
+                                        {
+                                            <tr>
+                                                @{int j = 0;}
+                                                @foreach (var value in item)
+                                                {
+                                                    if (j == 0)
+                                                    {
+                                                        if (Model.IDExists)
+                                                        {
+                                                            <td>@value</td>
+                                                        }
+                                                        else
+                                                        {
+                                                            <td style="display:none">@value</td>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <td>@value</td>
+                                                    }
+                                                    j++;
+                                                }
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
