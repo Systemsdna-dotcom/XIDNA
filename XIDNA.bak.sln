@@ -1,0 +1,334 @@
+﻿Diffchecker logo
+Diffchecker
+
+
+Text
+
+
+Images
+
+
+PDF
+
+
+Excel
+
+
+Folders
+Desktop App
+Pricing
+Sign in
+Create an account
+Saved Diffs
+You must be signed in to save diffs
+Sign In
+Diff history
+a minute ago
+Clear
+Diff history is cleared on refresh
+
+ 
+Real-timeRegular
+SplitUnified
+WordCharacter
+
+Tools
+-57 Removals+8 Additions
+Microsoft Visual Studio Solution File, Format Version 12.00	
+# Visual Studio 14	
+VisualStudioVersion = 14.0.25420.1	
+MinimumVisualStudioVersion = 10.0.40219.1	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XIDNA", "XIDNA\XIDNA.csproj", "{DA24F0DC-80FC-42F2-B1DC-E95E38939B11}"	
+EndProject	
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{51F70A8A-B731-44ED-ABCC-DBA19457555D}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XIDNA.Models", "XIDNA.Models\XIDNA.Models.csproj", "{60488C5A-E677-441F-BA55-D952A6DCB410}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XIDNA.Repository", "XIDNA.Repository\XIDNA.Repository.csproj", "{FCE3C05D-F6D4-4782-AE25-446023544062}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XIDNA.ViewModels", "XIDNA.ViewModels\XIDNA.ViewModels.csproj", "{099E075A-0736-468D-AA77-74462D803162}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XIDNA.Components", "XIDNA.Components\XIDNA.Components.csproj", "{AB0F37DE-E578-4A5F-8369-04ABD76511E4}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XIDNAAPI", "XIDNAAPI\XIDNAAPI.csproj", "{5EC205AE-1DD6-415D-B42D-1A15837DF0B5}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XICore", "XICore\XICore.csproj", "{7F79227C-4317-4A22-94C1-949DDD7F5A7D}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XIInfrastructure", "XIInfrastructure\XIInfrastructure.csproj", "{5E288498-C010-4136-B889-1031BBD106A7}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XIDataBase", "XIDataBase\XIDataBase.csproj", "{33E344FC-9054-4E70-854F-C3F3499302EB}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XISystem", "XISystem\XISystem.csproj", "{DD0F62D0-3ED4-4568-945E-266C372A2BA5}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeeInsurance", "ZeeInsurance\ZeeInsurance.csproj", "{16232786-F0F2-48A0-8176-DD8F4326FABA}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeeBNPPFServices", "ZeeBNPPFServices\ZeeBNPPFServices.csproj", "{B77C936D-0E37-4AC5-AEE0-6723F53CC3C1}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeePremiumFinance", "ZeePremiumFinance\ZeePremiumFinance.csproj", "{5F1A430C-4A65-47D8-8428-6955018EF101}"	
+EndProject	
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XIScript", "XIScript\XIScript.csproj", "{F248F2F5-88E8-499A-9FFB-069D1CE303AA}"	
+EndProject	
+Global	
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution	
+		Debug|Any CPU = Debug|Any CPU	
+		Release|Any CPU = Release|Any CPU	
+	EndGlobalSection	
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution	
+		{DA24F0DC-80FC-42F2-B1DC-E95E38939B11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{DA24F0DC-80FC-42F2-B1DC-E95E38939B11}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{DA24F0DC-80FC-42F2-B1DC-E95E38939B11}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{DA24F0DC-80FC-42F2-B1DC-E95E38939B11}.Release|Any CPU.Build.0 = Release|Any CPU	
+		{60488C5A-E677-441F-BA55-D952A6DCB410}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{60488C5A-E677-441F-BA55-D952A6DCB410}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{60488C5A-E677-441F-BA55-D952A6DCB410}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{60488C5A-E677-441F-BA55-D952A6DCB410}.Release|Any CPU.Build.0 = Release|Any CPU	
+		{FCE3C05D-F6D4-4782-AE25-446023544062}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{FCE3C05D-F6D4-4782-AE25-446023544062}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{FCE3C05D-F6D4-4782-AE25-446023544062}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{FCE3C05D-F6D4-4782-AE25-446023544062}.Release|Any CPU.Build.0 = Release|Any CPU	
+		{099E075A-0736-468D-AA77-74462D803162}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{099E075A-0736-468D-AA77-74462D803162}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{099E075A-0736-468D-AA77-74462D803162}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{099E075A-0736-468D-AA77-74462D803162}.Release|Any CPU.Build.0 = Release|Any CPU	
+		{AB0F37DE-E578-4A5F-8369-04ABD76511E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{AB0F37DE-E578-4A5F-8369-04ABD76511E4}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{AB0F37DE-E578-4A5F-8369-04ABD76511E4}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{AB0F37DE-E578-4A5F-8369-04ABD76511E4}.Release|Any CPU.Build.0 = Release|Any CPU	
+		{7F79227C-4317-4A22-94C1-949DDD7F5A7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{7F79227C-4317-4A22-94C1-949DDD7F5A7D}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{7F79227C-4317-4A22-94C1-949DDD7F5A7D}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{7F79227C-4317-4A22-94C1-949DDD7F5A7D}.Release|Any CPU.Build.0 = Release|Any CPU	
+		{33E344FC-9054-4E70-854F-C3F3499302EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{33E344FC-9054-4E70-854F-C3F3499302EB}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{33E344FC-9054-4E70-854F-C3F3499302EB}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{33E344FC-9054-4E70-854F-C3F3499302EB}.Release|Any CPU.Build.0 = Release|Any CPU	
+		{DD0F62D0-3ED4-4568-945E-266C372A2BA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{DD0F62D0-3ED4-4568-945E-266C372A2BA5}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{DD0F62D0-3ED4-4568-945E-266C372A2BA5}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{DD0F62D0-3ED4-4568-945E-266C372A2BA5}.Release|Any CPU.Build.0 = Release|Any CPU	
+		{16232786-F0F2-48A0-8176-DD8F4326FABA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{16232786-F0F2-48A0-8176-DD8F4326FABA}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{16232786-F0F2-48A0-8176-DD8F4326FABA}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{16232786-F0F2-48A0-8176-DD8F4326FABA}.Release|Any CPU.Build.0 = Release|Any CPU	
+		{503CBC4D-9334-4543-928B-4A3447C25449}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{503CBC4D-9334-4543-928B-4A3447C25449}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{503CBC4D-9334-4543-928B-4A3447C25449}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{503CBC4D-9334-4543-928B-4A3447C25449}.Release|Any CPU.Build.0 = Release|Any CPU	
+		{B77C936D-0E37-4AC5-AEE0-6723F53CC3C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{B77C936D-0E37-4AC5-AEE0-6723F53CC3C1}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{B77C936D-0E37-4AC5-AEE0-6723F53CC3C1}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{B77C936D-0E37-4AC5-AEE0-6723F53CC3C1}.Release|Any CPU.Build.0 = Release|Any CPU	
+		{5F1A430C-4A65-47D8-8428-6955018EF101}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{5F1A430C-4A65-47D8-8428-6955018EF101}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{5F1A430C-4A65-47D8-8428-6955018EF101}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{5F1A430C-4A65-47D8-8428-6955018EF101}.Release|Any CPU.Build.0 = Release|Any CPU	
+		{F248F2F5-88E8-499A-9FFB-069D1CE303AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU	
+		{F248F2F5-88E8-499A-9FFB-069D1CE303AA}.Debug|Any CPU.Build.0 = Debug|Any CPU	
+		{F248F2F5-88E8-499A-9FFB-069D1CE303AA}.Release|Any CPU.ActiveCfg = Release|Any CPU	
+		{F248F2F5-88E8-499A-9FFB-069D1CE303AA}.Release|Any CPU.Build.0 = Release|Any CPU	
+	EndGlobalSection	
+	GlobalSection(SolutionProperties) = preSolution	
+		HideSolutionNode = FALSE	
+	EndGlobalSection	
+	GlobalSection(NestedProjects) = preSolution	
+		{60488C5A-E677-441F-BA55-D952A6DCB410} = {51F70A8A-B731-44ED-ABCC-DBA19457555D}	
+		{FCE3C05D-F6D4-4782-AE25-446023544062} = {51F70A8A-B731-44ED-ABCC-DBA19457555D}	
+		{099E075A-0736-468D-AA77-74462D803162} = {51F70A8A-B731-44ED-ABCC-DBA19457555D}	
+		{AB0F37DE-E578-4A5F-8369-04ABD76511E4} = {51F70A8A-B731-44ED-ABCC-DBA19457555D}	
+	EndGlobalSection	
+	GlobalSection(TeamFoundationVersionControl) = preSolution	
+		SccNumberOfProjects = 16	
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}	
+		SccTeamFoundationServer = http://192.168.7.8:8080/tfs/defaultcollection	
+		SccLocalPath0 = .	
+		SccProjectUniqueName1 = XICore\\XICore.csproj	
+		SccProjectName1 = XICore	
+		SccLocalPath1 = XICore	
+		SccProjectUniqueName2 = XIDataBase\\XIDataBase.csproj	
+		SccProjectName2 = XIDataBase	
+		SccLocalPath2 = XIDataBase	
+		SccProjectUniqueName3 = XIDNA.Components\\XIDNA.Components.csproj	
+		SccProjectTopLevelParentUniqueName3 = XIDNA.sln	
+		SccProjectName3 = XIDNA.Components	
+		SccLocalPath3 = XIDNA.Components	
+		SccProjectUniqueName4 = XIDNA.Models\\XIDNA.Models.csproj	
+		SccProjectTopLevelParentUniqueName4 = XIDNA.sln	
+		SccProjectName4 = XIDNA.Models	
+		SccLocalPath4 = XIDNA.Models	
+		SccProjectUniqueName5 = XIDNA.Repository\\XIDNA.Repository.csproj	
+		SccProjectTopLevelParentUniqueName5 = XIDNA.sln	
+		SccProjectName5 = XIDNA.Repository	
+		SccLocalPath5 = XIDNA.Repository	
+		SccProjectUniqueName6 = XIDNA.ViewModels\\XIDNA.ViewModels.csproj	
+		SccProjectTopLevelParentUniqueName6 = XIDNA.sln	
+		SccProjectName6 = XIDNA.ViewModels	
+		SccLocalPath6 = XIDNA.ViewModels	
+		SccProjectUniqueName7 = XIDNA\\XIDNA.csproj	
+		SccProjectName7 = XIDNA	
+		SccLocalPath7 = XIDNA	
+		SccProjectUniqueName8 = XIDNAAPI\\XIDNAAPI.csproj	
+		SccProjectName8 = XIDNAAPI	
+		SccLocalPath8 = XIDNAAPI	
+		SccProjectUniqueName9 = XIInfrastructure\\XIInfrastructure.csproj	
+		SccProjectName9 = XIInfrastructure	
+		SccLocalPath9 = XIInfrastructure	
+		SccProjectUniqueName10 = XISystem\\XISystem.csproj	
+		SccProjectName10 = XISystem	
+		SccLocalPath10 = XISystem	
+		SccProjectUniqueName11 = ZeeInsurance\\ZeeInsurance.csproj	
+		SccProjectName11 = ZeeInsurance	
+		SccLocalPath11 = ZeeInsurance	
+		SccProjectUniqueName13 = ZeeBNPPFServices\\ZeeBNPPFServices.csproj	
+		SccProjectName13 = ZeeBNPPFServices	
+		SccLocalPath13 = ZeeBNPPFServices	
+		SccProjectUniqueName14 = ZeePremiumFinance\\ZeePremiumFinance.csproj	
+		SccProjectName14 = ZeePremiumFinance	
+		SccLocalPath14 = ZeePremiumFinance	
+		SccProjectUniqueName15 = XIScript\\XIScript.csproj	
+		SccProjectName15 = XIScript	
+		SccLocalPath15 = XIScript	
+	EndGlobalSection	
+Editor
+Compare & merge
+Clear
+Export as PDF
+Save DiffShare
+No file chosenOriginal Text
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+		SccLocalPath6 = XIDNA.ViewModels
+		SccProjectUniqueName7 = XIDNA\\XIDNA.csproj
+		SccProjectName7 = XIDNA
+		SccLocalPath7 = XIDNA
+		SccProjectUniqueName8 = XIDNAAPI\\XIDNAAPI.csproj
+		SccProjectName8 = XIDNAAPI
+		SccLocalPath8 = XIDNAAPI
+		SccProjectUniqueName9 = XIInfrastructure\\XIInfrastructure.csproj
+		SccProjectName9 = XIInfrastructure
+		SccLocalPath9 = XIInfrastructure
+		SccProjectUniqueName10 = XISystem\\XISystem.csproj
+		SccProjectName10 = XISystem
+		SccLocalPath10 = XISystem
+		SccProjectUniqueName11 = ZeeInsurance\\ZeeInsurance.csproj
+		SccProjectName11 = ZeeInsurance
+		SccLocalPath11 = ZeeInsurance
+		SccProjectUniqueName13 = ZeeBNPPFServices\\ZeeBNPPFServices.csproj
+		SccProjectName13 = ZeeBNPPFServices
+		SccLocalPath13 = ZeeBNPPFServices
+		SccProjectUniqueName14 = ZeePremiumFinance\\ZeePremiumFinance.csproj
+		SccProjectName14 = ZeePremiumFinance
+		SccLocalPath14 = ZeePremiumFinance
+		SccProjectUniqueName15 = XIScript\\XIScript.csproj
+		SccProjectName15 = XIScript
+		SccLocalPath15 = XIScript
+	EndGlobalSection
+EndGlobal
+ 
+
+No file chosenChanged Text
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+		{5E288498-C010-4136-B889-1031BBD106A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E288498-C010-4136-B889-1031BBD106A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E288498-C010-4136-B889-1031BBD106A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33E344FC-9054-4E70-854F-C3F3499302EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33E344FC-9054-4E70-854F-C3F3499302EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33E344FC-9054-4E70-854F-C3F3499302EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33E344FC-9054-4E70-854F-C3F3499302EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD0F62D0-3ED4-4568-945E-266C372A2BA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD0F62D0-3ED4-4568-945E-266C372A2BA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD0F62D0-3ED4-4568-945E-266C372A2BA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD0F62D0-3ED4-4568-945E-266C372A2BA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16232786-F0F2-48A0-8176-DD8F4326FABA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16232786-F0F2-48A0-8176-DD8F4326FABA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16232786-F0F2-48A0-8176-DD8F4326FABA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16232786-F0F2-48A0-8176-DD8F4326FABA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B77C936D-0E37-4AC5-AEE0-6723F53CC3C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B77C936D-0E37-4AC5-AEE0-6723F53CC3C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B77C936D-0E37-4AC5-AEE0-6723F53CC3C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B77C936D-0E37-4AC5-AEE0-6723F53CC3C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F1A430C-4A65-47D8-8428-6955018EF101}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F1A430C-4A65-47D8-8428-6955018EF101}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F1A430C-4A65-47D8-8428-6955018EF101}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F1A430C-4A65-47D8-8428-6955018EF101}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F248F2F5-88E8-499A-9FFB-069D1CE303AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F248F2F5-88E8-499A-9FFB-069D1CE303AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F248F2F5-88E8-499A-9FFB-069D1CE303AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F248F2F5-88E8-499A-9FFB-069D1CE303AA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{60488C5A-E677-441F-BA55-D952A6DCB410} = {51F70A8A-B731-44ED-ABCC-DBA19457555D}
+		{FCE3C05D-F6D4-4782-AE25-446023544062} = {51F70A8A-B731-44ED-ABCC-DBA19457555D}
+		{099E075A-0736-468D-AA77-74462D803162} = {51F70A8A-B731-44ED-ABCC-DBA19457555D}
+		{AB0F37DE-E578-4A5F-8369-04ABD76511E4} = {51F70A8A-B731-44ED-ABCC-DBA19457555D}
+	EndGlobalSection
+
+
+ 
+Find Difference
+© 2021 Checker Software Inc.ContactCLITermsPrivacy PolicyAPI
